@@ -81,6 +81,8 @@
 | **Stage 20** | `M20.2` | 实时生理清醒状态（清醒/犯困/深睡）与入站消息唤醒门控雷达（收到但未感兴趣/冷却/非对我说） | `STAGE_20_LIGHTWEIGHT_EVOLVING_FACTS_AND_WAKE_RADAR_PLAN.md` | `mind/{circadian,facade}.py`, `web/mind_inspector_service.py`, `index.html`, `app.js` | 68/68 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.57% (91%)** | ✅ 已验收通过 |
 | **Stage 21**<br>群聊生态门控与水箱防漂移 | `M21.1` | 二人转60s免打扰、余音共鸣接话茬(带防双AI乒乓锁)、7维人格条件增益与雷达透明算式 | `STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md` | `mind/{salience_hydraulics,perceptual_gate}.py` | Dyadic DND + Resonance Cap + Formula Radar Pass / Cov: 97% | ✅ 已验收通过 |
 | **Stage 21** | `M21.2` | 洛伦兹水箱开口宣泄回落(-22)、非必回优雅闭嘴权与可塑性话痨度防漂移 | `STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md` | `mind/{facade,plasticity}.py`, `runtime/{reply_rescue,agent_runner}.py` | 69/69 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.21% (90%)** | ✅ 已验收通过 |
+| **Stage 22**<br>三吸引子好感动力学与回放根治 | `M22.1` | 三吸引子均值回归好感度引擎、主语指向消解、信任立方封顶与海马体慢通道关系复盘 | `STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md` | `mind/{memory_consolidator,hippocampus,plasticity}.py` | Three-Attractor + Trust Cap + Hippocampus Bond Pass / Cov: 84%~95% | ✅ 已验收通过 |
+| **Stage 22** | `M22.2` | 根治同行Bot 5分钟跟聊死循环与 URL 域名 (`www/com/tv`) 污染好奇心搜索队列 | `STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md` | `mind/perceptual_gate.py`, `mind/explorer.py` | 70/70 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.31% (90%)** | ✅ 已验收通过 |
 
 ---
 

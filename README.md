@@ -178,3 +178,4 @@ cp data/config.example.json data/config.json
   - [Stage 19：Borbély 双过程生物节律、跨轮次工作记忆延续缓冲与深层主动记忆检索规范](docs/plans/STAGE_19_BIOLOGICAL_CIRCADIAN_AND_CONTINUOUS_MEMORY_PLAN.md)
   - [Stage 20：零膨胀演化事实双算子与实时清醒/注意力门控雷达规范](docs/plans/STAGE_20_LIGHTWEIGHT_EVOLVING_FACTS_AND_WAKE_RADAR_PLAN.md)
   - [Stage 21：群聊生态感知门控、二人转免打扰、余音共鸣、洛伦兹水箱回落与可塑性防漂移规范](docs/plans/STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md)
+  - [Stage 22：三吸引子均值回归人际动力学、海马体慢通道关系复盘与回放缺陷根治规范](docs/plans/STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md)

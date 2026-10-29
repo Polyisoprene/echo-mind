@@ -1489,6 +1489,20 @@ async def test_stage21_ecological_gate_dyadic_dnd_resonance_and_lorenz_satiation
     dec_triv = gate.evaluate(p_trivial, ws)
     assert dec_triv.should_wake is False and dec_triv.salience_score <= 0.20
 
+    p_owner_q = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="t2",
+        timestamp_ms=500_000,
+        sender_id="10001001",
+        sender_name="L",
+        text="大家觉得日常待机这首歌好听吗？",
+    )
+    dec_own = gate.evaluate(
+        p_owner_q, ws, known_vocab=frozenset({"好听"}), owner_qq="10001001"
+    )
+    assert dec_own.should_wake is True and "+主人" in dec_own.reason
+
     # 4. Lorenz Hydraulic Satiation Discharge (-22 social_expression after speaking)
     high_snap = ws.model_copy(
         update={"drives": DriveState(curiosity=65.0, social_expression=66.0)}
@@ -1496,6 +1510,77 @@ async def test_stage21_ecological_gate_dyadic_dnd_resonance_and_lorenz_satiation
     after_speak = apply_speaking_satiation(high_snap, ("好呀",), ("web_search",))
     assert after_speak.drives.social_expression == 44.0
     assert after_speak.drives.curiosity == 45.0
+
+
+async def test_stage22_calibrated_three_attractor_affinity_url_strip_and_rival_followup_block(
+    tmp_path: Path,
+) -> None:
+    from echomind.domain.models import WorkingSnapshot
+    from echomind.mind.hippocampus import parse_consolidation_json
+    from echomind.mind.memory_consolidator import (
+        compute_affinity_delta,
+        cubic_trust_affinity_cap,
+        update_sender_bond,
+    )
+    from echomind.mind.perceptual_gate import PerceptualGate, extract_unknown_terms
+    from echomind.mind.plasticity import compute_turn_social_reward
+
+    # 1. URL domain tokens (www / com / tv) are stripped and never pollute unknown_terms
+    unks = extract_unknown_terms(
+        "来看这个视频 https://www.bilibili.com/video/BV1nCnv6pEDU 和 https://b23.tv/abc",
+        frozenset(),
+    )
+    assert "www" not in unks and "com" not in unks and "tv" not in unks
+
+    # 2. Rival bot (汐) is blocked from 5-min unconditional _in_followup loop
+    gate = PerceptualGate()
+    ws = WorkingSnapshot(scope_key="global")
+    gate.mark_replied_to("group:10002002", "2009", 10_000)
+    p_rival_follow = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="rf1",
+        timestamp_ms=20_000,
+        sender_id="2009",
+        sender_name="汐",
+        text="我这边看机器",
+    )
+    dec_rf = gate.evaluate(p_rival_follow, ws, rivals=("汐", "2009"), owner_qq="10001001")
+    assert dec_rf.should_wake is False
+
+    # 3. Subject/Negation disambiguation in social reward ("我是笨蛋" vs "我才不喜欢你")
+    assert compute_turn_social_reward("我是笨蛋") > 0.0
+    assert compute_turn_social_reward("我才不喜欢你呢") < 0.0
+
+    # 4. Three-Attractor Dunbar Ceiling (85.0) + Cubic Trust Cap + Hippocampal bondAdjustments
+    p_chat = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="c1",
+        timestamp_ms=30_000,
+        sender_id="3001",
+        sender_name="熟人A",
+        text="今天天气真好呀",
+    )
+    # Above Dunbar ceiling (90.0), routine small talk gently mean-reverts (< 0)
+    assert compute_affinity_delta(p_chat, 90.0, 0.08) < 0.0
+    # Rival pulls toward 45.0 equilibrium
+    assert compute_affinity_delta(p_chat, 150.0, 0.08, is_rival=True) < 0.0
+    # Cubic trust ceiling: low trust (0.50) caps affinity below 100
+    assert cubic_trust_affinity_cap(0.50) < 100.0
+
+    container = await EchoMindContainer.create(db_path=tmp_path / "stage22.db")
+    await update_sender_bond(
+        container.memory_repo, container.memory_repo, "group:10002002", p_chat, 0.65
+    )
+    parsed = parse_consolidation_json(
+        "group:10002002",
+        '{"cards":[],"facts":[],"rules":[],'
+        '"bondAdjustments":[{"userId":"3001","affinityDelta":8.5,"trustDelta":0.03,"reason":"温柔照顾"}]}',
+        40_000,
+    )
+    assert len(parsed.bond_adjustments) == 1 and parsed.bond_adjustments[0].affinity_delta == 8.5
+
 
 
 

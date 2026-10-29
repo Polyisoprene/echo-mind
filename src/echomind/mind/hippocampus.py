@@ -24,6 +24,9 @@ HIPPOCAMPUS_INSTRUCTIONS = (
     "『某人开玩笑忽悠回音说…』，绝不能把假话记入 facts！",
     "3. rules (条件反射默契 0~1条)：triggerKeyword + triggerUserId + actionInstruction。",
     "4. newPersonaTrait(可选)：15~35字第一人称新习惯；newActivity(可选)：10~20字新日常状态。",
+    "5. bondAdjustments(人际关系深度复盘 0~3条)：根据本段对话中群友对回音的真实态度"
+    "（温柔照顾/真诚夸奖 vs 故意戏弄/忽悠挖坑/冷漠使唤），给出 userId、affinityDelta(-12~+12)、"
+    "trustDelta(-0.10~+0.06) 与 reason。",
     "⚠️【人设一致性与防串味铁律】：任何违背【当前基础人设宪法】的玩笑话严禁提炼进 rules 或"
     " newPersonaTrait；严禁把其他群友/机器人的设定或刷屏道具/食物梗提炼为回音的永久习惯！",
 )
@@ -33,8 +36,18 @@ HIPPOCAMPUS_SCHEMA_LINE = (
     '"importance":3.5,"pinned":false}],'
     '"facts":[{"subject":"...","factText":"...","confidence":0.85}],'
     '"rules":[{"triggerKeyword":"...","triggerUserId":"","actionInstruction":"..."}],'
+    '"bondAdjustments":[{"userId":"QQ","affinityDelta":3.0,"trustDelta":0.02,"reason":"..."}],'
     '"newPersonaTrait":"","newActivity":""}'
 )
+
+
+class HippocampalBondAdjustment(FrozenValueObject):
+    """Slow-channel LLM relationship appraisal adjustment for a participant."""
+
+    user_id: str
+    affinity_delta: float = 0.0
+    trust_delta: float = 0.0
+    reason: str = ""
 
 
 class ConsolidationBatchResult(FrozenValueObject):
@@ -43,6 +56,7 @@ class ConsolidationBatchResult(FrozenValueObject):
     cards: tuple[EpisodicCard, ...] = ()
     facts: tuple[SemanticFact, ...] = ()
     rules: tuple[ProceduralRule, ...] = ()
+    bond_adjustments: tuple[HippocampalBondAdjustment, ...] = ()
     new_persona_trait: str = ""
     new_activity: str = ""
 
@@ -124,6 +138,22 @@ def _parse_single_rule(chat_key: str, raw: Any) -> ProceduralRule | None:
     )
 
 
+def _parse_single_bond_adj(raw: Any) -> HippocampalBondAdjustment | None:
+    if not isinstance(raw, dict):
+        return None
+    uid = str(raw.get("userId", "")).strip()
+    if not uid:
+        return None
+    aff_d = max(-12.0, min(12.0, float(raw.get("affinityDelta", 0.0))))
+    tr_d = max(-0.10, min(0.06, float(raw.get("trustDelta", 0.0))))
+    return HippocampalBondAdjustment(
+        user_id=uid,
+        affinity_delta=round(aff_d, 2),
+        trust_delta=round(tr_d, 3),
+        reason=str(raw.get("reason", "")).strip()[:60],
+    )
+
+
 def _extract_json_dict(raw_content: str) -> dict[str, Any] | None:
     match = JSON_OBJ_RE.search(raw_content)
     if not match:
@@ -145,10 +175,12 @@ def parse_consolidation_json(
     raw_cards = [_parse_single_card(chat_key, r, now_ms) for r in data.get("cards", [])]
     raw_facts = [_parse_single_fact(chat_key, r) for r in data.get("facts", [])]
     raw_rules = [_parse_single_rule(chat_key, x) for x in data.get("rules", [])]
+    raw_bonds = [_parse_single_bond_adj(b) for b in data.get("bondAdjustments", [])]
     return ConsolidationBatchResult(
         cards=tuple(filter(None, raw_cards)),
         facts=tuple(filter(None, raw_facts)),
         rules=tuple(filter(None, raw_rules)),
+        bond_adjustments=tuple(filter(None, raw_bonds)),
         new_persona_trait=str(data.get("newPersonaTrait", "")).strip()[:60],
         new_activity=str(data.get("newActivity", "")).strip()[:40],
     )

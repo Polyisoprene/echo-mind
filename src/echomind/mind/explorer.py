@@ -12,10 +12,11 @@ def arbitrate_autonomous_action(
 ) -> ProactiveProposal | None:
     """Central arbiter selecting the highest-priority autonomous exploration or proactive action."""
     phase = resolve_circadian_phase(now_ms)
-    if phase.is_asleep and snapshot.affect.energy <= 35.0:
+    if now_ms is not None and phase.is_asleep and snapshot.affect.energy <= 35.0:
         return None
     drv = snapshot.drives
-    eff_idle_target = proactive_idle_min / max(0.5, phase.proactive_multiplier)
+    mult = max(0.5, phase.proactive_multiplier) if now_ms is not None else 1.0
+    eff_idle_target = proactive_idle_min / mult
     if snapshot.curiosity_queue and drv.curiosity >= 45.0:
         term = snapshot.curiosity_queue[0]
         return ProactiveProposal(

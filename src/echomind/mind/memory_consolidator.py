@@ -15,7 +15,11 @@ from echomind.domain.models import (
 )
 from echomind.domain.ports import ILlmGateway, IMemoryReader, IMemoryWriter, IWorkingStateStore
 from echomind.mind.cybernetics import crystallize_self_organizing_schemas
-from echomind.mind.hippocampus import build_hippocampus_messages, parse_consolidation_json
+from echomind.mind.hippocampus import (
+    HippocampalBondAdjustment,
+    build_hippocampus_messages,
+    parse_consolidation_json,
+)
 
 FACT_PATTERN = re.compile(
     r"(?:记住|我叫|我是|我喜欢|我讨厌|我的名字是|他的ID是|她的ID是|外号叫|其实就是|对应的是)"
@@ -24,8 +28,11 @@ FACT_PATTERN = re.compile(
 SPOOF_CALLOUT_RE = re.compile(
     r"忽悠|骗我|骗人|少骗|哄我|才不信|少来这套|蒙我|编瞎话|逗我玩|挖坑"
 )
+BOT_PUSHBACK_RE = re.compile(r"少来烦我|懒得理你|走开啦|真烦人|不理你了|哼，不跟你说")
 HIPPOCAMPUS_SPOOF_RE = re.compile(r"忽悠|挖坑|骗了|冒充|假称")
 AFFINITY_THRESHOLDS = (50.0, 100.0, 200.0, 500.0)
+DUNBAR_ACQUAINTANCE_CAP = 85.0
+RIVAL_EQUILIBRIUM = 45.0
 
 
 def compute_affinity_level(score: float) -> int:
@@ -36,46 +43,69 @@ def compute_affinity_level(score: float) -> int:
     return 5
 
 
+def cubic_trust_affinity_cap(trust_score: float, *, is_rival: bool = False) -> float:
+    """Law 3: Cubic trust-bounded affinity ceiling A_max(trust) = 35 + 465 * trust^3."""
+    if is_rival:
+        return 60.0
+    t_clamped = max(0.1, min(1.0, trust_score))
+    return round(35.0 + 465.0 * (t_clamped**3), 2)
+
+
 def _default_bond(chat_key: str, percept: Percept, is_owner: bool) -> SocialBondProfile:
-    score = 9999.0 if is_owner else 10.0
+    score = 9999.0 if is_owner else 25.0
     return SocialBondProfile(
-        chat_key=chat_key,
-        user_id=percept.sender_id,
+        chat_key=chat_key, user_id=percept.sender_id,
         user_name=percept.sender_name or percept.sender_id,
         group_role="owner" if is_owner else "member",
-        affinity_score=score,
-        affinity_level=compute_affinity_level(score),
-        msg_count=0,
-        trust_score=0.95 if is_owner else 0.75,
+        affinity_score=score, affinity_level=compute_affinity_level(score),
+        msg_count=0, trust_score=0.95 if is_owner else 0.75,
     )
 
 
-def compute_affinity_delta(
-    percept: Percept, base_score: float, reward: float, *, conflict: bool = False
-) -> float:
-    """Compute variable positive or negative affinity delta with diminishing returns."""
+def _negative_affinity_override(
+    reward: float, *, conflict: bool, spoof_called_out: bool, bot_pushback: bool
+) -> float | None:
     if conflict:
         return -6.0
+    if spoof_called_out:
+        return -4.0
+    if bot_pushback:
+        return -3.0
     if reward < 0.0:
-        return round(reward * 6.5, 2)
-    text_len = len(percept.text.strip())
-    raw_gain = 0.25 if text_len <= 2 else (0.85 if text_len <= 12 else 1.45)
-    if percept.is_at_me or percept.is_called_by_name:
-        raw_gain += 1.6
-    if percept.is_quoted_me or percept.is_poke_me:
-        raw_gain += 1.1
-    if reward >= 0.5:
-        raw_gain += (reward - 0.35) * 4.5
-    damping = 1.0 / (1.0 + max(0.0, base_score) / 220.0)
-    return round(max(0.1, raw_gain * damping), 2)
+        return round(reward * 7.5, 2)
+    return None
+
+
+def compute_affinity_delta(
+    percept: Percept, base_score: float, reward: float, *,
+    conflict: bool = False, spoof_called_out: bool = False,
+    is_rival: bool = False, bot_pushback: bool = False,
+) -> float:
+    """Three-Attractor Ornstein-Uhlenbeck relational delta (Asymmetric Negativity + Dunbar Cap)."""
+    neg_val = _negative_affinity_override(
+        reward, conflict=conflict, spoof_called_out=spoof_called_out, bot_pushback=bot_pushback
+    )
+    if neg_val is not None:
+        return neg_val
+    if is_rival:
+        return round((RIVAL_EQUILIBRIUM - base_score) * 0.18, 2)
+    direct = any(
+        (percept.is_at_me, percept.is_called_by_name, percept.is_quoted_me, percept.is_poke_me)
+    )
+    if reward >= 0.35:
+        raw_gain = 1.2 + (reward - 0.30) * 4.2 + (0.9 if direct else 0.0)
+        damping = 1.0 / (1.0 + max(0.0, base_score) / 180.0)
+        return round(max(0.15, raw_gain * damping), 2)
+    if base_score < DUNBAR_ACQUAINTANCE_CAP:
+        step = 0.75 if direct else 0.35
+        ratio = (DUNBAR_ACQUAINTANCE_CAP - base_score) / DUNBAR_ACQUAINTANCE_CAP
+        return round(max(0.05, step * ratio), 2)
+    return round(-0.12 * ((base_score - DUNBAR_ACQUAINTANCE_CAP) / DUNBAR_ACQUAINTANCE_CAP), 2)
 
 
 def compute_trust_delta(
-    base_trust: float,
-    reward: float,
-    *,
-    conflict: bool = False,
-    spoof_called_out: bool = False,
+    base_trust: float, reward: float, *,
+    conflict: bool = False, spoof_called_out: bool = False,
 ) -> float:
     """Compute bidirectional epistemic trust delta from conflict, callout, and social reward."""
     if conflict:
@@ -90,37 +120,39 @@ def compute_trust_delta(
 
 
 async def update_sender_bond(
-    reader: IMemoryReader,
-    writer: IMemoryWriter,
-    chat_key: str,
-    percept: Percept,
-    reward: float = 0.0,
-    *,
-    owner_qq: str = "",
-    conflict: bool = False,
-    spoof_called_out: bool = False,
+    reader: IMemoryReader, writer: IMemoryWriter, chat_key: str,
+    percept: Percept, reward: float = 0.0, *, owner_qq: str = "",
+    conflict: bool = False, spoof_called_out: bool = False, bot_pushback: bool = False,
 ) -> None:
-    """Update a member's affinity score (bidirectional, variable rate) and trust score."""
+    """Update a member's affinity score (Three-Attractor + Trust Cap) and trust score."""
     is_owner = bool(owner_qq and percept.sender_id == owner_qq)
     base = await reader.get_social_bond(chat_key, percept.sender_id) or _default_bond(
         chat_key, percept, is_owner
     )
-    delta = compute_affinity_delta(percept, base.affinity_score, reward, conflict=conflict)
-    new_score = 9999.0 if is_owner else round(max(0.0, min(9999.0, base.affinity_score + delta)), 2)
     t_delta = compute_trust_delta(
         base.trust_score, reward, conflict=conflict, spoof_called_out=spoof_called_out
     )
     new_trust = 1.0 if is_owner else round(max(0.1, min(0.98, base.trust_score + t_delta)), 3)
-    updated = base.model_copy(
-        update={
-            "user_name": percept.sender_name or base.user_name,
-            "affinity_score": new_score,
-            "affinity_level": compute_affinity_level(new_score),
-            "msg_count": base.msg_count + 1,
-            "trust_score": new_trust,
-        }
+    delta = compute_affinity_delta(
+        percept, base.affinity_score, reward,
+        conflict=conflict, spoof_called_out=spoof_called_out,
+        is_rival=base.is_rival, bot_pushback=bot_pushback,
     )
-    await writer.upsert_social_bond(updated)
+    eff_delta = 0.0 if (new_trust < 0.55 and delta > 0) else delta
+    t_cap = cubic_trust_affinity_cap(new_trust, is_rival=base.is_rival)
+    raw_aff = max(0.0, min(t_cap, base.affinity_score + eff_delta))
+    new_score = 9999.0 if is_owner else round(raw_aff, 2)
+    await writer.upsert_social_bond(
+        base.model_copy(
+            update={
+                "user_name": percept.sender_name or base.user_name,
+                "affinity_score": new_score,
+                "affinity_level": compute_affinity_level(new_score),
+                "msg_count": base.msg_count + 1,
+                "trust_score": new_trust,
+            }
+        )
+    )
 
 
 async def _extract_explicit_fact(
@@ -154,21 +186,18 @@ async def consolidate_turn_memory(
     """Update social bond affinity/trust and explicit facts on turn completion."""
     if not outcome.triggers:
         return
-    called_out = bool(SPOOF_CALLOUT_RE.search(" ".join(outcome.sent_texts)))
+    bot_txt = " ".join(outcome.sent_texts)
+    called_out = bool(SPOOF_CALLOUT_RE.search(bot_txt))
+    pushed_back = bool(BOT_PUSHBACK_RE.search(bot_txt))
     seen: set[str] = set()
     for p in reversed(outcome.triggers):
         if p.sender_id in seen:
             continue
         seen.add(p.sender_id)
         await update_sender_bond(
-            reader,
-            writer,
-            outcome.chat_key,
-            p,
-            outcome.social_reward,
-            owner_qq=owner_qq,
-            conflict=outcome.epistemic_conflict_detected,
-            spoof_called_out=called_out,
+            reader, writer, outcome.chat_key, p, outcome.social_reward,
+            owner_qq=owner_qq, conflict=outcome.epistemic_conflict_detected,
+            spoof_called_out=called_out, bot_pushback=pushed_back,
         )
     if outcome.sent_texts:
         await _extract_explicit_fact(writer, outcome, outcome.triggers[-1], owner_qq)
@@ -211,6 +240,22 @@ async def _penalize_card_spoofers(
             await writer.upsert_social_bond(bond.model_copy(update={"trust_score": new_t}))
 
 
+async def _apply_hippocampal_bond_adjustments(
+    chat_key: str, adjs: tuple[HippocampalBondAdjustment, ...],
+    reader: IMemoryReader, writer: IMemoryWriter,
+) -> None:
+    for adj in adjs:
+        bond = await reader.get_social_bond(chat_key, adj.user_id)
+        if not bond or bond.group_role == "owner" or bond.affinity_score >= 9000.0:
+            continue
+        new_t = round(max(0.1, min(0.98, bond.trust_score + adj.trust_delta)), 3)
+        t_cap = cubic_trust_affinity_cap(new_t, is_rival=bond.is_rival)
+        new_a = round(max(0.0, min(t_cap, bond.affinity_score + adj.affinity_delta)), 2)
+        lvl = compute_affinity_level(new_a)
+        upd = {"affinity_score": new_a, "affinity_level": lvl, "trust_score": new_t}
+        await writer.upsert_social_bond(bond.model_copy(update=upd))
+
+
 async def _crystallize_schemas(
     chat_key: str, reader: IMemoryReader, writer: IMemoryWriter
 ) -> None:
@@ -221,15 +266,9 @@ async def _crystallize_schemas(
 
 
 async def run_hippocampal_batch_consolidation(
-    chat_key: str,
-    reader: IMemoryReader,
-    writer: IMemoryWriter,
-    llm: ILlmGateway,
-    transcript_lines: tuple[str, ...],
-    *,
-    now_ms: int = 0,
-    working_store: IWorkingStateStore | None = None,
-    role_text: str = "",
+    chat_key: str, reader: IMemoryReader, writer: IMemoryWriter,
+    llm: ILlmGateway, transcript_lines: tuple[str, ...], *,
+    now_ms: int = 0, working_store: IWorkingStateStore | None = None, role_text: str = "",
 ) -> int:
     """Summarize a batch of dialogue lines into Hippocampal cards and grown persona traits."""
     if len(transcript_lines) < 4:
@@ -246,6 +285,7 @@ async def run_hippocampal_batch_consolidation(
         await writer.upsert_semantic_fact(fact)
     for rule in batch.rules:
         await writer.upsert_procedural_rule(rule)
+    await _apply_hippocampal_bond_adjustments(chat_key, batch.bond_adjustments, reader, writer)
     await _crystallize_schemas(chat_key, reader, writer)
     await _apply_hippocampal_working_updates(
         working_store, batch.new_persona_trait, batch.new_activity

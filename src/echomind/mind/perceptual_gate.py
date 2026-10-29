@@ -20,45 +20,16 @@ QUOTED_TERM_RE = re.compile(r"[「『《“\"【]([\u4e00-\u9fa5A-Za-z0-9]{2,10}
 ASK_MEME_RE = re.compile(
     r"([\u4e00-\u9fa5A-Za-z0-9]{2,8})(?:是什么梗|是什么意思|是什么|是谁呀|怎么看|厉害了|太强了)"
 )
-# 只把纯字母单词当作可疑专有名词；带连字符/数字的多半是文件名、UUID 或 MD5 片段
+# 只把纯字母单词当作可疑专有名词；先剥除 URL 与 BV 号防止域名后缀污染好奇心队列
+URL_BV_STRIP_RE = re.compile(r"https?://\S+|b23\.tv/\S+|BV[0-9A-Za-z]{10}|www\.\S+")
 ALNUM_TERM_RE = re.compile(r"\b[A-Za-z]{2,12}\b")
 EN_STOPWORDS = frozenset(
     {
-        "the",
-        "and",
-        "for",
-        "you",
-        "are",
-        "was",
-        "but",
-        "not",
-        "with",
-        "this",
-        "that",
-        "img",
-        "image",
-        "jpg",
-        "png",
-        "gif",
-        "cq",
-        "file",
-        "url",
-        "http",
-        "https",
-        "appid",
-        "qq",
-        "ai",
-        "ok",
-        "hi",
-        "id",
-        "bv",
-        "up",
-        "api",
-        "llm",
-        "dsh",
-        "bug",
-        "ui",
-        "json",
+        "the", "and", "for", "you", "are", "was", "but", "not", "with", "this", "that",
+        "img", "image", "jpg", "png", "gif", "cq", "file", "url", "http", "https",
+        "appid", "qq", "ai", "ok", "hi", "id", "bv", "up", "api", "llm", "dsh", "bug",
+        "ui", "json", "www", "com", "cn", "net", "org", "tv", "bilibili", "xiaohongshu",
+        "workbuddy", "codebuddy", "token", "git", "github",
     }
 )
 COMMON_STOPWORDS = frozenset(
@@ -68,10 +39,11 @@ COMMON_STOPWORDS = frozenset(
 
 def extract_unknown_terms(text: str, known_vocab: frozenset[str]) -> tuple[str, ...]:
     """Extract genuine domain terms/memes (quoted, asked-about, or proper nouns)."""
+    stripped = URL_BV_STRIP_RE.sub(" ", text)
     candidates = [
-        *QUOTED_TERM_RE.findall(text),
-        *ASK_MEME_RE.findall(text),
-        *ALNUM_TERM_RE.findall(text),
+        *QUOTED_TERM_RE.findall(stripped),
+        *ASK_MEME_RE.findall(stripped),
+        *ALNUM_TERM_RE.findall(stripped),
     ]
     unknown = [
         term
@@ -98,15 +70,28 @@ def _is_direct_summon(percept: Percept) -> tuple[bool, str]:
     return False, ""
 
 
-def _hits_working_focus(text: str, working: WorkingSnapshot, rivals: tuple[str, ...]) -> str:
+def _is_rival_speaker(percept: Percept, rivals: tuple[str, ...]) -> bool:
+    return any(r and (r in percept.sender_name or r == percept.sender_id) for r in rivals)
+
+
+def _match_intention_slice(text: str, working: WorkingSnapshot) -> str:
     for item in working.intentions:
         key_slice = item.summary[:4]
         if key_slice and key_slice in text:
             return f"命中短期挂念({key_slice})"
-    for rival in rivals:
-        if rival and rival in text:
-            return f"提及吃醋关注对象({rival})"
     return ""
+
+
+def _hits_working_focus(
+    percept: Percept, working: WorkingSnapshot, rivals: tuple[str, ...], owner_qq: str = ""
+) -> str:
+    intent_hit = _match_intention_slice(percept.text, working)
+    if intent_hit or _is_rival_speaker(percept, rivals):
+        return intent_hit
+    if owner_qq and percept.sender_id != owner_qq:
+        return ""
+    hit_r = next((r for r in rivals if r and r in percept.text), "")
+    return f"提及吃醋关注对象({hit_r})" if hit_r else ""
 
 
 def _wake_dec(
@@ -163,7 +148,9 @@ class PerceptualGate:
         key = f"{percept.chat_key}::{percept.sender_id}"
         return percept.timestamp_ms <= self._cold_shoulder_until.get(key, 0)
 
-    def _in_followup(self, percept: Percept) -> bool:
+    def _in_followup(self, percept: Percept, rivals: tuple[str, ...] = ()) -> bool:
+        if any(r and (r in percept.sender_name or r == percept.sender_id) for r in rivals):
+            return False
         key = f"{percept.chat_key}::{percept.sender_id}"
         return percept.timestamp_ms <= self._followup_until.get(key, 0)
 
@@ -191,9 +178,10 @@ class PerceptualGate:
         has_unseen: bool,
         *,
         record_state: bool,
+        owner_qq: str = "",
     ) -> AttentionDecision | None:
-        focus_hit = _hits_working_focus(percept.text, working, rivals)
-        if focus_hit or self._in_followup(percept):
+        focus_hit = _hits_working_focus(percept, working, rivals, owner_qq)
+        if focus_hit or self._in_followup(percept, rivals):
             return _wake_dec(0.85, 2, focus_hit or "短期跟聊窗口内", unknowns, has_unseen)
         res_hit, res_reason = check_self_utterance_resonance(
             percept, self._bot_speech, rivals, record_state=record_state
@@ -261,7 +249,8 @@ class PerceptualGate:
                 self._last_group_ts[percept.chat_key] = percept.timestamp_ms
             return direct_dec
         t2_dec = self._check_tier2_continuation(
-            percept, working, rivals, unknowns, has_unseen, record_state=record_state
+            percept, working, rivals, unknowns, has_unseen,
+            record_state=record_state, owner_qq=owner_qq,
         )
         if record_state:
             self._last_group_ts[percept.chat_key] = percept.timestamp_ms

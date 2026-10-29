@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from echomind.domain.models import PlasticParamSpec, TurnOutcome
 from echomind.domain.ports import IWorkingStateStore
 from echomind.mind.personality import compute_personality_deltas, derive_emergent_trait
@@ -184,14 +186,25 @@ NEGATIVE_CUES = (
 )
 
 
+SELF_DEPRECATION_RE = re.compile(r"我是(?:笨蛋|傻子|傻瓜|笨b)|我真(?:笨|傻|蠢)")
+NEGATED_PRAISE_RE = re.compile(r"(?:不|没|才不|一点都不).{0,2}(?:喜欢|可爱|乖|聪明|好听|厉害)")
+
+
+def _count_cue_hits(text: str, cues: tuple[str, ...]) -> int:
+    return sum(1 for w in cues if w in text)
+
+
 def compute_turn_social_reward(
     text: str, *, is_poke: bool = False, is_owner: bool = False
 ) -> float:
-    """Estimate social reinforcement reward [-0.85, +0.85]; neutral chat is 0.1 (no drift)."""
+    """Estimate social reinforcement reward [-0.85, +0.85] with negation/subject disambiguation."""
     if is_poke:
         return 0.55
-    pos = sum(1 for w in POSITIVE_CUES if w in text)
-    neg = sum(1 for w in NEGATIVE_CUES if w in text)
+    cleaned = SELF_DEPRECATION_RE.sub("", text)
+    if NEGATED_PRAISE_RE.search(cleaned):
+        return -0.38
+    pos = _count_cue_hits(cleaned, POSITIVE_CUES)
+    neg = _count_cue_hits(cleaned, NEGATIVE_CUES)
     scale = 1.12 if is_owner else 1.0
     if neg > pos:
         return round(max(-0.85, (-0.45 - (neg - 1) * 0.15) * scale), 2)
