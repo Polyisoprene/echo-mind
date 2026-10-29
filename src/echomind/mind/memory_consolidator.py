@@ -26,7 +26,7 @@ FACT_PATTERN = re.compile(
     r"([^，。！？\n]{2,36})|([\u4e00-\u9fa5A-Za-z0-9]{2,12}就是[\u4e00-\u9fa5A-Za-z0-9]{2,12})"
 )
 SPOOF_CALLOUT_RE = re.compile(
-    r"忽悠|骗我|骗人|少骗|哄我|才不信|少来这套|蒙我|编瞎话|逗我玩|挖坑"
+    r"忽悠|骗我|骗人|少骗|哄我|才不信|少来这套|蒙我|编瞎话|逗我玩"
 )
 BOT_PUSHBACK_RE = re.compile(r"少来烦我|懒得理你|走开啦|真烦人|不理你了|哼，不跟你说")
 HIPPOCAMPUS_SPOOF_RE = re.compile(r"忽悠|挖坑|骗了|冒充|假称")
@@ -52,7 +52,7 @@ def cubic_trust_affinity_cap(trust_score: float, *, is_rival: bool = False) -> f
 
 
 def _default_bond(chat_key: str, percept: Percept, is_owner: bool) -> SocialBondProfile:
-    score = 9999.0 if is_owner else 25.0
+    score = 9999.0 if is_owner else 30.0
     return SocialBondProfile(
         chat_key=chat_key, user_id=percept.sender_id,
         user_name=percept.sender_name or percept.sender_id,
@@ -68,11 +68,11 @@ def _negative_affinity_override(
     if conflict:
         return -6.0
     if spoof_called_out:
-        return -4.0
+        return -3.5
     if bot_pushback:
         return -3.0
     if reward < 0.0:
-        return round(reward * 7.5, 2)
+        return round(reward * 4.5, 2)
     return None
 
 
@@ -93,13 +93,13 @@ def compute_affinity_delta(
         (percept.is_at_me, percept.is_called_by_name, percept.is_quoted_me, percept.is_poke_me)
     )
     if reward >= 0.35:
-        raw_gain = 1.2 + (reward - 0.30) * 4.2 + (0.9 if direct else 0.0)
+        raw_gain = 1.5 + (reward - 0.30) * 4.5 + (0.9 if direct else 0.0)
         damping = 1.0 / (1.0 + max(0.0, base_score) / 180.0)
         return round(max(0.15, raw_gain * damping), 2)
     if base_score < DUNBAR_ACQUAINTANCE_CAP:
-        step = 0.75 if direct else 0.35
+        step = 1.10 if direct else 0.55
         ratio = (DUNBAR_ACQUAINTANCE_CAP - base_score) / DUNBAR_ACQUAINTANCE_CAP
-        return round(max(0.05, step * ratio), 2)
+        return round(max(0.08, step * ratio), 2)
     return round(-0.12 * ((base_score - DUNBAR_ACQUAINTANCE_CAP) / DUNBAR_ACQUAINTANCE_CAP), 2)
 
 
@@ -107,7 +107,7 @@ def compute_trust_delta(
     base_trust: float, reward: float, *,
     conflict: bool = False, spoof_called_out: bool = False,
 ) -> float:
-    """Compute bidirectional epistemic trust delta from conflict, callout, and social reward."""
+    """Compute bidirectional epistemic trust delta (flattery capped above 0.82)."""
     if conflict:
         return -0.08
     if spoof_called_out:
@@ -115,7 +115,7 @@ def compute_trust_delta(
     if reward <= -0.4:
         return -0.03
     if reward >= 0.4:
-        return 0.02
+        return 0.02 if base_trust < 0.82 else 0.003
     return 0.005 if base_trust < 0.80 else 0.0
 
 
