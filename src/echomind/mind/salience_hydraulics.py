@@ -32,14 +32,18 @@ def extract_at_target_uid(text: str) -> str:
 
 
 def record_dyadic_pair(
-    dyad_map: dict[str, tuple[str, str, int]], percept: Percept, target_uid: str
+    dyad_map: dict[str, tuple[str, str, int]],
+    percept: Percept,
+    target_uid: str,
+    fallback_peer_uid: str = "",
 ) -> None:
-    """Open a 60-second Dyadic Do-Not-Disturb window between sender and @target."""
-    if percept.sender_id and target_uid and percept.sender_id != target_uid:
+    """Open a 90-second Dyadic Do-Not-Disturb window between sender and @target/peer."""
+    peer = target_uid or fallback_peer_uid
+    if percept.sender_id and peer and percept.sender_id != peer:
         dyad_map[percept.chat_key] = (
             percept.sender_id,
-            target_uid,
-            percept.timestamp_ms + 60_000,
+            peer,
+            percept.timestamp_ms + 90_000,
         )
 
 

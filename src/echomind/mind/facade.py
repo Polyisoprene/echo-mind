@@ -251,9 +251,9 @@ class CognitiveCoreFacade:
     async def on_turn_completed(self, outcome: TurnOutcome) -> None:
         now_ms = int(time.time() * 1000)
         if outcome.sent_texts:
-            self._gate.mark_bot_spoke(outcome.chat_key, outcome.sent_texts, now_ms)
-            for p in outcome.triggers:
-                self._gate.mark_replied_to(outcome.chat_key, p.sender_id, now_ms)
+            self._gate.mark_bot_spoke(
+                outcome.chat_key, outcome.sent_texts, now_ms, outcome.triggers
+            )
             snap = await self._working.load_working_state("global")
             rem = filter_unfulfilled_intentions(snap.intentions, outcome.sent_texts, now_ms)
             satiated = apply_speaking_satiation(
@@ -263,12 +263,6 @@ class CognitiveCoreFacade:
         await self._persist_turn(outcome, now_ms)
         await consolidate_turn_memory(self._reader, self._writer, outcome, now_ms, self._owner_qq)
         await self._plasticity.adapt_from_outcome(outcome)
-
-    async def _consume_proposal_state(
-        self, snap: WorkingSnapshot, proposal: ProactiveProposal, now_ms: int
-    ) -> None:
-        self._last_active_ms = max(self._last_active_ms, now_ms)
-        await self._working.save_working_state(consume_proposal_snapshot(snap, proposal))
 
     async def run_autonomous_tick(self, now_ms: int) -> ProactiveProposal | None:
         raw_snap = await self._working.load_working_state("global")
@@ -281,7 +275,8 @@ class CognitiveCoreFacade:
             proactive_idle_min=idle_target, now_ms=now_ms,
         )
         if proposal is not None:
-            await self._consume_proposal_state(raw_snap, proposal, now_ms)
+            self._last_active_ms = max(self._last_active_ms, now_ms)
+            await self._working.save_working_state(consume_proposal_snapshot(raw_snap, proposal))
             return proposal
         drifted = apply_temporal_decay_and_circadian(raw_snap, min(idle_min, 30.0), now_ms)
         if drifted != raw_snap:

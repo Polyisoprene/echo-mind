@@ -1582,6 +1582,96 @@ async def test_stage22_calibrated_three_attractor_affinity_url_strip_and_rival_f
     assert len(parsed.bond_adjustments) == 1 and parsed.bond_adjustments[0].affinity_delta == 8.5
 
 
+async def test_stage23_bystander_batch_interleaved_peer_and_dyadic_priority(
+    tmp_path: Path,
+) -> None:
+    from echomind.domain.models import TurnOutcome
+
+    container = await EchoMindContainer.create(
+        db_path=tmp_path / "stage23.db", owner_qq="10001001"
+    )
+    fac = container.cognitive_facade
+
+    # 1. Replay #3450 + #3451: Owner calls bot, bystander says "确实" in the same batch
+    p_owner = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="3450",
+        timestamp_ms=10_000,
+        sender_id="10001001",
+        sender_name="L",
+        text="尾尾，如何科学的给你做一套好感度系统",
+        is_called_by_name=True,
+    )
+    p_bystander = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="3451",
+        timestamp_ms=11_000,
+        sender_id="10005005",
+        sender_name="不要象挑战",
+        text="确实",
+    )
+    await fac.on_turn_completed(
+        TurnOutcome(
+            session_id="t3452",
+            chat_key="group:10002002",
+            triggers=(p_owner, p_bystander),
+            sent_texts=("主人这是想给我建一套正经的刻度尺呀",),
+        )
+    )
+
+    # 2. Replay #3456 & #3457: Peer B speaks, then Bystander A replies to Peer B -> MUST NOT WAKE
+    p_peer_b = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="3456",
+        timestamp_ms=15_000,
+        sender_id="10009009",
+        sender_name="橡皮",
+        text="没有判定时间吗",
+    )
+    await fac.evaluate_incoming(p_peer_b)
+    p_bystander_next = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="3457",
+        timestamp_ms=18_000,
+        sender_id="10005005",
+        sender_name="不要象挑战",
+        text="比如两个下之间掺了一个轻攻击 就会判定失败",
+    )
+    dec_3457 = await fac.evaluate_incoming(p_bystander_next)
+    assert dec_3457.should_wake is False
+
+    # 3. Replay #3473 ~ #3476: @Peer B clears followup window & enters Dyadic DND!
+    fac._gate.mark_replied_to("group:10002002", "10005005", 20_000)
+    p_at_peer = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="3473",
+        timestamp_ms=22_000,
+        sender_id="10005005",
+        sender_name="不要象挑战",
+        text="@10009009(QQ:10009009) 那你截个图也可以",
+    )
+    dec_3473 = await fac.evaluate_incoming(p_at_peer)
+    assert dec_3473.should_wake is False
+
+    p_after_at = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="3476",
+        timestamp_ms=25_000,
+        sender_id="10005005",
+        sender_name="不要象挑战",
+        text="这个必须要开嗷",
+    )
+    dec_3476 = await fac.evaluate_incoming(p_after_at)
+    assert dec_3476.should_wake is False and dec_3476.salience_score == 0.12
+
+
+
 
 
 

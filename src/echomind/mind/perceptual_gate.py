@@ -125,18 +125,24 @@ class PerceptualGate:
         self._dyadic_dnd: dict[str, tuple[str, str, int]] = {}
         self._bot_speech: dict[str, tuple[int, str, int]] = {}
         self._last_group_ts: dict[str, int] = {}
+        self._last_peer: dict[str, tuple[str, int]] = {}
 
     def mark_replied_to(self, chat_key: str, user_id: str, now_ms: int) -> None:
         """Open or renew a short-followup window for a user we just answered."""
         self._followup_until[f"{chat_key}::{user_id}"] = now_ms + self._followup_ttl_ms
 
-    def mark_bot_spoke(self, chat_key: str, texts: tuple[str, ...], now_ms: int) -> None:
-        """Record Echo's latest spoken text to enable 120s Self-Utterance Resonance."""
+    def mark_bot_spoke(
+        self, chat_key: str, texts: tuple[str, ...], now_ms: int, triggers: tuple[Percept, ...] = ()
+    ) -> None:
+        """Record Echo's latest spoken text and open followup only for explicit summoners."""
         joined = " ".join(t.strip() for t in texts if t.strip())
         if joined:
             prev = self._bot_speech.get(chat_key)
             depth = prev[2] if (prev and (now_ms - prev[0]) <= 120_000) else 0
             self._bot_speech[chat_key] = (now_ms, joined[:180], depth)
+        for p in triggers:
+            if _is_direct_summon(p)[0]:
+                self.mark_replied_to(chat_key, p.sender_id, now_ms)
 
     def impose_cold_shoulder(
         self, chat_key: str, user_id: str, now_ms: int, duration_ms: int = 900_000
@@ -148,11 +154,23 @@ class PerceptualGate:
         key = f"{percept.chat_key}::{percept.sender_id}"
         return percept.timestamp_ms <= self._cold_shoulder_until.get(key, 0)
 
-    def _in_followup(self, percept: Percept, rivals: tuple[str, ...] = ()) -> bool:
-        if any(r and (r in percept.sender_name or r == percept.sender_id) for r in rivals):
+    def _peer_interleaved(self, percept: Percept) -> bool:
+        prev = self._last_peer.get(percept.chat_key)
+        if not prev or prev[0] == percept.sender_id:
             return False
+        return (percept.timestamp_ms - prev[1]) <= 45_000
+
+    def _in_followup(
+        self, percept: Percept, rivals: tuple[str, ...] = (), *, record_state: bool = True
+    ) -> bool:
         key = f"{percept.chat_key}::{percept.sender_id}"
-        return percept.timestamp_ms <= self._followup_until.get(key, 0)
+        if _is_rival_speaker(percept, rivals) or percept.timestamp_ms > self._followup_until.get(
+            key, 0
+        ):
+            return False
+        if record_state:
+            self._followup_until.pop(key, None)
+        return not self._peer_interleaved(percept)
 
     def _check_direct_or_other_at(
         self, percept: Percept, unknowns: tuple[str, ...], has_unseen: bool, *, record_state: bool
@@ -165,7 +183,11 @@ class PerceptualGate:
             return _wake_dec(1.0, 1, direct_reason, unknowns, has_unseen)
         if "@" in percept.text or (percept.quoted_message_id and not percept.is_quoted_me):
             if record_state:
-                record_dyadic_pair(self._dyadic_dnd, percept, extract_at_target_uid(percept.text))
+                self._followup_until.pop(f"{percept.chat_key}::{percept.sender_id}", None)
+                prev_u = self._last_peer.get(percept.chat_key, ("", 0))[0]
+                record_dyadic_pair(
+                    self._dyadic_dnd, percept, extract_at_target_uid(percept.text), prev_u
+                )
             return _wake_dec(0.05, 0, "艾特其他群友(非对我说话)", unknowns, has_unseen, wake=False)
         return None
 
@@ -180,8 +202,12 @@ class PerceptualGate:
         record_state: bool,
         owner_qq: str = "",
     ) -> AttentionDecision | None:
+        if is_in_dyadic_dnd(self._dyadic_dnd, percept, owner_qq=owner_qq):
+            return _wake_dec(
+                0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns, has_unseen, wake=False
+            )
         focus_hit = _hits_working_focus(percept, working, rivals, owner_qq)
-        if focus_hit or self._in_followup(percept, rivals):
+        if focus_hit or self._in_followup(percept, rivals, record_state=record_state):
             return _wake_dec(0.85, 2, focus_hit or "短期跟聊窗口内", unknowns, has_unseen)
         res_hit, res_reason = check_self_utterance_resonance(
             percept, self._bot_speech, rivals, record_state=record_state
@@ -247,6 +273,7 @@ class PerceptualGate:
         if direct_dec is not None:
             if record_state:
                 self._last_group_ts[percept.chat_key] = percept.timestamp_ms
+                self._last_peer[percept.chat_key] = (percept.sender_id, percept.timestamp_ms)
             return direct_dec
         t2_dec = self._check_tier2_continuation(
             percept, working, rivals, unknowns, has_unseen,
@@ -254,6 +281,7 @@ class PerceptualGate:
         )
         if record_state:
             self._last_group_ts[percept.chat_key] = percept.timestamp_ms
+            self._last_peer[percept.chat_key] = (percept.sender_id, percept.timestamp_ms)
         if t2_dec is not None:
             return t2_dec
         return self._evaluate_ambient_with_cooldown(

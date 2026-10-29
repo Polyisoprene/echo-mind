@@ -190,7 +190,11 @@ class PromptComposer:
             "⚡【最高优先级提醒】本轮有人直接点名/引用/私聊找你，哪怕其他机器人(如汐)已先回，"
             "你也必须调用 send_message / feiyu_say / feiyu_cover 亲自回应！"
             if frame.must_reply
-            else "💡 若话题合适请调用 send_message 或 feiyu_say 自然回应；无需插话则直接结束。"
+            else (
+                "💡【群聊分寸提醒】本轮无人显式点名/@你！若《已读上下文》显示两位群友正在"
+                "互相讨论游戏/事务（而非对你说话），请直接保持安静结束本轮（不调用任何发送工具）；"
+                "仅在话题真正适合你自然搭话时调用 send_message 或 feiyu_say。"
+            )
         )
         sys_parts = [
             f"你是「{self._bot_name}」。{self._role_text}",
