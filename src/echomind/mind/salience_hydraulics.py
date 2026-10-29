@@ -9,8 +9,10 @@ from echomind.domain.models import (
     DriveState,
     Percept,
     PlasticParamSpec,
+    SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.mind.drives import compute_aversion_susceptibility, compute_care_weight
 from echomind.mind.ebbinghaus import tokenize_query
 
 AT_UID_RE = re.compile(r"\(QQ:(\d{3,12})\)|@(\d{3,12})")
@@ -112,6 +114,22 @@ def _p_val(params: dict[str, PlasticParamSpec] | None, key: str, default: float)
     return params[key].value
 
 
+def _care_sender_bonus(
+    percept: Percept,
+    owner_qq: str,
+    poss: float,
+    speaker_bond: SocialBondProfile | None,
+) -> tuple[float, str]:
+    if owner_qq and percept.sender_id == owner_qq:
+        b_own = round(0.14 + 0.14 * (poss / 100.0), 2)
+        return b_own, f"+主人{b_own}"
+    w_care = compute_care_weight(percept.sender_id, owner_qq, speaker_bond)
+    if w_care >= 0.15:
+        b_care = round((0.10 + 0.12 * (poss / 100.0)) * w_care, 2)
+        return b_care, f"+在意好友{b_care}"
+    return 0.0, ""
+
+
 def _positive_factors(
     percept: Percept,
     working: WorkingSnapshot,
@@ -121,14 +139,12 @@ def _positive_factors(
     known_vocab: frozenset[str],
     owner_qq: str,
     params: dict[str, PlasticParamSpec] | None,
+    speaker_bond: SocialBondProfile | None = None,
 ) -> tuple[float, list[str]]:
-    bonus = 0.0
-    tags: list[str] = []
-    if owner_qq and percept.sender_id == owner_qq:
-        poss = _p_val(params, "persona_possessiveness", 75.0)
-        b_own = round(0.14 + 0.14 * (poss / 100.0), 2)
-        bonus += b_own
-        tags.append(f"+主人{b_own}")
+    poss = _p_val(params, "persona_possessiveness", 75.0)
+    s_bonus, s_tag = _care_sender_bonus(percept, owner_qq, poss, speaker_bond)
+    bonus = s_bonus
+    tags: list[str] = [s_tag] if s_tag else []
     if OPEN_QUESTION_RE.search(percept.text):
         warm = _p_val(params, "persona_warmth", 65.0)
         b_q = round(0.06 + 0.06 * (warm / 100.0), 2)
@@ -160,6 +176,9 @@ def _negative_factors(
     unknowns: tuple[str, ...],
     has_unseen: bool,
     params: dict[str, PlasticParamSpec] | None,
+    *,
+    owner_qq: str = "",
+    speaker_bond: SocialBondProfile | None = None,
 ) -> tuple[float, list[str]]:
     penalty = 0.0
     tags: list[str] = []
@@ -167,6 +186,10 @@ def _negative_factors(
     if (len(txt) < 4 and not unknowns and not has_unseen) or TRIVIAL_NOISE_RE.match(txt):
         penalty += 0.18
         tags.append("-水群0.18")
+    w_aver = compute_aversion_susceptibility(percept.sender_id, owner_qq, speaker_bond)
+    if w_aver >= 1.25:
+        penalty += 0.10
+        tags.append("-反感对象0.10")
     if working.affect.irritation >= 20.0:
         defi = _p_val(params, "persona_defiance", 60.0)
         p_irr = round((working.affect.irritation / 100.0) * (0.14 + 0.10 * (defi / 100.0)), 2)
@@ -188,6 +211,7 @@ def evaluate_bidirectional_ambient(
     has_unseen: bool, talkativeness: float, *,
     known_vocab: frozenset[str] = frozenset(), owner_qq: str = "",
     params: dict[str, PlasticParamSpec] | None = None,
+    speaker_bond: SocialBondProfile | None = None,
 ) -> AttentionDecision:
     """Compute bidirectional salience score with 7D persona conditional gain & breakdown."""
     if working.affect.energy < 22.0:
@@ -205,9 +229,11 @@ def evaluate_bidirectional_ambient(
         )
     pos, p_tags = _positive_factors(
         percept, working, unknowns, has_unseen,
-        known_vocab=known_vocab, owner_qq=owner_qq, params=params,
+        known_vocab=known_vocab, owner_qq=owner_qq, params=params, speaker_bond=speaker_bond,
     )
-    neg, n_tags = _negative_factors(percept, working, unknowns, has_unseen, params)
+    neg, n_tags = _negative_factors(
+        percept, working, unknowns, has_unseen, params, owner_qq=owner_qq, speaker_bond=speaker_bond
+    )
     drv_pos = max(0.0, round((working.drives.social_expression - 42.0) / 300.0, 2))
     if drv_pos >= 0.02:
         p_tags.append(f"+表达欲{drv_pos}")

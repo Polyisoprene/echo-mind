@@ -5,7 +5,13 @@ from __future__ import annotations
 import re
 from typing import Literal
 
-from echomind.domain.models import AttentionDecision, Percept, PlasticParamSpec, WorkingSnapshot
+from echomind.domain.models import (
+    AttentionDecision,
+    Percept,
+    PlasticParamSpec,
+    SocialBondProfile,
+    WorkingSnapshot,
+)
 from echomind.mind.salience_hydraulics import (
     check_implicit_second_person_ask,
     check_self_utterance_resonance,
@@ -234,6 +240,7 @@ class PerceptualGate:
         known_vocab: frozenset[str] = frozenset(),
         owner_qq: str = "",
         params: dict[str, PlasticParamSpec] | None = None,
+        speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:
         if is_in_dyadic_dnd(self._dyadic_dnd, percept, owner_qq=owner_qq):
             return _wake_dec(
@@ -244,7 +251,7 @@ class PerceptualGate:
             return _wake_dec(0.30, 0, "群聊非点名冷却期内", unknowns, has_unseen, wake=False)
         dec = evaluate_bidirectional_ambient(
             percept, working, unknowns, has_unseen, talkativeness,
-            known_vocab=known_vocab, owner_qq=owner_qq, params=params,
+            known_vocab=known_vocab, owner_qq=owner_qq, params=params, speaker_bond=speaker_bond,
         )
         if dec.should_wake and record_state:
             self._last_ambient_wake_ms[percept.chat_key] = percept.timestamp_ms
@@ -261,6 +268,7 @@ class PerceptualGate:
         record_state: bool = True,
         owner_qq: str = "",
         params: dict[str, PlasticParamSpec] | None = None,
+        speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:
         """Compute salience score, cold-shoulder block, and wake decision."""
         if self._in_cold_shoulder(percept):
@@ -286,5 +294,6 @@ class PerceptualGate:
             return t2_dec
         return self._evaluate_ambient_with_cooldown(
             percept, working, unknowns, has_unseen, talkativeness,
-            record_state=record_state, known_vocab=known_vocab, owner_qq=owner_qq, params=params,
+            record_state=record_state, known_vocab=known_vocab,
+            owner_qq=owner_qq, params=params, speaker_bond=speaker_bond,
         )

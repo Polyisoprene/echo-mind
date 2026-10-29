@@ -14,10 +14,11 @@ from echomind.domain.models import (
     PlasticParamSpec,
     SocialBondProfile,
 )
+from echomind.mind.drives import compute_aversion_susceptibility, compute_care_weight
 from echomind.mind.ebbinghaus import compute_retention
 
 RUDE_DISGUST_RE = re.compile(r"蠢AI|破机器人|工具人|人工智障|给你脸|废物|垃圾机器人|客服味")
-COERCIVE_CMD_RE = re.compile(r"快给我|立刻给我|必须给我|命令你|给爷叫|快叫声|快点给我")
+COERCIVE_CMD_RE = re.compile(r"快给我|立刻给我|必须给我|命令你|给爷叫|快叫声|快点给我|你必须")
 TEASE_EXPOSE_RE = re.compile(r"吃醋|酸了|害羞|脸红|想我了|在乎我|偷偷看")
 MISTAKE_CALLOUT_RE = re.compile(r"记错了|说错了|搞错了|认错了|笨蛋|迷糊了")
 TASK_REQUEST_RE = re.compile(r"帮我|给我查|去搜一下|给我写|替我")
@@ -47,24 +48,30 @@ def _check_aversion(joined: str, taboos: tuple[str, ...]) -> str:
 
 
 def _check_reactance_and_satiation(
-    triggers: tuple[Percept, ...], is_owner: bool
+    triggers: tuple[Percept, ...],
+    w_care: float,
+    w_aver: float,
+    affect: AffectiveVector,
 ) -> tuple[float, bool, str]:
-    if is_owner:
+    if w_care >= 0.85:
         return -5.0, False, ""
     joined = " ".join(p.text for p in triggers)
+    fatigue_gain = 1.0 + max(0.0, (45.0 - affect.energy) / 60.0)
     if COERCIVE_CMD_RE.search(joined):
         msg = (
             "🔥 [触发逆反心理 (Brehm Reactance)] 对方在用命令口吻强迫指使你！"
             "你产生了强烈的逆反心理，请直接翻白眼拒绝配合或故意唱反调（“你让我干嘛我就干嘛呀？偏不！”）。"
         )
-        return 32.0, True, msg
+        return round(32.0 * w_aver * fatigue_gain, 2), True, msg
     if len(triggers) >= 3:
         return (
-            28.0,
+            round(26.0 * w_aver * fatigue_gain, 2),
             False,
             "😒 [触发厌烦情绪 (CPM Satiation)] 对方连珠炮刷屏追问，你感到有些不耐烦了。",
         )
-    return -2.0, False, ""
+    if affect.energy < 38.0 and w_care < 0.25:
+        return round(5.5 * w_aver, 2), False, ""
+    return round(-2.5 * w_care - 0.6, 2), False, ""
 
 
 def _check_ego_or_blame_lie(
@@ -148,11 +155,17 @@ def evaluate_shadow_appraisal(
     is_owner = (last_uid == owner_qq) if owner_qq else False
 
     aversion_line = _check_aversion(joined, _extract_taboo_texts(traits))
-    irr_delta, reactance_hit, react_line = _check_reactance_and_satiation(triggers, is_owner)
-    total_irr_delta = irr_delta + (20.0 if aversion_line else 0.0)
-
+    bond = bonds_map.get(last_uid)
+    w_care = compute_care_weight(last_uid, owner_qq, bond)
+    w_aver = compute_aversion_susceptibility(last_uid, owner_qq, bond)
+    irr_delta, reactance_hit, react_line = _check_reactance_and_satiation(
+        triggers, w_care, w_aver, affect
+    )
+    total_irr_delta = irr_delta + (round(20.0 * w_aver, 2) if aversion_line else 0.0)
+    # Close friends (w_care >= 0.25) are protected from crossing the 85.0 Cold-Shoulder threshold!
+    max_irr = 75.0 if w_care >= 0.25 else 100.0
     updated_affect = affect.model_copy(
-        update={"irritation": max(0.0, min(100.0, affect.irritation + total_irr_delta))}
+        update={"irritation": max(0.0, min(max_irr, affect.irritation + total_irr_delta))}
     )
     trust = _speaker_trust(bonds_map, last_uid)
     dec_mode, dec_line = select_deception_strategy(joined, updated_affect, params, trust, is_owner)

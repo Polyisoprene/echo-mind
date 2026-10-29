@@ -28,12 +28,13 @@ def arbitrate_autonomous_action(
             ),
         )
     if drv.jealousy_drive >= 35.0 and idle_minutes >= 3.0:
+        hint = snapshot.inner_thought or "刚才在意的人当面夸别的AI或冷落你"
         return ProactiveProposal(
             chat_key=group_chat_key, drive_kind="jealousy_poke",
             priority=min(100.0, drv.jealousy_drive + 20.0),
             goal_instruction=(
-                "你心里还记挂着刚才主人夸别人的事，越想越有点小酸意，"
-                "主动在群里带一点软傲娇的小醋意戳他一句或发个委屈/凶凶的表情包。"
+                f"你心里还记挂着（{hint}）的事，越想越有点小酸意，"
+                "主动在群里带一点软傲娇的小醋意哼哼一句或发个委屈/凶凶的表情包。"
             ),
         )
     return _propose_idle_social_or_attachment(

@@ -152,7 +152,7 @@ cp data/config.example.json data/config.json
 | **Gate 1C** | `pylint src/echomind` | 强制扁平化代码 `max-nested-blocks <= 2`，满分要求 | ✅ **10.00 / 10** |
 | **Gate 2** | `mypy --strict src tests` | 89 个源文件与测试文件 100% 严格静态类型与协议校验 | ✅ **0 Issues** |
 | **Gate 3** | `test_solid_boundaries.py` | 单文件 `<= 300` 行、单函数 `<= 40` 行、窄接口 `<= 5` 方法、零跨层依赖 | ✅ **All Passed** |
-| **Gate 4** | `pytest --cov=src/echomind` | 71 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **71 Passed (>90% Cov)** |
+| **Gate 4** | `pytest --cov=src/echomind` | 72 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **72 Passed (>90% Cov)** |
 
 ---
 
@@ -180,3 +180,4 @@ cp data/config.example.json data/config.json
   - [Stage 21：群聊生态感知门控、二人转免打扰、余音共鸣、洛伦兹水箱回落与可塑性防漂移规范](docs/plans/STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md)
   - [Stage 22：三吸引子均值回归人际动力学、海马体慢通道关系复盘与回放缺陷根治规范](docs/plans/STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md)
   - [Stage 23：群聊跟聊窗口无限续杯与路人防抖误开窗根治规范](docs/plans/STAGE_23_GROUP_FOLLOWUP_AND_BYSTANDER_INTERCEPTION_FIX_PLAN.md)
+  - [Stage 24：全认知状态空间（24维变量）专项审计、文献调研与全耦合动力学重构规范](docs/plans/STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md)

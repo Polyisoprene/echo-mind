@@ -36,16 +36,16 @@ class StickerCandidate(FrozenValueObject):
 def preferred_tags(affect: AffectiveVector) -> frozenset[str]:
     """Map the current affective vector to the sticker tags that fit this mood."""
     wanted: set[str] = set()
-    if affect.valence >= 55.0:
-        wanted.update({"开心", "卖萌"})
-    if affect.irritation >= 40.0:
+    if affect.irritation >= 25.0:
         wanted.update({"嫌弃", "无语", "生气"})
-    if affect.jealousy >= 25.0:
+    if affect.jealousy >= 18.0:
         wanted.update({"委屈", "生气"})
-    if affect.shyness >= 45.0:
+    if affect.shyness >= 28.0:
         wanted.update({"害羞"})
     if affect.energy <= 35.0:
         wanted.update({"发呆"})
+    if affect.valence >= 55.0 and affect.irritation < 25.0 and affect.jealousy < 25.0:
+        wanted.update({"开心", "卖萌"})
     return frozenset(wanted)
 
 

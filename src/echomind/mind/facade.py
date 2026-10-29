@@ -105,10 +105,11 @@ class CognitiveCoreFacade:
         talk = params["talkativeness"].value if "talkativeness" in params else 58.0
         facts = await self._reader.get_semantic_facts(percept.chat_key)
         rivals = await self._reader.get_rival_names(percept.chat_key)
+        s_bond = await self._reader.get_social_bond(percept.chat_key, percept.sender_id)
         vocab = frozenset(f.subject.lower() for f in facts)
         dec = self._gate.evaluate(
             percept, snap, vocab, rivals, talkativeness=talk,
-            record_state=not dry_run, owner_qq=self._owner_qq, params=params,
+            record_state=not dry_run, owner_qq=self._owner_qq, params=params, speaker_bond=s_bond,
         )
         if not dry_run:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
@@ -122,7 +123,7 @@ class CognitiveCoreFacade:
 
     async def _recall_and_reinforce(
         self, chat_key: str, triggers: tuple[Percept, ...], uids: tuple[str, ...],
-        now_ms: int, *, dry_run: bool = False,
+        now_ms: int, dry_run: bool = False,
     ) -> tuple[RecalledMemoryItem, ...]:
         cards = await self._reader.get_episodic_cards(chat_key)
         q_str = " ".join(p.text for p in triggers)
@@ -159,7 +160,8 @@ class CognitiveCoreFacade:
         return updated, shadow, synthesize_live_persona_directive(params, traits)
 
     async def _advance_working_state(
-        self, chat_key: str, triggers: tuple[Percept, ...], facts: tuple[SemanticFact, ...]
+        self, chat_key: str, triggers: tuple[Percept, ...], facts: tuple[SemanticFact, ...],
+        bonds_map: dict[str, SocialBondProfile] | None = None,
     ) -> tuple[WorkingSnapshot, AttentionDecision | None, float]:
         snap = await self._working.load_working_state("global")
         params = await self._working.get_plastic_params()
@@ -168,16 +170,18 @@ class CognitiveCoreFacade:
         cur_rate = params["curiosity_rate"].value if "curiosity_rate" in params else 65.0
         rivals = await self._reader.get_rival_names(chat_key)
         vocab = frozenset(f.subject.lower() for f in facts)
+        s_bond = bonds_map.get(triggers[-1].sender_id) if (bonds_map and triggers) else None
         last_dec = (
             self._gate.evaluate(
                 triggers[-1], snap, vocab, rivals, talkativeness=talk,
-                record_state=False, owner_qq=self._owner_qq, params=params,
+                record_state=False, owner_qq=self._owner_qq, params=params, speaker_bond=s_bond,
             )
             if triggers else None
         )
         unknowns = last_dec.detected_unknown_terms if last_dec else ()
         updated = apply_turn_affect_and_drives(
-            snap, triggers, self._owner_qq, rivals, unknowns, curiosity_rate=cur_rate
+            snap, triggers, self._owner_qq, rivals, unknowns,
+            curiosity_rate=cur_rate, bonds_map=bonds_map, params=params,
         )
         return updated, last_dec, skep
 
@@ -197,41 +201,36 @@ class CognitiveCoreFacade:
     async def build_cognitive_frame(
         self, chat_key: str, triggers: tuple[Percept, ...], *, dry_run: bool = False
     ) -> CognitiveFrame:
-        now_ms = int(time.time() * 1000)
+        now_ms, tr = int(time.time() * 1000), triggers
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
         facts = await self._reader.get_semantic_facts(chat_key)
-        base_snap, last_dec, skep = await self._advance_working_state(chat_key, triggers, facts)
-        bans = await self._resolve_bans(triggers, dry_run=dry_run)
-        uids = extract_mentioned_uids(triggers, facts)
-        bonds_map = await self._load_bonds_map(chat_key, uids)
-        updated_snap, shadow, persona_block = await self._apply_shadow_and_save(
-            chat_key, base_snap, triggers, bonds_map, dry_run=dry_run
+        uids = extract_mentioned_uids(tr, facts)
+        bm = await self._load_bonds_map(chat_key, uids)
+        base_snap, last_dec, skep = await self._advance_working_state(chat_key, tr, facts, bm)
+        bans = await self._resolve_bans(tr, dry_run=dry_run)
+        snap, shadow, p_blk = await self._apply_shadow_and_save(
+            chat_key, base_snap, tr, bm, dry_run=dry_run
         )
-        warnings, _ = self._calibrator.calibrate(triggers, facts, bonds_map, skepticism=skep)
+        warns, _ = self._calibrator.calibrate(tr, facts, bm, skepticism=skep)
         rules = await self._reader.get_procedural_rules(chat_key)
-        recalled = await self._recall_and_reinforce(
-            chat_key, triggers, uids, now_ms, dry_run=dry_run
+        recalled = await self._recall_and_reinforce(chat_key, tr, uids, now_ms, dry_run)
+        cur_p = build_curiosity_prompts(tr, last_dec, snap.affect)
+        unk = last_dec.detected_unknown_terms if last_dec else ()
+        cyber = compute_cybernetic_core(
+            scene, snap, tr, bm, owner_qq=self._owner_qq, unknown_terms=unk, warnings=warns
         )
-        cur_prompts = build_curiosity_prompts(triggers, last_dec, updated_snap.affect)
-        unk_terms = last_dec.detected_unknown_terms if last_dec else ()
-        cyber_core = compute_cybernetic_core(
-            scene, updated_snap, triggers, bonds_map,
-            owner_qq=self._owner_qq, unknown_terms=unk_terms, warnings=warnings,
-        )
-        rel_facts = select_relevant_facts(facts, " ".join(p.text for p in triggers), limit=28)
-        r_lines = match_active_rules(rules, triggers)
+        rel_facts = select_relevant_facts(facts, " ".join(p.text for p in tr), limit=28)
         core_blk = render_mind_block(
-            scene, updated_snap, bonds=bonds_map, facts=rel_facts, warnings=warnings,
-            shadow_directives=shadow.shadow_directives, rule_lines=r_lines,
-            recalled=recalled, cur_prompts=cur_prompts, bans=bans,
+            scene, snap, bonds=bm, facts=rel_facts, warnings=warns,
+            shadow_directives=shadow.shadow_directives, rule_lines=match_active_rules(rules, tr),
+            recalled=recalled, cur_prompts=cur_p, bans=bans,
         )
-        cyber_line = render_cybernetic_core_directive(cyber_core)
         return CognitiveFrame(
             chat_key=chat_key, scene=scene, must_reply=bool(last_dec and last_dec.tier == 1),
-            affect=updated_snap.affect, drives=updated_snap.drives,
-            rendered_mind_block=f"{core_blk}\n{cyber_line}\n{persona_block}",
-            epistemic_warnings=(*warnings, *shadow.shadow_directives),
-            curiosity_prompts=cur_prompts, banned_phrases=bans, cybernetic_core=cyber_core,
+            affect=snap.affect, drives=snap.drives,
+            rendered_mind_block=f"{core_blk}\n{render_cybernetic_core_directive(cyber)}\n{p_blk}",
+            epistemic_warnings=(*warns, *shadow.shadow_directives),
+            curiosity_prompts=cur_p, banned_phrases=bans, cybernetic_core=cyber,
         )
 
     async def _persist_turn(self, outcome: TurnOutcome, now_ms: int) -> None:

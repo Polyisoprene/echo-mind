@@ -84,6 +84,8 @@
 | **Stage 22**<br>三吸引子好感动力学与回放根治 | `M22.1` | 三吸引子均值回归好感度引擎、主语指向消解、信任立方封顶与海马体慢通道关系复盘 | `STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md` | `mind/{memory_consolidator,hippocampus,plasticity}.py` | Three-Attractor + Trust Cap + Hippocampus Bond Pass / Cov: 84%~95% | ✅ 已验收通过 |
 | **Stage 22** | `M22.2` | 根治同行Bot 5分钟跟聊死循环、URL 域名污染与 3,235 条历史记录全量重放校准 | `STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md` | `mind/{perceptual_gate,explorer,plasticity,memory_consolidator}.py` | 3,235-Msg Full Replay + Zero Benign False-Positives | ✅ 已验收通过 |
 | **Stage 23**<br>跟聊无限续杯与二人转拦截根治 | `M23.1` | 根治日志 `#3450-#3480` 群聊跟聊窗口无限续杯、路人防抖误开窗、第三人插话熔断与二人转提权 | `STAGE_23_GROUP_FOLLOWUP_AND_BYSTANDER_INTERCEPTION_FIX_PLAN.md` | `mind/{perceptual_gate,salience_hydraulics,facade}.py`, `runtime/prompt_composer.py` | 71/71 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.37% (90%)** | ✅ 已验收通过 |
+| **Stage 24**<br>HRRL稳态与DynAffect耦合情感 | `M24.1` | 独立人格普适权重（$w_{\text{care}} / w_{\text{aversion}}$）、HRRL 依恋重聚安抚、自由能 RPE 效价与普适三角吃醋 | `STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md` | `mind/{drives,shadow_appraisal}.py` | HRRL Soothing + Triadic Jealousy + RPE Pass / Cov: 95%~96% | ✅ 已验收通过 |
+| **Stage 24** | `M24.2` | `5×5` 情绪-驱力交叉耦合网络与 8 大下游子系统联动（在意好友门控偏爱、好友免冷暴力保护、表情包主导情绪） | `STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md` | `mind/{salience_hydraulics,perceptual_gate,explorer,facade}.py`, `runtime/prompt_composer.py` | 72/72 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.37% (90%)** | ✅ 已验收通过 |
 
 ---
 

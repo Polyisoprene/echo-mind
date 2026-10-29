@@ -1671,6 +1671,88 @@ async def test_stage23_bystander_batch_interleaved_peer_and_dyadic_priority(
     assert dec_3476.should_wake is False and dec_3476.salience_score == 0.12
 
 
+def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupling() -> None:
+    from echomind.domain.models import DriveState, SocialBondProfile, WorkingSnapshot
+    from echomind.mind.drives import (
+        apply_turn_affect_and_drives,
+        compute_care_weight,
+        evaluate_triadic_jealousy,
+    )
+
+    friend_bond = SocialBondProfile(
+        chat_key="group:10002002",
+        user_id="2005",
+        user_name="冰色",
+        affinity_score=82.0,
+        trust_score=0.85,
+    )
+    w_care = compute_care_weight("2005", "10001001", friend_bond)
+    assert w_care >= 0.45
+
+    # 1. Generalized Triadic Jealousy: A cared-about friend praising a rival triggers jealousy!
+    p_friend_praise_rival = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="j1",
+        timestamp_ms=10_000,
+        sender_id="2005",
+        sender_name="冰色",
+        text="汐儿真聪明，摸摸头",
+    )
+    j_delta, j_thought = evaluate_triadic_jealousy(
+        p_friend_praise_rival, w_care, ("汐",)
+    )
+    assert j_delta > 8.0 and "冰色" in j_thought
+
+    # 2. Criticizing a rival triggers validation relief (< 0), NOT jealousy!
+    p_critic_rival = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="j2",
+        timestamp_ms=15_000,
+        sender_id="10001001",
+        sender_name="L",
+        text="汐太吵了，还是回音乖",
+    )
+    j_relief, _ = evaluate_triadic_jealousy(p_critic_rival, 1.0, ("汐",))
+    assert j_relief < 0.0
+
+    # 3. HRRL Reunion Soothing & Free-Energy RPE: Owner/Friend warm interaction soothes attachment!
+    lonely_snap = WorkingSnapshot(
+        scope_key="global",
+        drives=DriveState(attachment=85.0),
+    )
+    p_warm = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="w1",
+        timestamp_ms=20_000,
+        sender_id="10001001",
+        sender_name="L",
+        text="尾尾真乖，摸摸头",
+    )
+    soothed = apply_turn_affect_and_drives(
+        lonely_snap, (p_warm,), "10001001", ("汐",), bonds_map={"2005": friend_bond}
+    )
+    assert soothed.drives.attachment < 72.0
+    assert soothed.affect.valence > lonely_snap.affect.valence
+    assert soothed.affect.shyness > lonely_snap.affect.shyness
+
+    # 4. Free-Energy Negative RPE: Owner scolding drops valence instead of raising it!
+    p_scold = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="s1",
+        timestamp_ms=25_000,
+        sender_id="10001001",
+        sender_name="L",
+        text="你在胡乱回复什么",
+    )
+    scolded = apply_turn_affect_and_drives(soothed, (p_scold,), "10001001", ("汐",))
+    assert scolded.affect.valence < soothed.affect.valence
+
+
+
 
 
 
