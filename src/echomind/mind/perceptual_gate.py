@@ -5,7 +5,15 @@ from __future__ import annotations
 import re
 from typing import Literal
 
-from echomind.domain.models import AttentionDecision, Percept, WorkingSnapshot
+from echomind.domain.models import AttentionDecision, Percept, PlasticParamSpec, WorkingSnapshot
+from echomind.mind.salience_hydraulics import (
+    check_implicit_second_person_ask,
+    check_self_utterance_resonance,
+    evaluate_bidirectional_ambient,
+    extract_at_target_uid,
+    is_in_dyadic_dnd,
+    record_dyadic_pair,
+)
 
 # Genuine unknown terms: quoted terms, "XX是什么梗", or alphanumeric proper nouns
 QUOTED_TERM_RE = re.compile(r"[「『《“\"【]([\u4e00-\u9fa5A-Za-z0-9]{2,10})[」』》”\"】]")
@@ -101,39 +109,6 @@ def _hits_working_focus(text: str, working: WorkingSnapshot, rivals: tuple[str, 
     return ""
 
 
-def _evaluate_ambient_or_curiosity(
-    percept: Percept,
-    working: WorkingSnapshot,
-    unknowns: tuple[str, ...],
-    has_unseen: bool,
-    talkativeness: float,
-) -> AttentionDecision:
-    if working.affect.energy < 22.0:
-        return _wake_dec(0.15, 0, "精力过低·犯困休息不插话", unknowns, has_unseen, wake=False)
-    eff_talk = talkativeness * (0.5 + 0.5 * (working.affect.energy / 100.0))
-    wake_threshold = max(0.45, min(0.82, 0.90 - (eff_talk / 200.0)))
-    has_gap = bool(unknowns) or has_unseen
-    if has_gap and working.drives.curiosity >= 45.0:
-        return AttentionDecision(
-            should_wake=(wake_threshold <= 0.75),
-            salience_score=0.75,
-            tier=3,
-            reason="好奇心触发(未知新词或未读媒体)",
-            detected_unknown_terms=unknowns,
-            has_unseen_media=has_unseen,
-        )
-    base_salience = 0.55 if len(percept.text.strip()) >= 4 else 0.20
-    should_wake = base_salience >= wake_threshold
-    return AttentionDecision(
-        should_wake=should_wake,
-        salience_score=base_salience,
-        tier=3 if should_wake else 0,
-        reason="群聊氛围接话" if should_wake else "外围静默感知",
-        detected_unknown_terms=unknowns,
-        has_unseen_media=has_unseen,
-    )
-
-
 def _wake_dec(
     score: float,
     tier: Literal[0, 1, 2, 3],
@@ -162,10 +137,21 @@ class PerceptualGate:
         self._followup_until: dict[str, int] = {}
         self._cold_shoulder_until: dict[str, int] = {}
         self._last_ambient_wake_ms: dict[str, int] = {}
+        self._dyadic_dnd: dict[str, tuple[str, str, int]] = {}
+        self._bot_speech: dict[str, tuple[int, str, int]] = {}
+        self._last_group_ts: dict[str, int] = {}
 
     def mark_replied_to(self, chat_key: str, user_id: str, now_ms: int) -> None:
         """Open or renew a short-followup window for a user we just answered."""
         self._followup_until[f"{chat_key}::{user_id}"] = now_ms + self._followup_ttl_ms
+
+    def mark_bot_spoke(self, chat_key: str, texts: tuple[str, ...], now_ms: int) -> None:
+        """Record Echo's latest spoken text to enable 120s Self-Utterance Resonance."""
+        joined = " ".join(t.strip() for t in texts if t.strip())
+        if joined:
+            prev = self._bot_speech.get(chat_key)
+            depth = prev[2] if (prev and (now_ms - prev[0]) <= 120_000) else 0
+            self._bot_speech[chat_key] = (now_ms, joined[:180], depth)
 
     def impose_cold_shoulder(
         self, chat_key: str, user_id: str, now_ms: int, duration_ms: int = 900_000
@@ -181,15 +167,45 @@ class PerceptualGate:
         key = f"{percept.chat_key}::{percept.sender_id}"
         return percept.timestamp_ms <= self._followup_until.get(key, 0)
 
-    @staticmethod
     def _check_direct_or_other_at(
-        percept: Percept, unknowns: tuple[str, ...], has_unseen: bool
+        self, percept: Percept, unknowns: tuple[str, ...], has_unseen: bool, *, record_state: bool
     ) -> AttentionDecision | None:
         is_direct, direct_reason = _is_direct_summon(percept)
         if is_direct:
+            if record_state and percept.chat_key in self._bot_speech:
+                ts, txt, _ = self._bot_speech[percept.chat_key]
+                self._bot_speech[percept.chat_key] = (ts, txt, 0)
             return _wake_dec(1.0, 1, direct_reason, unknowns, has_unseen)
         if "@" in percept.text or (percept.quoted_message_id and not percept.is_quoted_me):
+            if record_state:
+                record_dyadic_pair(self._dyadic_dnd, percept, extract_at_target_uid(percept.text))
             return _wake_dec(0.05, 0, "艾特其他群友(非对我说话)", unknowns, has_unseen, wake=False)
+        return None
+
+    def _check_tier2_continuation(
+        self,
+        percept: Percept,
+        working: WorkingSnapshot,
+        rivals: tuple[str, ...],
+        unknowns: tuple[str, ...],
+        has_unseen: bool,
+        *,
+        record_state: bool,
+    ) -> AttentionDecision | None:
+        focus_hit = _hits_working_focus(percept.text, working, rivals)
+        if focus_hit or self._in_followup(percept):
+            return _wake_dec(0.85, 2, focus_hit or "短期跟聊窗口内", unknowns, has_unseen)
+        res_hit, res_reason = check_self_utterance_resonance(
+            percept, self._bot_speech, rivals, record_state=record_state
+        )
+        if res_hit:
+            return _wake_dec(0.86, 2, res_reason, unknowns, has_unseen)
+        last_g_ts = self._last_group_ts.get(percept.chat_key, 0)
+        bot_entry = self._bot_speech.get(percept.chat_key)
+        last_b_ts = bot_entry[0] if bot_entry else 0
+        ask_reason = check_implicit_second_person_ask(percept, last_g_ts, last_b_ts)
+        if ask_reason:
+            return _wake_dec(0.84, 2, ask_reason, unknowns, has_unseen)
         return None
 
     def _evaluate_ambient_with_cooldown(
@@ -201,11 +217,21 @@ class PerceptualGate:
         talkativeness: float,
         *,
         record_state: bool,
+        known_vocab: frozenset[str] = frozenset(),
+        owner_qq: str = "",
+        params: dict[str, PlasticParamSpec] | None = None,
     ) -> AttentionDecision:
+        if is_in_dyadic_dnd(self._dyadic_dnd, percept, owner_qq=owner_qq):
+            return _wake_dec(
+                0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns, has_unseen, wake=False
+            )
         last_amb = self._last_ambient_wake_ms.get(percept.chat_key, 0)
         if record_state and (percept.timestamp_ms - last_amb) < self._ambient_cooldown_ms:
             return _wake_dec(0.30, 0, "群聊非点名冷却期内", unknowns, has_unseen, wake=False)
-        dec = _evaluate_ambient_or_curiosity(percept, working, unknowns, has_unseen, talkativeness)
+        dec = evaluate_bidirectional_ambient(
+            percept, working, unknowns, has_unseen, talkativeness,
+            known_vocab=known_vocab, owner_qq=owner_qq, params=params,
+        )
         if dec.should_wake and record_state:
             self._last_ambient_wake_ms[percept.chat_key] = percept.timestamp_ms
         return dec
@@ -219,21 +245,29 @@ class PerceptualGate:
         talkativeness: float = 58.0,
         *,
         record_state: bool = True,
+        owner_qq: str = "",
+        params: dict[str, PlasticParamSpec] | None = None,
     ) -> AttentionDecision:
         """Compute salience score, cold-shoulder block, and wake decision."""
         if self._in_cold_shoulder(percept):
             return _wake_dec(0.0, 0, "重度厌烦·15分钟冷暴力已读不回", (), False, wake=False)
-
         has_unseen = any(not m.description for m in percept.media)
         unknowns = extract_unknown_terms(percept.text, known_vocab)
-
-        direct_dec = self._check_direct_or_other_at(percept, unknowns, has_unseen)
+        direct_dec = self._check_direct_or_other_at(
+            percept, unknowns, has_unseen, record_state=record_state
+        )
         if direct_dec is not None:
+            if record_state:
+                self._last_group_ts[percept.chat_key] = percept.timestamp_ms
             return direct_dec
-        focus_hit = _hits_working_focus(percept.text, working, rivals)
-        if focus_hit or self._in_followup(percept):
-            return _wake_dec(0.85, 2, focus_hit or "短期跟聊窗口内", unknowns, has_unseen)
-
+        t2_dec = self._check_tier2_continuation(
+            percept, working, rivals, unknowns, has_unseen, record_state=record_state
+        )
+        if record_state:
+            self._last_group_ts[percept.chat_key] = percept.timestamp_ms
+        if t2_dec is not None:
+            return t2_dec
         return self._evaluate_ambient_with_cooldown(
-            percept, working, unknowns, has_unseen, talkativeness, record_state=record_state
+            percept, working, unknowns, has_unseen, talkativeness,
+            record_state=record_state, known_vocab=known_vocab, owner_qq=owner_qq, params=params,
         )

@@ -207,16 +207,14 @@ class AgentSessionRunner:
 
     async def _maybe_rescue_reply(
         self, chat_key: str, last_content: str,
-        sent_texts: list[str], tools_used: list[str], steps: list[TurnStep],
+        sent_texts: list[str], tools_used: list[str], steps: list[TurnStep], *,
+        must_reply: bool = True,
     ) -> None:
-        if sent_texts or (
-            {"send_sticker", "feiyu_say", "feiyu_cover", "send_poke"} & set(tools_used)
-        ):
+        spoke = {"send_sticker", "feiyu_say", "feiyu_cover", "send_poke"} & set(tools_used)
+        if sent_texts or spoke:
             return
-        rescued = rescue_unsent_reply(last_content)
-        if not rescued:
-            return
-        purged = purge_message_batch((rescued,), self._active_bans)
+        rescued = rescue_unsent_reply(last_content, must_reply=must_reply)
+        purged = purge_message_batch((rescued,), self._active_bans) if rescued else ()
         if not purged:
             return
         await self._sender.send_text(chat_key, (purged[0],))
@@ -261,7 +259,9 @@ class AgentSessionRunner:
             chat_key, messages, steps, base_rec=base_rec, t_turn=t_turn,
             selected_tools=core.selected_tools, turn_temp=core.recommended_temperature,
         )
-        await self._maybe_rescue_reply(chat_key, last_content, sent_texts, tools_used, steps)
+        await self._maybe_rescue_reply(
+            chat_key, last_content, sent_texts, tools_used, steps, must_reply=frame.must_reply
+        )
         self._scratchpad.record_self_reply(chat_key, tuple(sent_texts), now_ms)
         conflict = any("元认知防忽悠警报" in w for w in frame.epistemic_warnings)
         outcome = TurnOutcome(

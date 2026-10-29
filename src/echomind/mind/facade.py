@@ -32,10 +32,7 @@ from echomind.mind.cybernetics import (
     consume_proposal_snapshot,
     render_cybernetic_core_directive,
 )
-from echomind.mind.drives import (
-    apply_temporal_decay_and_circadian,
-    apply_turn_affect_and_drives,
-)
+from echomind.mind.drives import apply_temporal_decay_and_circadian, apply_turn_affect_and_drives
 from echomind.mind.ebbinghaus import (
     extract_mentioned_uids,
     recall_episodic_memories,
@@ -55,6 +52,7 @@ from echomind.mind.memory_consolidator import (
 from echomind.mind.perceptual_gate import PerceptualGate
 from echomind.mind.personality import synthesize_live_persona_directive
 from echomind.mind.plasticity import NeuroplasticityEngine
+from echomind.mind.salience_hydraulics import apply_speaking_satiation
 from echomind.mind.shadow_appraisal import (
     ShadowAppraisalResult,
     evaluate_shadow_appraisal,
@@ -109,7 +107,8 @@ class CognitiveCoreFacade:
         rivals = await self._reader.get_rival_names(percept.chat_key)
         vocab = frozenset(f.subject.lower() for f in facts)
         dec = self._gate.evaluate(
-            percept, snap, vocab, rivals, talkativeness=talk, record_state=not dry_run
+            percept, snap, vocab, rivals, talkativeness=talk,
+            record_state=not dry_run, owner_qq=self._owner_qq, params=params,
         )
         if not dry_run:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
@@ -126,9 +125,8 @@ class CognitiveCoreFacade:
         now_ms: int, *, dry_run: bool = False,
     ) -> tuple[RecalledMemoryItem, ...]:
         cards = await self._reader.get_episodic_cards(chat_key)
-        recalled = recall_episodic_memories(
-            cards, " ".join(p.text for p in triggers), uids, now_ms, top_k=8
-        )
+        q_str = " ".join(p.text for p in triggers)
+        recalled = recall_episodic_memories(cards, q_str, uids, now_ms, top_k=8)
         if not dry_run:
             for r_item in recalled:
                 await self._writer.reinforce_episodic_card(r_item.card.card_id, now_ms)
@@ -138,9 +136,8 @@ class CognitiveCoreFacade:
         self, chat_key: str, new_irr: float, triggers: tuple[Percept, ...]
     ) -> None:
         if new_irr > 85.0 and triggers and triggers[-1].sender_id != self._owner_qq:
-            self._gate.impose_cold_shoulder(
-                chat_key, triggers[-1].sender_id, triggers[-1].timestamp_ms
-            )
+            last = triggers[-1]
+            self._gate.impose_cold_shoulder(chat_key, last.sender_id, last.timestamp_ms)
 
     async def _apply_shadow_and_save(
         self, chat_key: str, base_snap: WorkingSnapshot, triggers: tuple[Percept, ...],
@@ -173,7 +170,8 @@ class CognitiveCoreFacade:
         vocab = frozenset(f.subject.lower() for f in facts)
         last_dec = (
             self._gate.evaluate(
-                triggers[-1], snap, vocab, rivals, talkativeness=talk, record_state=False
+                triggers[-1], snap, vocab, rivals, talkativeness=talk,
+                record_state=False, owner_qq=self._owner_qq, params=params,
             )
             if triggers else None
         )
@@ -253,12 +251,15 @@ class CognitiveCoreFacade:
     async def on_turn_completed(self, outcome: TurnOutcome) -> None:
         now_ms = int(time.time() * 1000)
         if outcome.sent_texts:
+            self._gate.mark_bot_spoke(outcome.chat_key, outcome.sent_texts, now_ms)
             for p in outcome.triggers:
                 self._gate.mark_replied_to(outcome.chat_key, p.sender_id, now_ms)
             snap = await self._working.load_working_state("global")
             rem = filter_unfulfilled_intentions(snap.intentions, outcome.sent_texts, now_ms)
-            if rem != snap.intentions:
-                await self._working.save_working_state(snap.model_copy(update={"intentions": rem}))
+            satiated = apply_speaking_satiation(
+                snap.model_copy(update={"intentions": rem}), outcome.sent_texts, outcome.tools_used
+            )
+            await self._working.save_working_state(satiated)
         await self._persist_turn(outcome, now_ms)
         await consolidate_turn_memory(self._reader, self._writer, outcome, now_ms, self._owner_qq)
         await self._plasticity.adapt_from_outcome(outcome)

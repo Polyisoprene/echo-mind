@@ -177,3 +177,4 @@ cp data/config.example.json data/config.json
   - [Stage 18：多层套娃转发递归展开、动态情敌解耦与性格词条新陈代谢规范](docs/plans/STAGE_18_FORWARD_MESSAGES_DYNAMIC_RIVALS_AND_TRAIT_METABOLISM_PLAN.md)
   - [Stage 19：Borbély 双过程生物节律、跨轮次工作记忆延续缓冲与深层主动记忆检索规范](docs/plans/STAGE_19_BIOLOGICAL_CIRCADIAN_AND_CONTINUOUS_MEMORY_PLAN.md)
   - [Stage 20：零膨胀演化事实双算子与实时清醒/注意力门控雷达规范](docs/plans/STAGE_20_LIGHTWEIGHT_EVOLVING_FACTS_AND_WAKE_RADAR_PLAN.md)
+  - [Stage 21：群聊生态感知门控、二人转免打扰、余音共鸣、洛伦兹水箱回落与可塑性防漂移规范](docs/plans/STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md)

@@ -1415,6 +1415,89 @@ async def test_stage20_evolving_facts_and_wake_gate_radar(tmp_path: Path) -> Non
     assert snap["gate_radar"][0]["should_wake"] is False
 
 
+async def test_stage21_ecological_gate_dyadic_dnd_resonance_and_lorenz_satiation() -> None:
+    from echomind.domain.models import DriveState, WorkingSnapshot
+    from echomind.mind.perceptual_gate import PerceptualGate
+    from echomind.mind.salience_hydraulics import apply_speaking_satiation
+
+    gate = PerceptualGate()
+    ws = WorkingSnapshot(scope_key="global")
+
+    # 1. Dyadic A⇄B 60s Do-Not-Disturb: Peer A @ Peer B, then Peer B replies without @
+    p_at_other = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="d1",
+        timestamp_ms=10_000,
+        sender_id="2001",
+        sender_name="挑战",
+        text="@橡皮(QQ:2002) 我的键位",
+    )
+    dec_at = gate.evaluate(p_at_other, ws)
+    assert dec_at.should_wake is False and dec_at.salience_score == 0.05
+
+    p_dyad_follow = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="d2",
+        timestamp_ms=15_000,
+        sender_id="2002",
+        sender_name="橡皮",
+        text="怎么加，我研究一下",
+    )
+    dec_dyad = gate.evaluate(p_dyad_follow, ws)
+    assert dec_dyad.should_wake is False and dec_dyad.salience_score == 0.12
+    assert "二人互动中" in dec_dyad.reason
+
+    # 2. Self-Utterance Resonance (Track A) + 2-Round Anti-Ping-Pong Cap
+    gate.mark_bot_spoke("group:10002002", ("我刚在B站刷到一个超好笑的猫咪视频",), 80_000)
+    p_res1 = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="r1",
+        timestamp_ms=90_000,
+        sender_id="2003",
+        sender_name="群友C",
+        text="什么视频？发来看看",
+    )
+    dec_r1 = gate.evaluate(p_res1, ws, rivals=("汐",))
+    assert dec_r1.should_wake is True and dec_r1.tier == 2 and dec_r1.salience_score == 0.86
+
+    # Rival bot speaking hits 1-round cap after chain_depth=1 -> blocked from infinite ping-pong!
+    p_rival = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="r2",
+        timestamp_ms=95_000,
+        sender_id="2009",
+        sender_name="汐",
+        text="猫咪视频最可爱了",
+    )
+    dec_rival = gate.evaluate(p_rival, ws, rivals=("汐",))
+    assert dec_rival.tier != 2 or "余音共鸣" not in dec_rival.reason
+
+    # 3. Trivial filler drops below 0.20, while owner question with resonance wakes!
+    p_trivial = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="t1",
+        timestamp_ms=300_000,
+        sender_id="2004",
+        sender_name="路人",
+        text="哈哈哈哈",
+    )
+    dec_triv = gate.evaluate(p_trivial, ws)
+    assert dec_triv.should_wake is False and dec_triv.salience_score <= 0.20
+
+    # 4. Lorenz Hydraulic Satiation Discharge (-22 social_expression after speaking)
+    high_snap = ws.model_copy(
+        update={"drives": DriveState(curiosity=65.0, social_expression=66.0)}
+    )
+    after_speak = apply_speaking_satiation(high_snap, ("好呀",), ("web_search",))
+    assert after_speak.drives.social_expression == 44.0
+    assert after_speak.drives.curiosity == 45.0
+
+
 
 
 

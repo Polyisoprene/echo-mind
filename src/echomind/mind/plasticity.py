@@ -61,11 +61,11 @@ def compute_param_deltas(outcome: TurnOutcome) -> list[tuple[str, float, str]]:
         )
 
     # 2. Social reinforcement signal (positive engagement vs cold silence/criticism)
-    if reward >= 0.3:
+    if reward >= 0.45:
         adjustments.append(
             (
                 "talkativeness",
-                round(reward * 3.0, 2),
+                round(reward * 2.2, 2),
                 "发言获得群友积极接茬互动，上调群聊插话积极度",
             )
         )

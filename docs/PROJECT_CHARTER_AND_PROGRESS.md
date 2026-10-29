@@ -79,6 +79,8 @@
 | **Stage 19** | `M19.3` | 跨轮次工作记忆延续缓冲池（`WorkingScratchpad`）、`recall_memory` 工具与 6 轮深度 ReAct | `STAGE_19_BIOLOGICAL_CIRCADIAN_AND_CONTINUOUS_MEMORY_PLAN.md` | `runtime/{working_scratchpad,agent_runner,prompt_composer}.py`, `tools/member_memory.py` | 67/67 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.55% (91%)** | ✅ 已验收通过 |
 | **Stage 20**<br>零膨胀演化事实与唤醒雷达 | `M20.1` | 零新表演化事实双算子（候选印象二次印证转正 + 事实变更保留“此前曾是…” + 孤证睡眠清理） | `STAGE_20_LIGHTWEIGHT_EVOLVING_FACTS_AND_WAKE_RADAR_PLAN.md` | `adapters/storage/memory_repo.py`, `mind/{memory_consolidator,frame_renderer}.py`, `runtime/scheduler.py` | Candidate Promotion + Change History Pass / Cov: 92%~99% | ✅ 已验收通过 |
 | **Stage 20** | `M20.2` | 实时生理清醒状态（清醒/犯困/深睡）与入站消息唤醒门控雷达（收到但未感兴趣/冷却/非对我说） | `STAGE_20_LIGHTWEIGHT_EVOLVING_FACTS_AND_WAKE_RADAR_PLAN.md` | `mind/{circadian,facade}.py`, `web/mind_inspector_service.py`, `index.html`, `app.js` | 68/68 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.57% (91%)** | ✅ 已验收通过 |
+| **Stage 21**<br>群聊生态门控与水箱防漂移 | `M21.1` | 二人转60s免打扰、余音共鸣接话茬(带防双AI乒乓锁)、7维人格条件增益与雷达透明算式 | `STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md` | `mind/{salience_hydraulics,perceptual_gate}.py` | Dyadic DND + Resonance Cap + Formula Radar Pass / Cov: 97% | ✅ 已验收通过 |
+| **Stage 21** | `M21.2` | 洛伦兹水箱开口宣泄回落(-22)、非必回优雅闭嘴权与可塑性话痨度防漂移 | `STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md` | `mind/{facade,plasticity}.py`, `runtime/{reply_rescue,agent_runner}.py` | 69/69 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.21% (90%)** | ✅ 已验收通过 |
 
 ---
 
