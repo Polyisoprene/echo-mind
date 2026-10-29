@@ -82,7 +82,7 @@
 | **Stage 21**<br>群聊生态门控与水箱防漂移 | `M21.1` | 二人转60s免打扰、余音共鸣接话茬(带防双AI乒乓锁)、7维人格条件增益与雷达透明算式 | `STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md` | `mind/{salience_hydraulics,perceptual_gate}.py` | Dyadic DND + Resonance Cap + Formula Radar Pass / Cov: 97% | ✅ 已验收通过 |
 | **Stage 21** | `M21.2` | 洛伦兹水箱开口宣泄回落(-22)、非必回优雅闭嘴权与可塑性话痨度防漂移 | `STAGE_21_ECOLOGICAL_ATTENTION_GATE_AND_DRIFT_GUARD_PLAN.md` | `mind/{facade,plasticity}.py`, `runtime/{reply_rescue,agent_runner}.py` | 69/69 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.21% (90%)** | ✅ 已验收通过 |
 | **Stage 22**<br>三吸引子好感动力学与回放根治 | `M22.1` | 三吸引子均值回归好感度引擎、主语指向消解、信任立方封顶与海马体慢通道关系复盘 | `STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md` | `mind/{memory_consolidator,hippocampus,plasticity}.py` | Three-Attractor + Trust Cap + Hippocampus Bond Pass / Cov: 84%~95% | ✅ 已验收通过 |
-| **Stage 22** | `M22.2` | 根治同行Bot 5分钟跟聊死循环与 URL 域名 (`www/com/tv`) 污染好奇心搜索队列 | `STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md` | `mind/perceptual_gate.py`, `mind/explorer.py` | 70/70 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.31% (90%)** | ✅ 已验收通过 |
+| **Stage 22** | `M22.2` | 根治同行Bot 5分钟跟聊死循环、URL 域名污染与 3,235 条历史记录全量重放校准 | `STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md` | `mind/{perceptual_gate,explorer,plasticity,memory_consolidator}.py` | 3,235-Msg Full Replay + Zero Benign False-Positives | ✅ 已验收通过 |
 | **Stage 23**<br>跟聊无限续杯与二人转拦截根治 | `M23.1` | 根治日志 `#3450-#3480` 群聊跟聊窗口无限续杯、路人防抖误开窗、第三人插话熔断与二人转提权 | `STAGE_23_GROUP_FOLLOWUP_AND_BYSTANDER_INTERCEPTION_FIX_PLAN.md` | `mind/{perceptual_gate,salience_hydraulics,facade}.py`, `runtime/prompt_composer.py` | 71/71 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.37% (90%)** | ✅ 已验收通过 |
 
 ---
