@@ -1,0 +1,68 @@
+{
+  "selfQq": "1000000000",
+  "ownerQq": "2000000000",
+  "activeProvider": "primary_gateway",
+  "providers": [
+    {
+      "id": "primary_gateway",
+      "displayName": "主力大模型网关",
+      "api": "openai",
+      "baseURL": "http://127.0.0.1:9000/v1",
+      "apiKey": "sk-replace-with-your-primary-key",
+      "models": ["deepseek-v4.1-flash", "deepseek-v4-pro", "glm-5.3-flash"]
+    },
+    {
+      "id": "fallback_gateway",
+      "displayName": "备用大模型网关",
+      "api": "openai",
+      "baseURL": "http://127.0.0.1:9914/v1",
+      "apiKey": "sk-replace-with-your-fallback-key",
+      "models": ["deepseek-v4.1-flash-free", "glm-5.3-flash-free"]
+    }
+  ],
+  "api": {
+    "provider": "primary_gateway",
+    "baseUrl": "http://127.0.0.1:9000/v1",
+    "apiKey": "sk-replace-with-your-primary-key",
+    "model": "deepseek-v4.1-flash",
+    "temperature": 0.8,
+    "timeoutMs": 120000,
+    "fallbackBaseUrl": "http://127.0.0.1:9914/v1",
+    "fallbackApiKey": "sk-replace-with-your-fallback-key",
+    "fallbackModel": "deepseek-v4.1-flash-free",
+    "fallbackTimeoutMs": 90000,
+    "fallbackModels": [
+      {
+        "provider": "fallback_gateway",
+        "model": "deepseek-v4.1-flash-free"
+      }
+    ]
+  },
+  "snowluma": {
+    "wsUrl": "ws://127.0.0.1:3001",
+    "httpUrl": "http://127.0.0.1:3000",
+    "accessToken": "replace-with-onebot-token",
+    "httpAccessToken": ""
+  },
+  "persona": {
+    "botName": "回音",
+    "roleText": "你是回音（小名尾尾），平时混迹在 QQ 群里像真人群友一样自然聊天。"
+  },
+  "allow": {
+    "groups": ["10002002"],
+    "private": ["2000000000"]
+  },
+  "store": {
+    "keywords": ["回音", "尾尾", "小回音"]
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 3310,
+    "token": "replace-with-console-auth-token"
+  },
+  "feiyuVoice": {
+    "baseUrl": "http://192.168.3.2:9880",
+    "apiKey": "replace-with-feiyu-voice-key",
+    "defaultStyle": "cute"
+  }
+}

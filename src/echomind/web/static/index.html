@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EchoMind · 回音认知控制台</title>
+<link rel="stylesheet" href="/static/style.css?v=202610291140" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐋</text></svg>" />
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">EchoMind<small>回音 · 12层认知核心</small></div>
+  <div class="chips">
+    <span class="chip"><span id="dot-ws" class="dot"></span><span id="ws-label">NapCat 连接中…</span></span>
+    <span class="chip">模型 <b id="chip-model">-</b></span>
+    <span class="chip">今日调用 <b id="chip-calls">-</b></span>
+    <span class="chip">缓存命中 <b id="chip-cached">-</b></span>
+    <span class="chip">群 <b id="chip-group">-</b></span>
+  </div>
+  <button class="btn" id="btn-theme" title="切换白天 / 夜间外观模式">☀️ 白天</button>
+  <button class="btn" id="btn-refresh">刷新</button>
+</header>
+
+<nav id="tabs">
+  <button class="tab active" data-view="overview">总览</button>
+  <button class="tab" data-view="sessions">会话</button>
+  <button class="tab" data-view="memory">记忆</button>
+  <button class="tab" data-view="social">社交</button>
+  <button class="tab" data-view="persona">性格</button>
+  <button class="tab" data-view="skills">技能</button>
+  <button class="tab" data-view="model">模型</button>
+  <button class="tab" data-view="probe">探针</button>
+  <button class="tab" data-view="logs">日志</button>
+</nav>
+
+<main>
+  <!-- 总览 -->
+  <section id="view-overview" class="view active">
+    <div class="grid g4" style="margin-bottom:14px">
+      <div class="card"><div class="metric"><span class="k">情绪效价 Valence</span><span class="v" id="m-valence">-</span><div class="bar" id="b-valence"><i style="width:0"></i></div></div></div>
+      <div class="card"><div class="metric"><span class="k">精力 Energy</span><span class="v" id="m-energy">-</span><div class="bar ok" id="b-energy"><i style="width:0"></i></div></div></div>
+      <div class="card"><div class="metric"><span class="k">吃醋 Jealousy</span><span class="v pink" id="m-jealousy">-</span><div class="bar pink" id="b-jealousy"><i style="width:0"></i></div></div></div>
+      <div class="card"><div class="metric"><span class="k">害羞 Shyness</span><span class="v warn" id="m-shyness">-</span><div class="bar warn" id="b-shyness"><i style="width:0"></i></div></div></div>
+      <div class="card"><div class="metric"><span class="k">厌烦 Irritation</span><span class="v danger" id="m-irritation">-</span><div class="bar danger" id="b-irritation"><i style="width:0"></i></div></div></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>四大内驱力 <span class="hint">Intrinsic Drives</span></h3>
+        <div class="row"><span class="lbl">好奇 Curiosity</span><span class="val" id="d-curiosity">-</span></div>
+        <div class="bar" style="margin:4px 0 10px"><i id="db-curiosity" style="width:0"></i></div>
+        <div class="row"><span class="lbl">依恋 Attachment</span><span class="val" id="d-attachment">-</span></div>
+        <div class="bar pink" style="margin:4px 0 10px"><i id="db-attachment" style="width:0"></i></div>
+        <div class="row"><span class="lbl">吃醋驱力 Jealousy</span><span class="val" id="d-jealousy">-</span></div>
+        <div class="bar danger" style="margin:4px 0 10px"><i id="db-jealousy" style="width:0"></i></div>
+        <div class="row"><span class="lbl">表达欲 Social</span><span class="val" id="d-social">-</span></div>
+        <div class="bar ok" style="margin:4px 0 0"><i id="db-social" style="width:0"></i></div>
+      </div>
+
+      <div class="card">
+        <h3>生活状态 <span class="hint">Inner Life</span></h3>
+        <div class="row"><span class="lbl">正在做</span><span class="val" id="w-activity">-</span></div>
+        <div class="row"><span class="lbl">内心想法</span><span class="val" id="w-thought">-</span></div>
+        <div class="row"><span class="lbl">短期挂念</span><span class="val" id="w-intentions">-</span></div>
+        <div class="row"><span class="lbl">好奇待查</span><span class="val" id="w-curiosity">-</span></div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <button class="btn primary sm" id="btn-trigger-surf">🔭 立即去刷B站 / 探索未知新梗</button>
+          <span class="lbl" id="surf-status"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>📡 实时听觉与唤醒门控雷达 <span class="hint">Live Perceptual Gate Radar · 实时查看她是否醒着、是否收到消息、以及为什么回应或忽略</span></h3>
+      <div id="overview-wake-banner" style="margin-bottom:10px"></div>
+      <div id="overview-gate-radar" class="scroll-y" style="max-height:240px"></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>🧭 控制论自组织核心与选矿智力放大器 <span class="hint">Haken Order Parameters × Ashby Selection Amplifier</span></h3>
+      <div id="overview-cyber-core"></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>🔭 自主网页搜索与刷B站冲浪足迹 <span class="hint">Autonomous Web Search & Bilibili Surf Logs</span></h3>
+      <div id="overview-exp-logs" class="scroll-y" style="max-height:220px"></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card">
+        <h3>7 维性格 <span class="hint">HEXACO × Attachment</span></h3>
+        <div id="persona-bars"></div>
+      </div>
+      <div class="card">
+        <h3>语义事实（防忽悠锁） <span class="hint">Semantic Facts</span></h3>
+        <div id="overview-facts" class="scroll-y"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 会话 -->
+  <section id="view-sessions" class="view">
+    <div class="sessions-layout">
+      <div class="card session-sidebar">
+        <h3>
+          <span style="display:flex;gap:6px;align-items:center">
+            <button class="btn sm primary" id="btn-mode-turns">⚡ 轮次会话</button>
+            <button class="btn sm" id="btn-mode-archive">💬 聊天存档</button>
+          </span>
+          <span class="hint" id="session-count"></span>
+        </h3>
+        <div id="session-list" class="scroll-y" style="max-height:720px"></div>
+      </div>
+      <div class="card session-main">
+        <div id="session-detail"></div>
+        <div id="archive-pane" style="display:none">
+          <h3><span id="stream-title">消息流</span> <span class="hint"><button class="btn sm" id="btn-stream-refresh">刷新</button></span></h3>
+          <div id="stream" class="stream"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 记忆 -->
+  <section id="view-memory" class="view">
+    <div class="grid g2" style="align-items:stretch">
+      <div class="card" style="display:flex;flex-direction:column">
+        <h3>语义事实 <span class="hint">Semantic Facts · 支持锁定或删除错误事实</span></h3>
+        <div class="form-row">
+          <input id="fact-subject" placeholder="主题（如：本群真实群主）" />
+          <input id="fact-text" placeholder="事实内容" />
+          <button class="btn primary" id="btn-add-fact">锁定</button>
+        </div>
+        <div id="memory-facts" class="scroll-y" style="max-height:310px"></div>
+        <h3 style="margin-top:16px">程序性条件反射默契 <span class="hint">Procedural Rules · 命中触发词与发言人时激活</span></h3>
+        <div id="memory-rules" class="scroll-y" style="max-height:210px;flex:1"></div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column">
+        <h3>海马体总结记忆 <span class="hint">Hippocampal Consolidated Summary · 艾宾浩斯保持率</span></h3>
+        <div id="memory-episodic" class="scroll-y" style="max-height:600px;flex:1"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 社交 -->
+  <section id="view-social" class="view">
+    <div class="card">
+      <h3>群友关系账本 <span class="hint" id="social-count"></span></h3>
+      <div class="form-row" style="margin-bottom:12px">
+        <input id="bond-new-uid" placeholder="QQ号（如 10007007）" style="max-width:200px" />
+        <input id="bond-new-name" placeholder="昵称（可选）" style="max-width:200px" />
+        <input id="bond-new-score" type="number" step="1" placeholder="好感度分数（如 200）" style="max-width:180px" />
+        <button class="btn primary sm" id="btn-bond-add">设定 / 新增好感度</button>
+      </div>
+      <div id="social-table" class="scroll-y"></div>
+    </div>
+  </section>
+
+  <!-- 性格 -->
+  <section id="view-persona" class="view">
+    <div class="grid g2" style="margin-bottom:14px">
+      <div class="card">
+        <h3>📜 最初基础人设卡 <span class="hint">config.json · persona.roleText（修改后即时热生效）</span></h3>
+        <div class="form-row"><label>名字</label><input id="persona-bot-name" placeholder="回音" /></div>
+        <div style="margin-bottom:8px">
+          <textarea id="persona-role-text" rows="5" style="width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--border-2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6;resize:vertical" placeholder="填写最初的基础角色设定提示词…"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn primary sm" id="btn-save-persona-card">💾 保存并热更新基础人设</button>
+          <button class="btn sm" id="btn-reconcile-persona" title="让大模型以当前基础人设为唯一标准，自动审计并清理旧记忆/旧词条中与当前人设冲突或过度复读的污染项">🧹 按当前人设智能清理冲突记忆</button>
+          <span class="lbl" id="persona-card-status"></span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🧬 7维性格实时合成人设指令 <span class="hint">由左侧可塑参数与下方性格词条动态生成</span></h3>
+        <div id="live-persona-directive" style="background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.75;color:var(--text);white-space:pre-wrap;max-height:185px;overflow-y:auto"></div>
+      </div>
+    </div>
+    <div class="grid g2" style="align-items:stretch">
+      <div class="card" style="display:flex;flex-direction:column">
+        <h3>可塑参数 <span class="hint">点击 +/- 手动微调</span></h3>
+        <div id="plastic-list" class="scroll-y" style="max-height:430px;flex:1"></div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column">
+        <h3>主人禁令 <span class="hint">禁用词硬过滤</span></h3>
+        <div class="form-row">
+          <input id="ban-input" placeholder="要禁止的用词，如：诶" />
+          <button class="btn primary" id="btn-add-ban">添加</button>
+        </div>
+        <div id="ban-list" class="tag-list" style="margin-bottom:14px;max-height:95px;overflow-y:auto"></div>
+        <h3 style="margin-top:16px">生长出的性格词条 <span class="hint">Persona Traits · 12h未复现自动衰减淘汰（上限15条）</span></h3>
+        <div id="trait-list" class="scroll-y" style="max-height:280px;flex:1"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>神经可塑性演化日志 <span class="hint">最近 30 条</span></h3>
+      <div id="plastic-logs" class="scroll-y"></div>
+    </div>
+  </section>
+
+
+
+  <!-- 技能 -->
+  <section id="view-skills" class="view">
+    <div class="card" style="margin-bottom:14px">
+      <h3>语音服务 <span class="hint">Feiyu GPU · 实时能力探测</span></h3>
+      <div id="voice-health"></div>
+    </div>
+    <div class="card">
+      <h3>
+        <span>技能管理 <span class="hint" style="margin-left:8px">单击行切换启用/禁用 · 点击「⚙ 设置」展开配置 · 点击「🗑 删除」移除技能</span></span>
+        <span id="skill-head-actions"></span>
+      </h3>
+      <div id="skill-groups"></div>
+    </div>
+  </section>
+
+  <!-- 模型 -->
+  <section id="view-model" class="view">
+    <div class="grid g2">
+      <div class="card">
+        <h3>🎯 主模型与推理参数 <span class="hint">Primary Model · 优先调用</span></h3>
+        <div class="form-row">
+          <label>服务商</label>
+          <select id="llm-primary-provider"></select>
+        </div>
+        <div class="form-row">
+          <label>主模型</label>
+          <input id="llm-model" list="llm-primary-models" placeholder="选择或输入模型名，如 deepseek-v4.1-flash" />
+          <datalist id="llm-primary-models"></datalist>
+        </div>
+        <div class="form-row"><label>网关地址</label><input id="llm-base" placeholder="http://127.0.0.1:9000/v1" /></div>
+        <div class="form-row"><label>API 密钥</label><input id="llm-key" type="password" placeholder="留空则使用服务商已存密钥" /></div>
+        <div class="grid g2" style="gap:10px">
+          <div class="form-row" style="margin:0"><label>超时ms</label><input id="llm-timeout" type="number" placeholder="90000" /></div>
+          <div class="form-row" style="margin:0"><label>温度</label><input id="llm-temp" type="number" step="0.1" min="0" max="2" placeholder="0.8" /></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🛡️ 多级故障转移备用模型链 <span class="hint">Ordered Fallback Chain · 按顺位依次降级</span></h3>
+        <div id="llm-fallback-chain" class="scroll-y" style="max-height:200px;margin-bottom:10px"></div>
+        <div class="form-row" style="margin-bottom:0">
+          <select id="llm-fb-add-provider" style="max-width:190px"></select>
+          <input id="llm-fb-add-model" list="llm-fb-models" placeholder="选择或输入备用模型名…" />
+          <datalist id="llm-fb-models"></datalist>
+          <button class="btn primary sm" id="btn-add-fallback" style="white-space:nowrap">➕ 加入备用链</button>
+        </div>
+        <input type="hidden" id="llm-fb-base" />
+        <input type="hidden" id="llm-fb-model" />
+        <input type="hidden" id="llm-fb-key" />
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>
+        <span>🏢 大模型服务商注册表 <span class="hint">Providers Registry · 支持接入多家 OpenAI 兼容网关</span></span>
+        <button class="btn sm primary" id="btn-add-provider">➕ 新增服务商</button>
+      </h3>
+      <div id="llm-providers-list"></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>💾 保存与热生效 <span class="hint" id="llm-path"></span></h3>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn primary" id="btn-save-llm">💾 保存全部服务商与备用链并热切换</button>
+        <button class="btn" id="btn-reload-llm">↺ 重新读取</button>
+        <span class="lbl" id="llm-status"></span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>实时请求流 <span class="hint">每次 LLM 调用命中的网关、模型与降级状态</span></h3>
+      <div id="llm-traces" class="scroll-y"></div>
+    </div>
+  </section>
+
+  <!-- 探针 -->
+  <section id="view-probe" class="view">
+    <div class="grid g2">
+      <div class="card">
+        <h3>认知探针 <span class="hint">不发送，只看她会怎么想</span></h3>
+        <div class="form-row"><label>发言人</label><input id="probe-sender" placeholder="10001001（留空=探针）" /></div>
+        <div class="form-row"><label>消息</label><textarea id="probe-text" placeholder="输入一条消息，查看 12 层认知核心渲染出的完整状态帧…">尾尾，你是不是吃醋了？</textarea></div>
+        <button class="btn primary" id="btn-probe">运行认知探针</button>
+        <div id="probe-meta" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <h3>渲染结果 <span class="hint">实际送入 LLM 的 MindBlock</span></h3>
+        <pre class="code" id="probe-output">尚未运行。</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 日志 -->
+  <section id="view-logs" class="view">
+    <div class="card">
+      <h3>运行日志 <span class="hint"><button class="btn sm" id="btn-log-refresh">刷新</button></span></h3>
+      <pre class="code" id="log-output">加载中…</pre>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+<script src="/static/app.js?v=202610292040"></script>
+</body>
+</html>

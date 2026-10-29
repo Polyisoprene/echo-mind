@@ -1,0 +1,253 @@
+"""Per-turn SocialBond/Fact updates and Hippocampal Batch Memory Summarization."""
+
+from __future__ import annotations
+
+import re
+from typing import Any
+
+from echomind.domain.models import (
+    EpisodicCard,
+    Percept,
+    PersonaTrait,
+    SemanticFact,
+    SocialBondProfile,
+    TurnOutcome,
+)
+from echomind.domain.ports import ILlmGateway, IMemoryReader, IMemoryWriter, IWorkingStateStore
+from echomind.mind.cybernetics import crystallize_self_organizing_schemas
+from echomind.mind.hippocampus import build_hippocampus_messages, parse_consolidation_json
+
+FACT_PATTERN = re.compile(
+    r"(?:记住|我叫|我是|我喜欢|我讨厌|我的名字是|他的ID是|她的ID是|外号叫|其实就是|对应的是)"
+    r"([^，。！？\n]{2,36})|([\u4e00-\u9fa5A-Za-z0-9]{2,12}就是[\u4e00-\u9fa5A-Za-z0-9]{2,12})"
+)
+SPOOF_CALLOUT_RE = re.compile(
+    r"忽悠|骗我|骗人|少骗|哄我|才不信|少来这套|蒙我|编瞎话|逗我玩|挖坑"
+)
+HIPPOCAMPUS_SPOOF_RE = re.compile(r"忽悠|挖坑|骗了|冒充|假称")
+AFFINITY_THRESHOLDS = (50.0, 100.0, 200.0, 500.0)
+
+
+def compute_affinity_level(score: float) -> int:
+    """Map raw affinity score to Lv.1..Lv.5 using thresholds (50, 100, 200, 500)."""
+    for idx, threshold in enumerate(AFFINITY_THRESHOLDS, start=1):
+        if score < threshold:
+            return idx
+    return 5
+
+
+def _default_bond(chat_key: str, percept: Percept, is_owner: bool) -> SocialBondProfile:
+    score = 9999.0 if is_owner else 10.0
+    return SocialBondProfile(
+        chat_key=chat_key,
+        user_id=percept.sender_id,
+        user_name=percept.sender_name or percept.sender_id,
+        group_role="owner" if is_owner else "member",
+        affinity_score=score,
+        affinity_level=compute_affinity_level(score),
+        msg_count=0,
+        trust_score=0.95 if is_owner else 0.75,
+    )
+
+
+def compute_affinity_delta(
+    percept: Percept, base_score: float, reward: float, *, conflict: bool = False
+) -> float:
+    """Compute variable positive or negative affinity delta with diminishing returns."""
+    if conflict:
+        return -6.0
+    if reward < 0.0:
+        return round(reward * 6.5, 2)
+    text_len = len(percept.text.strip())
+    raw_gain = 0.25 if text_len <= 2 else (0.85 if text_len <= 12 else 1.45)
+    if percept.is_at_me or percept.is_called_by_name:
+        raw_gain += 1.6
+    if percept.is_quoted_me or percept.is_poke_me:
+        raw_gain += 1.1
+    if reward >= 0.5:
+        raw_gain += (reward - 0.35) * 4.5
+    damping = 1.0 / (1.0 + max(0.0, base_score) / 220.0)
+    return round(max(0.1, raw_gain * damping), 2)
+
+
+def compute_trust_delta(
+    base_trust: float,
+    reward: float,
+    *,
+    conflict: bool = False,
+    spoof_called_out: bool = False,
+) -> float:
+    """Compute bidirectional epistemic trust delta from conflict, callout, and social reward."""
+    if conflict:
+        return -0.08
+    if spoof_called_out:
+        return -0.04
+    if reward <= -0.4:
+        return -0.03
+    if reward >= 0.4:
+        return 0.02
+    return 0.005 if base_trust < 0.80 else 0.0
+
+
+async def update_sender_bond(
+    reader: IMemoryReader,
+    writer: IMemoryWriter,
+    chat_key: str,
+    percept: Percept,
+    reward: float = 0.0,
+    *,
+    owner_qq: str = "",
+    conflict: bool = False,
+    spoof_called_out: bool = False,
+) -> None:
+    """Update a member's affinity score (bidirectional, variable rate) and trust score."""
+    is_owner = bool(owner_qq and percept.sender_id == owner_qq)
+    base = await reader.get_social_bond(chat_key, percept.sender_id) or _default_bond(
+        chat_key, percept, is_owner
+    )
+    delta = compute_affinity_delta(percept, base.affinity_score, reward, conflict=conflict)
+    new_score = 9999.0 if is_owner else round(max(0.0, min(9999.0, base.affinity_score + delta)), 2)
+    t_delta = compute_trust_delta(
+        base.trust_score, reward, conflict=conflict, spoof_called_out=spoof_called_out
+    )
+    new_trust = 1.0 if is_owner else round(max(0.1, min(0.98, base.trust_score + t_delta)), 3)
+    updated = base.model_copy(
+        update={
+            "user_name": percept.sender_name or base.user_name,
+            "affinity_score": new_score,
+            "affinity_level": compute_affinity_level(new_score),
+            "msg_count": base.msg_count + 1,
+            "trust_score": new_trust,
+        }
+    )
+    await writer.upsert_social_bond(updated)
+
+
+async def _extract_explicit_fact(
+    writer: IMemoryWriter, outcome: TurnOutcome, last: Percept, owner_qq: str
+) -> None:
+    if outcome.epistemic_conflict_detected or len(last.text.strip()) > 60:
+        return
+    match = FACT_PATTERN.search(last.text)
+    if not match:
+        return
+    clause = match.group(0).strip()
+    is_owner = bool(owner_qq and last.sender_id == owner_qq)
+    fact = SemanticFact(
+        chat_key=outcome.chat_key,
+        subject=f"{last.sender_name}({last.sender_id})"[:40],
+        fact_text=f"{last.sender_name}提到：{clause}"[:160],
+        confidence=0.88 if is_owner else 0.58,
+        is_locked=False,
+        source="owner" if is_owner else "peer",
+    )
+    await writer.upsert_semantic_fact(fact)
+
+
+async def consolidate_turn_memory(
+    reader: IMemoryReader,
+    writer: IMemoryWriter,
+    outcome: TurnOutcome,
+    _now_ms: int,
+    owner_qq: str = "",
+) -> None:
+    """Update social bond affinity/trust and explicit facts on turn completion."""
+    if not outcome.triggers:
+        return
+    called_out = bool(SPOOF_CALLOUT_RE.search(" ".join(outcome.sent_texts)))
+    seen: set[str] = set()
+    for p in reversed(outcome.triggers):
+        if p.sender_id in seen:
+            continue
+        seen.add(p.sender_id)
+        await update_sender_bond(
+            reader,
+            writer,
+            outcome.chat_key,
+            p,
+            outcome.social_reward,
+            owner_qq=owner_qq,
+            conflict=outcome.epistemic_conflict_detected,
+            spoof_called_out=called_out,
+        )
+    if outcome.sent_texts:
+        await _extract_explicit_fact(writer, outcome, outcome.triggers[-1], owner_qq)
+
+
+def _extract_llm_text(resp: dict[str, Any]) -> str:
+    choices = resp.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return ""
+    first = choices[0] if isinstance(choices[0], dict) else {}
+    raw_msg = first.get("message")
+    msg = raw_msg if isinstance(raw_msg, dict) else {}
+    return str(msg.get("content") or "").strip()
+
+
+async def _apply_hippocampal_working_updates(
+    working_store: IWorkingStateStore | None, new_trait: str, new_activity: str
+) -> None:
+    if working_store is None:
+        return
+    if new_trait:
+        trait = PersonaTrait(category="habit", trait_text=new_trait, strength=6)
+        await working_store.sync_persona_traits(new_trait=trait)
+    if new_activity:
+        snap = await working_store.load_working_state("global")
+        await working_store.save_working_state(
+            snap.model_copy(update={"current_activity": new_activity})
+        )
+
+
+async def _penalize_card_spoofers(
+    chat_key: str, card: EpisodicCard, reader: IMemoryReader, writer: IMemoryWriter
+) -> None:
+    if not HIPPOCAMPUS_SPOOF_RE.search(f"{card.summary} {card.key_detail}"):
+        return
+    for uid in card.participants:
+        bond = await reader.get_social_bond(chat_key, uid)
+        if bond and bond.group_role != "owner" and bond.affinity_score < 9000.0:
+            new_t = round(max(0.1, bond.trust_score - 0.05), 3)
+            await writer.upsert_social_bond(bond.model_copy(update={"trust_score": new_t}))
+
+
+async def _crystallize_schemas(
+    chat_key: str, reader: IMemoryReader, writer: IMemoryWriter
+) -> None:
+    cards = await reader.get_episodic_cards(chat_key)
+    facts = await reader.get_semantic_facts(chat_key)
+    for schema_fact in crystallize_self_organizing_schemas(chat_key, cards, facts):
+        await writer.upsert_semantic_fact(schema_fact)
+
+
+async def run_hippocampal_batch_consolidation(
+    chat_key: str,
+    reader: IMemoryReader,
+    writer: IMemoryWriter,
+    llm: ILlmGateway,
+    transcript_lines: tuple[str, ...],
+    *,
+    now_ms: int = 0,
+    working_store: IWorkingStateStore | None = None,
+    role_text: str = "",
+) -> int:
+    """Summarize a batch of dialogue lines into Hippocampal cards and grown persona traits."""
+    if len(transcript_lines) < 4:
+        return 0
+    facts = await reader.get_semantic_facts(chat_key)
+    locked = tuple(f for f in facts if f.is_locked)
+    msgs = build_hippocampus_messages(chat_key, transcript_lines, locked, role_text=role_text)
+    resp = await llm.complete(msgs, temperature=0.3, max_tokens=700, chat_key=chat_key)
+    batch = parse_consolidation_json(chat_key, _extract_llm_text(resp), now_ms)
+    for card in batch.cards:
+        await writer.save_episodic_card(card)
+        await _penalize_card_spoofers(chat_key, card, reader, writer)
+    for fact in batch.facts:
+        await writer.upsert_semantic_fact(fact)
+    for rule in batch.rules:
+        await writer.upsert_procedural_rule(rule)
+    await _crystallize_schemas(chat_key, reader, writer)
+    await _apply_hippocampal_working_updates(
+        working_store, batch.new_persona_trait, batch.new_activity
+    )
+    return len(batch.cards)
