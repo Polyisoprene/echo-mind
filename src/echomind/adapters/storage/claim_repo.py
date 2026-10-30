@@ -59,7 +59,7 @@ class SqliteClaimStore:
         self, chat_key: str, subject: str, predicate: str, value: str, *,
         source_type: str = "system", source_id: str = "",
         observed_at_ms: int | None = None, valid_from_ms: int = 0,
-        valid_to_ms: int | None = None,
+        valid_to_ms: int | None = None, weight_scale: float = 1.0, tag: str = "",
     ) -> int:
         """Insert (or reuse) a claim and attach this piece of evidence to it."""
         now = int(time.time() * 1000) if observed_at_ms is None else observed_at_ms
@@ -81,19 +81,24 @@ class SqliteClaimStore:
                      source_id or source_type),
                 )
                 claim_id = int(cursor.lastrowid or 0)
-            await self._attach(conn, claim_id, source_type, source_id, now)
+            await self._attach(
+                conn, claim_id, source_type, source_id, now,
+                weight_scale=weight_scale, tag=tag,
+            )
             await self._review_conflicts(conn, chat_key, subject, predicate, claim_id)
             await conn.commit()
         return claim_id
 
     async def _attach(
-        self, conn: Any, claim_id: int, source_type: str, source_id: str, now: int
+        self, conn: Any, claim_id: int, source_type: str, source_id: str, now: int, *,
+        weight_scale: float = 1.0, tag: str = "",
     ) -> None:
         weight = SOURCE_WEIGHT.get(source_type, 0.5) * SOURCE_RELIABILITY.get(source_type, 0.5)
+        weight *= max(0.0, min(1.0, weight_scale))
         await conn.execute(
             "INSERT INTO claim_evidence (claim_id, source_type, source_id, weight, "
-            "observed_at_ms) VALUES (?,?,?,?,?)",
-            (claim_id, source_type, source_id, round(weight, 4), now),
+            "observed_at_ms, raw_text) VALUES (?,?,?,?,?,?)",
+            (claim_id, source_type, source_id, round(weight, 4), now, tag),
         )
 
     async def _review_conflicts(
@@ -125,6 +130,13 @@ class SqliteClaimStore:
                 (chat_key, subject, predicate, f"{len(rows)} peer sources disagree",
                  int(time.time() * 1000)),
             )
+
+    async def has_tag(self, tag: str) -> bool:
+        async with self._db.connect() as conn:
+            cursor = await conn.execute(
+                "SELECT 1 FROM claim_evidence WHERE raw_text=? LIMIT 1", (tag,)
+            )
+            return await cursor.fetchone() is not None
 
     async def claim_belief(self, claim_id: int) -> float:
         async with self._db.connect() as conn:
