@@ -270,13 +270,13 @@ class SqliteMemoryRepository:
         sql = (
             "INSERT INTO social_bonds "
             "(chat_key, user_id, user_name, group_role, affinity_score, affinity_level, "
-            "msg_count, trust_score, bond_depth, is_rival, rival_reason, traits_json) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+            "msg_count, trust_score, bond_depth, last_seen_ms, is_rival, rival_reason, "
+            "traits_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
             "ON CONFLICT(chat_key, user_id) DO UPDATE SET "
             "user_name=excluded.user_name, group_role=excluded.group_role, "
             "affinity_score=excluded.affinity_score, affinity_level=excluded.affinity_level, "
             "msg_count=excluded.msg_count, trust_score=excluded.trust_score, "
-            "bond_depth=excluded.bond_depth, "
+            "bond_depth=excluded.bond_depth, last_seen_ms=excluded.last_seen_ms, "
             "is_rival=excluded.is_rival, rival_reason=excluded.rival_reason, "
             "traits_json=excluded.traits_json"
         )
@@ -290,7 +290,7 @@ class SqliteMemoryRepository:
             bond.affinity_level,
             bond.msg_count,
             bond.trust_score,
-            bond.bond_depth,
+            bond.bond_depth, bond.last_seen_ms,
             int(bond.is_rival),
             bond.rival_reason,
             traits_str,

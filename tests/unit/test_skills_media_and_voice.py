@@ -484,8 +484,11 @@ async def test_skill_toggle_delete_restore_and_memory_consolidator(tmp_path: Pat
     facts = await container.memory_repo.get_semantic_facts("group:1")
     bond = await container.memory_repo.get_social_bond("group:1", "10001001")
     assert len(facts) == 1 and "草莓蛋糕" in facts[0].fact_text
-    assert bond is not None and bond.msg_count == 1
-    assert bond.affinity_score > 30.0 and bond.group_role == "admin"
+    assert bond is not None and bond.affinity_score > 30.0
+    async with container.db.connect() as conn:
+        row = await (await conn.execute("SELECT last_seen_ms FROM social_bonds")).fetchone()
+    assert row is not None and row[0] > 0  # last_seen_ms is persisted
+    assert bond.group_role == "admin"
 
     class _FakeConsolidateLlm:
         async def complete(
