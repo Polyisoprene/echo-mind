@@ -53,7 +53,7 @@ async def test_ac5_1_to_ac5_5_bootstrap_and_fastapi_mind_inspector(tmp_path: Pat
         )
     )
 
-    app = create_web_app(container)
+    app = create_web_app(container, config_path=tmp_path / "config.json")
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
         # AC-5.5: GET / HTML console page
@@ -136,7 +136,7 @@ async def test_ac5_6_console_api_sessions_memory_persona_probe_and_logs(tmp_path
     log_file = tmp_path / "console.log"
     log_file.write_text("INFO: boot ok\n[EchoMind] ws connected\n", encoding="utf-8")
     container = await EchoMindContainer.create(db_path=tmp_path / "console.db")
-    app = create_web_app(container, log_path=log_file)
+    app = create_web_app(container, log_path=log_file, config_path=tmp_path / "config.json")
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
         async with container.db.connect() as conn:
@@ -291,7 +291,7 @@ async def test_ac5_7_llm_config_hot_reload_and_per_request_traces(tmp_path: Path
 
 async def test_ac5_8_turn_timeline_captures_every_llm_and_tool_step(tmp_path: Path) -> None:
     container = await EchoMindContainer.create(db_path=tmp_path / "turns.db")
-    app = create_web_app(container)
+    app = create_web_app(container, config_path=tmp_path / "config.json")
     transport = httpx.ASGITransport(app=app)
 
     record = TurnRecord(

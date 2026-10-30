@@ -486,7 +486,7 @@ async def test_stage8_persona_rubrics_and_holographic_session_telemetry(tmp_path
     assert "温柔粘人度(" in outcome.user_prompt
     assert "独占吃醋焦虑(" in outcome.user_prompt
 
-    app = create_web_app(container)
+    app = create_web_app(container, config_path=tmp_path / "config.json")
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
         r_html = await client.get("/")
@@ -642,7 +642,7 @@ async def test_stage10_dynamic_trust_calibration_and_manual_tuning(tmp_path: Pat
     assert bond2 is not None and bond2.trust_score == pytest.approx(0.66, abs=0.005)
 
     # 3. Console PUT /api/mind/bonds/{uid} supports manual trust_score tuning
-    app = create_web_app(container)
+    app = create_web_app(container, config_path=tmp_path / "config.json")
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
         r_put = (
