@@ -18,6 +18,8 @@ from echomind.web.ext_routers import (
     build_persona_card_router,
     build_skill_config_router,
 )
+from echomind.web.identity_router import build_identity_router
+from echomind.web.identity_service import IdentityConfigService
 from echomind.web.llm_config_service import LlmConfigService
 from echomind.web.mind_inspector_service import MindInspectorService
 from echomind.web.probe_service import CognitiveProbeService
@@ -281,6 +283,8 @@ def create_web_app(
     app.include_router(_asset_router(chat))
     app.include_router(_persona_router(inspector, skill_cfg))
     app.include_router(build_persona_card_router(llm, inspector))
+    identity = IdentityConfigService(config_path or Path("data/config.json"), container)
+    app.include_router(build_identity_router(identity))
     app.include_router(_memory_action_router(inspector))
     app.include_router(build_llm_and_voice_router(llm, chat, voice))
     app.include_router(build_skill_config_router(skill_cfg))

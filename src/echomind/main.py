@@ -158,7 +158,7 @@ def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotL
     )
     scheduler = _build_scheduler(container, caller, llm, bridge)
     container.scheduler = scheduler
-    return OneBotLiveRuntime(
+    runtime = OneBotLiveRuntime(
         ws_url=cfg.onebot.ws_url, http_url=cfg.onebot.http_url,
         access_token=cfg.onebot.access_token_value, self_id=cfg.self_qq or "10003003",
         allowed_groups=cfg.allowed_groups or ("10002002",),
@@ -167,6 +167,8 @@ def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotL
         cognitive=container.cognitive_facade, runner=runner, scheduler=scheduler, debounce_s=2.0,
         bond_store=container.bond_depth_store, bot_names=tuple(cfg.keywords),
     )
+    container.onebot_runtime = runtime
+    return runtime
 
 
 def build_live_asgi_app() -> FastAPI:

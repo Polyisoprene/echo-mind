@@ -73,6 +73,7 @@ class EchoMindContainer:
         self.published_turns: int = 0
         self.skill_config_store: SqliteSkillConfigStore | None = skill_config_store
         self.bond_depth_store: SqliteBondDepthStore | None = None
+        self.onebot_runtime: Any = None
 
     @classmethod
     async def create(
