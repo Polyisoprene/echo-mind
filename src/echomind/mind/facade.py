@@ -51,7 +51,7 @@ from echomind.mind.memory_consolidator import (
 )
 from echomind.mind.perceptual_gate import PerceptualGate
 from echomind.mind.personality import synthesize_live_persona_directive
-from echomind.mind.plasticity import NeuroplasticityEngine
+from echomind.mind.plasticity import NeuroplasticityEngine, apply_chord_reward
 from echomind.mind.salience_hydraulics import apply_speaking_satiation
 from echomind.mind.shadow_appraisal import (
     ShadowAppraisalResult,
@@ -263,7 +263,7 @@ class CognitiveCoreFacade:
             await self._working.save_working_state(satiated)
         if self._traces is not None and o.steps:
             await self._traces.save_turn(build_turn_record(o, now_ms))
-        chord = self._chord_cache.get(o.triggers[-1].message_id) if o.triggers else None
+        o, chord = apply_chord_reward(o, self._chord_cache, self._owner_qq)
         await consolidate_turn_memory(
             self._reader, self._writer, o, now_ms, self._owner_qq, chord=chord
         )
