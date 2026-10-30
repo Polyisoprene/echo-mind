@@ -57,12 +57,12 @@ async def apply_probe_if_allowed(
     working: IWorkingStateStore, owner_qq: str,
     cache: dict[str, SubconsciousChordResult], recent_lines: tuple[str, ...] = (),
     in_ambient_cooldown: bool = False,
-    probe_clock: dict[str, int] | None = None, min_probe_interval_ms: int = 0,
+    probe_clock: dict[str, int] | None = None, min_probe_interval_ms: int = 1_500,
 ) -> tuple[WorkingSnapshot, AttentionDecision]:
     """Probe the subconscious chord when gated in; mood drifts now only if the turn stays silent."""
     if not _is_probe_allowed(dec, percept, bond):
         return snap, dec
-    clock = probe_clock if probe_clock is not None else {}
+    clock: dict[str, int] = probe_clock if probe_clock is not None else probe.clock
     if not _budget_allows(dec, clock, percept, min_probe_interval_ms):
         return snap, dec
     clock[percept.chat_key] = percept.timestamp_ms

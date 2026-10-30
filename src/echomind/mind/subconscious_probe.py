@@ -234,6 +234,7 @@ class SubconsciousChordProbe:
 
     def __init__(self, llm: ILlmGateway, owner_qq: str = "") -> None:
         self._llm, self._owner_qq = llm, owner_qq
+        self.clock: dict[str, int] = {}
 
     async def appraise(
         self, percept: Percept, recent_lines: tuple[str, ...],

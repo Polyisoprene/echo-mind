@@ -35,6 +35,7 @@ class ChordFixtureProbe:
         ]
         self._default = fixture["default"]
         self.calls = 0
+        self.clock: dict[str, int] = {}
 
     async def appraise(
         self,
