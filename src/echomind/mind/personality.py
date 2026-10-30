@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 from echomind.domain.models import PersonaTrait, PlasticParamSpec, TurnOutcome
 from echomind.domain.persona_specs import persona_default
 from echomind.mind.naming import bot_naming
@@ -12,16 +14,56 @@ def _val(params: dict[str, PlasticParamSpec], key: str) -> float:
     return spec.value if spec is not None else persona_default(key)
 
 
+# param: convention:s30-attachment-softmax - temperature chosen so adjacent dimensions
+# blend instead of snapping between archetypes; fitted to operator anchors in S30-4.
+ATTACHMENT_BETA = 6.0
+# param: src:10.1037//0022-3514.61.2.226 - Bartholomew & Horowitz four-category model
+# (anxiety x avoidance quadrants). Values are quadrant centres in normalized [0,1] space.
+ATTACHMENT_ARCHETYPES: tuple[tuple[str, float, float, str], ...] = (
+    ("安全型", 0.25, 0.25, "低焦虑低回避：信任对方、情绪稳定，愿意自然亲近而不患得患失"),
+    ("痴迷型", 0.85, 0.25, "高焦虑低回避：强烈需要确认与偏爱，容易吃醋独占，怕被冷落"),
+    ("疏离型", 0.25, 0.85, "低焦虑高回避：习惯保持距离，不轻易袒露心事，被靠近时会退半步"),
+    ("恐惧型", 0.85, 0.85, "高焦虑高回避：又想要又怕受伤，独占欲强却嘴硬防备，常推开又偷看"),
+)
+
+
+def _normalize(value: float, low: float, high: float) -> float:
+    """Map a dimension to [0, 1] using its declared bounds."""
+    span = high - low
+    return 0.0 if span <= 0 else max(0.0, min(1.0, (value - low) / span))
+
+
+def describe_attachment(warmth: float, tsundere: float, possess: float) -> str:
+    """Render a continuous two-archetype attachment tone (no hard thresholds)."""
+    anxiety = _normalize(possess, 20.0, 98.0)
+    avoidance = _normalize(tsundere, 10.0, 95.0)
+    scored = [
+        (name, text, ATTACHMENT_BETA * (1.0 - ((anxiety - a) ** 2 + (avoidance - v) ** 2) ** 0.5))
+        for name, a, v, text in ATTACHMENT_ARCHETYPES
+    ]
+    peak = max(item[2] for item in scored)
+    weights = {
+        item[0]: math.exp(item[2] - peak) for item in scored
+    }
+    total = sum(weights.values()) or 1.0
+    ranked = sorted(
+        ((name, text, weights[name] / total) for name, text, _score in scored),
+        key=lambda item: item[2],
+        reverse=True,
+    )
+    first, second = ranked[0], ranked[1]
+    lead = round(first[2] * 100)
+    follow = round(second[2] * 100)
+    warmth_word = "温柔粘人" if warmth >= 60.0 else "清冷克制"
+    return (
+        f"{lead}% {first[0]}（{first[1]}）+ {follow}% {second[0]}（{second[1]}）；"
+        f"温度基调：{warmth_word}"
+    )
+
+
 def _describe_warmth_and_attachment(warmth: float, tsundere: float, possess: float) -> str:
-    if possess >= 88.0 and tsundere <= 50.0:
-        return "痴迷直球爆发态（2D依恋：极高依恋焦虑击穿防备，不想再忍了，大胆直白倾诉独占欲）"
-    if warmth >= 72.0 and tsundere < 55.0:
-        return "安全粘人态（2D依恋：低回避高温暖，放下了嘴硬防备，说话格外轻柔贴心）"
-    if tsundere >= 70.0:
-        return "恐惧-迷恋傲娇态（2D依恋：高焦虑高回避，心里很在乎却开启防御性嘴硬，爱说反话）"
-    if warmth <= 45.0:
-        return "疏离防备态（2D依恋：高回避低温暖，说话简短矜持，不轻易撒娇）"
-    return "软傲娇平衡态（平时温和乖巧，被夸或被逗时会害羞嘴硬一下）"
+    """Backwards-compatible alias for the S30-2 continuous renderer."""
+    return describe_attachment(warmth, tsundere, possess)
 
 
 def _describe_shadow_and_playfulness(

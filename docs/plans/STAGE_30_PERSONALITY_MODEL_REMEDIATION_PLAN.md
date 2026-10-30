@@ -240,6 +240,17 @@ AssertionError: rubric says high possessiveness but tone is '软傲娇平衡态�
   3. **AST 守卫**：禁止在 `_val`/`_p_val` 调用里再出现数字字面量默认值。
 - 回放对照（120 回合）：`wakes 2 / probe_calls 68 / double_apply 0 / reward_spread 1.09`，与改造前一致 → 无行为漂移。
 
+## 9.4 S30-2 已落地（叙事软混合）
+
+- 删除硬阈值分支，改为 **Bartholomew & Horowitz 四象限**（安全/痴迷/疏离/恐惧）在
+  (焦虑=独占度, 回避=傲娇度) 归一化空间中的 softmax 距离加权；
+- 渲染 top-2 + 百分比 + 温度基调，文本连续（相邻数值不会跳变）；
+- `ATTACHMENT_BETA=6.0` 标 `convention:s30-attachment-softmax`，原型坐标标
+  `src:10.1037//0022-3514.61.2.226`；
+- **I-3 由红转绿**；新增 I-3b 连续性测试；`test_stage3` 的旧文案断言同步更新；
+- 回放（120 回合）：`wakes 2 / probe_calls 68 / double_apply 0 / reward_spread 1.09` 与基线一致；
+  腔调文本固定 89 字，prompt 体积增幅 ≈ +1.3%（预算 ≤10%）。
+
 ## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）

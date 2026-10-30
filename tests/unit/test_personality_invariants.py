@@ -57,7 +57,6 @@ def test_i2_daily_change_is_capped() -> None:
     assert abs(total) <= 6.0, f"daily warmth drift {total:.1f} exceeds the 6-point cap"
 
 
-@pytest.mark.xfail(strict=True, reason="S30-2: narrative is still a hard branch")
 def test_i3_tone_cannot_contradict_rubric() -> None:
     """I-3: high possessiveness must be reflected in the rendered tone."""
     warmth, tsundere, possess = 73.4, 55.8, 93.4
@@ -67,6 +66,18 @@ def test_i3_tone_cannot_contradict_rubric() -> None:
     assert not (high_tier and "独占" not in tone), (
         f"rubric says high possessiveness but tone is {tone!r}"
     )
+
+
+def _dominant_archetype(tone: str) -> str:
+    return tone.split("% ", 1)[1].split("（", 1)[0]
+
+
+def test_i3b_tone_is_continuous() -> None:
+    """I-3b: a one-point change must not snap to a different dominant archetype."""
+    from echomind.mind.personality import describe_attachment
+
+    near = {_dominant_archetype(describe_attachment(70.0, 55.0, p)) for p in (60.0, 61.0, 62.0)}
+    assert len(near) == 1, f"tone jumped between archetypes: {near}"
 
 
 def test_i4_render_is_deterministic() -> None:
