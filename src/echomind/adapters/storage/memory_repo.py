@@ -9,6 +9,7 @@ from typing import Any, Literal, cast
 import aiosqlite
 
 from echomind.adapters.storage.claim_repo import mirror_fact
+from echomind.adapters.storage.claim_views import facts_v2_enabled, load_claim_facts
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import (
     EpisodicCard,
@@ -118,6 +119,8 @@ class SqliteMemoryRepository:
     async def get_semantic_facts(
         self, chat_key: str, min_confidence: float = 0.0
     ) -> tuple[SemanticFact, ...]:
+        if facts_v2_enabled():
+            return await load_claim_facts(self._db, chat_key)
         sql = (
             "SELECT id, chat_key, subject, fact_text, confidence, is_locked, "
             "source, revision_count "
