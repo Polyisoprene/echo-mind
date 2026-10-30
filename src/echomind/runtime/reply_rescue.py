@@ -29,6 +29,13 @@ def _is_inner_monologue(cleaned: str) -> bool:
     return META_MONOLOGUE_RE.search(cleaned) is not None
 
 
+def rescue_payload_json(text: str) -> str:
+    """Trace detail for a rescued reply so the exact sent text is auditable."""
+    import json
+
+    return json.dumps({"rescued": text}, ensure_ascii=False)
+
+
 def rescue_unsent_reply(raw_content: str, *, must_reply: bool = True) -> str | None:
     """Rescue a clean single-line spoken reply when LLM forgot to invoke send_message."""
     cleaned = _strip_reasoning_and_fences(raw_content)
