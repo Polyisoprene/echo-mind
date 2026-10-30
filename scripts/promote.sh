@@ -64,9 +64,18 @@ mkdir -p "$A_DIR/reports"
 { echo "commit=$SHA"; echo "date=$(date -Is)"; echo "gate=pass"; } > "$A_DIR/reports/promotion_${SHA}.txt"
 for sha in $COMMITS; do
   if ! git -C "$B_DIR" cherry-pick -n "$sha"; then
-    echo "[promote] cherry-pick 冲突，已回滚：$sha" >&2
-    git -C "$B_DIR" cherry-pick --abort || true
-    exit 3
+    UNMERGED="$(git -C "$B_DIR" diff --name-only --diff-filter=U || true)"
+    NON_DOCS="$(printf '%s\n' "$UNMERGED" | grep -v '^docs/' || true)"
+    if [[ -n "$UNMERGED" && -z "$NON_DOCS" ]]; then
+      # 仅文档冲突：B 线 docs/ 权威，保留 B 版本后继续
+      echo "[promote] 仅文档冲突，保留 B 线文档：$sha"
+      git -C "$B_DIR" checkout HEAD -- docs >/dev/null 2>&1 || true
+      git -C "$B_DIR" add -A >/dev/null 2>&1
+    else
+      echo "[promote] cherry-pick 冲突，已回滚：$sha" >&2
+      git -C "$B_DIR" cherry-pick --abort >/dev/null 2>&1 || git -C "$B_DIR" reset -q --hard HEAD
+      exit 3
+    fi
   fi
   # B 线的 docs/ 是权威版本，提交里携带的文档改动一律丢弃，避免重复冲突。
   git -C "$B_DIR" checkout HEAD -- docs >/dev/null 2>&1 || true
