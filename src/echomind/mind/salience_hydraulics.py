@@ -43,7 +43,7 @@ def record_dyadic_pair(
 
 
 def is_in_dyadic_dnd(
-    dyad_map: dict[str, tuple[str, str, int]], percept: Percept, owner_qq: str = ""
+    dyad_map: dict[str, tuple[str, str, int]], percept: Percept
 ) -> bool:
     """Return True if two non-owner peers are in an active 60s 1-on-1 exchange."""
     entry = dyad_map.get(percept.chat_key)
@@ -51,8 +51,6 @@ def is_in_dyadic_dnd(
         return False
     uid_a, uid_b, until_ms = entry
     if percept.timestamp_ms > until_ms:
-        return False
-    if owner_qq and percept.sender_id == owner_qq:
         return False
     return percept.sender_id in (uid_a, uid_b)
 
@@ -104,12 +102,9 @@ def _p_val(params: dict[str, PlasticParamSpec] | None, key: str, default: float)
 
 
 def _care_sender_bonus(
-    percept: Percept,
-    owner_qq: str,
-    poss: float,
-    speaker_bond: SocialBondProfile | None,
+    percept: Percept, poss: float, speaker_bond: SocialBondProfile | None
 ) -> tuple[float, str]:
-    w_care = compute_care_weight(percept.sender_id, owner_qq, speaker_bond)
+    w_care = compute_care_weight(percept.sender_id, speaker_bond)
     if w_care >= 0.15:
         b_care = round((0.10 + 0.12 * (poss / 100.0)) * w_care, 2)
         return b_care, f"+在意好友{b_care}"
@@ -127,12 +122,11 @@ def _positive_factors(
     has_unseen: bool,
     *,
     known_vocab: frozenset[str],
-    owner_qq: str,
     params: dict[str, PlasticParamSpec] | None,
     speaker_bond: SocialBondProfile | None = None,
 ) -> tuple[float, list[str]]:
     poss = _p_val(params, "persona_possessiveness", 75.0)
-    s_bonus, s_tag = _care_sender_bonus(percept, owner_qq, poss, speaker_bond)
+    s_bonus, s_tag = _care_sender_bonus(percept, poss, speaker_bond)
     bonus = s_bonus
     tags: list[str] = [s_tag] if s_tag else []
     if _is_question_or_long(percept.text):
@@ -177,7 +171,7 @@ def _negative_factors(
     if is_short_or_rep and not unknowns and not has_unseen and not percept.media:
         penalty += 0.18
         tags.append("-短讯0.18")
-    w_aver = compute_aversion_susceptibility(percept.sender_id, owner_qq, speaker_bond)
+    w_aver = compute_aversion_susceptibility(percept.sender_id, speaker_bond)
     if w_aver >= 1.25:
         penalty += 0.10
         tags.append("-反感对象0.10")
@@ -200,7 +194,7 @@ def _negative_factors(
 def evaluate_bidirectional_ambient(
     percept: Percept, working: WorkingSnapshot, unknowns: tuple[str, ...],
     has_unseen: bool, talkativeness: float, *,
-    known_vocab: frozenset[str] = frozenset(), owner_qq: str = "",
+    known_vocab: frozenset[str] = frozenset(),
     params: dict[str, PlasticParamSpec] | None = None,
     speaker_bond: SocialBondProfile | None = None,
 ) -> AttentionDecision:
@@ -220,10 +214,10 @@ def evaluate_bidirectional_ambient(
         )
     pos, p_tags = _positive_factors(
         percept, working, unknowns, has_unseen,
-        known_vocab=known_vocab, owner_qq=owner_qq, params=params, speaker_bond=speaker_bond,
+        known_vocab=known_vocab, params=params, speaker_bond=speaker_bond,
     )
     neg, n_tags = _negative_factors(
-        percept, working, unknowns, has_unseen, params, owner_qq=owner_qq, speaker_bond=speaker_bond
+        percept, working, unknowns, has_unseen, params, speaker_bond=speaker_bond
     )
     drv_pos = max(0.0, round((working.drives.social_expression - 42.0) / 300.0, 2))
     if drv_pos >= 0.02:

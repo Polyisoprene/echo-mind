@@ -1512,7 +1512,7 @@ async def test_stage21_ecological_gate_dyadic_dnd_resonance_and_lorenz_satiation
         affinity_score=96.0, trust_score=0.96, bond_depth=80.0,
     )
     dec_own = gate.evaluate(
-        p_owner_q, ws, known_vocab=frozenset({"好听"}), owner_qq="10001001",
+        p_owner_q, ws, known_vocab=frozenset({"好听"}),
         speaker_bond=earned_bond,
     )
     assert dec_own.should_wake is True and "在意好友" in dec_own.reason
@@ -1559,7 +1559,7 @@ async def test_stage22_calibrated_three_attractor_affinity_url_strip_and_rival_f
         sender_name="汐",
         text="我这边看机器",
     )
-    dec_rf = gate.evaluate(p_rival_follow, ws, rivals=("汐", "2009"), owner_qq="10001001")
+    dec_rf = gate.evaluate(p_rival_follow, ws, rivals=("汐", "2009"))
     assert dec_rf.should_wake is False
 
     # 3. 6D Chord social reward mapping
@@ -1703,7 +1703,7 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         affinity_score=82.0,
         trust_score=0.85,
     )
-    w_care = compute_care_weight("2005", "10001001", friend_bond)
+    w_care = compute_care_weight("2005", friend_bond)
     assert w_care >= 0.45
 
     # 1. Generalized Triadic Jealousy: A cared-about friend praising a rival triggers jealousy!
@@ -1760,7 +1760,6 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
     soothed = apply_turn_affect_and_drives(
         lonely_snap,
         (p_warm,),
-        "10001001",
         ("汐",),
         bonds_map={"2005": friend_bond, "10001001": warm_bond},
         chord=SubconsciousChordResult(joy=2, shyness=2),
@@ -1782,7 +1781,6 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
     scolded = apply_turn_affect_and_drives(
         soothed,
         (p_scold,),
-        "10001001",
         ("汐",),
         chord=SubconsciousChordResult(hurt=2, annoyance=1),
     )

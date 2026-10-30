@@ -30,9 +30,7 @@ def _pull(current: float, target: float, rate: float = 0.08) -> float:
     return round((target - current) * rate, 2)
 
 
-def compute_care_weight(
-    sender_id: str, owner_qq: str, bond: SocialBondProfile | None = None
-) -> float:
+def compute_care_weight(sender_id: str, bond: SocialBondProfile | None = None) -> float:
     """Compute continuous care/importance weight w_care(u) in [0.0, 1.0] for any person."""
     if bond is None or bond.is_rival:
         return 0.0
@@ -40,7 +38,7 @@ def compute_care_weight(
 
 
 def compute_aversion_susceptibility(
-    sender_id: str, owner_qq: str, bond: SocialBondProfile | None = None
+    sender_id: str, bond: SocialBondProfile | None = None
 ) -> float:
     """Compute aversion/irritation susceptibility w_aversion(u) in [0.35, 1.75]."""
     if bond is None:
@@ -81,7 +79,7 @@ def evaluate_triadic_jealousy(
 
 
 def check_owner_jealousy_trigger(
-    percept: Percept, owner_qq: str, rivals: tuple[str, ...],
+    percept: Percept, rivals: tuple[str, ...],
     *, chord: SubconsciousChordResult | None = None,
 ) -> bool:
     """Detect whether a deeply-cared speaker just triggered triadic jealousy."""
@@ -180,13 +178,13 @@ def _format_spillover(
 
 
 def _max_batch_jealousy(
-    triggers: tuple[Percept, ...], owner_qq: str, rivals: tuple[str, ...],
+    triggers: tuple[Percept, ...], rivals: tuple[str, ...],
     bonds_map: dict[str, SocialBondProfile] | None, chord: SubconsciousChordResult | None,
 ) -> tuple[float, str]:
     best_j, best_t = 0.0, ""
     for p in triggers:
         p_care = compute_care_weight(
-            p.sender_id, owner_qq, bonds_map.get(p.sender_id) if bonds_map else None
+            p.sender_id, bonds_map.get(p.sender_id) if bonds_map else None
         )
         jd, jt = evaluate_triadic_jealousy(p, p_care, rivals, chord=chord)
         if abs(jd) > abs(best_j):
@@ -195,7 +193,7 @@ def _max_batch_jealousy(
 
 
 def apply_turn_affect_and_drives(
-    snapshot: WorkingSnapshot, triggers: tuple[Percept, ...], owner_qq: str,
+    snapshot: WorkingSnapshot, triggers: tuple[Percept, ...],
     rivals: tuple[str, ...], unknown_terms: tuple[str, ...] = (), *,
     jealousy_sens: float = 1.2, curiosity_rate: float = 65.0,
     bonds_map: dict[str, SocialBondProfile] | None = None,
@@ -208,10 +206,10 @@ def apply_turn_affect_and_drives(
     last = triggers[-1] if triggers else None
     last_uid = last.sender_id if last else ""
     bond = bonds_map.get(last_uid) if bonds_map else None
-    w_care = compute_care_weight(last_uid, owner_qq, bond)
-    w_aver = compute_aversion_susceptibility(last_uid, owner_qq, bond)
+    w_care = compute_care_weight(last_uid, bond)
+    w_aver = compute_aversion_susceptibility(last_uid, bond)
     s_aff = 9999.0 if w_care >= 0.99 else (bond.affinity_score if bond else 35.0)
-    j_raw, j_thought = _max_batch_jealousy(triggers, owner_qq, rivals, bonds_map, chord)
+    j_raw, j_thought = _max_batch_jealousy(triggers, rivals, bonds_map, chord)
     j_delta = round(j_raw * (jealousy_sens if j_raw > 0 else 1.0), 2)
     v_rpe, att_delta, shy_boost, irr_delta = _chord_rpe_and_soothing(
         w_care, w_aver, j_delta, drv.attachment, speaker_aff=s_aff, curr_irr=aff.irritation,

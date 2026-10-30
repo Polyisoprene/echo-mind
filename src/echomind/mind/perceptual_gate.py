@@ -87,7 +87,7 @@ def _match_intention_slice(text: str, working: WorkingSnapshot) -> str:
 
 
 def _hits_working_focus(
-    percept: Percept, working: WorkingSnapshot, rivals: tuple[str, ...], owner_qq: str = ""
+    percept: Percept, working: WorkingSnapshot, rivals: tuple[str, ...]
 ) -> str:
     intent_hit = _match_intention_slice(percept.text, working)
     if intent_hit or _is_rival_speaker(percept, rivals):
@@ -213,13 +213,12 @@ class PerceptualGate:
         has_unseen: bool,
         *,
         record_state: bool,
-        owner_qq: str = "",
     ) -> AttentionDecision | None:
-        if is_in_dyadic_dnd(self._dyadic_dnd, percept, owner_qq=owner_qq):
+        if is_in_dyadic_dnd(self._dyadic_dnd, percept):
             return _wake_dec(
                 0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns, has_unseen, wake=False
             )
-        focus_hit = _hits_working_focus(percept, working, rivals, owner_qq)
+        focus_hit = _hits_working_focus(percept, working, rivals)
         if focus_hit or self._in_followup(percept, rivals, record_state=record_state):
             return _wake_dec(0.85, 2, focus_hit or "短期跟聊窗口内", unknowns, has_unseen)
         res_hit, res_reason = check_self_utterance_resonance(
@@ -242,7 +241,7 @@ class PerceptualGate:
         params: dict[str, PlasticParamSpec] | None = None,
         speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:
-        if is_in_dyadic_dnd(self._dyadic_dnd, percept, owner_qq=owner_qq):
+        if is_in_dyadic_dnd(self._dyadic_dnd, percept):
             return _wake_dec(
                 0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns, has_unseen, wake=False
             )
@@ -252,7 +251,7 @@ class PerceptualGate:
             return _wake_dec(0.30, 0, "群聊非点名冷却期内", unknowns, has_unseen, wake=False)
         dec = evaluate_bidirectional_ambient(
             percept, working, unknowns, has_unseen, talkativeness,
-            known_vocab=known_vocab, owner_qq=owner_qq, params=params, speaker_bond=speaker_bond,
+            known_vocab=known_vocab, params=params, speaker_bond=speaker_bond,
         )
         if dec.should_wake and record_state:
             self._last_ambient_wake_ms[percept.chat_key] = percept.timestamp_ms
@@ -261,7 +260,7 @@ class PerceptualGate:
     def evaluate(
         self, percept: Percept, working: WorkingSnapshot,
         known_vocab: frozenset[str] = frozenset(), rivals: tuple[str, ...] = (),
-        talkativeness: float = 58.0, *, record_state: bool = True, owner_qq: str = "",
+        talkativeness: float = 58.0, *, record_state: bool = True,
         params: dict[str, PlasticParamSpec] | None = None,
         speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:
@@ -280,7 +279,7 @@ class PerceptualGate:
             return direct_dec
         t2_dec = self._check_tier2_continuation(
             percept, working, rivals, unknowns, has_unseen,
-            record_state=record_state, owner_qq=owner_qq,
+            record_state=record_state,
         )
         if record_state:
             self._last_group_ts[percept.chat_key] = percept.timestamp_ms
@@ -290,5 +289,5 @@ class PerceptualGate:
         return self._evaluate_ambient_with_cooldown(
             percept, working, unknowns, has_unseen, talkativeness,
             record_state=record_state, known_vocab=known_vocab,
-            owner_qq=owner_qq, params=params, speaker_bond=speaker_bond,
+            params=params, speaker_bond=speaker_bond,
         )

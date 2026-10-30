@@ -19,14 +19,14 @@ def _bond(uid: str, affinity: float, trust: float) -> SocialBondProfile:
 
 def test_owner_gets_no_care_shortcut() -> None:
     ordinary = _bond(OWNER, 30.0, 0.75)
-    assert compute_care_weight(OWNER, OWNER, ordinary) == pytest.approx(0.0, abs=1e-6)
+    assert compute_care_weight(OWNER, ordinary) == pytest.approx(0.0, abs=1e-6)
     earned = _bond(OWNER, 95.0, 0.95).model_copy(update={"bond_depth": 80.0})
-    assert compute_care_weight(OWNER, OWNER, earned) > 0.4
+    assert compute_care_weight(OWNER, earned) > 0.4
 
 
 def test_owner_can_be_disliked() -> None:
     cold = _bond(OWNER, 20.0, 0.40)
-    assert compute_aversion_susceptibility(OWNER, OWNER, cold) >= 0.40
+    assert compute_aversion_susceptibility(OWNER, cold) >= 0.40
 
 
 def test_owner_reward_is_not_amplified() -> None:

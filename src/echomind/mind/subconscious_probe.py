@@ -216,10 +216,10 @@ def apply_chord_tensor_to_snapshot(
     """Apply 6D chord tensor to WorkingSnapshot and compute AttentionDecision."""
     from echomind.mind.drives import apply_turn_affect_and_drives, compute_care_weight
 
-    w_care = compute_care_weight(percept.sender_id, owner_qq, bond)
+    w_care = compute_care_weight(percept.sender_id, bond)
     bonds_map = {percept.sender_id: bond} if bond is not None else None
     updated = apply_turn_affect_and_drives(
-        snapshot, (percept,), owner_qq, (), bonds_map=bonds_map, chord=chord
+        snapshot, (percept,), (), bonds_map=bonds_map, chord=chord
     )
     unseen = any(not m.description for m in percept.media)
     dec = evaluate_chord_wake_decision(

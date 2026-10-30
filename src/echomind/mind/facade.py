@@ -124,7 +124,7 @@ class CognitiveCoreFacade:
         vocab = frozenset(f.subject.lower() for f in facts)
         dec = self._gate.evaluate(
             percept, snap, vocab, rivals, talkativeness=talk,
-            record_state=not dry_run, owner_qq=self._owner_qq, params=params, speaker_bond=s_bond,
+            record_state=not dry_run, params=params, speaker_bond=s_bond,
         )
         if not dry_run and self._sub_probe is not None:
             snap, dec = await apply_probe_if_allowed(
@@ -193,12 +193,12 @@ class CognitiveCoreFacade:
         last_dec = (
             self._gate.evaluate(
                 triggers[-1], snap, vocab, rivals, talkativeness=talk,
-                record_state=False, owner_qq=self._owner_qq, params=params, speaker_bond=s_bond,
+                record_state=False, params=params, speaker_bond=s_bond,
             ) if triggers else None
         )
         unknowns = last_dec.detected_unknown_terms if last_dec else ()
         updated = apply_turn_affect_and_drives(
-            snap, triggers, self._owner_qq, rivals, unknowns,
+            snap, triggers, rivals, unknowns,
             curiosity_rate=cur_rate, bonds_map=bonds_map, params=params, chord=chord,
         )
         return updated, last_dec, skep

@@ -84,7 +84,7 @@ async def apply_probe_if_allowed(
 def _care_of(percept: Percept, owner_qq: str, bond: SocialBondProfile | None) -> float:
     from echomind.mind.drives import compute_care_weight
 
-    return compute_care_weight(percept.sender_id, owner_qq, bond)
+    return compute_care_weight(percept.sender_id, bond)
 
 
 async def chord_for(

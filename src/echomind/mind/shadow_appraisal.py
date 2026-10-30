@@ -161,8 +161,8 @@ def evaluate_shadow_appraisal(
 
     aversion_line = _check_aversion(joined, chord)
     bond = bonds_map.get(last_uid)
-    w_care = compute_care_weight(last_uid, owner_qq, bond)
-    w_aver = compute_aversion_susceptibility(last_uid, owner_qq, bond)
+    w_care = compute_care_weight(last_uid, bond)
+    w_aver = compute_aversion_susceptibility(last_uid, bond)
     irr_delta, reactance_hit, react_line = _check_reactance_and_satiation(
         triggers, w_care, w_aver, affect, chord
     )

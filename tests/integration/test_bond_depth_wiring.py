@@ -28,8 +28,8 @@ async def test_attach_bond_depth_fills_and_boosts_care(tmp_path: Path) -> None:
     depth = filled["u1"].bond_depth
     assert depth > 30.0, f"depth must be filled from stats, got {depth}"
 
-    plain = compute_care_weight("u1", "", bonds["u1"])
-    earned = compute_care_weight("u1", "", filled["u1"])
+    plain = compute_care_weight("u1", bonds["u1"])
+    earned = compute_care_weight("u1", filled["u1"])
     assert earned > plain, f"earned depth must raise care ({plain} -> {earned})"
     assert earned <= 0.97
 
@@ -43,4 +43,4 @@ async def test_container_exposes_bond_store_and_keeps_care_backward_compatible(
     assert container.bond_depth_store is not None
     bond = SocialBondProfile(chat_key="g", user_id="u2", user_name="u2",
                              affinity_score=81.66, trust_score=0.85)
-    assert compute_care_weight("u2", "", bond) == 0.53, "zero depth must match the pre-29 formula"
+    assert compute_care_weight("u2", bond) == 0.53, "zero depth must match the pre-29 formula"
