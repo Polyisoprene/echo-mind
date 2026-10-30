@@ -33,6 +33,11 @@ def _as_list(value: Any) -> list[str]:
     return []
 
 
+def _self_qq(raw: dict[str, Any]) -> str:
+    legacy = _dict_of(_dict_of(raw, "skills"), "affinity").get("botQq")
+    return str(raw.get("selfQq") or legacy or "")
+
+
 def _dict_of(raw: dict[str, Any], key: str) -> dict[str, Any]:
     value = raw.get(key)
     return value if isinstance(value, dict) else {}
@@ -70,7 +75,7 @@ class IdentityConfigService:
             "ok": True,
             "bot_name": str(persona.get("botName") or naming.label()),
             "keywords": _as_list(store.get("keywords")) or list(naming.aliases),
-            "self_qq": str(raw.get("selfQq") or ""),
+            "self_qq": _self_qq(raw),
             "groups": _as_list(allow.get("groups")),
             "private": _as_list(allow.get("private")),
             "default_group": str(raw.get("defaultGroup") or ""),
