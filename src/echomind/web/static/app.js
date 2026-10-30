@@ -113,8 +113,10 @@ function setBar(barId, valElId, value, max) {
 }
 
 function setPlainBar(barId, value, max) {
-  const bar = $(barId);
-  if (bar) { const i = bar.querySelector('i'); if (i) i.style.width = Math.max(0, Math.min(100, (value / max) * 100)) + '%'; }
+  const el = $(barId);
+  if (!el) return;
+  const target = el.tagName === 'I' ? el : el.querySelector('i');
+  if (target) target.style.width = Math.max(0, Math.min(100, (value / max) * 100)) + '%';
 }
 
 const PERSONA_DIMS = [
