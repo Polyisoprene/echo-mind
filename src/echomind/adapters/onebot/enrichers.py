@@ -9,6 +9,7 @@ from typing import Any
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import MediaAttachment, Percept
 from echomind.domain.ports import ICaptionGateway, IPerceptEnricher
+from echomind.mind.naming import bot_naming
 
 ACOUSTIC_ECHO_RE = re.compile(
     r"有回音|产生回音|听到回音|没有回音|回音壁|回音消除|"
@@ -19,9 +20,10 @@ ACOUSTIC_ECHO_RE = re.compile(
 class QuoteStickerEnricher:
     """Enrich quoted message text with local sticker descriptions & #messageId."""
 
-    def __init__(self, db: SqliteDatabase, bot_names: tuple[str, ...] = ("回音", "尾尾")) -> None:
+    def __init__(self, db: SqliteDatabase, bot_names: tuple[str, ...] | None = None) -> None:
         self._db = db
-        self._bot_names = bot_names
+        naming = bot_naming()
+        self._bot_names = bot_names or tuple(dict.fromkeys([naming.label(), *naming.aliases]))
 
     def set_bot_names(self, names: tuple[str, ...]) -> None:
         """Hot-update the wake names used for call-by-name detection."""

@@ -15,6 +15,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.mind.naming import bot_naming
 
 BILI_OR_MEDIA_RE = re.compile(
     r"BV[0-9A-Za-z]{10}|b23\.tv|bilibili\.com|\[图片|\[视频|\[语音|\[合并转发"
@@ -39,12 +40,19 @@ REAGENT_TOOLS: dict[str, tuple[str, ...]] = {
         "profile_signature",
     ),
 }
-SCHEMA_IGNORE_KEYS = frozenset(
+_BASE_IGNORE_KEYS = frozenset(
     {
-        "回音", "主人", "群友", "今天", "刚才", "视频", "图片", "消息",
+        "群友", "今天", "刚才", "视频", "图片", "消息",
         "大家", "聊天", "觉得", "一个", "qq", "群聊", "群主", "自己",
     }
 )
+
+
+def schema_ignore_keys() -> frozenset[str]:
+    """Stop words plus the configured persona names (so a rename never leaks)."""
+    return _BASE_IGNORE_KEYS | frozenset(
+        n for n in (bot_naming().label(), *bot_naming().aliases) if n
+    )
 CONCEPT_TOKEN_RE = re.compile(r"[\u4e00-\u9fa5]{2,5}|[A-Za-z0-9]{2,12}")
 
 
@@ -53,7 +61,7 @@ def _card_concepts(card: EpisodicCard) -> tuple[str, ...]:
     tokens = [
         m.lower()
         for m in CONCEPT_TOKEN_RE.findall(raw)
-        if m.lower() not in SCHEMA_IGNORE_KEYS and not m.isdigit()
+        if m.lower() not in schema_ignore_keys() and not m.isdigit()
     ]
     return tuple(dict.fromkeys(tokens))
 

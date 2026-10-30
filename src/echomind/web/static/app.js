@@ -36,6 +36,13 @@ function applyTheme(theme) {
   if (btn) btn.textContent = next === 'light' ? '🌙 夜间' : '☀️ 白天';
 }
 
+function applyBotName(name) {
+  window.BOT_NAME = name;
+  document.title = 'EchoMind · ' + name + ' 认知控制台';
+  const sub = $('brand-sub');
+  if (sub) sub.textContent = name + ' · 12 层认知核心';
+}
+
 function initTheme() {
   let saved = 'dark';
   try { saved = localStorage.getItem('echomind_theme') || 'dark'; } catch (e) { /* ignore */ }
@@ -632,7 +639,7 @@ function renderStream(payload, opts) {
       ? '<span class="trace-hint' + (isOpen ? ' open' : '') + '" data-turn="' + i + '" data-trace-key="' + esc(traceKey) + '">🧠 ' + (turn.steps || []).length + ' 步处理过程</span>'
       : '';
     return '<div class="msg' + self + '"><div class="av">' + esc(initial) + '</div><div class="body">' +
-      '<div class="who">' + esc(m.is_self ? '回音' : m.sender_name) + '<span>' + fmtTime(m.ts) + '</span></div>' +
+      '<div class="who">' + esc(m.is_self ? (window.BOT_NAME || '我') : m.sender_name) + '<span>' + fmtTime(m.ts) + '</span></div>' +
       '<div class="text">' + esc(m.text) + '</div>' + hint +
       '<div class="trace-slot" id="trace-slot-' + i + '">' + (turn && isOpen ? tracePanel(turn) : '') + '</div></div></div>';
   }).join('');
@@ -1322,14 +1329,15 @@ async function loadPersonaCard(force) {
     const rtEl = $('persona-role-text');
     if (!force && state.personaLoaded && document.activeElement === rtEl) return;
     const d = await api('/api/mind/persona-card');
-    if ($('persona-bot-name')) $('persona-bot-name').value = d.bot_name || '回音';
+    if ($('persona-bot-name')) $('persona-bot-name').value = d.bot_name || '';
+  if (d.bot_name) applyBotName(d.bot_name);
     if (rtEl) rtEl.value = d.role_text || '';
     state.personaLoaded = true;
   } catch (e) { /* 静默 */ }
 }
 
 async function savePersonaCard() {
-  const bot_name = ($('persona-bot-name') && $('persona-bot-name').value.trim()) || '回音';
+  const bot_name = ($('persona-bot-name') && $('persona-bot-name').value.trim()) || (window.BOT_NAME || '我');
   const role_text = ($('persona-role-text') && $('persona-role-text').value.trim()) || '';
   try {
     const d = await api('/api/mind/persona-card', {
@@ -1606,6 +1614,7 @@ async function checkConnection() {
 async function boot() {
   initTheme();
   bindEvents();
+  loadPersonaCard(true).catch(function () { /* name is optional at boot */ });
   const initial = location.hash.slice(1);
   if (initial && document.getElementById('view-' + initial)) switchView(initial);
   await checkConnection();

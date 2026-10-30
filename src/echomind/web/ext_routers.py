@@ -49,7 +49,7 @@ class BondTunePayload(BaseModel):
 class PersonaCardPayload(BaseModel):
     """Request body for updating the initial base persona card."""
 
-    bot_name: str = "回音"
+    bot_name: str = ""
     role_text: str = ""
 
 

@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>EchoMind · 回音认知控制台</title>
+<title>EchoMind · 认知控制台</title>
 <link rel="stylesheet" href="/static/style.css?v=202610291140" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐋</text></svg>" />
 </head>
 <body>
 
 <header id="topbar">
-  <div class="brand">EchoMind<small>回音 · 12层认知核心</small></div>
+  <div class="brand">EchoMind<small id="brand-sub">12 层认知核心</small></div>
   <div class="chips">
     <span class="chip"><span id="dot-ws" class="dot"></span><span id="ws-label">NapCat 连接中…</span></span>
     <span class="chip">模型 <b id="chip-model">-</b></span>
@@ -162,7 +162,7 @@
     <div class="grid g2" style="margin-bottom:14px">
       <div class="card">
         <h3>📜 最初基础人设卡 <span class="hint">config.json · persona.roleText（修改后即时热生效）</span></h3>
-        <div class="form-row"><label>名字</label><input id="persona-bot-name" placeholder="回音" /></div>
+        <div class="form-row"><label>名字</label><input id="persona-bot-name" placeholder="机器人名字" /></div>
         <div style="margin-bottom:8px">
           <textarea id="persona-role-text" rows="5" style="width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--border-2);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.6;resize:vertical" placeholder="填写最初的基础角色设定提示词…"></textarea>
         </div>
