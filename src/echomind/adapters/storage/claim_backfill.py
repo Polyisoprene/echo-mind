@@ -19,11 +19,15 @@ _SUBJECT_SPLITTERS = ("提到：", "提到:", "说：", "说:")
 def normalize_fact(subject: str, value: str) -> tuple[str, str, str]:
     """Split "X提到：Y" subjects; such statements use predicate `mentioned` (multi-valued)."""
     text = str(subject or "")
+    body = str(value or "").strip()
     for sep in _SUBJECT_SPLITTERS:
         if sep in text:
             head, _, tail = text.partition(sep)
-            return (head.strip() or text), (tail.strip() or str(value or "").strip()), "mentioned"
-    return text, str(value or "").strip(), "value"
+            return (head.strip() or text), (tail.strip() or body), "mentioned"
+        if sep in body:
+            _, _, tail = body.partition(sep)
+            return text, (tail.strip() or body), "mentioned"
+    return text, body, "value"
 
 
 def source_kind(source: str, is_locked: bool) -> str:

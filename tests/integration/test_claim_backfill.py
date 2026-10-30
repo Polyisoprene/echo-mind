@@ -96,3 +96,12 @@ async def test_calibrated_weights_land_in_usable_band(tmp_path: Path) -> None:
                                       weight_scale=1.0)
     assert 0.4 <= await store.claim_belief(explored) <= 0.75
     assert await store.claim_belief(locked) >= 0.85
+
+
+def test_normalize_fact_strips_prefix_inside_value() -> None:
+    from echomind.adapters.storage.claim_backfill import normalize_fact
+
+    subject, value, predicate = normalize_fact(
+        "L", "L今晚早睡了吗提到：今天改代码"
+    )
+    assert subject == "L" and value == "今天改代码" and predicate == "mentioned"
