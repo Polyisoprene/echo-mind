@@ -33,7 +33,7 @@
 |---|---|---|---|---|
 | H1 | 主人 QQ `owner_qq` | 99 处 / 17 文件 | 情感特权已移除；`operator_ids` 已落地（禁言改由 operator 触发）；字段删除待续 | 🚧 |
 | H2 | 自身 QQ `self_qq` | `config.py:41`、`main.py:155` | 保留但加控制台入口（A5） | ⏳ |
-| H3 | 唤醒小名 `keywords` | **配置里已有** `('回音','尾尾','小回音')`，但 `web/llm_config_service.py:285` 与 `adapters/onebot/live_client.py:73` **硬编码 `("回音","尾尾")`** → 少一个名 | **双源 bug**：两处改读 config | ⏳ (P0) |
+| H3 | 唤醒小名 `keywords` | 两处硬编码已消除：语音唤醒走 `bot_names`，人格保存走配置 `store.keywords` | **双源 bug 已修**，配置加名即生效 | ✅ `907aa56` |
 | H4 | 群白名单 `allow.groups` | `config.py:227`、`main.py:156` | 控制台可编辑（A5） | ⏳ |
 | H5 | 私聊白名单 `allow.private` | `config.py:228`、`main.py:157` | 控制台可编辑（A5） | ⏳ |
 | H6 | 默认冒泡群 | `main.py:56,170` 取 `allowed_groups[0]` | 改为显式配置项；**不要**改成"最在乎的人"（会形成注意力自激环） | ⏳ |
@@ -190,4 +190,4 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
-| 2026-10-30 | A4-1：prompt 去「主人」化（中性措辞）；A4-2：新增 `BotNaming`，probe/hippocampus/renderer/scheduler/personality 全部按配置名渲染（默认仍是回音，改名即生效）；**D4 已执行**：备份 `data/backup_pre_d4_20261030_160722.db`；3 行 9999/owner → `A=30/T=.75/member/D=0`；`bond_depth_stats` 清空；`w_care(前主人)` 0.970 → 0.000；A3b-2/3：深度写回 `social_bonds.bond_depth`；新增清零迁移 `reset_privileged_bonds`（dry-run 演练：3 行，清洗后 owner 变回普通成员、`w_care=0`）；A3b-1：新增 `operator_ids`（config 解析 + 容器注入），禁言改由 operator 触发，普通群友无法再下禁令；A3 去特权：`w_care` 不再对 owner 短路、`w_aversion` 不再打 0.35 折、奖励不再 ×1.12、嫉妒/立场/显著性不再有 owner 分支（`555a03a`）；4 条相关测试改为「先有 bond 才有关爱」；A1 落地：API 写操作强制 token、`admin_audit` 审计、前端自动获取/提示 token（`operator_ids` 推迟到 A3b）；A2c 接线 + 回填 + P95 校准（`e2e6ba9`/`6c793f8`）；深度接入 `w_care`（`dad7a56`，读取时注入）；B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
+| 2026-10-30 | A4-3：唤醒小名统一走配置（修复双源硬编码），`bot_names` 注入 runtime；A4-1：prompt 去「主人」化（中性措辞）；A4-2：新增 `BotNaming`，probe/hippocampus/renderer/scheduler/personality 全部按配置名渲染（默认仍是回音，改名即生效）；**D4 已执行**：备份 `data/backup_pre_d4_20261030_160722.db`；3 行 9999/owner → `A=30/T=.75/member/D=0`；`bond_depth_stats` 清空；`w_care(前主人)` 0.970 → 0.000；A3b-2/3：深度写回 `social_bonds.bond_depth`；新增清零迁移 `reset_privileged_bonds`（dry-run 演练：3 行，清洗后 owner 变回普通成员、`w_care=0`）；A3b-1：新增 `operator_ids`（config 解析 + 容器注入），禁言改由 operator 触发，普通群友无法再下禁令；A3 去特权：`w_care` 不再对 owner 短路、`w_aversion` 不再打 0.35 折、奖励不再 ×1.12、嫉妒/立场/显著性不再有 owner 分支（`555a03a`）；4 条相关测试改为「先有 bond 才有关爱」；A1 落地：API 写操作强制 token、`admin_audit` 审计、前端自动获取/提示 token（`operator_ids` 推迟到 A3b）；A2c 接线 + 回填 + P95 校准（`e2e6ba9`/`6c793f8`）；深度接入 `w_care`（`dad7a56`，读取时注入）；B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
