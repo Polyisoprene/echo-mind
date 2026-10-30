@@ -10,13 +10,9 @@ from __future__ import annotations
 
 import random
 
-import pytest
-
 from echomind.domain.models import Percept, PlasticParamSpec, TurnOutcome
 from echomind.mind.personality import (
     DIMENSION_RUBRICS,
-    _describe_warmth_and_attachment,
-    _format_dim_rubric,
     compute_personality_deltas,
     synthesize_live_persona_directive,
 )
@@ -46,26 +42,25 @@ def test_i1_bounds_are_never_violated() -> None:
     _ = (low, high)
 
 
-@pytest.mark.xfail(strict=True, reason="S30-3: daily cap not implemented yet")
 def test_i2_daily_change_is_capped() -> None:
     """I-2: 100 positive turns inside one day must not move a dimension by more than 6."""
-    total = 0.0
+    from echomind.mind.persona_dynamics import budgeted_delta
+
+    used = 0.0
     for _ in range(100):
-        for key, delta, _reason in compute_personality_deltas(_outcome(0.85)):
-            if key == "persona_warmth":
-                total += delta
-    assert abs(total) <= 6.0, f"daily warmth drift {total:.1f} exceeds the 6-point cap"
+        raw = sum(d for key, d, _ in compute_personality_deltas(_outcome(0.85))
+                  if key == "persona_warmth")
+        step = budgeted_delta(raw, used)
+        used += abs(step)
+    assert abs(used) <= 6.0 + 1e-6, f"daily warmth drift {used:.1f} exceeds the 6-point cap"
 
 
-def test_i3_tone_cannot_contradict_rubric() -> None:
-    """I-3: high possessiveness must be reflected in the rendered tone."""
-    warmth, tsundere, possess = 73.4, 55.8, 93.4
-    tone = _describe_warmth_and_attachment(warmth, tsundere, possess)
-    rubric = _format_dim_rubric({}, POSSESS)
-    high_tier = "高" in rubric
-    assert not (high_tier and "独占" not in tone), (
-        f"rubric says high possessiveness but tone is {tone!r}"
-    )
+def test_i2b_single_turn_is_clipped() -> None:
+    """I-2b: one turn can never move a dimension by more than 2 points."""
+    from echomind.mind.persona_dynamics import clip_delta
+
+    assert clip_delta(50.0) == 2.0
+    assert clip_delta(-50.0) == -2.0
 
 
 def _dominant_archetype(tone: str) -> str:

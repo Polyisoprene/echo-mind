@@ -251,6 +251,23 @@ AssertionError: rubric says high possessiveness but tone is '软傲娇平衡态�
 - 回放（120 回合）：`wakes 2 / probe_calls 68 / double_apply 0 / reward_spread 1.09` 与基线一致；
   腔调文本固定 89 字，prompt 体积增幅 ≈ +1.3%（预算 ≤10%）。
 
+## 9.5 S30-3 已落地（慢回归 + 日限）
+
+新增 `mind/persona_dynamics.py`：
+
+| 常数 | 值 | 溯源 |
+|---|---|---|
+| 单回合裁剪 | ±2.0 | `convention:s30-dynamics` |
+| 日累计上限 | 6.0 / 维 | `convention:s30-dynamics` |
+| 回归速率 | 1% / 天（半衰期 ≈69 天） | `convention:s30-dynamics`，依据人格稳定性（Roberts & DelVecchio 2000） |
+| 追赶上限 | 30 天 | 防止长期停机后跳变 |
+
+- 日累计用量直接查 `plastic_logs`（`SUM(ABS(new_val-old_val))`），**无需新表**；
+- 回归按"距上次更新的天数"在当天首次更新时施加；
+- `plasticity.adapt_from_outcome` 抽出 `_apply_one`，只对 `persona_*` 走 `_persona_bounded_delta`；
+- **I-2 由红转绿**，新增 I-2b（单回合裁剪）与集成测试（引擎路径日限生效、回归量级正确）；
+- 回放（120 回合）：`wakes 2 / probe_calls 68 / double_apply 0 / reward_spread 1.09` 与基线一致。
+
 ## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）

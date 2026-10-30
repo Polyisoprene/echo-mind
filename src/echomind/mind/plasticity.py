@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import time
 from typing import TYPE_CHECKING
 
 from echomind.domain.models import PlasticParamSpec, TurnOutcome
 from echomind.domain.persona_specs import PERSONA_SPECS
 from echomind.domain.ports import IWorkingStateStore
+from echomind.mind.persona_dynamics import budgeted_delta, slow_regression
 from echomind.mind.personality import compute_personality_deltas, derive_emergent_trait
 from echomind.mind.subconscious_probe import compute_chord_social_reward
 
@@ -88,6 +90,20 @@ def compute_param_deltas(outcome: TurnOutcome) -> list[tuple[str, float, str]]:
     return adjustments
 
 
+async def _persona_bounded_delta(
+    store: object, key: str, snap: PlasticParamSpec, raw: float
+) -> float:
+    """Apply per-turn clip, slow daily regression and the per-dimension daily cap."""
+    now_ms = int(time.time() * 1000)
+    usage = getattr(store, "persona_day_usage", None)
+    last = getattr(store, "persona_last_update_ms", None)
+    used_today = await usage(key, now_ms - 86_400_000) if callable(usage) else 0.0
+    last_ms = await last(key) if callable(last) else now_ms
+    days = (now_ms - last_ms) / 86_400_000 if last_ms else 0.0
+    baseline = PARAM_BASELINES.get(key, snap.value)
+    return round(budgeted_delta(raw, used_today, slow_regression(snap.value, baseline, days)), 3)
+
+
 class NeuroplasticityEngine:
     """Apply behavioral & personality reinforcement adjustments via IWorkingStateStore."""
 
@@ -101,24 +117,33 @@ class NeuroplasticityEngine:
         current = await self._store.get_plastic_params()
         updated: list[PlasticParamSpec] = []
         for key, delta, reason in deltas:
-            snap = current.get(key)
-            if snap is None:
-                continue
-            damped = boundary_damping(snap.value, delta, snap.min_bound, snap.max_bound)
-            total = round(damped + homeostatic_pull(key, snap.value), 3)
-            clamped = max(snap.min_bound, min(snap.max_bound, round(snap.value + total, 3)))
-            if abs(clamped - snap.value) < 0.005:
-                continue
-            updated.append(
-                await self._store.update_plastic_param(
-                    key=key, delta=total, reason=reason, reward=outcome.social_reward
-                )
-            )
+            applied = await self._apply_one(key, delta, reason, current, outcome.social_reward)
+            if applied is not None:
+                updated.append(applied)
         emergent = derive_emergent_trait(outcome)
         shift = trait_strength_shift(outcome.social_reward)
         if emergent is not None or shift != 0:
             await self._store.sync_persona_traits(new_trait=emergent, strength_delta=shift)
         return tuple(updated)
+
+    async def _apply_one(
+        self, key: str, delta: float, reason: str,
+        current: dict[str, PlasticParamSpec], reward: float,
+    ) -> PlasticParamSpec | None:
+        """Damp, homeostatically pull and (for persona dims) bound one delta."""
+        snap = current.get(key)
+        if snap is None:
+            return None
+        damped = boundary_damping(snap.value, delta, snap.min_bound, snap.max_bound)
+        total = round(damped + homeostatic_pull(key, snap.value), 3)
+        if key.startswith("persona_"):
+            total = await _persona_bounded_delta(self._store, key, snap, total)
+        clamped = max(snap.min_bound, min(snap.max_bound, round(snap.value + total, 3)))
+        if abs(clamped - snap.value) < 0.005:
+            return None
+        return await self._store.update_plastic_param(
+            key=key, delta=total, reason=reason, reward=reward
+        )
 
     async def adapt_from_exogenous_info(
         self, kind: str, topic: str
