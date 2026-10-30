@@ -56,8 +56,8 @@ async def create_production_app(
     first_group = cfg.allowed_groups[0] if cfg.allowed_groups else "10002002"
     container = await EchoMindContainer.create(
         db_path=resolved_db,
-        owner_qq=cfg.owner_qq or "10001001",
         default_chat_key=f"group:{first_group}",
+        operator_ids=cfg.operator_ids,
     )
     app = create_web_app(container, config_path=config_path, auth_key=cfg.auth_key)
     return app, container
@@ -160,7 +160,7 @@ def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotL
         ws_url=cfg.onebot.ws_url, http_url=cfg.onebot.http_url,
         access_token=cfg.onebot.access_token_value, self_id=cfg.self_qq or "10003003",
         allowed_groups=cfg.allowed_groups or ("10002002",),
-        allowed_private=cfg.allowed_private, owner_qq=cfg.owner_qq or "10001001",
+        allowed_private=cfg.allowed_private, operator_ids=cfg.operator_ids,
         db=container.db, pipeline=PerceptEnrichmentPipeline(container.registry.sensors),
         cognitive=container.cognitive_facade, runner=runner, scheduler=scheduler, debounce_s=2.0,
         bond_store=container.bond_depth_store,
@@ -177,7 +177,7 @@ def build_live_asgi_app() -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         container = await EchoMindContainer.create(
             db_path=Path("data/echomind.db"),
-            owner_qq=cfg.owner_qq or "10001001",
+            operator_ids=cfg.operator_ids,
             default_chat_key=f"group:{cfg.allowed_groups[0]}"
             if cfg.allowed_groups
             else "group:10002002",

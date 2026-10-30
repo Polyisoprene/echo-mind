@@ -161,7 +161,6 @@ def _negative_factors(
     has_unseen: bool,
     params: dict[str, PlasticParamSpec] | None,
     *,
-    owner_qq: str = "",
     speaker_bond: SocialBondProfile | None = None,
 ) -> tuple[float, list[str]]:
     penalty = 0.0

@@ -118,7 +118,7 @@ def _is_allowed_message(
     ev: dict[str, Any],
     self_id: str,
     allowed_groups: frozenset[str],
-    owner_qq: str,
+    operator_ids: tuple[str, ...],
     allowed_private: frozenset[str] = frozenset(),
 ) -> bool:
     uid = str(ev.get("user_id", ""))
@@ -127,7 +127,9 @@ def _is_allowed_message(
     mtype = str(ev.get("message_type", ""))
     if mtype == "group":
         return str(ev.get("group_id", "")) in allowed_groups
-    return (not owner_qq and not allowed_private) or (uid == owner_qq) or (uid in allowed_private)
+    if not operator_ids and not allowed_private:
+        return True
+    return uid in operator_ids or (uid in allowed_private)
 
 
 def _resolve_sender_name(ev: dict[str, Any], uid: str) -> str:
@@ -141,7 +143,7 @@ def _resolve_sender_name(ev: dict[str, Any], uid: str) -> str:
 
 def parse_onebot_event(
     ev: dict[str, Any], self_id: str, allowed_groups: frozenset[str],
-    owner_qq: str, allowed_private: frozenset[str] = frozenset(),
+    operator_ids: tuple[str, ...], allowed_private: frozenset[str] = frozenset(),
 ) -> Percept | None:
     """Parse a raw OneBot v11 message/poke event dict into an immutable Percept."""
     post_type = str(ev.get("post_type", ""))
@@ -149,7 +151,7 @@ def parse_onebot_event(
     if post_type == "notice":
         return _parse_poke_event(ev, self_id, allowed_groups, now_ms)
     if post_type != "message" or not _is_allowed_message(
-        ev, self_id, allowed_groups, owner_qq, allowed_private
+        ev, self_id, allowed_groups, operator_ids, allowed_private
     ):
         return None
     uid, mtype = str(ev.get("user_id", "")), str(ev.get("message_type", ""))

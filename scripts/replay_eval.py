@@ -108,7 +108,8 @@ def _instrument() -> None:
 
 async def _replay(args: argparse.Namespace, work_db: Path) -> dict[str, Any]:
     container = await EchoMindContainer.create(
-        db_path=work_db, owner_qq=args.owner, default_chat_key=args.chat_key
+        db_path=work_db, operator_ids=(args.owner,) if args.owner else (),
+        default_chat_key=args.chat_key
     )
     facade = container.cognitive_facade
     probe = ChordFixtureProbe(args.fixture)

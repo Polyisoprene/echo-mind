@@ -39,7 +39,6 @@ class AppConfig(FrozenValueObject):
 
     bot_name: str = "Echo"
     self_qq: str = ""
-    owner_qq: str = ""
     operator_ids: tuple[str, ...] = ()
     role_text: str = ""
     server_host: str = "127.0.0.1"
@@ -186,20 +185,20 @@ def _build_onebot_cfg(sl: dict[str, Any]) -> OneBotConnConfig:
     )
 
 
-def _resolve_operators(raw: dict[str, Any], owner_qq: str) -> tuple[str, ...]:
+def _resolve_operators(raw: dict[str, Any], legacy_owner: str) -> tuple[str, ...]:
     """Read operatorIds (list or comma string); fall back to the owner for compatibility."""
     value = raw.get("operatorIds")
     if isinstance(value, str):
         value = [v.strip() for v in value.split(",")]
     ids = tuple(str(v).strip() for v in value if str(v).strip()) if isinstance(value, list) else ()
-    return ids or ((owner_qq,) if owner_qq else ())
+    return ids or ((legacy_owner,) if legacy_owner else ())
 
 
 def _resolve_identities(raw: dict[str, Any]) -> tuple[str, str]:
     aff = _sub_dict(_sub_dict(raw, "skills"), "affinity")
     self_qq = _get_str(raw, "selfQq") or _get_str(aff, "botQq")
-    owner_qq = _get_str(raw, "ownerQq") or _get_str(aff, "ownerQq")
-    return self_qq, owner_qq
+    legacy_owner = _get_str(raw, "ownerQq") or _get_str(aff, "ownerQq")
+    return self_qq, legacy_owner
 
 
 def _resolve_feiyu(raw: dict[str, Any]) -> tuple[str, str, str]:
@@ -222,15 +221,14 @@ def load_config_from_json(path: Path) -> AppConfig:
     allow = _sub_dict(raw, "allow")
     api_section = _sub_dict(raw, "api")
     store = _sub_dict(raw, "store")
-    self_qq, owner_qq = _resolve_identities(raw)
+    self_qq, legacy_owner = _resolve_identities(raw)
     f_url, f_key, f_style = _resolve_feiyu(raw)
     fb_one = _build_fallback_llm(api_section)
 
     return AppConfig(
         bot_name=_get_str(persona, "botName", "Echo"),
         self_qq=self_qq,
-        owner_qq=owner_qq,
-        operator_ids=_resolve_operators(raw, owner_qq),
+        operator_ids=_resolve_operators(raw, legacy_owner),
         role_text=_get_str(persona, "roleText", ""),
         server_host=_get_str(server, "host", "127.0.0.1"),
         server_port=_get_int(server, "port", 3310),

@@ -161,7 +161,7 @@ async def test_ac6_4_live_onebot_event_parser_and_runtime_dispatch(tmp_path: Pat
             {"type": "text", "data": {"text": " 尾尾晚安"}},
         ],
     }
-    p1 = parse_onebot_event(ev_msg, "10003003", groups, "10001001")
+    p1 = parse_onebot_event(ev_msg, "10003003", groups, ("10001001",))
     assert p1 is not None and p1.is_at_me is True and "尾尾晚安" in p1.text
 
     # 2. Poke event targeting bot
@@ -173,12 +173,12 @@ async def test_ac6_4_live_onebot_event_parser_and_runtime_dispatch(tmp_path: Pat
         "target_id": 10003003,
         "time": 1700000005,
     }
-    p2 = parse_onebot_event(ev_poke, "10003003", groups, "10001001")
+    p2 = parse_onebot_event(ev_poke, "10003003", groups, ("10001001",))
     assert p2 is not None and p2.is_poke_me is True
 
     # 3. Ignore self message or unauthorized group
-    assert parse_onebot_event({**ev_msg, "user_id": 10003003}, "10003003", groups, "") is None
-    assert parse_onebot_event({**ev_msg, "group_id": 11111}, "10003003", groups, "") is None
+    assert parse_onebot_event({**ev_msg, "user_id": 10003003}, "10003003", groups, ()) is None
+    assert parse_onebot_event({**ev_msg, "group_id": 11111}, "10003003", groups, ()) is None
 
     # 4. End-to-end OneBotLiveRuntime.handle_raw_event
     _app, container = await create_production_app(db_path=tmp_path / "live_rt.db")
@@ -200,7 +200,7 @@ async def test_ac6_4_live_onebot_event_parser_and_runtime_dispatch(tmp_path: Pat
         access_token="",
         self_id="10003003",
         allowed_groups=("10002002",),
-        owner_qq="10001001",
+        operator_ids=("10001001",),
         db=container.db,
         pipeline=PerceptEnrichmentPipeline(container.registry.sensors),
         cognitive=container.cognitive_facade,

@@ -73,7 +73,7 @@ class CognitiveCoreFacade:
 
     def __init__(
         self, mem_reader: IMemoryReader, mem_writer: IMemoryWriter,
-        working_store: IWorkingStateStore, owner_qq: str = "",
+        working_store: IWorkingStateStore,
         default_group_key: str = "group:10002002", *,
         constraint_store: IPersonaConstraintStore | None = None,
         trace_store: ITurnTraceStore | None = None,
@@ -81,11 +81,11 @@ class CognitiveCoreFacade:
         operator_ids: tuple[str, ...] = (),
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
-        self._owner_qq, self._default_group = owner_qq, default_group_key
+        self._default_group = default_group_key
         self._gate, self._calibrator = PerceptualGate(), EpistemicCalibrator()
         self._constraints, self._traces = constraint_store, trace_store
         self._bond_store = bond_store
-        self._operator_ids = tuple(operator_ids) or ((owner_qq,) if owner_qq else ())
+        self._operator_ids = tuple(operator_ids)
         self._plasticity = NeuroplasticityEngine(working_store)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
@@ -98,9 +98,6 @@ class CognitiveCoreFacade:
     def cache_chord(self, message_id: str, chord: SubconsciousChordResult) -> None:
         remember_chord(self._chord_cache, message_id, chord)
 
-    @property
-    def owner_qq(self) -> str:
-        return self._owner_qq
 
     @property
     def last_active_ms(self) -> int:
@@ -171,7 +168,7 @@ class CognitiveCoreFacade:
         )
         if not dry_run:
             await self._working.save_working_state(updated)
-            if new_irr > 85.0 and triggers and triggers[-1].sender_id != self._owner_qq:
+            if new_irr > 85.0 and triggers:
                 last = triggers[-1]
                 self._gate.impose_cold_shoulder(chat_key, last.sender_id, last.timestamp_ms)
         return updated, shadow, synthesize_live_persona_directive(params, traits)
@@ -264,7 +261,7 @@ class CognitiveCoreFacade:
             await self._traces.save_turn(build_turn_record(o, now_ms))
         o, chord = apply_chord_reward(o, self._chord_cache)
         await consolidate_turn_memory(
-            self._reader, self._writer, o, now_ms, self._owner_qq, chord=chord
+            self._reader, self._writer, o, now_ms, chord=chord
         )
         await self._plasticity.adapt_from_outcome(o)
 
@@ -273,7 +270,7 @@ class CognitiveCoreFacade:
         params = await self._working.get_plastic_params()
         idle_target = params["proactive_idle_min"].value if "proactive_idle_min" in params else 10.0
         idle_min = max(0.0, (now_ms - self._last_active_ms) / 60_000.0)
-        priv_key = f"private:{self._owner_qq}" if self._owner_qq else ""
+        priv_key = f"private:{self._operator_ids[0]}" if self._operator_ids else ""
         proposal = arbitrate_autonomous_action(
             raw_snap, self._default_group, priv_key, idle_min,
             proactive_idle_min=idle_target, now_ms=now_ms,

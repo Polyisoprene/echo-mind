@@ -166,10 +166,8 @@ def apply_chord_reward(
     chord = cache.get(outcome.triggers[-1].message_id)
     if chord is None:
         return outcome, None
-    last = outcome.triggers[-1]
-    is_owner = False
     is_poke = any(p.is_poke_me for p in outcome.triggers)
-    reward = compute_chord_social_reward(chord, is_poke=is_poke, is_owner=is_owner)
+    reward = compute_chord_social_reward(chord, is_poke=is_poke)
     return outcome.model_copy(update={"social_reward": reward}), chord
 
 

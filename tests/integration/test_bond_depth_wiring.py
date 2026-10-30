@@ -38,7 +38,7 @@ async def test_container_exposes_bond_store_and_keeps_care_backward_compatible(
     tmp_path: Path,
 ) -> None:
     container = await EchoMindContainer.create(
-        db_path=tmp_path / "c.db", owner_qq="10001001", default_chat_key="group:10002002"
+        db_path=tmp_path / "c.db", operator_ids=("10001001",), default_chat_key="group:10002002"
     )
     assert container.bond_depth_store is not None
     bond = SocialBondProfile(chat_key="g", user_id="u2", user_name="u2",

@@ -25,7 +25,7 @@ def _make_db(path: Path, uid: str, name: str, text: str) -> None:
     """Seed a one-message synthetic history so polarity can be measured in isolation."""
 
     async def _seed() -> None:
-        await EchoMindContainer.create(db_path=path, owner_qq=OWNER, default_chat_key=CK)
+        await EchoMindContainer.create(db_path=path, operator_ids=(OWNER,), default_chat_key=CK)
         conn = sqlite3.connect(str(path))
         with conn:
             conn.execute(

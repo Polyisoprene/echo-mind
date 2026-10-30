@@ -41,7 +41,7 @@ class _CountingLlm:
 async def test_rg_f3_probe_once_per_batch(tmp_path: Path) -> None:
     """Four ambient messages inside two seconds must cost at most two probes."""
     container = await EchoMindContainer.create(
-        db_path=tmp_path / "f3.db", owner_qq=OWNER, default_chat_key=CK
+        db_path=tmp_path / "f3.db", operator_ids=(OWNER,), default_chat_key=CK
     )
     facade = container.cognitive_facade
     llm = _CountingLlm()

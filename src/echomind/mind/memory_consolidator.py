@@ -130,11 +130,11 @@ def compute_trust_delta(
 
 async def update_sender_bond(
     reader: IMemoryReader, writer: IMemoryWriter, chat_key: str,
-    percept: Percept, reward: float = 0.0, *, owner_qq: str = "",
+    percept: Percept, reward: float = 0.0, *, operator_ids: tuple[str, ...] = (),
     conflict: bool = False, spoof_called_out: bool = False, bot_pushback: bool = False,
 ) -> None:
     """Update a member's affinity score (Three-Attractor + Trust Cap) and trust score."""
-    is_owner = bool(owner_qq and percept.sender_id == owner_qq)
+    is_owner = percept.sender_id in operator_ids
     base = await reader.get_social_bond(chat_key, percept.sender_id) or _default_bond(
         chat_key, percept, is_owner
     )
@@ -166,12 +166,12 @@ async def update_sender_bond(
 
 async def _extract_explicit_fact(
     writer: IMemoryWriter, outcome: TurnOutcome, last: Percept,
-    owner_qq: str, chord: SubconsciousChordResult | None = None,
+    operator_ids: tuple[str, ...] = (), chord: SubconsciousChordResult | None = None,
 ) -> None:
     clause = chord.explicit_fact.strip() if chord is not None else ""
     if outcome.epistemic_conflict_detected or not clause:
         return
-    is_owner = bool(owner_qq and last.sender_id == owner_qq)
+    is_owner = last.sender_id in operator_ids
     await writer.upsert_semantic_fact(
         SemanticFact(
             chat_key=outcome.chat_key, subject=f"{last.sender_name}({last.sender_id})"[:40],
@@ -184,7 +184,8 @@ async def _extract_explicit_fact(
 
 async def consolidate_turn_memory(
     reader: IMemoryReader, writer: IMemoryWriter, outcome: TurnOutcome,
-    _now_ms: int, owner_qq: str = "", *, chord: SubconsciousChordResult | None = None,
+    _now_ms: int, operator_ids: tuple[str, ...] = (), *,
+    chord: SubconsciousChordResult | None = None,
 ) -> None:
     """Update social bond affinity/trust and explicit facts on turn completion."""
     if not outcome.triggers:
@@ -198,11 +199,13 @@ async def consolidate_turn_memory(
         seen.add(p.sender_id)
         await update_sender_bond(
             reader, writer, outcome.chat_key, p, outcome.social_reward,
-            owner_qq=owner_qq, conflict=outcome.epistemic_conflict_detected,
+            operator_ids=operator_ids, conflict=outcome.epistemic_conflict_detected,
             spoof_called_out=called_out, bot_pushback=pushed_back,
         )
     if outcome.sent_texts:
-        await _extract_explicit_fact(writer, outcome, outcome.triggers[-1], owner_qq, chord=chord)
+        await _extract_explicit_fact(
+            writer, outcome, outcome.triggers[-1], operator_ids, chord=chord
+        )
 
 
 def _extract_llm_text(resp: dict[str, Any]) -> str:

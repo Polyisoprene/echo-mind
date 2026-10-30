@@ -44,7 +44,7 @@ def _percept(mid: str, ts: int) -> Percept:
 async def test_rg_f5_cooldown_not_bypassed(tmp_path: Path) -> None:
     """Two chord-driven ambient wakes within 75s: the second must be cooled down."""
     container = await EchoMindContainer.create(
-        db_path=tmp_path / "f5.db", owner_qq=OWNER, default_chat_key=CK
+        db_path=tmp_path / "f5.db", operator_ids=(OWNER,), default_chat_key=CK
     )
     facade = container.cognitive_facade
     facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm()))

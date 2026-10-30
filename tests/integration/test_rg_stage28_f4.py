@@ -45,7 +45,7 @@ def _percept() -> Percept:
 async def test_rg_f4_chord_applied_once(tmp_path: Path, monkeypatch: Any) -> None:
     """A waking turn must apply the chord at exactly one layer (gate xor cognitive frame)."""
     container = await EchoMindContainer.create(
-        db_path=tmp_path / "f4.db", owner_qq=OWNER, default_chat_key=CK
+        db_path=tmp_path / "f4.db", operator_ids=(OWNER,), default_chat_key=CK
     )
     facade = container.cognitive_facade
     facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm()))

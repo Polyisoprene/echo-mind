@@ -56,7 +56,7 @@ async def _run_turn(
 ) -> float:
     """Drive the exact production path: gate probe -> on_turn_completed -> bond trust."""
     container = await EchoMindContainer.create(
-        db_path=db_path, owner_qq=OWNER, default_chat_key=CK
+        db_path=db_path, operator_ids=(OWNER,), default_chat_key=CK
     )
     facade = container.cognitive_facade
     facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm(payload)))

@@ -145,7 +145,7 @@ class OneBotLiveRuntime:
 
     def __init__(
         self, *, ws_url: str, access_token: str, self_id: str,
-        allowed_groups: tuple[str, ...], owner_qq: str, db: SqliteDatabase,
+        allowed_groups: tuple[str, ...], operator_ids: tuple[str, ...], db: SqliteDatabase,
         pipeline: PerceptEnrichmentPipeline, cognitive: ICognitiveCoreFacade,
         runner: AgentSessionRunner, scheduler: CognitiveHeartbeatScheduler,
         debounce_s: float = 0.0, http_url: str = "", allowed_private: tuple[str, ...] = (),
@@ -153,7 +153,7 @@ class OneBotLiveRuntime:
     ) -> None:
         self._ws_url, self._token, self._self_id = ws_url, access_token, self_id
         self._http_url = http_url or ws_url.replace("ws://", "http://").replace(":3001", ":3000")
-        self._groups, self._owner_qq, self._db = frozenset(allowed_groups), owner_qq, db
+        self._groups, self._operator_ids, self._db = frozenset(allowed_groups), operator_ids, db
         self._priv_users = frozenset(allowed_private)
         self._pipeline, self._cognitive, self._runner = pipeline, cognitive, runner
         self._scheduler, self._debounce_s = scheduler, debounce_s
@@ -200,7 +200,7 @@ class OneBotLiveRuntime:
         last = triggers[-1]
         mids = frozenset(p.message_id for p in triggers if p.message_id)
         hist, stickers = await self._load_context(last, mids)
-        is_owner = any(self._owner_qq and p.sender_id == self._owner_qq for p in triggers)
+        is_owner = any(p.sender_id in self._operator_ids for p in triggers)
         reward = compute_turn_social_reward(
             " ".join(p.text for p in triggers),
             is_poke=any(p.is_poke_me for p in triggers),
@@ -222,7 +222,7 @@ class OneBotLiveRuntime:
     async def handle_raw_event(self, ev: dict[str, Any]) -> bool:
         """Process a single OneBot event; coalesce rapid messages & skip stale backlog."""
         parsed = parse_onebot_event(
-            ev, self._self_id, self._groups, self._owner_qq, self._priv_users
+            ev, self._self_id, self._groups, self._operator_ids, self._priv_users
         )
         if parsed is None:
             return False

@@ -37,7 +37,7 @@ class _ChordLlm:
 async def test_rg_f2_tier1_turn_gets_chord(tmp_path: Path) -> None:
     """An @-summoned owner turn skips the gate probe, so the frame must fetch the chord."""
     container = await EchoMindContainer.create(
-        db_path=tmp_path / "f2.db", owner_qq=OWNER, default_chat_key=CK
+        db_path=tmp_path / "f2.db", operator_ids=(OWNER,), default_chat_key=CK
     )
     facade = container.cognitive_facade
     facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm()))

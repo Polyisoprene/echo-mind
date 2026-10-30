@@ -26,7 +26,7 @@ from echomind.web.app import create_web_app
 async def test_ac5_1_to_ac5_5_bootstrap_and_fastapi_mind_inspector(tmp_path: Path) -> None:
     container = await EchoMindContainer.create(
         db_path=tmp_path / "web_mind.db",
-        owner_qq="10001001",
+        operator_ids=("10001001",),
         default_chat_key="group:10002002",
     )
     await container.memory_repo.save_episodic_card(
@@ -189,7 +189,7 @@ async def test_ac5_6_console_api_sessions_memory_persona_probe_and_logs(tmp_path
         assert any("EchoMind" in line for line in logs["lines"])
 
         runtime = (await client.get("/api/mind/runtime")).json()
-        assert runtime["ok"] is True and runtime["owner_qq"] == "10001001"
+        assert runtime["ok"] is True
 
         assert (await client.post("/api/mind/bans", json={"phrase": "诶"})).json()["ok"] is True
         bans = (await client.get("/api/mind/bans")).json()

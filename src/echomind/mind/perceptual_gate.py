@@ -237,7 +237,7 @@ class PerceptualGate:
     def _evaluate_ambient_with_cooldown(
         self, percept: Percept, working: WorkingSnapshot, unknowns: tuple[str, ...],
         has_unseen: bool, talkativeness: float, *, record_state: bool,
-        known_vocab: frozenset[str] = frozenset(), owner_qq: str = "",
+        known_vocab: frozenset[str] = frozenset(),
         params: dict[str, PlasticParamSpec] | None = None,
         speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:

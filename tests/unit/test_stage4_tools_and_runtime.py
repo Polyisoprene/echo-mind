@@ -236,7 +236,7 @@ async def test_ac4_4_agent_runner_end_to_end_cognitive_and_learning_loop(tmp_pat
             source="system",
         )
     )
-    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, owner_qq="10001001")
+    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, operator_ids=("10001001",))
     bridge = OneBotV11Bridge(FakeOneBotCaller(), db)
     reg = ExtensionRegistry()
     reg.register_tool(SendMessageTool(bridge))

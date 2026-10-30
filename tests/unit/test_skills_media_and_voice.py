@@ -478,7 +478,7 @@ async def test_skill_toggle_delete_restore_and_memory_consolidator(tmp_path: Pat
         container.memory_repo,
         outcome,
         1793200001000,
-        "10001001",
+        ("10001001",),
         chord=SubconsciousChordResult(explicit_fact="我喜欢吃草莓蛋糕"),
     )
     facts = await container.memory_repo.get_semantic_facts("group:1")
@@ -614,7 +614,7 @@ def test_at_other_member_preserved_and_ignored_by_gate() -> None:
             {"type": "text", "data": {"text": " 你怎么看"}},
         ],
     }
-    parsed = parse_onebot_event(ev, "10003003", frozenset({"10002002"}), "10001001")
+    parsed = parse_onebot_event(ev, "10003003", frozenset({"10002002"}), ("10001001",))
     assert parsed is not None
     assert parsed.is_at_me is False
     assert "@汐(QQ:10007007)" in parsed.text

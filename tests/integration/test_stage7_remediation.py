@@ -114,7 +114,7 @@ async def test_m7_1_config_identities_remote_auth_and_sqlite_pragmas(tmp_path: P
     )
     cfg = load_config_from_json(cfg_path)
     assert cfg.self_qq == "10003003"
-    assert cfg.owner_qq == "10001001"
+    assert cfg.operator_ids == ("10001001",)
     assert cfg.feiyu_api_key == "fk-123" and cfg.feiyu_style == "gentle"
     assert cfg.auth_key == "sec-token-99"
 
@@ -197,7 +197,9 @@ async def test_m7_2_procedural_rule_strict_keyword_dry_run_probe_and_jealousy_de
     assert homeostatic_pull("unknown_param", 50.0) == 0.0
 
     # 3. BUG-708: CognitiveProbeService runs in dry_run=True with zero DB/gate side effects
-    container = await EchoMindContainer.create(db_path=tmp_path / "m72.db")
+    container = await EchoMindContainer.create(
+        db_path=tmp_path / "m72.db", operator_ids=("10001001",)
+    )
     cid = await container.memory_repo.save_episodic_card(
         EpisodicCard(
             chat_key="group:10002002",
@@ -603,7 +605,7 @@ async def test_stage10_dynamic_trust_calibration_and_manual_tuning(tmp_path: Pat
         container.memory_repo,
         out1,
         1000,
-        "10001001",
+        ("10001001",),
         chord=SubconsciousChordResult(spoof_attempt=True),
     )
     bond1 = await container.memory_repo.get_social_bond("group:10002002", "10005005")
@@ -1132,7 +1134,7 @@ async def test_stage16_source_code_audit_remediation(tmp_path: Path) -> None:
         "message": [{"type": "image", "data": {"url": "http://img/1.png", "file": "abc123md5"}}],
     }
     parsed = parse_onebot_event(
-        ev_priv_img, "10003003", frozenset({"10002002"}), "10001001", frozenset({"10009009"})
+        ev_priv_img, "10003003", frozenset({"10002002"}), ("10001001",), frozenset({"10009009"})
     )
     assert parsed is not None and parsed.media[0].message_id == "998877"
 
@@ -1604,7 +1606,7 @@ async def test_stage23_bystander_batch_interleaved_peer_and_dyadic_priority(
     from echomind.domain.models import TurnOutcome
 
     container = await EchoMindContainer.create(
-        db_path=tmp_path / "stage23.db", owner_qq="10001001"
+        db_path=tmp_path / "stage23.db", operator_ids=("10001001",)
     )
     fac = container.cognitive_facade
 
@@ -1801,7 +1803,7 @@ async def test_stage25_subconscious_chord_probe_acoustic_echo_and_image_caption_
 
     container = await EchoMindContainer.create(
         db_path=tmp_path / "s25.db",
-        owner_qq="10001001",
+        operator_ids=("10001001",),
         default_chat_key="group:10002002",
     )
 

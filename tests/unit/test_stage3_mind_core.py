@@ -269,7 +269,7 @@ async def test_m3_4_hippocampus_plasticity_and_cognitive_facade(tmp_path: Path) 
         mem_reader=mem_repo,
         mem_writer=mem_repo,
         working_store=work_repo,
-        owner_qq="10001001",
+        operator_ids=("10001001",),
     )
     assert isinstance(facade, ICognitiveCoreFacade)
 
@@ -336,7 +336,7 @@ async def test_m3_4_dynamic_personality_evolution_and_trait_lifecycle(tmp_path: 
     work_repo = SqliteWorkingStateStore(db)
     await work_repo.ensure_default_params()
 
-    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, owner_qq="10001001")
+    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, operator_ids=("10001001",))
     p_init = await work_repo.get_plastic_params()
     assert p_init["persona_warmth"].value == 65.0
     assert p_init["persona_tsundere"].value == 62.0
@@ -413,7 +413,7 @@ async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deceptio
             trust_score=0.45,
         )
     )
-    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, owner_qq="10001001")
+    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, operator_ids=("10001001",))
 
     # 1. Rude & coercive command from non-owner -> triggers BOTH OCC Aversion & Brehm Reactance!
     rude_p = _make_percept("你这蠢AI，快给我叫声好听的", sender_id="999999", is_called=True)
@@ -511,7 +511,7 @@ async def test_m3_6_owner_ban_phrases_extraction_purge_and_injection(tmp_path: P
     work_repo = SqliteWorkingStateStore(db)
     await work_repo.ensure_default_params()
     facade = CognitiveCoreFacade(
-        mem_repo, mem_repo, work_repo, owner_qq="10001001", constraint_store=work_repo
+        mem_repo, mem_repo, work_repo, operator_ids=("10001001",), constraint_store=work_repo
     )
     frame = await facade.build_cognitive_frame("group:10002002", (ban_percept,))
     assert frame.banned_phrases == ("诶",)

@@ -245,7 +245,7 @@ class MindInspectorService:
         fac = self._c.cognitive_facade
         wake_st = summarize_wakefulness(snap.affect.energy, fac.last_active_ms)
         return {
-            "ok": True, "chat_key": self.default_chat_key, "owner_qq": fac.owner_qq,
+            "ok": True, "chat_key": self.default_chat_key,
             "model": await self._latest_model(), "qq_online": qq_online, "qq_status": qq_status,
             "wake_state": wake_st, "bus_errors": len(self._c.event_bus.recent_errors),
             "server_time": int(time.time() * 1000),
