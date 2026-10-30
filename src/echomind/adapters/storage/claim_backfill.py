@@ -13,6 +13,19 @@ _FACT_SQL = (
 )
 
 
+_SUBJECT_SPLITTERS = ("提到：", "提到:", "说：", "说:")
+
+
+def normalize_fact(subject: str, value: str) -> tuple[str, str]:
+    """Split "X提到：Y" subjects so one speaker does not become endless facts."""
+    text = str(subject or "")
+    for sep in _SUBJECT_SPLITTERS:
+        if sep in text:
+            head, _, tail = text.partition(sep)
+            return (head.strip() or text), (tail.strip() or str(value or "").strip())
+    return text, str(value or "").strip()
+
+
 def source_kind(source: str, is_locked: bool) -> str:
     """Map a legacy fact source to an evidence kind (locked => operator evidence)."""
     if is_locked or source in ("owner", "operator"):
@@ -38,8 +51,9 @@ async def _mirror(store: SqliteClaimStore, rows: list[Any]) -> tuple[int, int]:
         if await store.has_tag(tag):
             skipped += 1
             continue
+        norm_subject, norm_value = normalize_fact(str(subject), str(text or ""))
         await store.assert_claim(
-            str(chat), str(subject), "value", str(text or ""),
+            str(chat), norm_subject, "value", norm_value,
             source_type=source_kind(str(source or ""), bool(locked)),
             source_id=str(source or "legacy"), observed_at_ms=int(updated or 0),
             weight_scale=float(conf or 0.5), tag=tag,
