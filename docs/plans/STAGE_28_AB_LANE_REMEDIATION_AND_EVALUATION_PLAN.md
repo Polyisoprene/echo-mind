@@ -172,6 +172,7 @@ uv run python scripts/replay_eval.py --db data/replay-snapshot.db \
 | F8 | `test_rg_f8_vision_gateway_is_port_typed` / `_caption_port_is_structural` | `AssertionError: vision_gw must be typed as ICaptionGateway, got typing.Any` | `2 passed`；`86 passed / Cov 90.73% / mypy 104 files 0 错` | `a0827cb` |
 | F9 | `test_rg_f9_recent_ctx_scoped` | 审计证据：旧 `_recent_ctx` 取全局 25 条环形缓冲（无 `chat_key` 过滤），跨群混入 | `1 passed`（`format_recent` 按 `chat_key` 过滤，B 群内容零泄漏） | `7ced43c`（实现随 gateway 重构落地） |
 | F8b | `test_rg_f8b_enricher_failure_keeps_message` | `AttributeError: gateway missing describe_image`（整条消息被丢弃） | `1 passed`；`89 passed / Cov 90.74%` | `8bb9ea7` |
+| C1 | `test_c1_media_gateway_port_exposes_caption_cache` | `AssertionError: IQQMediaGateway must declare cache_media_description`（工具侧只能 `getattr` 探测） | `1 passed`；`90 passed / Cov 90.74% / mypy 108 files 0 错` | `a98c57e`（拆分）+ `50fe758`（端口化） |
 | F10 | `test_rg_f10_aversion_signature_is_chord_only` / `_taboo_sentence_does_not_trigger` | 例外豁免（死分支，不可观测）；`[refactor-only]` 登记 | `2 passed`；`88 passed` | `44ea6db` |
 
 
@@ -180,6 +181,7 @@ uv run python scripts/replay_eval.py --db data/replay-snapshot.db \
 | 偏差 | 事实 | 处理 |
 |---|---|---|
 | F2 / F9 曾混在 `[refactor-only]` 提交中 | 原 `b07c3ca` 搬迁 `chord_gateway` 时顺带补了 tier-1 补探针与按群过滤 | **已按 B 方案重写 A 线历史**：拆为 `50985dc`（纯搬迁，行为不变）→ `dd0255a`（F2，含红→绿）→ `8cb91e9`（F9，含红→绿），此后提交逐一重放且全绿；每个行为变更现拥有独立可回滚提交 |
+| C1（原 P3 遗留）已修复 | `ports.py` 300 行预算已解除：媒体端口拆至 `ports_media.py`（234/83 行）；`cache_media_description` 提升为 `IQQMediaGateway` 正式方法，`media_vision` 不再 `getattr` 探测 | `a98c57e` + `50fe758`；同时开启 ruff `combine-as-imports` 以支持显式再导出 |
 | F7 / F8 / F10 已修复 | `http_token` 接线（`7240f9f`）、`ICaptionGateway` 端口化（`a0827cb`）、enricher 故障隔离（`8bb9ea7`）、taboo 死分支移除（`44ea6db`）；`server.host/port` 采用「文档声明 + `ECHOMIND_HOST`」方案 | README 已声明监听权威；`service.sh` 支持 `ECHOMIND_HOST` |
 
 ---
