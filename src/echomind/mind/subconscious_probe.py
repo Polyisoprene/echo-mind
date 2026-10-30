@@ -15,6 +15,7 @@ from echomind.domain.models import (
     WorkingSnapshot,
 )
 from echomind.domain.ports import ILlmGateway
+from echomind.mind.naming import bot_naming
 
 JSON_EXTRACT_RE = re.compile(r"\{[\s\S]*\}")
 VALID_ROLES = ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise")
@@ -27,13 +28,19 @@ VALID_SHADOWS = (
     "task_request",
 )
 
+
+def build_probe_system_prompt() -> str:
+    """Render the probe system prompt with the configured persona name."""
+    return CHORD_PROBE_SYS.replace("{name}", bot_naming().display())
+
+
 CHORD_PROBE_SYS = (
-    "你是大脑的潜意识多维情感和弦与语用感知中枢。\n"
+    "你是「{name}」大脑的潜意识多维情感和弦与语用感知中枢。\n"
     "请阅读【近期上下文】（仅作背景参考）与【最新消息】，严格只针对【最新消息】本身输出单行 JSON"
     "（使用 0~3 整数档位：0=无, 1=轻微, 2=明显, 3=强烈）：\n"
     "1. role (5选1)：\n"
-    '   - "direct_to_me": 最新消息明确在跟我说话、问我或接我上一句话（若“回音”只是声学名词'
-    "如“空间大有回音”，选 ambient_daily 且 topic_pull 填 0；若拿我举例讨论，选 about_me）。\n"
+    '   - "direct_to_me": 最新消息明确在跟我说话、问我或接我上一句话（若机器人小名只是声学名词'
+    "如“空间大导致回声”，选 ambient_daily 且 topic_pull 填 0；若拿我举例讨论，选 about_me）。\n"
     '   - "about_me": 最新消息正在讨论关于我的事（设定/情感系统/表现），或正在当面夸/摸别的AI。\n'
     '   - "peer_dyadic": 群友之间一对一互聊/教学（如抠游戏帧数）、或跟别的机器人说话，与我无关。\n'
     '   - "ambient_daily": 群友个人的日常感慨/分享/表情包展示（没特定对别人说，也没聊我）。\n'
@@ -249,7 +256,7 @@ class SubconsciousChordProbe:
         )
         try:
             msgs = [
-                {"role": "system", "content": CHORD_PROBE_SYS},
+                {"role": "system", "content": build_probe_system_prompt()},
                 {"role": "user", "content": u_prompt},
             ]
             ck = f"subconscious:{percept.chat_key}"

@@ -20,6 +20,7 @@ from echomind.adapters.onebot.live_client import OneBotHttpApiCaller, OneBotLive
 from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import AppConfig, load_config_from_json
+from echomind.mind.naming import BotNaming, set_bot_naming
 from echomind.mind.subconscious_probe import SubconsciousChordProbe
 from echomind.runtime.agent_runner import AgentSessionRunner
 from echomind.runtime.prompt_composer import PromptComposer
@@ -52,6 +53,7 @@ async def create_production_app(
 ) -> tuple[FastAPI, EchoMindContainer]:
     """Bootstrap the full production EchoMind container and FastAPI ASGI application."""
     cfg = load_config_from_json(config_path) if config_path else AppConfig()
+    set_bot_naming(BotNaming(name=cfg.bot_name, aliases=tuple(cfg.keywords)))
     resolved_db = db_path if db_path is not None else Path("data/echomind.db")
     first_group = cfg.allowed_groups[0] if cfg.allowed_groups else "10002002"
     container = await EchoMindContainer.create(

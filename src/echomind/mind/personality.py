@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from echomind.domain.models import PersonaTrait, PlasticParamSpec, TurnOutcome
+from echomind.mind.naming import bot_naming
 
 
 def _val(params: dict[str, PlasticParamSpec], key: str, default: float) -> float:
@@ -146,7 +147,7 @@ def synthesize_live_persona_directive(
     sub_tone = _describe_shadow_and_playfulness(playful, conf, guile, defiance)
     rubric_lines = [_format_dim_rubric(params, spec) for spec in DIMENSION_RUBRICS]
     lines = [
-        "【🌱 回音当前随经历演化出的 7 维性格底色（HEXACO & 2D Attachment）】",
+        f"【🌱 {bot_naming().label()}当前随经历演化出的 7 维性格底色（HEXACO & 2D Attachment）】",
         f"- 七维性格向量：温柔({warmth}) · 傲娇回避({tsundere}) · 俏皮({playful}) "
         f"· 独占焦虑({possess}) · 自信({conf}) · 狡黠撒谎度({guile}) · 叛逆刺头度({defiance})",
         "- 各维度量表含义与当前分值行为准则"

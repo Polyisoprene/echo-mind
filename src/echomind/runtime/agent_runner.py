@@ -16,6 +16,7 @@ from echomind.domain.ports import (
 )
 from echomind.extensions.registry import ExtensionRegistry
 from echomind.mind.ban_control import purge_message_batch
+from echomind.mind.naming import bot_naming
 from echomind.runtime.prompt_composer import PromptComposer, StickerCandidate
 from echomind.runtime.reply_rescue import rescue_unsent_reply
 from echomind.runtime.working_scratchpad import WorkingScratchpad
@@ -291,7 +292,7 @@ class AgentSessionRunner:
         lines = tuple(
             f"{p.sender_name}(QQ:{p.sender_id}): {p.text}"
             for p in (*read_history[-12:], *unread_triggers)
-        ) + tuple(f"回音(我): {s}" for s in outcome.sent_texts)
+        ) + tuple(f"{bot_naming().label()}(我): {s}" for s in outcome.sent_texts)
         _, role_text = self._composer.role_card()
         await self._cognitive.consolidate_dialogue_batch(
             chat_key, lines, self._llm, role_text=role_text

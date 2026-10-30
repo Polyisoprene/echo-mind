@@ -23,6 +23,7 @@ from echomind.domain.models import TurnOutcome
 from echomind.domain.ports import IOneBotApiCaller
 from echomind.extensions.registry import ExtensionRegistry
 from echomind.mind.facade import CognitiveCoreFacade
+from echomind.mind.naming import BotNaming, set_bot_naming
 from echomind.runtime.prompt_composer import PromptComposer
 from echomind.tools.cnmeme_wiki import CnMemeWikiClient, CnMemeWikiTool
 from echomind.tools.explore_and_voice import CompositeSearchBackend, HolyWebSearchTool
@@ -88,6 +89,7 @@ class EchoMindContainer:
         trace_store = SqliteTurnTraceStore(db)
         skill_store = SqliteSkillConfigStore(db)
         await work_store.ensure_default_params()
+        set_bot_naming(BotNaming())
         bond_store = SqliteBondDepthStore(db)
         await bond_store.ensure_schema()
         facade = CognitiveCoreFacade(

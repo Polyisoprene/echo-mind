@@ -17,6 +17,7 @@ from echomind.domain.models import (
 )
 from echomind.mind.circadian import resolve_circadian_phase
 from echomind.mind.ebbinghaus import format_recalled_item
+from echomind.mind.naming import bot_naming
 
 
 def match_active_rules(
@@ -122,7 +123,7 @@ def _header_lines(scene: str, snap: WorkingSnapshot) -> list[str]:
     act_str = snap.current_activity or "日常待机"
     aff, drv = snap.affect, snap.drives
     return [
-        "【🧠 回音此刻的认知与内心状态（EchoMind Core）】",
+        f"【🧠 {bot_naming().label()}此刻的认知与内心状态（EchoMind Core）】",
         f"- 当前北京时间：{_beijing_clock_label()} ｜ 场景：{scene_desc} ｜ 正在做：{act_str}",
         f"- 生理精力状态：{_energy_directive(aff.energy)}",
         "- 连续情绪与内驱力（愉悦-100~+100，其余0~100量表，数值越高冲动越强）："

@@ -27,6 +27,7 @@ from echomind.domain.ports import (
 )
 from echomind.extensions.registry import ExtensionRegistry
 from echomind.mind.drives import apply_exogenous_surf_affect
+from echomind.mind.naming import bot_naming
 from echomind.mind.plasticity import NeuroplasticityEngine
 from echomind.mind.shadow_appraisal import should_prune_card
 
@@ -156,7 +157,7 @@ class CognitiveHeartbeatScheduler:
         ctx = f"\n【全新未分享过的内容】\n{unseen_line}" if unseen_line else ""
         prompt = (
             f"{proposal.goal_instruction}{ctx}\n"
-            "请以回音的自然口吻写出要发到聊天里的那句话（若分享了上面视频，"
+            f"请以{bot_naming().label()}的自然口吻写出要发到聊天里的那句话（若分享了上面视频，"
             "必须附上完整的 https://www.bilibili.com/video/BV... 链接！只输出话本身，不要加引号）。"
         )
         try:
