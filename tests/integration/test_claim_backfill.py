@@ -73,15 +73,15 @@ async def test_claim_store_has_tag(tmp_path: Path) -> None:
 def test_normalize_fact_splits_speaker_prefix() -> None:
     from echomind.adapters.storage.claim_backfill import normalize_fact
 
-    subject, value = normalize_fact("L今晚早睡了吗(3064615013)提到：今天改代码", "")
+    subject, value, predicate = normalize_fact("L今晚早睡了吗(3064615013)提到：今天改代码", "")
     assert subject == "L今晚早睡了吗(3064615013)"
-    assert value == "今天改代码"
+    assert value == "今天改代码" and predicate == "mentioned"
 
 
 def test_normalize_fact_keeps_plain_subject() -> None:
     from echomind.adapters.storage.claim_backfill import normalize_fact
 
-    assert normalize_fact("群主", "群主是 A") == ("群主", "群主是 A")
+    assert normalize_fact("群主", "群主是 A") == ("群主", "群主是 A", "value")
 
 
 async def test_calibrated_weights_land_in_usable_band(tmp_path: Path) -> None:

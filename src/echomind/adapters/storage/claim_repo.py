@@ -108,6 +108,8 @@ class SqliteClaimStore:
         self, conn: Any, chat_key: str, subject: str, predicate: str, claim_id: int
     ) -> None:
         """Open a review when >= N independent sources back a competing value."""
+        if predicate != "value":
+            return  # multi-valued predicates (e.g. "mentioned") are not conflicts
         cursor = await conn.execute(
             "SELECT DISTINCT c.value, e.source_id FROM claim_evidence e "
             "JOIN claims c ON c.id=e.claim_id WHERE c.chat_key=? AND c.subject=? "
