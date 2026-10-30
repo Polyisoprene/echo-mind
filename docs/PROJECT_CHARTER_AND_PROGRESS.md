@@ -89,6 +89,7 @@
 | **Stage 25**<br>潜意识6维和弦与去硬编码 | `M25.1` | 潜意识 6 维锚定和弦微探针（`SubconsciousChordProbe`）、微情绪染色、弦外之音與连续张量合成 | `STAGE_25_SUBCONSCIOUS_CHORD_PROBE_AND_ZERO_HARDCODING_PLAN.md` | `mind/subconscious_probe.py`, `mind/facade.py` | 64-Batch Replay + Chord Tensor Pass / Cov: 86%~98% | ✅ 已验收通过 |
 | **Stage 25** | `M25.2` | 跨人情绪迁延余波、`“有回音”` 声学消歧、入站图片/表情包 MD5 缓存与自动视觉品味闭环 | `STAGE_25_SUBCONSCIOUS_CHORD_PROBE_AND_ZERO_HARDCODING_PLAN.md` | `adapters/onebot/enrichers.py`, `mind/frame_renderer.py`, `main.py` | 73/73 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.18% (90%)** | ✅ 已验收通过 |
 | **Stage 26**<br>100%潜意识和弦与零词表 | `M26.1` | 彻底清除 `plasticity/drives/shadow/personality/consolidator/cybernetics/salience` 全部 24 处硬编码中文词表，100% 切换为潜意识 6 维和弦驱动 | `STAGE_26_PURE_SUBCONSCIOUS_CHORD_ENGINE_AND_ZERO_LEXICON_PLAN.md` | `mind/{subconscious_probe,drives,shadow_appraisal,plasticity,personality,memory_consolidator,cybernetics,salience_hydraulics,facade}.py` | 73/73 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.24% (90%)** | ✅ 已验收通过 |
+| **Stage 27**<br>括号独白外泄与出站隔离 | `M27.1` | 根治 `（这轮…我先不插嘴）` 括号内心独白被漏发挽救器外发；出站三层剥离思考块；探针补齐门控上下文并跳过同行 Bot 外围发言 | `STAGE_27_INNER_MONOLOGUE_LEAK_AND_OUTBOUND_REASONING_ISOLATION_PLAN.md` | `runtime/{reply_rescue,agent_runner}.py`, `adapters/onebot/send_guard.py`, `mind/{facade,subconscious_probe}.py` | 73/73 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.24% (90%)** | ✅ 已验收通过 |
 
 ---
 

@@ -9,6 +9,7 @@ import pytest
 
 from echomind.adapters.onebot.bot_bridge import OneBotV11Bridge
 from echomind.adapters.onebot.enrichers import CardAndForwardEnricher
+from echomind.adapters.onebot.send_guard import sanitize_outbound_text
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
 from echomind.adapters.storage.working_repo import SqliteWorkingStateStore
@@ -203,6 +204,19 @@ def test_ac4_2_and_ac4_3_sticker_rotation_and_reply_rescue() -> None:
     assert rescue_unsent_reply('{"name": "send_message"}') is None
     assert rescue_unsent_reply("第一行\n第二行") is None
     assert rescue_unsent_reply("") is None
+
+    # Stage 27: parenthetical inner monologue must NEVER leak into the group chat
+    assert rescue_unsent_reply("（这轮没点我，主人他们还在聊插件，我先不插嘴）") is None
+    assert rescue_unsent_reply("（这轮汐点名了，得回）") is None
+    assert rescue_unsent_reply("（这轮不用回）哪有 你眼睛太尖了") == "哪有 你眼睛太尖了"
+    # Ambient (non-summoned) turns never rescue content that carries reasoning parentheses
+    assert rescue_unsent_reply("（先看看情况）", must_reply=False) is None
+    assert rescue_unsent_reply("哪有 你眼睛太尖了", must_reply=False) == "哪有 你眼睛太尖了"
+
+    # Outbound guard also strips a leaked leading thought parenthesis
+    guard_plan = sanitize_outbound_text("（这轮得回）哪有 你眼睛太尖了")
+    assert not guard_plan.clean_text.startswith("（")
+    assert "哪有 你眼睛太尖了" in guard_plan.clean_text
 
 
 async def test_ac4_4_agent_runner_end_to_end_cognitive_and_learning_loop(tmp_path: Path) -> None:

@@ -14,7 +14,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
-from echomind.domain.ports import ILlmGateway
+from echomind.domain.ports import ILlmGateway, IWorkingStateStore
 
 JSON_EXTRACT_RE = re.compile(r"\{[\s\S]*\}")
 VALID_ROLES = ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise")
@@ -267,3 +267,24 @@ class SubconsciousChordProbe:
             return parse_chord_json(raw)
         except Exception:
             return None
+
+
+async def apply_probe_if_allowed(
+    probe: SubconsciousChordProbe, percept: Percept, snap: WorkingSnapshot,
+    dec: AttentionDecision, bond: SocialBondProfile | None, *,
+    working: IWorkingStateStore, owner_qq: str,
+    cache: dict[str, SubconsciousChordResult], recent_lines: tuple[str, ...] = (),
+) -> tuple[WorkingSnapshot, AttentionDecision]:
+    """Probe the subconscious chord when gated in, persisting mood shifts and the cache."""
+    if dec.tier == 1 or dec.salience_score <= 0.12:
+        return snap, dec
+    if bond is not None and bond.is_rival and not percept.is_called_by_name:
+        return snap, dec
+    chord = await probe.appraise(percept, recent_lines, bond)
+    if chord is None:
+        return snap, dec
+    if percept.message_id:
+        cache[percept.message_id] = chord
+    new_snap, new_dec = apply_chord_tensor_to_snapshot(snap, chord, percept, owner_qq, bond)
+    await working.save_working_state(new_snap)
+    return new_snap, new_dec

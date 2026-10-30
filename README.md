@@ -184,3 +184,4 @@ cp data/config.example.json data/config.json
   - [Stage 24：全认知状态空间（24维变量）专项审计、文献调研与全耦合动力学重构规范](docs/plans/STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md)
   - [Stage 25：潜意识6维情感和弦探针、连续张量合成、跨人情绪迁延与表情包自动品味规范](docs/plans/STAGE_25_SUBCONSCIOUS_CHORD_PROBE_AND_ZERO_HARDCODING_PLAN.md)
   - [Stage 26：全链路100%潜意识6维和弦驱动与全库硬编码词表清零规范](docs/plans/STAGE_26_PURE_SUBCONSCIOUS_CHORD_ENGINE_AND_ZERO_LEXICON_PLAN.md)
+  - [Stage 27：括号内心独白外泄根治与出站思考块隔离规范](docs/plans/STAGE_27_INNER_MONOLOGUE_LEAK_AND_OUTBOUND_REASONING_ISOLATION_PLAN.md)

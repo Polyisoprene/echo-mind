@@ -11,6 +11,9 @@ CQ_AT_PATTERN = re.compile(r"^\s*(?:\[CQ:at,[^\]]+\]\s*)+", re.IGNORECASE)
 TEXT_AT_PATTERN = re.compile(
     r"^\s*(?:@[^\s@，,。！!？?：:()（）]+(?:[(（]QQ[:：]\d+[)）])?[\s，,：:]*)+"
 )
+LEADING_THOUGHT_PAREN_RE = re.compile(
+    r"^\s*[（(][^）)\n]*(?:这轮|点我|插嘴|插话|先不|得回|无需|不用回|保持安静)[^）)\n]*[）)]\s*"
+)
 
 
 class SanitizedSendPlan(FrozenValueObject):
@@ -43,6 +46,7 @@ def sanitize_outbound_text(
     """Strip duplicate leading @mentions when native reply or at segment is attached."""
     eff_reply = _normalize_opt_id(reply_to_mid)
     raw_at = _normalize_opt_id(at_user_id)
+    raw_text = LEADING_THOUGHT_PAREN_RE.sub("", raw_text).strip()
     # NapCat reply segment already includes a native @ to the quoted author unless @ing a 3rd party
     eff_at = raw_at if (preserve_both or eff_reply is None) else None
     has_native_mention = (eff_reply is not None) or (eff_at is not None)

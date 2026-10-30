@@ -61,7 +61,7 @@ from echomind.mind.shadow_appraisal import (
 from echomind.mind.subconscious_probe import (
     SubconsciousChordProbe,
     SubconsciousChordResult,
-    apply_chord_tensor_to_snapshot,
+    apply_probe_if_allowed,
 )
 
 
@@ -104,6 +104,10 @@ class CognitiveCoreFacade:
     def recent_gate_log(self) -> list[dict[str, Any]]:
         return list(reversed(self._gate_log))
 
+    def _recent_ctx(self) -> tuple[str, ...]:
+        lines = (f"{x.get('sender_name', '')}: {x.get('text', '')}" for x in self._gate_log[-6:])
+        return tuple(lines)
+
     async def evaluate_incoming(
         self, percept: Percept, *, dry_run: bool = False
     ) -> AttentionDecision:
@@ -120,14 +124,12 @@ class CognitiveCoreFacade:
             percept, snap, vocab, rivals, talkativeness=talk,
             record_state=not dry_run, owner_qq=self._owner_qq, params=params, speaker_bond=s_bond,
         )
-        if self._sub_probe and not dry_run and dec.tier != 1 and dec.salience_score > 0.12:
-            chord = await self._sub_probe.appraise(percept, (), s_bond)
-            if chord is not None:
-                self.cache_chord(percept.message_id, chord)
-                snap, dec = apply_chord_tensor_to_snapshot(
-                    snap, chord, percept, self._owner_qq, s_bond
-                )
-                await self._working.save_working_state(snap)
+        if not dry_run and self._sub_probe is not None:
+            snap, dec = await apply_probe_if_allowed(
+                self._sub_probe, percept, snap, dec, s_bond,
+                working=self._working, owner_qq=self._owner_qq,
+                cache=self._chord_cache, recent_lines=self._recent_ctx(),
+            )
         if not dry_run:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
         return dec
