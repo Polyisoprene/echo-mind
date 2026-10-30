@@ -22,11 +22,10 @@ from echomind.mind.subconscious_probe import (
 STRONG_SIGNAL_SCORE = 0.55
 
 
-def format_recent(gate_log: list[dict[str, Any]]) -> tuple[str, ...]:
-    """Render the recent gate-log tail as plain speaker lines for the subconscious prompt."""
-    return tuple(
-        f"{x.get('sender_name', '')}: {x.get('text', '')}" for x in gate_log[-6:]
-    )
+def format_recent(gate_log: list[dict[str, Any]], chat_key: str = "") -> tuple[str, ...]:
+    """Render the recent gate-log tail as speaker lines, optionally scoped to one chat."""
+    rows = [x for x in gate_log if not chat_key or x.get("chat_key") == chat_key]
+    return tuple(f"{x.get('sender_name', '')}: {x.get('text', '')}" for x in rows[-6:])
 
 
 def _is_probe_allowed(

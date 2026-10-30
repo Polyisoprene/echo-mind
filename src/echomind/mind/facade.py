@@ -124,7 +124,7 @@ class CognitiveCoreFacade:
             snap, dec = await apply_probe_if_allowed(
                 self._sub_probe, percept, snap, dec, s_bond,
                 working=self._working, owner_qq=self._owner_qq, cache=self._chord_cache,
-                recent_lines=format_recent(self._gate_log),
+                recent_lines=format_recent(self._gate_log, percept.chat_key),
             )
         if not dry_run:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
