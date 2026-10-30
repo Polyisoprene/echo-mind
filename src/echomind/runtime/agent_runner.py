@@ -18,7 +18,7 @@ from echomind.extensions.registry import ExtensionRegistry
 from echomind.mind.ban_control import purge_message_batch
 from echomind.mind.naming import bot_naming
 from echomind.runtime.prompt_composer import PromptComposer, StickerCandidate
-from echomind.runtime.reply_rescue import rescue_unsent_reply
+from echomind.runtime.reply_rescue import rescue_payload_json, rescue_unsent_reply
 from echomind.runtime.working_scratchpad import WorkingScratchpad
 
 
@@ -208,9 +208,8 @@ class AgentSessionRunner:
         return sent_texts, tools_used, last_content
 
     async def _maybe_rescue_reply(
-        self, chat_key: str, last_content: str,
-        sent_texts: list[str], tools_used: list[str], steps: list[TurnStep], *,
-        must_reply: bool = True,
+        self, chat_key: str, last_content: str, sent_texts: list[str],
+        tools_used: list[str], steps: list[TurnStep], *, must_reply: bool = True,
     ) -> None:
         spoke = {"send_sticker", "feiyu_say", "feiyu_cover", "send_poke"} & set(tools_used)
         if sent_texts or spoke:
@@ -221,7 +220,8 @@ class AgentSessionRunner:
             return
         await self._sender.send_text(chat_key, (purged[0],))
         sent_texts.append(purged[0])
-        steps.append(TurnStep(seq=len(steps) + 1, kind="tool", name="send_message(rescue)"))
+        steps.append(TurnStep(seq=len(steps) + 1, kind="tool",
+                              name="send_message(rescue)", detail=rescue_payload_json(purged[0])))
 
     async def _compose_with_facets(
         self, chat_key: str, frame: Any, read_history: tuple[Percept, ...],

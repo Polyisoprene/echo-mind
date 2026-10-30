@@ -419,7 +419,7 @@ function renderTurnSessionDetail(turn, opts) {
         llmRound += 1;
         return '<details class="collapsible think-flow" data-coll-key="' + esc(turn.turn_id + '::' + stepKey) + '"' + isOpen(stepKey, true) + '>' +
           '<summary><span class="tool-ico">💭</span>' +
-          '<span class="tool-name-flow">LLM 推理（第 ' + llmRound + ' 轮）</span>' +
+          '<span class="tool-name-flow">LLM 输出（第 ' + llmRound + ' 轮·模型原始文本）</span>' +
           '<span class="badge accent">' + esc(s.name || turn.model || '-') + '</span>' +
           '<span class="tool-label">' + esc(s.detail || '') + '</span>' +
           '<span style="margin-left:auto;color:var(--warn);font-size:11.5px">' + (s.elapsed_ms || 0) + ' ms</span></summary>' +
