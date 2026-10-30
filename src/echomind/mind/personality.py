@@ -7,6 +7,7 @@ import math
 from echomind.domain.models import PersonaTrait, PlasticParamSpec, TurnOutcome
 from echomind.domain.persona_specs import persona_default
 from echomind.mind.naming import bot_naming
+from echomind.mind.persona_render import render_lookup, render_store, set_summary
 
 
 def _val(params: dict[str, PlasticParamSpec], key: str) -> float:
@@ -173,11 +174,26 @@ def _format_dim_rubric(params: dict[str, PlasticParamSpec], spec: DimensionRubri
     return f"  · {label}({val:.1f}/100 ｜ {poles}) → {tier}"
 
 
+def _publish_summary(params: dict[str, PlasticParamSpec]) -> None:
+    """Publish the probe digest for the current personality state."""
+    possess = _val(params, "persona_possessiveness")
+    warmth = _val(params, "persona_warmth")
+    tsundere = _val(params, "persona_tsundere")
+    lead = describe_attachment(warmth, tsundere, possess).split("（", 1)[0]
+    set_summary(f"{lead} · 独占{possess:.0f}/温柔{warmth:.0f}/傲娇{tsundere:.0f}")
+
+
 def synthesize_live_persona_directive(
     params: dict[str, PlasticParamSpec],
     traits: tuple[PersonaTrait, ...],
 ) -> str:
     """Compile the 7D HEXACO personality vector & grown traits into a live prompt directive."""
+    cache_key = repr((bot_naming().display(), sorted((k, v.value) for k, v in params.items()),
+                      tuple((t.category, t.trait_text, t.strength) for t in traits)))
+    cached = render_lookup(cache_key)
+    if cached is not None:
+        return cached
+    _publish_summary(params)
     warmth = _val(params, "persona_warmth")
     tsundere = _val(params, "persona_tsundere")
     playful = _val(params, "persona_playfulness")
@@ -206,7 +222,7 @@ def synthesize_live_persona_directive(
         for t in traits[:6]:
             tag = "雷点" if t.category == "taboo" else "习惯"
             lines.append(f"  · [{tag}·强度{t.strength}/10] {t.trait_text}")
-    return "\n".join(lines)
+    return render_store(cache_key, "\n".join(lines))
 
 
 def _reward_personality_deltas(reward: float, conflict: bool) -> list[tuple[str, float, str]]:

@@ -293,6 +293,15 @@ W 的符号固定：温柔+、傲娇−、俏皮+、叛逆−、自信+(俏皮)
 - 回放（120 回合）：`wakes 2 / probe_calls 67 / double_apply 0 / reward_spread 1.09`
   （probe 67 vs 基线 68，−1.5%，在 ±5% 容差内；重复回放结果稳定）。
 
+## 9.8 S30-6 已落地（探针人格摘要 + 渲染缓存）
+
+- 新增 `mind/persona_render.py`：单槽渲染缓存 + 探针摘要；
+- `synthesize_live_persona_directive` 命中缓存直接返回（状态不变时零拼接）；
+- 每次真实渲染时发布摘要 `「86% 恐惧型 · 独占93/温柔73/傲娇73」`；
+- `build_probe_system_prompt()` 末尾追加一行「当前人格基调」，成本 ≈20 token；
+- 新测试 2 条（探针含摘要、重复渲染命中缓存）；
+- 回放（120 回合）：`wakes 2 / probe_calls 67 / double_apply 0 / reward_spread 1.09`。
+
 ## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）

@@ -16,6 +16,7 @@ from echomind.domain.models import (
 )
 from echomind.domain.ports import ILlmGateway
 from echomind.mind.naming import bot_naming
+from echomind.mind.persona_render import persona_summary
 
 JSON_EXTRACT_RE = re.compile(r"\{[\s\S]*\}")
 VALID_ROLES = ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise")
@@ -30,8 +31,12 @@ VALID_SHADOWS = (
 
 
 def build_probe_system_prompt() -> str:
-    """Render the probe system prompt with the configured persona name."""
-    return CHORD_PROBE_SYS.replace("{name}", bot_naming().display())
+    """Render the probe system prompt with the configured persona name and current mood."""
+    prompt = CHORD_PROBE_SYS.replace("{name}", bot_naming().display())
+    summary = persona_summary()
+    if not summary:
+        return prompt
+    return f"{prompt}\n【当前人格基调（供你感知她的态度，勿直接复述）】{summary}"
 
 
 CHORD_PROBE_SYS = (
