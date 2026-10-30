@@ -17,6 +17,7 @@ from echomind.domain.models import (
     PlasticParamSpec,
     WorkingSnapshot,
 )
+from echomind.domain.persona_specs import PERSONA_SPECS
 
 TraitCategory = Literal["habit", "temperament", "taste", "taboo"]
 
@@ -31,13 +32,10 @@ DEFAULT_PLASTIC_PARAMS: tuple[PlasticParamSpec, ...] = (
     _spec("skepticism", 55.0, 10.0, 95.0, "元认知防忽悠怀疑警觉度"),
     _spec("verify_impulse", 70.0, 20.0, 95.0, "遇到可疑断言主动调工具核验冲动"),
     _spec("curiosity_rate", 65.0, 20.0, 95.0, "好奇心增长率与主动搜索欲"),
-    _spec("persona_warmth", 65.0, 15.0, 98.0, "性格维度：温柔粘人度 vs 清冷慢热度"),
-    _spec("persona_tsundere", 62.0, 10.0, 95.0, "性格维度：依恋回避/傲娇嘴硬防备指数"),
-    _spec("persona_playfulness", 58.0, 15.0, 95.0, "性格维度：古灵精怪玩梗吐槽度"),
-    _spec("persona_possessiveness", 75.0, 20.0, 98.0, "性格维度：依恋焦虑/对在意之人的独占护食度"),
-    _spec("persona_confidence", 55.0, 15.0, 95.0, "性格维度：社交自信笃定度 vs 害羞胆怯度"),
-    _spec("persona_guile", 52.0, 10.0, 95.0, "HEXACO H轴反向：狡黠度/小机灵鬼撒谎与反忽悠倾向"),
-    _spec("persona_defiance", 48.0, 10.0, 95.0, "Brehm逆反/HEXACO A轴反向：小刺头叛逆度"),
+    *(
+        _spec(spec.key, spec.default, spec.min_bound, spec.max_bound, spec.description)
+        for spec in PERSONA_SPECS.values()
+    ),
 )
 
 UPSERT_WORKING_SQL = (

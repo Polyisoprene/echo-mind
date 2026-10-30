@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from echomind.domain.models import PlasticParamSpec, TurnOutcome
+from echomind.domain.persona_specs import PERSONA_SPECS
 from echomind.domain.ports import IWorkingStateStore
 from echomind.mind.personality import compute_personality_deltas, derive_emergent_trait
 from echomind.mind.subconscious_probe import compute_chord_social_reward
@@ -18,13 +19,7 @@ PARAM_BASELINES: dict[str, float] = {
     "skepticism": 55.0,
     "verify_impulse": 70.0,
     "curiosity_rate": 65.0,
-    "persona_warmth": 65.0,
-    "persona_tsundere": 62.0,
-    "persona_playfulness": 58.0,
-    "persona_possessiveness": 75.0,
-    "persona_confidence": 55.0,
-    "persona_guile": 52.0,
-    "persona_defiance": 48.0,
+    **{key: spec.default for key, spec in PERSONA_SPECS.items()},
 }
 HOMEOSTATIC_PULL_RATE = 0.02
 

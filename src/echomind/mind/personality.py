@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from echomind.domain.models import PersonaTrait, PlasticParamSpec, TurnOutcome
+from echomind.domain.persona_specs import persona_default
 from echomind.mind.naming import bot_naming
 
 
-def _val(params: dict[str, PlasticParamSpec], key: str, default: float) -> float:
+def _val(params: dict[str, PlasticParamSpec], key: str) -> float:
     spec = params.get(key)
-    return spec.value if spec is not None else default
+    return spec.value if spec is not None else persona_default(key)
 
 
 def _describe_warmth_and_attachment(warmth: float, tsundere: float, possess: float) -> str:
@@ -124,8 +125,8 @@ DIMENSION_RUBRICS: tuple[DimensionRubricSpec, ...] = (
 
 
 def _format_dim_rubric(params: dict[str, PlasticParamSpec], spec: DimensionRubricSpec) -> str:
-    key, default_v, label, poles, hi_th, mid_th, hi_txt, mid_txt, lo_txt = spec
-    val = _val(params, key, default_v)
+    key, _default, label, poles, hi_th, mid_th, hi_txt, mid_txt, lo_txt = spec
+    val = _val(params, key)
     tier = hi_txt if val >= hi_th else (mid_txt if val >= mid_th else lo_txt)
     return f"  · {label}({val:.1f}/100 ｜ {poles}) → {tier}"
 
@@ -135,13 +136,13 @@ def synthesize_live_persona_directive(
     traits: tuple[PersonaTrait, ...],
 ) -> str:
     """Compile the 7D HEXACO personality vector & grown traits into a live prompt directive."""
-    warmth = _val(params, "persona_warmth", 65.0)
-    tsundere = _val(params, "persona_tsundere", 62.0)
-    playful = _val(params, "persona_playfulness", 58.0)
-    possess = _val(params, "persona_possessiveness", 75.0)
-    conf = _val(params, "persona_confidence", 55.0)
-    guile = _val(params, "persona_guile", 52.0)
-    defiance = _val(params, "persona_defiance", 48.0)
+    warmth = _val(params, "persona_warmth")
+    tsundere = _val(params, "persona_tsundere")
+    playful = _val(params, "persona_playfulness")
+    possess = _val(params, "persona_possessiveness")
+    conf = _val(params, "persona_confidence")
+    guile = _val(params, "persona_guile")
+    defiance = _val(params, "persona_defiance")
 
     core_tone = _describe_warmth_and_attachment(warmth, tsundere, possess)
     sub_tone = _describe_shadow_and_playfulness(playful, conf, guile, defiance)

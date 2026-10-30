@@ -12,6 +12,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.domain.persona_specs import persona_default
 from echomind.mind.drives import compute_aversion_susceptibility, compute_care_weight
 from echomind.mind.ebbinghaus import tokenize_query
 
@@ -125,17 +126,17 @@ def _positive_factors(
     params: dict[str, PlasticParamSpec] | None,
     speaker_bond: SocialBondProfile | None = None,
 ) -> tuple[float, list[str]]:
-    poss = _p_val(params, "persona_possessiveness", 75.0)
+    poss = _p_val(params, "persona_possessiveness", persona_default("persona_possessiveness"))
     s_bonus, s_tag = _care_sender_bonus(percept, poss, speaker_bond)
     bonus = s_bonus
     tags: list[str] = [s_tag] if s_tag else []
     if _is_question_or_long(percept.text):
-        warm = _p_val(params, "persona_warmth", 65.0)
+        warm = _p_val(params, "persona_warmth", persona_default("persona_warmth"))
         b_q = round(0.06 + 0.06 * (warm / 100.0), 2)
         bonus += b_q
         tags.append(f"+探讨{b_q}")
     if unknowns:
-        play = _p_val(params, "persona_playfulness", 70.0)
+        play = _p_val(params, "persona_playfulness", persona_default("persona_playfulness"))
         cur_scale = 0.5 + 0.5 * (working.drives.curiosity / 100.0)
         b_unk = round((0.14 + 0.12 * (play / 100.0)) * cur_scale, 2)
         bonus += b_unk
@@ -147,7 +148,7 @@ def _positive_factors(
     act_tokens = tokenize_query(working.current_activity)
     msg_tokens = tokenize_query(percept.text)
     if (act_tokens & msg_tokens) or any(t in known_vocab for t in msg_tokens):
-        conf = _p_val(params, "persona_confidence", 65.0)
+        conf = _p_val(params, "persona_confidence", persona_default("persona_confidence"))
         b_top = round(0.09 + 0.07 * (conf / 100.0), 2)
         bonus += b_top
         tags.append(f"+共鸣{b_top}")
@@ -175,7 +176,7 @@ def _negative_factors(
         penalty += 0.10
         tags.append("-反感对象0.10")
     if working.affect.irritation >= 20.0:
-        defi = _p_val(params, "persona_defiance", 60.0)
+        defi = _p_val(params, "persona_defiance", persona_default("persona_defiance"))
         p_irr = round((working.affect.irritation / 100.0) * (0.14 + 0.10 * (defi / 100.0)), 2)
         penalty += p_irr
         tags.append(f"-厌烦{p_irr}")
