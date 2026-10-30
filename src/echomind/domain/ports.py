@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol, runtime_checkable
 
+from echomind.domain.bond_stats import BondDepthStats
 from echomind.domain.models import (
     AffectiveVector,
     AttentionDecision,
@@ -210,6 +211,18 @@ class ITurnTraceStore(Protocol):
     async def save_turn(self, record: TurnRecord) -> None: ...
 
     async def list_turns(self, chat_key: str, limit: int = 40) -> tuple[TurnRecord, ...]: ...
+
+
+@runtime_checkable
+class IBondDepthStore(Protocol):
+    """Narrow port persisting per-member interaction counters for earned bond depth."""
+
+    async def upsert_stats(self, stats: BondDepthStats) -> None: ...
+    async def add_impact(
+        self, chat_key: str, user_id: str, magnitude: float, *, betray: bool = False
+    ) -> None: ...
+    async def get_stats(self, chat_key: str, user_id: str) -> BondDepthStats | None: ...
+    async def top_stats(self, limit: int = 50) -> tuple[BondDepthStats, ...]: ...
 
 
 @runtime_checkable
