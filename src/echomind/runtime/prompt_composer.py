@@ -7,6 +7,7 @@ import hashlib
 from typing import Any
 
 from echomind.domain.models import AffectiveVector, CognitiveFrame, FrozenValueObject, Percept
+from echomind.mind.naming import bot_naming
 
 CST = datetime.timezone(datetime.timedelta(hours=8))
 GAP_BREAK_MS = 300_000
@@ -165,9 +166,9 @@ VOICE_AND_SPEAK_GUIDE = (
 class PromptComposer:
     """Pure assembler rendering Role + Rotated Stickers + CognitiveFrame + Messages."""
 
-    def __init__(self, role_text: str, bot_name: str = "回音") -> None:
+    def __init__(self, role_text: str, bot_name: str = "") -> None:
         self._role_text = role_text
-        self._bot_name = bot_name
+        self._bot_name = bot_name or bot_naming().label()
 
     def role_card(self) -> tuple[str, str]:
         return self._bot_name, self._role_text

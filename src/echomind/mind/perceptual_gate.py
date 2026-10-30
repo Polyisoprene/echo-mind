@@ -12,6 +12,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.mind.naming import bot_naming
 from echomind.mind.salience_hydraulics import (
     check_implicit_second_person_ask,
     check_self_utterance_resonance,
@@ -36,9 +37,13 @@ EN_STOPWORDS = frozenset(
         "workbuddy", "codebuddy", "token", "git", "github",
     }
 )
-COMMON_STOPWORDS = frozenset(
-    {"回音", "尾尾", "什么", "怎么", "这个", "那个", "哈哈", "图片", "表情"}
-)
+_BASE_STOPWORDS = frozenset({"什么", "怎么", "这个", "那个", "哈哈", "图片", "表情"})
+
+
+def common_stopwords() -> frozenset[str]:
+    """Filler words plus the current persona names, so renames never leak into focus matching."""
+    naming = bot_naming()
+    return _BASE_STOPWORDS | frozenset(n for n in (naming.label(), *naming.aliases) if n)
 
 
 def extract_unknown_terms(text: str, known_vocab: frozenset[str]) -> tuple[str, ...]:
@@ -53,7 +58,7 @@ def extract_unknown_terms(text: str, known_vocab: frozenset[str]) -> tuple[str, 
         term
         for term in (c.strip() for c in candidates)
         if len(term) >= 2
-        and term not in COMMON_STOPWORDS
+        and term not in common_stopwords()
         and term.lower() not in EN_STOPWORDS
         and term.lower() not in known_vocab
     ]

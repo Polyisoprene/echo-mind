@@ -8,6 +8,7 @@ from typing import Any
 
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import load_config_from_json
+from echomind.mind.naming import bot_naming
 from echomind.web.reconcile_service import run_persona_reconciliation
 
 API_DEFAULTS: dict[str, Any] = {
@@ -256,7 +257,7 @@ class LlmConfigService:
         raw = _load_raw(self._path)
         raw_p = raw.get("persona")
         p = raw_p if isinstance(raw_p, dict) else {}
-        bot_name = str(p.get("botName", "回音"))
+        bot_name = str(p.get("botName") or bot_naming().label())
         role_text = str(p.get("roleText", ""))
         if self._c.prompt_composer is not None:
             live_name, live_role = self._c.prompt_composer.role_card()
@@ -294,6 +295,6 @@ class LlmConfigService:
     async def reconcile_persona_memory(self, chat_key: str = "") -> dict[str, Any]:
         """Audit and prune memories that conflict with the current base persona via LLM."""
         info = self.read_persona()
-        return await run_persona_reconciliation(
-            self._c, str(info.get("bot_name", "回音")), str(info.get("role_text", "")), chat_key
-        )
+        name = str(info.get("bot_name") or bot_naming().label())
+        role = str(info.get("role_text", ""))
+        return await run_persona_reconciliation(self._c, name, role, chat_key)
