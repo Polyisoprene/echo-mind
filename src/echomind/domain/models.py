@@ -163,6 +163,7 @@ class SocialBondProfile(FrozenValueObject):
     affinity_level: int = Field(default=1, ge=0, le=5)
     msg_count: int = 0
     trust_score: float = Field(default=0.8, ge=0.0, le=1.0)
+    bond_depth: float = Field(default=0.0, ge=0.0, le=100.0)
     is_rival: bool = False
     rival_reason: str = ""
     traits: tuple[str, ...] = ()

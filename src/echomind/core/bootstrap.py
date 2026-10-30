@@ -93,7 +93,7 @@ class EchoMindContainer:
         facade = CognitiveCoreFacade(
             mem_reader=mem_repo, mem_writer=mem_repo, working_store=work_store,
             owner_qq=owner_qq, default_group_key=default_chat_key,
-            constraint_store=work_store, trace_store=trace_store,
+            constraint_store=work_store, trace_store=trace_store, bond_store=bond_store,
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,

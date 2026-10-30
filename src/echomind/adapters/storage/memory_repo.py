@@ -70,7 +70,7 @@ def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
     role: RoleType = (
         cast(RoleType, raw_role) if raw_role in ("owner", "admin", "member") else "member"
     )
-    traits = json.loads(str(row[10] or "[]"))
+    traits = json.loads(str(row[11] or "[]"))
     return SocialBondProfile(
         chat_key=str(row[0]),
         user_id=str(row[1]),
@@ -80,8 +80,9 @@ def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
         affinity_level=int(row[5]),
         msg_count=int(row[6]),
         trust_score=float(row[7]),
-        is_rival=bool(row[8]),
-        rival_reason=str(row[9]),
+        bond_depth=float(row[8]),
+        is_rival=bool(row[9]),
+        rival_reason=str(row[10]),
         traits=tuple(str(t) for t in traits if t),
     )
 
@@ -140,7 +141,7 @@ class SqliteMemoryRepository:
     async def get_social_bond(self, chat_key: str, user_id: str) -> SocialBondProfile | None:
         sql = (
             "SELECT chat_key, user_id, user_name, group_role, affinity_score, affinity_level, "
-            "msg_count, trust_score, is_rival, rival_reason, traits_json "
+            "msg_count, trust_score, bond_depth, is_rival, rival_reason, traits_json "
             "FROM social_bonds WHERE chat_key = ? AND user_id = ?"
         )
         async with self._db.connect() as conn:
@@ -261,12 +262,13 @@ class SqliteMemoryRepository:
         sql = (
             "INSERT INTO social_bonds "
             "(chat_key, user_id, user_name, group_role, affinity_score, affinity_level, "
-            "msg_count, trust_score, is_rival, rival_reason, traits_json) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+            "msg_count, trust_score, bond_depth, is_rival, rival_reason, traits_json) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
             "ON CONFLICT(chat_key, user_id) DO UPDATE SET "
             "user_name=excluded.user_name, group_role=excluded.group_role, "
             "affinity_score=excluded.affinity_score, affinity_level=excluded.affinity_level, "
             "msg_count=excluded.msg_count, trust_score=excluded.trust_score, "
+            "bond_depth=excluded.bond_depth, "
             "is_rival=excluded.is_rival, rival_reason=excluded.rival_reason, "
             "traits_json=excluded.traits_json"
         )
@@ -280,6 +282,7 @@ class SqliteMemoryRepository:
             bond.affinity_level,
             bond.msg_count,
             bond.trust_score,
+            bond.bond_depth,
             int(bond.is_rival),
             bond.rival_reason,
             traits_str,

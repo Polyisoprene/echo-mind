@@ -37,8 +37,7 @@ IMPACT_SATURATION = 45.0  # param: fit:pending-bond-depth
 BETRAYAL_HALF_LIFE = 3.0  # param: fit:pending-bond-depth
 DEPTH_CEILING = 0.97  # param: convention:soft-cap
 # Care-weight blend between affinity/trust base and earned depth.
-BASE_CARE_SHARE = 0.45  # param: fit:pending-bond-depth
-DEPTH_CARE_SHARE = 0.55  # param: fit:pending-bond-depth
+DEPTH_BONUS = 0.35  # param: fit:pending-bond-depth
 # Legacy mapping inherited from the pre-Stage-29 w_care formula.
 AFFINITY_OFFSET = 38.0  # param: convention:legacy-w-care
 AFFINITY_SPAN = 70.0  # param: convention:legacy-w-care
@@ -75,8 +74,8 @@ def compute_bond_depth(
 def care_weight(affinity: float, trust: float, depth: float) -> float:
     """Continuous care weight w_care(u) in [0, 0.97] with no hardcoded owner privilege."""
     base = _clamp01((affinity - AFFINITY_OFFSET) / AFFINITY_SPAN) * _clamp01(trust)
-    scaled = base * (BASE_CARE_SHARE + DEPTH_CARE_SHARE * _clamp01(depth / 100.0))
-    return round(min(DEPTH_CEILING, max(0.0, scaled)), 3)
+    bonus = 1.0 + DEPTH_BONUS * _clamp01(depth / 100.0)
+    return round(min(DEPTH_CEILING, max(0.0, base * bonus)), 3)
 
 
 def beta_trust_update(

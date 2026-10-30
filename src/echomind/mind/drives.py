@@ -13,6 +13,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.mind.bond_depth import care_weight
 from echomind.mind.circadian import resolve_circadian_phase
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ def compute_care_weight(
         return 1.0
     if bond is None or bond.is_rival:
         return 0.0
-    return round(max(0.0, min(0.88, ((bond.affinity_score - 38.0) / 70.0) * bond.trust_score)), 3)
+    return care_weight(bond.affinity_score, bond.trust_score, bond.bond_depth)
 
 
 def compute_aversion_susceptibility(
@@ -141,8 +142,7 @@ def _chord_rpe_and_soothing(
     return rpe_v, att_d, shy_b, irr_d
 
 
-def _build_coupled_vectors(
-    aff: AffectiveVector, drv: DriveState, *,
+def _build_coupled_vectors(aff: AffectiveVector, drv: DriveState, *,
     w_care: float, j_delta: float, v_rpe: float,
     att_delta: float, shy_boost: float, irr_delta: float, cur_d: float,
 ) -> tuple[AffectiveVector, DriveState]:

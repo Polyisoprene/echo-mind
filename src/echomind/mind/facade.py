@@ -17,6 +17,7 @@ from echomind.domain.models import (
     WorkingSnapshot,
 )
 from echomind.domain.ports import (
+    IBondDepthStore,
     ILlmGateway,
     IMemoryReader,
     IMemoryWriter,
@@ -25,6 +26,7 @@ from echomind.domain.ports import (
     IWorkingStateStore,
 )
 from echomind.mind.ban_control import extract_new_bans
+from echomind.mind.bond_scoring import attach_bond_depth as attach
 from echomind.mind.chord_cache import remember_chord
 from echomind.mind.chord_gateway import apply_probe_if_allowed, chord_for, format_recent
 from echomind.mind.circadian import record_gate_decision
@@ -75,11 +77,13 @@ class CognitiveCoreFacade:
         default_group_key: str = "group:10002002", *,
         constraint_store: IPersonaConstraintStore | None = None,
         trace_store: ITurnTraceStore | None = None,
+        bond_store: IBondDepthStore | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
         self._owner_qq, self._default_group = owner_qq, default_group_key
         self._gate, self._calibrator = PerceptualGate(), EpistemicCalibrator()
         self._constraints, self._traces = constraint_store, trace_store
+        self._bond_store = bond_store
         self._plasticity = NeuroplasticityEngine(working_store)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
@@ -135,12 +139,6 @@ class CognitiveCoreFacade:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
         return dec
 
-    async def _load_bonds_map(
-        self, chat_key: str, uids: tuple[str, ...]
-    ) -> dict[str, SocialBondProfile]:
-        items = [(u, await self._reader.get_social_bond(chat_key, u)) for u in uids]
-        return {u: b for u, b in items if b is not None}
-
     async def _recall_and_reinforce(
         self, chat_key: str, triggers: tuple[Percept, ...], uids: tuple[str, ...],
         now_ms: int, dry_run: bool = False,
@@ -177,7 +175,7 @@ class CognitiveCoreFacade:
                 self._gate.impose_cold_shoulder(chat_key, last.sender_id, last.timestamp_ms)
         return updated, shadow, synthesize_live_persona_directive(params, traits)
 
-    async def _advance_working_state(
+    async def _advance(
         self, chat_key: str, triggers: tuple[Percept, ...], facts: tuple[SemanticFact, ...],
         bonds_map: dict[str, SocialBondProfile] | None = None,
         chord: SubconsciousChordResult | None = None,
@@ -220,11 +218,10 @@ class CognitiveCoreFacade:
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
         facts = await self._reader.get_semantic_facts(chat_key)
         uids = extract_mentioned_uids(tr, facts)
-        bm = await self._load_bonds_map(chat_key, uids)
+        pairs = [(u, await self._reader.get_social_bond(chat_key, u)) for u in uids]
+        bm = await attach(self._bond_store, {u: b for u, b in pairs if b is not None})
         chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
-        base_snap, last_dec, skep = await self._advance_working_state(
-            chat_key, tr, facts, bm, chord
-        )
+        base_snap, last_dec, skep = await self._advance(chat_key, tr, facts, bm, chord)
         bans = await self._resolve_bans(tr, dry_run)
         snap, shadow, p_blk = await self._apply_shadow_and_save(
             chat_key, base_snap, tr, bm, dry_run=dry_run, chord=chord
