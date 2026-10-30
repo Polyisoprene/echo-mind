@@ -18,12 +18,17 @@ COUNT_SQL = (
 )
 
 
-async def reset_privileged_bonds(db: Any, *, dry_run: bool = False) -> int:
-    """Clamp legacy owner sentinels to normal values; returns affected rows."""
+async def reset_privileged_bonds(
+    db: Any, *, dry_run: bool = False, reset_stats: bool = True
+) -> int:
+    """Clamp legacy owner sentinels; optionally wipe counters so depth restarts at zero."""
     async with db.connect() as conn:
         cursor = await conn.execute(COUNT_SQL)
         affected = int((await cursor.fetchone())[0])
         if not dry_run and affected:
             await conn.execute(RESET_SQL)
+            await conn.commit()
+        if not dry_run and reset_stats:
+            await conn.execute("DELETE FROM bond_depth_stats")
             await conn.commit()
     return affected
