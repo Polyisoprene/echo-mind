@@ -54,6 +54,7 @@ from echomind.mind.memory_consolidator import (
     run_hippocampal_batch_consolidation,
 )
 from echomind.mind.perceptual_gate import PerceptualGate
+from echomind.mind.persona_stance import apply_stance_for
 from echomind.mind.personality import synthesize_live_persona_directive
 from echomind.mind.plasticity import NeuroplasticityEngine, apply_chord_reward
 from echomind.mind.salience_hydraulics import apply_speaking_satiation
@@ -157,6 +158,7 @@ class CognitiveCoreFacade:
         chord: SubconsciousChordResult | None = None,
     ) -> tuple[WorkingSnapshot, ShadowAppraisalResult, str]:
         params = await self._working.get_plastic_params()
+        params = apply_stance_for(params, bonds_map, triggers[-1].sender_id if triggers else "")
         traits = await self._working.sync_persona_traits()
         shadow = evaluate_shadow_appraisal(
             triggers, base_snap.affect, params, traits, bonds_map, chord=chord,
@@ -180,6 +182,7 @@ class CognitiveCoreFacade:
     ) -> tuple[WorkingSnapshot, AttentionDecision | None, float]:
         snap = await self._working.load_working_state("global")
         params = await self._working.get_plastic_params()
+        params = apply_stance_for(params, bonds_map, triggers[-1].sender_id if triggers else "")
         skep = params["skepticism"].value if "skepticism" in params else 55.0
         talk = params["talkativeness"].value if "talkativeness" in params else 58.0
         cur_rate = params["curiosity_rate"].value if "curiosity_rate" in params else 65.0

@@ -268,6 +268,21 @@ AssertionError: rubric says high possessiveness but tone is '软傲娇平衡态�
 - **I-2 由红转绿**，新增 I-2b（单回合裁剪）与集成测试（引擎路径日限生效、回归量级正确）；
 - 回放（120 回合）：`wakes 2 / probe_calls 68 / double_apply 0 / reward_spread 1.09` 与基线一致。
 
+## 9.6 S30-4 已落地（关系姿态 σ_u）
+
+新增 `mind/persona_stance.py`：
+
+```text
+σ_u = ( tanh(1.6·D/100), tanh(2·(T−0.5)), tanh((A−50)/50) )      # 亲密 / 信任 / 好感
+θ_eff = clamp(θ + 8.0 · W·σ_u)                                    # 单维最多 ±8/100
+W 的符号固定：温柔+、傲娇−、俏皮+、叛逆−、自信+(俏皮)
+```
+
+- 只影响**渲染与显著性**（facade 的两处入口），`get_plastic_params()` 的持久值不被改写；
+- 幅度 8.0 标 `fit:pending`，符号由设计固定；
+- 新增测试（4 条）：深关系 vs 陌生人温暖差 ≥0.15、持久值不被改写、未知对象零偏移、σ 有界；
+- 回放（120 回合）：`wakes 2 / cooldown_blocks 32 / probe_calls 68 / double_apply 0 / reward_spread 1.09` 与基线一致。
+
 ## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）
