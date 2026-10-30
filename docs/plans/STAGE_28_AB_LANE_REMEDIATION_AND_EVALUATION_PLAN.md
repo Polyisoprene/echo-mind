@@ -76,15 +76,28 @@ uv run python scripts/replay_eval.py --db data/replay-snapshot.db \
 
 | 指标 | 200 回合实测 | 判据 | 结论 |
 |---|---|---|---|
-| turns / wakes | 200 / 8 | — | 唤醒率 4%（外围插话克制） |
-| `probe_calls` | 124（0.62/回合） | ≤ 1.2/回合 | ✅ 达标（F3 的目标是 ≤1/突发，仍待改） |
-| `cooldown_blocks` | 39 | — | 门控冷却仍在生效 |
+| turns / wakes | 200 / 8 → **200 / 7** | — | 唤醒率 3.5%（冷却收紧后更克制） |
+| `probe_calls` | 124 → **122**（0.61/回合；突发已被 F3 合流至 ≤2） | ≤ 1.2/回合 | ✅ 达标 |
+| `cooldown_blocks` | 39 → **42** | — | ✅ F5 生效（chord 唤醒也武装冷却） |
 | `cache_peak` | 124 | ≤ 256 | ✅ F6 生效 |
-| `double_apply`（F4 前） | **8**（= 全部唤醒回合） | 0 | ❌ 双计已复现 → F4 修复后 60 回合切片降为 **0** |
+| `double_apply` | 修复前 **8** → 修复后 **0** | 0 | ✅ F4 生效 |
 | `reward_samples` / `reward_spread` | 8 / **1.09** | 极差 ≥ 0.60 | ✅ F1 生效（改前极差恒 0） |
 | `partial` | false | false | 零 LLM、无预算截断 |
 
 > 说明：报告与快照库均被 `.gitignore` 排除（`reports/`、`data/*.db`），含真实群号者不入库。
+
+
+### 2.2 修复后收敛结论（A 线 · 200 回合复跑）
+
+| 指标 | 修复前 | 修复后 | 判据 |
+|---|---|---|---|
+| `double_apply` | 8 | **0** | =0 ✅ |
+| `wakes` | 8 | 7 | 更克制 ✅ |
+| `cooldown_blocks` | 39 | **42** | 冷却既生效又更常触发 ✅ |
+| `probe_calls` | 124 | **122**（0.61/回合） | ≤1.2/回合 ✅ |
+| `cache_peak` | 124 | 122 | ≤256 ✅ |
+| `reward_spread` | 1.09 | 1.09 | ≥0.60 ✅ |
+| 7 道门禁 | 绿 | 绿（81 passed / Cov 90.69%） | ✅ |
 
 **回放报告 JSON 契约**（`reports/replay_<ts>.json`）：
 ```json
