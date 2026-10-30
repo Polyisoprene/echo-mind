@@ -49,7 +49,7 @@
 | A1 | `operator_ids` + 写鉴权 + 审计（含前端 token 注入） | ⏳ |
 | A2a | bond_depth 六项算法 + Beta 信任 | ✅ `b1c7ec9` |
 | A2b | 事件计数器持久化 + 六特征派生（**尚未接线**） | ✅ `653d0ca`（store 未接线） |
-| A2c | 接线：`chord_gateway` 记 impact/betray，`live_client` 记 msg/responded | ⏳ |
+| A2c | 接线：`live_client` 记 impact/betray；历史回填 30 人计数；饱和点按 P95 校准 | ✅ `e2e6ba9` `/` `6c793f8` |
 | A3 | 删除 `owner_qq`（99 处）+ 嫉妒/冷暴力去特权 | ⏳ |
 | A4 | 人格语料去硬编码（见第二节） | ⏳ |
 | A5 | 身份配置卡（名字/小名/白名单/默认群） | ⏳ |
@@ -107,7 +107,9 @@ $$D_u=100\cdot\sigma\big(1.6(1.0f+1.2v+1.4r+1.0c+1.1i-1.6b-2.6)\big),\quad w_{ca
 | 端口 | `domain/ports.py` → `IBondDepthStore` | ✅ |
 | SQLite 适配器 | `adapters/storage/bond_depth_repo.py` | ✅ |
 | 六特征派生 | `mind/bond_features.py` | ✅ |
-| **接线**（msg / 回话 / impact / betray） | `chord_gateway.py`、`live_client.py`、`bootstrap.py` | ⏳ **A2c** |
+| **接线**（msg / 回话 / impact / betray） | `live_client.py`、`bootstrap.py` | ✅ `e2e6ba9` |
+| 深度入 `w_care`（读取时注入） | `bond_scoring.py` → `drives.compute_care_weight` | ✅ `dad7a56` |
+| 深度**持久化**到 `social_bonds.bond_depth` | 列/读写已就绪，写入时机待 A3b | 🚧 |
 
 ### 4.3 跨群自适应（B 系列，待做）
 
@@ -188,4 +190,4 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
-| 2026-10-30 | B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
+| 2026-10-30 | A2c 接线 + 回填 + P95 校准（`e2e6ba9`/`6c793f8`）；深度接入 `w_care`（`dad7a56`，读取时注入）；B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
