@@ -56,7 +56,7 @@ $$N_{\text{probe}} = \begin{cases}1 & n\ge 1\\0 & \text{协议硬红灯}\end{cas
 | 生产链路 $r_t$ 离散度（20 回合回放） | 恒 0.08（极差 0） | 极差 $\ge 0.60$ | 硬断言 | 回放报告 `reward_spread` |
 | tier-1 回合拥有和弦 | 0% | 100% | 硬断言 | 单测 `test_rg_f2_*` |
 | 每 2 s 突发探针调用数（n=4） | 4 | $\le 1$ | 硬断言 | 计数器 `test_rg_f3_*` |
-| 唤醒回合情绪应用次数 | 2 | 1 | 硬断言 | `Spy` 计数 `test_rg_f4_*` |
+| 唤醒回合情绪应用次数 | **2（实测 200 回合双计 8/8）** | 1（实测 0/8） | 硬断言 | `Spy` 计数 `test_rg_f4_*` |
 | 冷却期内唤醒（$w_{care}<0.95$） | 是 | 0 次 | 硬断言 | `test_rg_f5_*` |
 | `_chord_cache` 条目上限 | 无界 | $\le 256$ | 硬断言 | `test_rg_f6_*` |
 | 死配置字段 | 3 个 | 0 个（接入或删除） | 硬断言 | `test_rg_f7_*` |
@@ -65,6 +65,26 @@ $$N_{\text{probe}} = \begin{cases}1 & n\ge 1\\0 & \text{协议硬红灯}\end{cas
 | taboo 厌恶可达性 | 不可达 | 可达 | 硬断言 | `test_rg_f10_*` |
 | 回放：挑衅型群友 20 回合净好感 | $\ge +8$（错） | $\le -3$ | 硬断言 | 回放报告 |
 | 7 道门禁 | 绿 | 绿 | 全 Exit 0 | `qa_gate.sh` |
+
+
+### 2.1 A 线回放基线（200 回合真实群聊，A 线已实测）
+
+```bash
+uv run python scripts/replay_eval.py --db data/replay-snapshot.db \
+  --chat-key <群> --owner <主人> --turns 200 --out reports/
+```
+
+| 指标 | 200 回合实测 | 判据 | 结论 |
+|---|---|---|---|
+| turns / wakes | 200 / 8 | — | 唤醒率 4%（外围插话克制） |
+| `probe_calls` | 124（0.62/回合） | ≤ 1.2/回合 | ✅ 达标（F3 的目标是 ≤1/突发，仍待改） |
+| `cooldown_blocks` | 39 | — | 门控冷却仍在生效 |
+| `cache_peak` | 124 | ≤ 256 | ✅ F6 生效 |
+| `double_apply`（F4 前） | **8**（= 全部唤醒回合） | 0 | ❌ 双计已复现 → F4 修复后 60 回合切片降为 **0** |
+| `reward_samples` / `reward_spread` | 8 / **1.09** | 极差 ≥ 0.60 | ✅ F1 生效（改前极差恒 0） |
+| `partial` | false | false | 零 LLM、无预算截断 |
+
+> 说明：报告与快照库均被 `.gitignore` 排除（`reports/`、`data/*.db`），含真实群号者不入库。
 
 **回放报告 JSON 契约**（`reports/replay_<ts>.json`）：
 ```json
@@ -132,7 +152,7 @@ $$N_{\text{probe}} = \begin{cases}1 & n\ge 1\\0 & \text{协议硬红灯}\end{cas
 | F1 | `test_rg_f1_production_reward_not_constant` | `AssertionError: insult turn must lose trust, got 0.755`（`assert 0.755 < 0.75`） | `2 passed` → `74 passed / Cov 90.53% / 7 门禁全绿` | `e023da4` |
 | F2 | `test_rg_f2_tier1_turn_gets_chord` | 📋 | 📋 | 📋 |
 | F3 | `test_rg_f3_probe_once_per_batch` | 📋 | 📋 | 📋 |
-| F4 | `test_rg_f4_chord_applied_once` | 📋 | 📋 | 📋 |
+| F4 | `test_rg_f4_chord_applied_once` | `AssertionError: chord must shift mood exactly once per turn, got 2 applications` | `78 passed / Cov 90.56% / 7 门禁全绿`；回放 `double_apply` 8 → 0（60 回合切片） | `720b671` |
 | F5 | `test_rg_f5_cooldown_not_bypassed` | 📋 | 📋 | 📋 |
 | F6 | `test_rg_f6_chord_cache_bounded` | `AssertionError: chord cache must be bounded, got 300`（`assert 300 <= 256`） | `75 passed / Cov 90.53% / 7 门禁全绿` | 见 `rg(F6)` 提交 |
 | F7 | `test_rg_f7_no_dead_config_fields` | 📋 | 📋 | 📋 |
