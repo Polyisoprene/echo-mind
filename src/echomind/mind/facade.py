@@ -26,7 +26,7 @@ from echomind.domain.ports import (
 )
 from echomind.mind.ban_control import extract_new_bans
 from echomind.mind.chord_cache import remember_chord
-from echomind.mind.chord_gateway import apply_probe_if_allowed, format_recent
+from echomind.mind.chord_gateway import apply_probe_if_allowed, chord_for, format_recent
 from echomind.mind.circadian import record_gate_decision
 from echomind.mind.cybernetics import (
     compute_cybernetic_core,
@@ -216,7 +216,7 @@ class CognitiveCoreFacade:
         facts = await self._reader.get_semantic_facts(chat_key)
         uids = extract_mentioned_uids(tr, facts)
         bm = await self._load_bonds_map(chat_key, uids)
-        chord = self._chord_cache.get(tr[-1].message_id) if tr else None
+        chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
         base_snap, last_dec, skep = await self._advance_working_state(
             chat_key, tr, facts, bm, chord
         )

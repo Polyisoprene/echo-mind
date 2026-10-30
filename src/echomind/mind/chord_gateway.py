@@ -86,3 +86,27 @@ def _care_of(percept: Percept, owner_qq: str, bond: SocialBondProfile | None) ->
     from echomind.mind.drives import compute_care_weight
 
     return compute_care_weight(percept.sender_id, owner_qq, bond)
+
+
+async def chord_for(
+    probe: SubconsciousChordProbe | None, triggers: tuple[Percept, ...],
+    bonds: dict[str, SocialBondProfile] | None,
+    cache: dict[str, SubconsciousChordResult], dry_run: bool,
+    *, timeout_s: float = 1.2,
+) -> SubconsciousChordResult | None:
+    """Resolve the turn chord, probing once when a direct summon skipped the gate probe."""
+    if dry_run or not triggers:
+        return None
+    last = triggers[-1]
+    cached = cache.get(last.message_id)
+    if cached is not None:
+        return cached
+    if probe is None:
+        return None
+    bond = bonds.get(last.sender_id) if bonds else None
+    if bond is not None and bond.is_rival and not last.is_called_by_name:
+        return None
+    chord = await probe.appraise(last, (), bond, timeout_s=timeout_s)
+    if chord is not None:
+        remember_chord(cache, last.message_id, chord)
+    return chord
