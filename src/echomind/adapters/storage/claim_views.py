@@ -9,6 +9,7 @@ from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import SemanticFact
 from echomind.mind.fact_shadow import ClaimView
 
+
 def facts_v2_enabled() -> bool:
     """Whether reads should come from the claim store instead of legacy facts."""
     return os.getenv("FACTS_V2", "off").lower() == "on"
