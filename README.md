@@ -185,3 +185,4 @@ cp data/config.example.json data/config.json
   - [Stage 25：潜意识6维情感和弦探针、连续张量合成、跨人情绪迁延与表情包自动品味规范](docs/plans/STAGE_25_SUBCONSCIOUS_CHORD_PROBE_AND_ZERO_HARDCODING_PLAN.md)
   - [Stage 26：全链路100%潜意识6维和弦驱动与全库硬编码词表清零规范](docs/plans/STAGE_26_PURE_SUBCONSCIOUS_CHORD_ENGINE_AND_ZERO_LEXICON_PLAN.md)
   - [Stage 27：括号内心独白外泄根治与出站思考块隔离规范](docs/plans/STAGE_27_INNER_MONOLOGUE_LEAK_AND_OUTBOUND_REASONING_ISOLATION_PLAN.md)
+  - [Stage 28：A/B 双线修复建模、修复后评估与红绿交付契约](docs/plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md)
