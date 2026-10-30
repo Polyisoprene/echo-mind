@@ -762,6 +762,14 @@ function renderSocial(s) {
   if (activeEl && activeEl.dataset && activeEl.dataset.bondInput) return;
   const bonds = (s.bonds || []).slice().sort((x, y) => y.affinity_score - x.affinity_score);
   $('social-count').textContent = bonds.length + ' 人 · 好感度与元认知可信度均随对话动态演化，也支持手动微调';
+  api('/api/mind/social-coverage?chat_key=' + encodeURIComponent(s.chat_key || ''))
+    .then((c) => {
+      const el = $('social-coverage');
+      if (el && c && c.ok) {
+        el.textContent = '本群发言人 ' + c.speakers + ' · 已建档 ' + c.bonds + ' · 有互动 ' + c.interacted;
+      }
+    })
+    .catch(() => {});
   $('social-table').innerHTML = bonds.length ? '<table><tr><th>#</th><th>群友</th><th>身份</th><th>好感度 / 升级进度</th><th>等级</th><th>可信度（防忽悠校准）</th><th>标记</th><th>手动调整好感度</th></tr>' +
     bonds.map((b, i) => {
       const next = LEVEL_NEXT[b.affinity_level];
