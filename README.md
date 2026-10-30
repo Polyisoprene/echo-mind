@@ -127,6 +127,11 @@ cp data/config.example.json data/config.json
 ./scripts/service.sh stop
 ```
 
+> **监听地址与端口的唯一权威**：`scripts/service.sh` 由环境变量 `ECHOMIND_HOST`（默认 `0.0.0.0`）与
+> `ECHOMIND_PORT`（默认 `3310`）决定；`data/config.json` 中的 `server.host` / `server.port`
+> **不参与监听**（仅为控制台 UI 兼容保留）。若只想允许本机访问，请改用
+> `ECHOMIND_HOST=127.0.0.1 ./scripts/service.sh restart`。
+
 ### 3. 全息 Web 控制台（`http://127.0.0.1:3310`）
 浏览器打开 `http://127.0.0.1:3310`（支持右上角 **☀️ 白天 / 🌙 夜间模式** 一键切换）：
 - **📊 总览（Overview）**：实时查看情绪五维、内驱力四维、**🧭 控制论三磁针自组织核心与激活选矿剂**、**🔭 自主网页搜索与刷B站冲浪足迹**（可一键点击「🔭 立即去刷B站 / 探索未知新梗」）；

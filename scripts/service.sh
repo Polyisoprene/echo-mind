@@ -5,6 +5,7 @@ set -euo pipefail
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCREEN_NAME="qqagent2"
 PORT="${ECHOMIND_PORT:-3310}"
+HOST="${ECHOMIND_HOST:-0.0.0.0}"
 LOG_FILE="$APP_DIR/data/console.log"
 UVICORN_TARGET="echomind.main:build_live_asgi_app"
 
@@ -23,7 +24,7 @@ do_start() {
   mkdir -p "$APP_DIR/data"
   : > "$LOG_FILE"
   screen -dmS "$SCREEN_NAME" bash -c \
-    "export PATH=\"\$HOME/.local/bin:\$PATH\"; cd \"$APP_DIR\" && while true; do uv run uvicorn ${UVICORN_TARGET} --factory --host 0.0.0.0 --port ${PORT} >> \"$LOG_FILE\" 2>&1; sleep 3; done" \
+    "export PATH=\"\$HOME/.local/bin:\$PATH\"; cd \"$APP_DIR\" && while true; do uv run uvicorn ${UVICORN_TARGET} --factory --host ${HOST} --port ${PORT} >> \"$LOG_FILE\" 2>&1; sleep 3; done" \
     </dev/null >/dev/null 2>&1
   for _ in $(seq 1 20); do
     sleep 0.5
