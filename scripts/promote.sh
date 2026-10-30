@@ -25,7 +25,13 @@ fi
 echo "[promote] 3/3 记录证据并合入 main…"
 mkdir -p "$A_DIR/reports"
 { echo "commit=$SHA"; echo "date=$(date -Is)"; echo "gate=pass"; } > "$A_DIR/reports/promotion_${SHA}.txt"
-COMMITS="$(git -C "$A_DIR" log --reverse --format='%H %s' "main..HEAD" | grep -v ' docs(' | cut -d' ' -f1 || true)"
+COMMITS=""
+while read -r marker sha; do
+  [[ "$marker" == "+" ]] || continue
+  subject="$(git -C "$A_DIR" log -1 --format='%s' "$sha")"
+  [[ "$subject" == docs\(* ]] && continue
+  COMMITS="$COMMITS $sha"
+done < <(git -C "$A_DIR" cherry main)
 if [[ -z "$COMMITS" ]]; then echo "[promote] 无待合入提交"; exit 0; fi
 GIT_EDITOR=true git -C "$B_DIR" cherry-pick $COMMITS
 echo "[promote] 完成：B 线 $(git -C "$B_DIR" rev-parse --short HEAD)"
