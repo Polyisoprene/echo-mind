@@ -15,6 +15,7 @@ from echomind.domain.models import (
     WorkingSnapshot,
 )
 from echomind.domain.ports import ILlmGateway, IWorkingStateStore
+from echomind.mind.chord_cache import remember_chord
 
 JSON_EXTRACT_RE = re.compile(r"\{[\s\S]*\}")
 VALID_ROLES = ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise")
@@ -283,8 +284,7 @@ async def apply_probe_if_allowed(
     chord = await probe.appraise(percept, recent_lines, bond)
     if chord is None:
         return snap, dec
-    if percept.message_id:
-        cache[percept.message_id] = chord
+    remember_chord(cache, percept.message_id, chord)
     new_snap, new_dec = apply_chord_tensor_to_snapshot(snap, chord, percept, owner_qq, bond)
     await working.save_working_state(new_snap)
     return new_snap, new_dec

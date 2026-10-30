@@ -25,6 +25,7 @@ from echomind.domain.ports import (
     IWorkingStateStore,
 )
 from echomind.mind.ban_control import extract_new_bans
+from echomind.mind.chord_cache import remember_chord
 from echomind.mind.circadian import record_gate_decision
 from echomind.mind.cybernetics import (
     compute_cybernetic_core,
@@ -89,8 +90,7 @@ class CognitiveCoreFacade:
         self._sub_probe = probe
 
     def cache_chord(self, message_id: str, chord: SubconsciousChordResult) -> None:
-        if message_id:
-            self._chord_cache[message_id] = chord
+        remember_chord(self._chord_cache, message_id, chord)
 
     @property
     def owner_qq(self) -> str:
