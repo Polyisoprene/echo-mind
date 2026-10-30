@@ -7,7 +7,7 @@ from types import TracebackType
 
 import aiosqlite
 
-from echomind.adapters.storage.migrations import ensure_trait_columns
+from echomind.adapters.storage.migrations import ensure_migrations
 
 SCHEMA_DDL = """
 PRAGMA journal_mode = WAL;
@@ -288,7 +288,7 @@ class SqliteDatabase:
             await _ensure_column(conn, "turn_traces", "trigger_count", "INTEGER NOT NULL DEFAULT 0")
             await _ensure_column(conn, "turn_traces", "system_prompt", "TEXT NOT NULL DEFAULT ''")
             await _ensure_column(conn, "social_bonds", "bond_depth", "REAL NOT NULL DEFAULT 0.0")
-            await ensure_trait_columns(conn)
+            await ensure_migrations(conn)
             await _ensure_column(conn, "turn_traces", "user_prompt", "TEXT NOT NULL DEFAULT ''")
             await conn.commit()
             cursor = await conn.execute("PRAGMA journal_mode;")
