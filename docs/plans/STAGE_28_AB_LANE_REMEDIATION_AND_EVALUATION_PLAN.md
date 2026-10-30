@@ -129,12 +129,12 @@ $$N_{\text{probe}} = \begin{cases}1 & n\ge 1\\0 & \text{协议硬红灯}\end{cas
 
 | Finding | 测试 ID | 红证据（失败断言） | 绿证据 | 提交 |
 |---|---|---|---|---|
-| F1 | `test_rg_f1_production_reward_not_constant` | 📋 | 📋 | 📋 |
+| F1 | `test_rg_f1_production_reward_not_constant` | `AssertionError: insult turn must lose trust, got 0.755`（`assert 0.755 < 0.75`） | `2 passed` → `74 passed / Cov 90.53% / 7 门禁全绿` | `e023da4` |
 | F2 | `test_rg_f2_tier1_turn_gets_chord` | 📋 | 📋 | 📋 |
 | F3 | `test_rg_f3_probe_once_per_batch` | 📋 | 📋 | 📋 |
 | F4 | `test_rg_f4_chord_applied_once` | 📋 | 📋 | 📋 |
 | F5 | `test_rg_f5_cooldown_not_bypassed` | 📋 | 📋 | 📋 |
-| F6 | `test_rg_f6_chord_cache_bounded` | 📋 | 📋 | 📋 |
+| F6 | `test_rg_f6_chord_cache_bounded` | `AssertionError: chord cache must be bounded, got 300`（`assert 300 <= 256`） | `75 passed / Cov 90.53% / 7 门禁全绿` | 见 `rg(F6)` 提交 |
 | F7 | `test_rg_f7_no_dead_config_fields` | 📋 | 📋 | 📋 |
 | F8 | `test_rg_f8_vision_port_typed` | 📋 | 📋 | 📋 |
 | F9 | `test_rg_f9_recent_ctx_scoped` | 📋 | 📋 | 📋 |
