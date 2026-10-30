@@ -14,6 +14,7 @@ from echomind.adapters.llm.anchor import PrefixAnchorEngine
 from echomind.adapters.onebot.enrichers import PerceptEnrichmentPipeline
 from echomind.adapters.onebot.event_parser import parse_onebot_event
 from echomind.adapters.onebot.forward_expander import expand_incoming_forward
+from echomind.adapters.storage.contact_observer import observe_percept
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import Percept
 from echomind.domain.ports import IBondDepthStore, ICognitiveCoreFacade
@@ -166,6 +167,7 @@ class OneBotLiveRuntime:
         self._anchor = PrefixAnchorEngine(max_extra_read=10, window_size=48)
 
     async def _save_incoming(self, percept: Percept) -> None:
+        await observe_percept(self._db, percept, self._operator_ids)
         sql_ins = (
             "INSERT INTO chat_messages "
             "(chat_key, mid, ts, sender_id, sender_name, is_self, text, media_json) "

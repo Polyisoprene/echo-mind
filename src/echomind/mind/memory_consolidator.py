@@ -157,7 +157,7 @@ async def update_sender_bond(
                 "user_name": percept.sender_name or base.user_name,
                 "affinity_score": new_score,
                 "affinity_level": compute_affinity_level(new_score),
-                "msg_count": base.msg_count + 1,
+                "last_seen_ms": percept.timestamp_ms,
                 "trust_score": new_trust,
             }
         )

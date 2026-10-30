@@ -24,6 +24,7 @@ from echomind.web.llm_config_service import LlmConfigService
 from echomind.web.mind_inspector_service import MindInspectorService
 from echomind.web.probe_service import CognitiveProbeService
 from echomind.web.skill_config_service import SkillConfigService
+from echomind.web.social_router import build_social_router
 from echomind.web.voice_health_service import VoiceHealthService
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -284,6 +285,7 @@ def create_web_app(
     app.include_router(_asset_router(chat))
     app.include_router(_persona_router(inspector, skill_cfg))
     app.include_router(build_persona_card_router(llm, inspector))
+    app.include_router(build_social_router(container))
     identity = IdentityConfigService(config_path or Path("data/config.json"), container)
     app.include_router(build_identity_router(identity))
     app.include_router(_memory_action_router(inspector))
