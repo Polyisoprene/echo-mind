@@ -153,6 +153,14 @@ class ImageCaptionCacheEnricher:
         return percept.model_copy(update={"media": tuple(updated), "text": new_txt})
 
 
+async def _safe_enrich(enricher: IPerceptEnricher, percept: Percept) -> Percept:
+    """Isolate a faulty enricher so the inbound percept survives with a degraded field."""
+    try:
+        return await enricher.enrich(percept)
+    except Exception:  # noqa: BLE001 - enrichment must degrade, never drop the message
+        return percept
+
+
 class PerceptEnrichmentPipeline:
     """Composite pipeline executing registered IPerceptEnricher instances sequentially."""
 
@@ -160,7 +168,8 @@ class PerceptEnrichmentPipeline:
         self._enrichers = enrichers
 
     async def process(self, percept: Percept) -> Percept:
+        """Run every enricher in order; a single failure must never drop the message."""
         current = percept
         for enricher in self._enrichers:
-            current = await enricher.enrich(current)
+            current = await _safe_enrich(enricher, current)
         return current
