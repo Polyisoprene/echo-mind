@@ -12,15 +12,15 @@ import random
 
 import pytest
 
-from echomind.domain.models import Percept, TurnOutcome
+from echomind.domain.models import Percept, PlasticParamSpec, TurnOutcome
 from echomind.mind.personality import (
+    DIMENSION_RUBRICS,
     _describe_warmth_and_attachment,
     _format_dim_rubric,
     compute_personality_deltas,
-    DIMENSION_RUBRICS,
     synthesize_live_persona_directive,
 )
-from echomind.mind.plasticity import boundary_damping, PARAM_BASELINES
+from echomind.mind.plasticity import PARAM_BASELINES, boundary_damping
 
 WARMTH = next(spec for spec in DIMENSION_RUBRICS if spec[0] == "persona_warmth")
 POSSESS = next(spec for spec in DIMENSION_RUBRICS if spec[0] == "persona_possessiveness")
@@ -37,7 +37,7 @@ def test_i1_bounds_are_never_violated() -> None:
     low, high = WARMTH[4], WARMTH[5]
     lo, hi = 15.0, 98.0
     value = 65.0
-    rng = random.Random(30)
+    rng = random.Random(30)  # noqa: S311 - deterministic test seed, not crypto
     for _ in range(2000):
         delta = rng.uniform(-4.0, 4.0)
         value += boundary_damping(value, delta, lo, hi)
@@ -77,8 +77,6 @@ def test_i4_render_is_deterministic() -> None:
     )
 
 
-def _spec(key: str):  # noqa: ANN202 - local helper
-    from echomind.domain.models import PlasticParamSpec
-
+def _spec(key: str) -> PlasticParamSpec:
     return PlasticParamSpec(key=key, value=PARAM_BASELINES[key], min_bound=0.0, max_bound=100.0,
                             description=key)
