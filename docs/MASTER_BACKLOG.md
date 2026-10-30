@@ -50,7 +50,7 @@
 | A2a | bond_depth 六项算法 + Beta 信任 | ✅ `b1c7ec9` |
 | A2b | 事件计数器持久化 + 六特征派生（**尚未接线**） | ✅ `653d0ca`（store 未接线） |
 | A2c | 接线：`live_client` 记 impact/betray；历史回填 30 人计数；饱和点按 P95 校准 | ✅ `e2e6ba9` `/` `6c793f8` |
-| A3 | 去特权 ✅ `555a03a`；`operator_ids` + 禁言迁移 ✅ `rg(A3b)`；剩：深度写回、清零迁移、删字段 | 🚧 |
+| A3 | 去特权 ✅；`operator_ids` ✅；深度写回 + 清零迁移 ✅ `1464ef3`；剩：删除 `owner_qq` 字段 | 🚧 |
 | A4 | 人格语料去硬编码（见第二节） | ⏳ |
 | A5 | 身份配置卡（名字/小名/白名单/默认群） | ⏳ |
 | A6 | 验证套件（LOGO、跨群一致性、抗操纵、消融） | ⏳ |
@@ -109,7 +109,7 @@ $$D_u=100\cdot\sigma\big(1.6(1.0f+1.2v+1.4r+1.0c+1.1i-1.6b-2.6)\big),\quad w_{ca
 | 六特征派生 | `mind/bond_features.py` | ✅ |
 | **接线**（msg / 回话 / impact / betray） | `live_client.py`、`bootstrap.py` | ✅ `e2e6ba9` |
 | 深度入 `w_care`（读取时注入） | `bond_scoring.py` → `drives.compute_care_weight` | ✅ `dad7a56` |
-| 深度**持久化**到 `social_bonds.bond_depth` | 列/读写已就绪，写入时机待 A3b | 🚧 |
+| 深度**持久化**到 `social_bonds.bond_depth` | `bond_scoring` 写回 + `set_bond_depth` | ✅ `1464ef3` |
 
 ### 4.3 跨群自适应（B 系列，待做）
 
@@ -190,4 +190,4 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
-| 2026-10-30 | A3b-1：新增 `operator_ids`（config 解析 + 容器注入），禁言改由 operator 触发，普通群友无法再下禁令；A3 去特权：`w_care` 不再对 owner 短路、`w_aversion` 不再打 0.35 折、奖励不再 ×1.12、嫉妒/立场/显著性不再有 owner 分支（`555a03a`）；4 条相关测试改为「先有 bond 才有关爱」；A1 落地：API 写操作强制 token、`admin_audit` 审计、前端自动获取/提示 token（`operator_ids` 推迟到 A3b）；A2c 接线 + 回填 + P95 校准（`e2e6ba9`/`6c793f8`）；深度接入 `w_care`（`dad7a56`，读取时注入）；B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
+| 2026-10-30 | A3b-2/3：深度写回 `social_bonds.bond_depth`；新增清零迁移 `reset_privileged_bonds`（dry-run 演练：3 行，清洗后 owner 变回普通成员、`w_care=0`）；A3b-1：新增 `operator_ids`（config 解析 + 容器注入），禁言改由 operator 触发，普通群友无法再下禁令；A3 去特权：`w_care` 不再对 owner 短路、`w_aversion` 不再打 0.35 折、奖励不再 ×1.12、嫉妒/立场/显著性不再有 owner 分支（`555a03a`）；4 条相关测试改为「先有 bond 才有关爱」；A1 落地：API 写操作强制 token、`admin_audit` 审计、前端自动获取/提示 token（`operator_ids` 推迟到 A3b）；A2c 接线 + 回填 + P95 校准（`e2e6ba9`/`6c793f8`）；深度接入 `w_care`（`dad7a56`，读取时注入）；B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
