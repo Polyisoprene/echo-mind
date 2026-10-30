@@ -68,3 +68,31 @@ async def test_claim_store_has_tag(tmp_path: Path) -> None:
     store = SqliteClaimStore(db)
     await store.assert_claim("g", "s", "value", "v", tag="t1")
     assert await store.has_tag("t1") and not await store.has_tag("nope")
+
+
+def test_normalize_fact_splits_speaker_prefix() -> None:
+    from echomind.adapters.storage.claim_backfill import normalize_fact
+
+    subject, value = normalize_fact("L今晚早睡了吗(3064615013)提到：今天改代码", "")
+    assert subject == "L今晚早睡了吗(3064615013)"
+    assert value == "今天改代码"
+
+
+def test_normalize_fact_keeps_plain_subject() -> None:
+    from echomind.adapters.storage.claim_backfill import normalize_fact
+
+    assert normalize_fact("群主", "群主是 A") == ("群主", "群主是 A")
+
+
+async def test_calibrated_weights_land_in_usable_band(tmp_path: Path) -> None:
+    from echomind.adapters.storage.claim_repo import SqliteClaimStore
+
+    db = SqliteDatabase(tmp_path / "cal.db")
+    await db.initialize()
+    store = SqliteClaimStore(db)
+    explored = await store.assert_claim("g", "s1", "value", "v", source_type="explored",
+                                        weight_scale=0.6)
+    locked = await store.assert_claim("g", "s2", "value", "v", source_type="operator",
+                                      weight_scale=1.0)
+    assert 0.4 <= await store.claim_belief(explored) <= 0.75
+    assert await store.claim_belief(locked) >= 0.85

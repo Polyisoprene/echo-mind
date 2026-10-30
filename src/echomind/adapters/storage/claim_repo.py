@@ -13,11 +13,13 @@ from typing import Any
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.migrations import ensure_claim_tables
 
+# Evidence base weights: calibrated so a single ordinary fact lands around 0.55,
+# a repeated/peer fact around 0.5-0.7 and an operator/locked fact above 0.85.
 SOURCE_WEIGHT = {
-    "operator": 1.5, "system": 1.3, "derived": 0.6, "peer": 0.5, "explored": 0.4,
+    "operator": 2.4, "system": 2.0, "derived": 1.2, "peer": 1.1, "explored": 1.0,
 }
 SOURCE_RELIABILITY = {
-    "operator": 0.95, "system": 0.90, "derived": 0.70, "peer": 0.45, "explored": 0.40,
+    "operator": 1.0, "system": 1.0, "derived": 1.0, "peer": 1.0, "explored": 1.0,
 }
 REVIEW_THRESHOLD = 3
 
@@ -93,8 +95,9 @@ class SqliteClaimStore:
         self, conn: Any, claim_id: int, source_type: str, source_id: str, now: int, *,
         weight_scale: float = 1.0, tag: str = "",
     ) -> None:
-        weight = SOURCE_WEIGHT.get(source_type, 0.5) * SOURCE_RELIABILITY.get(source_type, 0.5)
-        weight *= max(0.0, min(1.0, weight_scale))
+        base = SOURCE_WEIGHT.get(source_type, 1.0) * SOURCE_RELIABILITY.get(source_type, 1.0)
+        # confidence scales between half and full weight, never zeroes the evidence out
+        weight = base * (0.5 + 0.5 * max(0.0, min(1.0, weight_scale)))
         await conn.execute(
             "INSERT INTO claim_evidence (claim_id, source_type, source_id, weight, "
             "observed_at_ms, raw_text) VALUES (?,?,?,?,?,?)",
