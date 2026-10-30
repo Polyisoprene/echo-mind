@@ -24,3 +24,4 @@ data/logs/*
 data/console.log
 reports/
 data/*.csv
+data/config.json.bak*
