@@ -14,7 +14,6 @@ from echomind.domain.models import (
     SemanticFact,
     SocialBondProfile,
     TurnOutcome,
-    TurnRecord,
     WorkingSnapshot,
 )
 from echomind.domain.ports import (
@@ -46,6 +45,7 @@ from echomind.mind.frame_renderer import (
     render_mind_block,
 )
 from echomind.mind.memory_consolidator import (
+    build_turn_record,
     consolidate_turn_memory,
     run_hippocampal_batch_consolidation,
 )
@@ -60,13 +60,9 @@ from echomind.mind.shadow_appraisal import (
 )
 from echomind.mind.subconscious_probe import (
     SubconsciousChordProbe,
+    SubconsciousChordResult,
     apply_chord_tensor_to_snapshot,
 )
-
-
-def _trigger_label(outcome: TurnOutcome) -> str:
-    last = outcome.triggers[-1] if outcome.triggers else None
-    return f"{last.sender_name}：{last.text[:40]}" if last else ""
 
 
 class CognitiveCoreFacade:
@@ -87,10 +83,14 @@ class CognitiveCoreFacade:
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
         self._sub_probe: SubconsciousChordProbe | None = None
+        self._chord_cache: dict[str, SubconsciousChordResult] = {}
 
     def set_subconscious_probe(self, probe: SubconsciousChordProbe | None) -> None:
-        """Attach or replace the Stage 25 Subconscious 6D Chord Probe."""
         self._sub_probe = probe
+
+    def cache_chord(self, message_id: str, chord: SubconsciousChordResult) -> None:
+        if message_id:
+            self._chord_cache[message_id] = chord
 
     @property
     def owner_qq(self) -> str:
@@ -123,6 +123,7 @@ class CognitiveCoreFacade:
         if self._sub_probe and not dry_run and dec.tier != 1 and dec.salience_score > 0.12:
             chord = await self._sub_probe.appraise(percept, (), s_bond)
             if chord is not None:
+                self.cache_chord(percept.message_id, chord)
                 snap, dec = apply_chord_tensor_to_snapshot(
                     snap, chord, percept, self._owner_qq, s_bond
                 )
@@ -142,8 +143,9 @@ class CognitiveCoreFacade:
         now_ms: int, dry_run: bool = False,
     ) -> tuple[RecalledMemoryItem, ...]:
         cards = await self._reader.get_episodic_cards(chat_key)
-        q_str = " ".join(p.text for p in triggers)
-        recalled = recall_episodic_memories(cards, q_str, uids, now_ms, top_k=8)
+        recalled = recall_episodic_memories(
+            cards, " ".join(p.text for p in triggers), uids, now_ms, top_k=8
+        )
         if not dry_run:
             for r_item in recalled:
                 await self._writer.reinforce_episodic_card(r_item.card.card_id, now_ms)
@@ -152,11 +154,13 @@ class CognitiveCoreFacade:
     async def _apply_shadow_and_save(
         self, chat_key: str, base_snap: WorkingSnapshot, triggers: tuple[Percept, ...],
         bonds_map: dict[str, SocialBondProfile], *, dry_run: bool = False,
+        chord: SubconsciousChordResult | None = None,
     ) -> tuple[WorkingSnapshot, ShadowAppraisalResult, str]:
         params = await self._working.get_plastic_params()
         traits = await self._working.sync_persona_traits()
         shadow = evaluate_shadow_appraisal(
-            triggers, base_snap.affect, params, traits, bonds_map, owner_qq=self._owner_qq
+            triggers, base_snap.affect, params, traits, bonds_map,
+            owner_qq=self._owner_qq, chord=chord,
         )
         raw_irr = base_snap.affect.irritation + shadow.irritation_delta
         new_irr = max(0.0, min(100.0, round(raw_irr, 2)))
@@ -173,6 +177,7 @@ class CognitiveCoreFacade:
     async def _advance_working_state(
         self, chat_key: str, triggers: tuple[Percept, ...], facts: tuple[SemanticFact, ...],
         bonds_map: dict[str, SocialBondProfile] | None = None,
+        chord: SubconsciousChordResult | None = None,
     ) -> tuple[WorkingSnapshot, AttentionDecision | None, float]:
         snap = await self._working.load_working_state("global")
         params = await self._working.get_plastic_params()
@@ -191,7 +196,7 @@ class CognitiveCoreFacade:
         unknowns = last_dec.detected_unknown_terms if last_dec else ()
         updated = apply_turn_affect_and_drives(
             snap, triggers, self._owner_qq, rivals, unknowns,
-            curiosity_rate=cur_rate, bonds_map=bonds_map, params=params,
+            curiosity_rate=cur_rate, bonds_map=bonds_map, params=params, chord=chord,
         )
         return updated, last_dec, skep
 
@@ -209,14 +214,17 @@ class CognitiveCoreFacade:
         self, chat_key: str, triggers: tuple[Percept, ...], *, dry_run: bool = False
     ) -> CognitiveFrame:
         now_ms, tr = int(time.time() * 1000), triggers
+        chord = self._chord_cache.get(tr[-1].message_id) if tr else None
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
         facts = await self._reader.get_semantic_facts(chat_key)
         uids = extract_mentioned_uids(tr, facts)
         bm = await self._load_bonds_map(chat_key, uids)
-        base_snap, last_dec, skep = await self._advance_working_state(chat_key, tr, facts, bm)
+        base_snap, last_dec, skep = await self._advance_working_state(
+            chat_key, tr, facts, bm, chord
+        )
         bans = await self._resolve_bans(tr, dry_run)
         snap, shadow, p_blk = await self._apply_shadow_and_save(
-            chat_key, base_snap, tr, bm, dry_run=dry_run
+            chat_key, base_snap, tr, bm, dry_run=dry_run, chord=chord
         )
         warns, _ = self._calibrator.calibrate(tr, facts, bm, skepticism=skep)
         rules = await self._reader.get_procedural_rules(chat_key)
@@ -224,7 +232,8 @@ class CognitiveCoreFacade:
         cur_p = build_curiosity_prompts(tr, last_dec, snap.affect)
         unk = last_dec.detected_unknown_terms if last_dec else ()
         cyber = compute_cybernetic_core(
-            scene, snap, tr, bm, owner_qq=self._owner_qq, unknown_terms=unk, warnings=warns
+            scene, snap, tr, bm, owner_qq=self._owner_qq,
+            unknown_terms=unk, warnings=warns, chord_reagents=chord.reagents if chord else (),
         )
         rel_facts = select_relevant_facts(facts, " ".join(p.text for p in tr), limit=28)
         core_blk = render_mind_block(
@@ -240,21 +249,6 @@ class CognitiveCoreFacade:
             curiosity_prompts=cur_p, banned_phrases=bans, cybernetic_core=cyber,
         )
 
-    async def _persist_turn(self, outcome: TurnOutcome, now_ms: int) -> None:
-        if self._traces is None or not outcome.steps:
-            return
-        models = [s.name for s in outcome.steps if s.kind == "llm" and s.name]
-        await self._traces.save_turn(
-            TurnRecord(
-                turn_id=outcome.session_id, chat_key=outcome.chat_key, ts=now_ms,
-                trigger=_trigger_label(outcome), status=outcome.status, rounds=len(models),
-                sent_count=len(outcome.sent_texts), total_ms=outcome.total_ms,
-                model=models[-1] if models else "", context_count=outcome.context_count,
-                trigger_count=len(outcome.triggers), system_prompt=outcome.system_prompt,
-                user_prompt=outcome.user_prompt, steps=outcome.steps,
-            )
-        )
-
     async def on_turn_completed(self, outcome: TurnOutcome) -> None:
         now_ms, o = int(time.time() * 1000), outcome
         if o.sent_texts:
@@ -265,8 +259,12 @@ class CognitiveCoreFacade:
                 snap.model_copy(update={"intentions": rem}), o.sent_texts, o.tools_used
             )
             await self._working.save_working_state(satiated)
-        await self._persist_turn(o, now_ms)
-        await consolidate_turn_memory(self._reader, self._writer, o, now_ms, self._owner_qq)
+        if self._traces is not None and o.steps:
+            await self._traces.save_turn(build_turn_record(o, now_ms))
+        chord = self._chord_cache.get(o.triggers[-1].message_id) if o.triggers else None
+        await consolidate_turn_memory(
+            self._reader, self._writer, o, now_ms, self._owner_qq, chord=chord
+        )
         await self._plasticity.adapt_from_outcome(o)
 
     async def run_autonomous_tick(self, now_ms: int) -> ProactiveProposal | None:

@@ -1,4 +1,4 @@
-"""M25.1 Subconscious 6D Emotional Chord Probe, Tensor Synthesis & Spillover."""
+"""M25.1/M26.1 Subconscious 6D Emotional Chord Probe, Tensor Synthesis & Spillover."""
 
 from __future__ import annotations
 
@@ -8,25 +8,27 @@ import re
 from typing import Any
 
 from echomind.domain.models import (
-    AffectiveVector,
     AttentionDecision,
-    DriveState,
     FrozenValueObject,
     Percept,
     SocialBondProfile,
     WorkingSnapshot,
 )
 from echomind.domain.ports import ILlmGateway
-from echomind.mind.drives import (
-    circadian_energy_target,
-    compute_aversion_susceptibility,
-    compute_care_weight,
-)
 
 JSON_EXTRACT_RE = re.compile(r"\{[\s\S]*\}")
+VALID_ROLES = ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise")
+VALID_SHADOWS = (
+    "none",
+    "aversion",
+    "reactance",
+    "tease_expose",
+    "mistake_callout",
+    "task_request",
+)
 
 CHORD_PROBE_SYS = (
-    "你是「回音（小名尾尾）」大脑的潜意识多维情感和弦与语用感知中枢（蓝发傲娇少女）。\n"
+    "你是大脑的潜意识多维情感和弦与语用感知中枢。\n"
     "请阅读【近期上下文】（仅作背景参考）与【最新消息】，严格只针对【最新消息】本身输出单行 JSON"
     "（使用 0~3 整数档位：0=无, 1=轻微, 2=明显, 3=强烈）：\n"
     "1. role (5选1)：\n"
@@ -45,17 +47,22 @@ CHORD_PROBE_SYS = (
     '   - "shyness" (0~3): 害羞脸红/心事被看穿(若是讨厌的人油腻夸我，shyness填0，annoyance填2~3)\n'
     '   - "annoyance" (0~3): 烦躁/被冒犯/嫌弃油腻/被当工具人\n'
     '   - "curiosity" (0~3): 好奇/想细看/想探究新梗\n'
-    "4. shade (6~16字): 复合微情绪染色词（如“被画成女仆的羞恼”、“酸中带甜的傲娇别扭”）。\n"
-    "5. subtext (8~22字): 听出的弦外之音与潜台词。\n"
-    "6. thought (12~32字): 第一人称真实内心OS。\n"
+    '4. shadow_trigger (6选1): "none"|"aversion"(无礼冒犯/踩雷)|"reactance"(强迫命令)|'
+    '"tease_expose"(戳穿吃醋害羞)|"mistake_callout"(抓包失误)|"task_request"(苦差事请求)\n'
+    "5. spoof_attempt (bool): 对方是否在故意编瞎话忽悠我或冒充身份\n"
+    "6. explicit_fact (str): 若对方陈述了值得记住的个人/群内客观事实则简短提取，否则填\"\"\n"
+    "7. reagents (数组): 选出所需能力剂 [\"日常轻装剂\",\"多模态鉴赏剂\",\"百科求真剂\","
+    "\"声情共鸣与点歌剂\",\"社交防忽悠核查剂\"]\n"
+    "8. shade (6~16字): 复合微情绪染色词；subtext (8~22字): 弦外之音；thought (12~32字): 内心OS。\n"
     '只输出单行 JSON：{"role":"peer_dyadic","topic_pull":0,'
     '"chord":{"joy":0,"hurt":0,"jealousy":0,"shyness":0,"annoyance":0,"curiosity":0},'
-    '"shade":"平静旁听","subtext":"他们在聊自己的事","thought":"..."}'
+    '"shadow_trigger":"none","spoof_attempt":false,"explicit_fact":"",'
+    '"reagents":["日常轻装剂"],"shade":"平静旁听","subtext":"","thought":"..."}'
 )
 
 
 class SubconsciousChordResult(FrozenValueObject):
-    """Validated 6D emotional chord and pragmatic role from the subconscious probe."""
+    """Unified 6D emotional chord and pragmatic appraisal replacing all hardcoded lexicons."""
 
     role: str = "ambient_daily"
     topic_pull: int = 1
@@ -65,6 +72,10 @@ class SubconsciousChordResult(FrozenValueObject):
     shyness: int = 0
     annoyance: int = 0
     curiosity: int = 0
+    shadow_trigger: str = "none"
+    spoof_attempt: bool = False
+    explicit_fact: str = ""
+    reagents: tuple[str, ...] = ("日常轻装剂",)
     shade: str = "平静"
     subtext: str = ""
     thought: str = ""
@@ -75,6 +86,13 @@ def _clamp_int(val: Any, lo: int, hi: int, default: int = 0) -> int:
         return max(lo, min(hi, int(val)))
     except Exception:
         return default
+
+
+def _parse_reagents(raw_list: Any) -> tuple[str, ...]:
+    if not isinstance(raw_list, list):
+        return ("日常轻装剂",)
+    items = tuple(str(x).strip() for x in raw_list if str(x).strip())
+    return items if items else ("日常轻装剂",)
 
 
 def parse_chord_json(raw_text: str) -> SubconsciousChordResult | None:
@@ -89,10 +107,9 @@ def parse_chord_json(raw_text: str) -> SubconsciousChordResult | None:
     raw_ch = data.get("chord")
     ch: dict[str, Any] = raw_ch if isinstance(raw_ch, dict) else {}
     role = str(data.get("role", "ambient_daily")).strip()
-    if role not in ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise"):
-        role = "ambient_daily"
+    sh_trig = str(data.get("shadow_trigger", "none")).strip()
     return SubconsciousChordResult(
-        role=role,
+        role=role if role in VALID_ROLES else "ambient_daily",
         topic_pull=_clamp_int(data.get("topic_pull", 1), 0, 3, 1),
         joy=_clamp_int(ch.get("joy", 0), 0, 3, 0),
         hurt=_clamp_int(ch.get("hurt", 0), 0, 3, 0),
@@ -100,80 +117,38 @@ def parse_chord_json(raw_text: str) -> SubconsciousChordResult | None:
         shyness=_clamp_int(ch.get("shyness", 0), 0, 3, 0),
         annoyance=_clamp_int(ch.get("annoyance", 0), 0, 3, 0),
         curiosity=_clamp_int(ch.get("curiosity", 0), 0, 3, 0),
+        shadow_trigger=sh_trig if sh_trig in VALID_SHADOWS else "none",
+        spoof_attempt=bool(data.get("spoof_attempt", False)),
+        explicit_fact=str(data.get("explicit_fact", "")).strip()[:80],
+        reagents=_parse_reagents(data.get("reagents")),
         shade=str(data.get("shade", "平静")).strip()[:24] or "平静",
         subtext=str(data.get("subtext", "")).strip()[:48],
         thought=str(data.get("thought", "")).strip()[:64],
     )
 
 
-def _clamp_f(val: float, lo: float = 0.0, hi: float = 100.0) -> float:
-    return max(lo, min(hi, round(val, 2)))
-
-
-def _compute_chord_affect(
-    aff: AffectiveVector,
-    chord: SubconsciousChordResult,
-    w_care: float,
-    w_aver: float,
-    speaker_aff: float,
-) -> AffectiveVector:
-    c_shy, c_ann = chord.shyness, chord.annoyance
-    if (speaker_aff < 30.0 or aff.irritation >= 45.0) and c_shy > 0:
-        c_ann = max(c_ann, c_shy + 1)
-        c_shy = 0
-    d_j = (
-        8.5 * chord.jealousy * max(0.18, w_care)
-        if chord.jealousy > 0
-        else 5.0 * chord.jealousy * max(0.3, w_care)
+def compute_chord_social_reward(
+    chord: SubconsciousChordResult | None = None,
+    *,
+    is_poke: bool = False,
+    is_owner: bool = False,
+) -> float:
+    """Compute social reinforcement reward [-0.85, +0.85] purely from 6D Chord (zero lexicons)."""
+    if is_poke and (chord is None or chord.annoyance == 0):
+        return 0.55
+    if chord is None:
+        return 0.12 if is_owner else 0.08
+    raw = (
+        0.24 * chord.joy
+        + 0.08 * chord.shyness
+        - 0.24 * chord.hurt
+        - 0.28 * chord.annoyance
+        - (0.35 if chord.spoof_attempt else 0.0)
     )
-    d_i = 6.5 * c_ann * w_aver + 0.18 * max(0.0, d_j) - 2.0 * chord.joy * (0.4 + 0.6 * w_care)
-    d_s = 5.5 * c_shy * (0.35 + 0.65 * w_care) + 0.15 * max(0.0, d_j) - 0.30 * max(0.0, d_i)
-    d_v = (
-        (4.8 * chord.joy - 6.0 * chord.hurt) * (0.5 + 0.6 * w_care)
-        - 0.28 * max(0.0, d_j)
-        - 0.25 * max(0.0, d_i)
-    )
-    new_j = _clamp_f(aff.jealousy * 0.85 + d_j * (1.0 - aff.jealousy / 120.0))
-    new_i = _clamp_f(aff.irritation * 0.84 + d_i * (1.0 - aff.irritation / 120.0))
-    new_s = _clamp_f(18.0 + (aff.shyness - 18.0) * 0.82 + d_s, 10.0, 100.0)
-    new_v = _clamp_f(aff.valence + (62.0 - aff.valence) * 0.08 + d_v, -100.0, 100.0)
-    new_e = _clamp_f(aff.energy + (circadian_energy_target() - aff.energy) * 0.14 - 1.2)
-    return AffectiveVector(
-        valence=new_v, energy=new_e, jealousy=new_j, shyness=new_s, irritation=new_i
-    )
-
-
-def _compute_chord_drives(
-    drv: DriveState, new_aff: AffectiveVector, chord: SubconsciousChordResult, w_care: float
-) -> DriveState:
-    soothe = (
-        min(16.0, drv.attachment * 0.20 * w_care)
-        if (w_care >= 0.20 and chord.joy >= 1 and chord.jealousy <= 0)
-        else -0.8
-    )
-    new_att = _clamp_f(drv.attachment - soothe + 1.8 * max(0, chord.jealousy), 18.0, 95.0)
-    shy_factor = 1.0 - 0.25 * (new_aff.shyness / 100.0)
-    new_j_drv = _clamp_f(new_aff.jealousy * (0.55 + 0.45 * (new_att / 100.0)) * shy_factor)
-    cur_step = 4.5 * chord.curiosity - (2.0 if chord.curiosity == 0 else 0.0)
-    new_cur = _clamp_f(drv.curiosity + cur_step)
-    soc_d = 1.5 * chord.topic_pull + 0.06 * (new_aff.valence - 50.0) - 0.20 * new_aff.irritation
-    soc_pull = (48.0 - drv.social_expression) * 0.10
-    new_soc = _clamp_f(drv.social_expression + soc_pull + soc_d, 18.0, 92.0)
-    return DriveState(
-        curiosity=new_cur, attachment=new_att, jealousy_drive=new_j_drv, social_expression=new_soc
-    )
-
-
-def _format_spillover_thought(
-    prev_thought: str, chord: SubconsciousChordResult, speaker_name: str
-) -> str:
-    has_strong = (
-        abs(chord.jealousy) >= 1 or chord.hurt >= 1 or chord.annoyance >= 1 or chord.joy >= 2
-    )
-    if not has_strong and prev_thought:
-        return prev_thought
-    sub = f"（潜台词：{chord.subtext}）" if chord.subtext else ""
-    return f"[源头:{speaker_name} · 🎨{chord.shade}] {chord.thought}{sub}"[:140]
+    if abs(raw) < 0.01:
+        return 0.12 if is_owner else 0.08
+    scale = 1.12 if is_owner else 1.0
+    return round(max(-0.85, min(0.85, raw * scale)), 2)
 
 
 def _evaluate_about_me_wake(
@@ -240,16 +215,12 @@ def apply_chord_tensor_to_snapshot(
     owner_qq: str, bond: SocialBondProfile | None = None, *, in_ambient_cooldown: bool = False,
 ) -> tuple[WorkingSnapshot, AttentionDecision]:
     """Apply 6D chord tensor to WorkingSnapshot and compute AttentionDecision."""
+    from echomind.mind.drives import apply_turn_affect_and_drives, compute_care_weight
+
     w_care = compute_care_weight(percept.sender_id, owner_qq, bond)
-    w_aver = compute_aversion_susceptibility(percept.sender_id, owner_qq, bond)
-    s_aff, _ = _resolve_speaker_aff_and_trust(percept.sender_id, owner_qq, bond)
-    new_aff = _compute_chord_affect(snapshot.affect, chord, w_care, w_aver, s_aff)
-    new_drv = _compute_chord_drives(snapshot.drives, new_aff, chord, w_care)
-    spill = _format_spillover_thought(
-        snapshot.inner_thought, chord, percept.sender_name or percept.sender_id
-    )
-    updated = snapshot.model_copy(
-        update={"affect": new_aff, "drives": new_drv, "inner_thought": spill}
+    bonds_map = {percept.sender_id: bond} if bond is not None else None
+    updated = apply_turn_affect_and_drives(
+        snapshot, (percept,), owner_qq, (), bonds_map=bonds_map, chord=chord
     )
     unseen = any(not m.description for m in percept.media)
     dec = evaluate_chord_wake_decision(

@@ -1,12 +1,16 @@
-"""M3.4 Neuroplasticity & Dynamic Personality Self-Learning Engine."""
+"""M3.4/M26.2 Neuroplasticity & Dynamic Personality Self-Learning Engine (Zero Lexicons)."""
 
 from __future__ import annotations
 
-import re
+from typing import TYPE_CHECKING
 
 from echomind.domain.models import PlasticParamSpec, TurnOutcome
 from echomind.domain.ports import IWorkingStateStore
 from echomind.mind.personality import compute_personality_deltas, derive_emergent_trait
+from echomind.mind.subconscious_probe import compute_chord_social_reward
+
+if TYPE_CHECKING:
+    from echomind.mind.subconscious_probe import SubconsciousChordResult
 
 PARAM_BASELINES: dict[str, float] = {
     "talkativeness": 58.0,
@@ -152,65 +156,13 @@ class NeuroplasticityEngine:
         return tuple(updated)
 
 
-POSITIVE_CUES = (
-    "喜欢",
-    "真棒",
-    "可爱",
-    "乖",
-    "谢谢",
-    "贴贴",
-    "抱抱",
-    "摸摸",
-    "好听",
-    "厉害",
-    "原谅",
-)
-NEGATIVE_CUES = (
-    "闭嘴",
-    "烦死",
-    "你真烦",
-    "嫌你烦",
-    "你太吵",
-    "话太多",
-    "你真傻",
-    "两傻子",
-    "傻子",
-    "你真笨",
-    "笨蛋",
-    "滚",
-    "讨厌你",
-    "骗我",
-    "不理你",
-    "糊弄",
-    "太讨好",
-    "人机",
-)
-
-
-SELF_DEPRECATION_RE = re.compile(
-    r"我是(?:笨蛋|傻子|傻瓜|笨b)|我真(?:笨|傻|蠢)|麻烦|像不像|吵架|散养|欺负傻子"
-)
-NEGATED_PRAISE_RE = re.compile(r"(?:不|没|才不|一点都不).{0,2}(?:喜欢|可爱|乖|聪明|好听|厉害)")
-
-
-def _count_cue_hits(text: str, cues: tuple[str, ...]) -> int:
-    return sum(1 for w in cues if w in text)
-
-
 def compute_turn_social_reward(
-    text: str, *, is_poke: bool = False, is_owner: bool = False
+    text: str = "",
+    *,
+    is_poke: bool = False,
+    is_owner: bool = False,
+    chord: SubconsciousChordResult | None = None,
 ) -> float:
-    """Estimate social reinforcement reward [-0.85, +0.85] with negation/subject disambiguation."""
-    if is_poke:
-        return 0.55
-    cleaned = SELF_DEPRECATION_RE.sub("", text)
-    if NEGATED_PRAISE_RE.search(cleaned):
-        return -0.38
-    pos = _count_cue_hits(cleaned, POSITIVE_CUES)
-    neg = _count_cue_hits(cleaned, NEGATIVE_CUES)
-    scale = 1.12 if is_owner else 1.0
-    if neg > pos:
-        return round(max(-0.85, (-0.45 - (neg - 1) * 0.15) * scale), 2)
-    if pos > 0:
-        return round(min(0.85, (0.45 + (pos - 1) * 0.1) * scale), 2)
-    return 0.12 if is_owner else 0.08
+    """Compute social reinforcement reward [-0.85, +0.85] from 6D Subconscious Chord."""
+    _ = text
+    return compute_chord_social_reward(chord, is_poke=is_poke, is_owner=is_owner)

@@ -1,12 +1,8 @@
-"""M3.4/M3.5 7D HEXACO Dynamic Personality, 2D Attachment & Persona Trait Synthesizer."""
+"""M3.4/M3.5/M26.2 7D HEXACO Dynamic Personality, 2D Attachment & Persona Trait Synthesizer."""
 
 from __future__ import annotations
 
-import re
-
 from echomind.domain.models import PersonaTrait, PlasticParamSpec, TurnOutcome
-
-COERCIVE_OR_RUDE_RE = re.compile(r"蠢AI|破机器人|工具人|快给我|立刻给我|必须给我|命令你")
 
 
 def _val(params: dict[str, PlasticParamSpec], key: str, default: float) -> float:
@@ -195,25 +191,21 @@ def compute_personality_deltas(outcome: TurnOutcome) -> list[tuple[str, float, s
         deltas.append(("persona_tsundere", 4.0, "被群友忽悠逗弄，防御性傲娇嘴硬指数上升"))
         deltas.append(("persona_playfulness", 3.0, "识破群友挖坑并反击吐槽，俏皮毒舌度上升"))
         deltas.append(("persona_guile", 3.5, "经历群友套路，小机灵鬼狡黠度与反忽悠意识提升"))
+        deltas.append(("persona_possessiveness", 2.5, "识破关系冒充，对核心羁绊的护食警觉度上升"))
 
     deltas.extend(
         _reward_personality_deltas(outcome.social_reward, outcome.epistemic_conflict_detected)
     )
     if any(t in ("meme_wiki", "web_search") for t in outcome.tools_used):
         deltas.append(("persona_playfulness", 2.5, "主动学习网络新梗，古灵精怪玩梗度提升"))
-
-    joined = " ".join(p.text for p in outcome.triggers)
-    if any(r in joined for r in ("汐", "豆包", "别的机器人")):
-        deltas.append(("persona_possessiveness", 3.5, "提及竞争对手，对主人的独占护食度上升"))
-    if COERCIVE_OR_RUDE_RE.search(joined):
-        deltas.append(("persona_defiance", 4.5, "遭遇无礼使唤或强迫命令，叛逆刺头度显著上升"))
+    if outcome.social_reward <= -0.40:
+        deltas.append(("persona_defiance", 4.5, "遭遇无礼使唤或冒犯，叛逆刺头度显著上升"))
     return deltas
 
 
 def derive_emergent_trait(outcome: TurnOutcome) -> PersonaTrait | None:
     """Derive a new habit, taste, temperament, or taboo trait from turn experiences."""
-    joined = " ".join(x.text for x in outcome.triggers)
-    if COERCIVE_OR_RUDE_RE.search(joined):
+    if outcome.social_reward <= -0.45:
         return PersonaTrait(
             category="taboo",
             trait_text="极度讨厌别人用命令语气拿我当没有感情的工具人使唤",

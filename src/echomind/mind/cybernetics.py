@@ -17,11 +17,8 @@ from echomind.domain.models import (
 )
 
 BILI_OR_MEDIA_RE = re.compile(
-    r"BV[0-9A-Za-z]{10}|b23\.tv|bilibili\.com|\[图片\]|\[视频\]|\[语音|\[合并转发|转发"
+    r"BV[0-9A-Za-z]{10}|b23\.tv|bilibili\.com|\[图片|\[视频|\[语音|\[合并转发"
 )
-SEARCH_OR_FACT_RE = re.compile(r"是什么|为什么|怎么回事|热梗|搜一下|查一下|B站|热门|新闻")
-VOICE_OR_SING_RE = re.compile(r"唱首|唱歌|来首歌|翻唱|发语音|说句话|听你声音|晚安|早安")
-SOCIAL_CHECK_RE = re.compile(r"群主|管理员|群成员|谁是|记住|说说|空间|签名")
 
 REAGENT_TOOLS: dict[str, tuple[str, ...]] = {
     "日常轻装剂": ("send_message", "send_sticker", "feiyu_say", "recall_memory"),
@@ -84,25 +81,23 @@ def _compute_stance_order(
 
 def _compute_epistemic_order(
     snap: WorkingSnapshot,
-    joined_text: str,
+    _joined_text: str,
     unknown_count: int,
     has_conflict: bool,
 ) -> float:
     cur_base = snap.drives.curiosity / 200.0
     unk_boost = min(0.45, unknown_count * 0.25)
     conf_boost = 0.35 if has_conflict else 0.0
-    q_boost = 0.25 if SEARCH_OR_FACT_RE.search(joined_text) else 0.0
-    return _clamp(cur_base + unk_boost + conf_boost + q_boost, 0.0, 1.0)
+    return _clamp(cur_base + unk_boost + conf_boost, 0.0, 1.0)
 
 
 def _compute_modality_order(
-    snap: WorkingSnapshot, scene: str, joined_text: str
+    snap: WorkingSnapshot, scene: str, _joined_text: str
 ) -> float:
     aff = snap.affect
     arousal = (abs(aff.valence) * 0.35 + aff.jealousy * 1.1 + aff.shyness * 0.9) / 110.0
     priv_bonus = 0.18 if scene == "private" else 0.0
-    voice_boost = 0.48 if VOICE_OR_SING_RE.search(joined_text) else 0.0
-    return _clamp(arousal + priv_bonus + voice_boost, 0.0, 1.0)
+    return _clamp(arousal + priv_bonus, 0.0, 1.0)
 
 
 def _derive_regime_label(stance: float, epistemic: float, modality: float) -> str:
@@ -125,18 +120,20 @@ def _select_reagents(
     epistemic: float,
     modality: float,
     has_conflict: bool,
+    *,
+    chord_reagents: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
-    reagents: list[str] = ["日常轻装剂"]
+    reagents: list[str] = ["日常轻装剂", *chord_reagents]
     has_media = any(p.media for p in triggers) or bool(BILI_OR_MEDIA_RE.search(joined_text))
     if has_media:
         reagents.append("多模态鉴赏剂")
-    if epistemic >= 0.48 or SEARCH_OR_FACT_RE.search(joined_text):
+    if epistemic >= 0.45:
         reagents.append("百科求真剂")
-    if modality >= 0.52 or VOICE_OR_SING_RE.search(joined_text):
+    if modality >= 0.48:
         reagents.append("声情共鸣与点歌剂")
-    if has_conflict or SOCIAL_CHECK_RE.search(joined_text):
+    if has_conflict:
         reagents.append("社交防忽悠核查剂")
-    return tuple(dict.fromkeys(reagents))
+    return tuple(dict.fromkeys(r for r in reagents if r in REAGENT_TOOLS))
 
 
 def compute_cybernetic_core(
@@ -148,6 +145,7 @@ def compute_cybernetic_core(
     owner_qq: str = "",
     unknown_terms: tuple[str, ...] = (),
     warnings: tuple[str, ...] = (),
+    chord_reagents: tuple[str, ...] = (),
 ) -> CyberneticCoreState:
     """Compute Haken's 3 Order Parameters & Ashby's Stage-1 Selected Reagents/Tools."""
     joined = " ".join(p.text for p in triggers)
@@ -155,7 +153,9 @@ def compute_cybernetic_core(
     stance = _compute_stance_order(snap, triggers, bonds_map, owner_qq, has_conflict)
     epistemic = _compute_epistemic_order(snap, joined, len(unknown_terms), has_conflict)
     modality = _compute_modality_order(snap, scene, joined)
-    reagents = _select_reagents(triggers, joined, epistemic, modality, has_conflict)
+    reagents = _select_reagents(
+        triggers, joined, epistemic, modality, has_conflict, chord_reagents=chord_reagents
+    )
     tools: list[str] = []
     for r_name in reagents:
         tools.extend(REAGENT_TOOLS.get(r_name, ()))

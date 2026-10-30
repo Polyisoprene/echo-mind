@@ -415,11 +415,22 @@ async def test_skill_toggle_delete_restore_and_memory_consolidator(tmp_path: Pat
         run_hippocampal_batch_consolidation,
     )
     from echomind.mind.plasticity import compute_turn_social_reward
+    from echomind.mind.subconscious_probe import SubconsciousChordResult
     from echomind.web.skill_config_service import SkillConfigService
 
     assert compute_turn_social_reward("拍一拍", is_poke=True) == 0.55
-    assert compute_turn_social_reward("回音真棒最喜欢你了", is_owner=True) > 0.5
-    assert compute_turn_social_reward("闭嘴你话太多了真烦", is_owner=True) < -0.4
+    assert (
+        compute_turn_social_reward(
+            is_owner=True, chord=SubconsciousChordResult(joy=3)
+        )
+        > 0.5
+    )
+    assert (
+        compute_turn_social_reward(
+            is_owner=True, chord=SubconsciousChordResult(annoyance=2, hurt=1)
+        )
+        < -0.4
+    )
 
     container = await EchoMindContainer.create(db_path=tmp_path / "toggle.db")
     container.skill_config_store = SqliteSkillConfigStore(container.db)
@@ -459,7 +470,12 @@ async def test_skill_toggle_delete_restore_and_memory_consolidator(tmp_path: Pat
         social_reward=0.6,
     )
     await consolidate_turn_memory(
-        container.memory_repo, container.memory_repo, outcome, 1793200001000, "10001001"
+        container.memory_repo,
+        container.memory_repo,
+        outcome,
+        1793200001000,
+        "10001001",
+        chord=SubconsciousChordResult(explicit_fact="我喜欢吃草莓蛋糕"),
     )
     facts = await container.memory_repo.get_semantic_facts("group:1")
     bond = await container.memory_repo.get_social_bond("group:1", "10001001")

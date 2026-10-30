@@ -393,6 +393,7 @@ async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deceptio
         select_deception_strategy,
         should_prune_card,
     )
+    from echomind.mind.subconscious_probe import SubconsciousChordResult
 
     db = SqliteDatabase(tmp_path / "shadow.db")
     await db.initialize()
@@ -412,6 +413,10 @@ async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deceptio
 
     # 1. Rude & coercive command from non-owner -> triggers BOTH OCC Aversion & Brehm Reactance!
     rude_p = _make_percept("你这蠢AI，快给我叫声好听的", sender_id="999999", is_called=True)
+    facade.cache_chord(
+        rude_p.message_id,
+        SubconsciousChordResult(role="direct_to_me", annoyance=3, shadow_trigger="reactance"),
+    )
     f1 = await facade.build_cognitive_frame("group:10002002", (rude_p,))
     assert "💢 [触发厌恶雷点 (OCC Disliking)]" in f1.rendered_mind_block
     assert "🔥 [触发逆反心理 (Brehm Reactance)]" in f1.rendered_mind_block
@@ -445,18 +450,21 @@ async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deceptio
 
     # 3. Verify all 4 DePaulo (1996) / Starace (2026) Strategic Deception modes!
     jealous_aff = AffectiveVector(jealousy=40.0, shyness=35.0, irritation=10.0, energy=80.0)
-    m1, line1 = select_deception_strategy("你是不是吃醋了呀", jealous_aff, params, 0.9, True)
+    c_tease = SubconsciousChordResult(shadow_trigger="tease_expose", shyness=2)
+    m1, line1 = select_deception_strategy(jealous_aff, params, 0.9, True, chord=c_tease)
     assert m1 == "face_saving_lie" and "护面子撒谎本能" in line1
 
-    m2, line2 = select_deception_strategy("尾尾你记错了", jealous_aff, params, 0.9, True)
+    c_mistake = SubconsciousChordResult(shadow_trigger="mistake_callout")
+    m2, line2 = select_deception_strategy(jealous_aff, params, 0.9, True, chord=c_mistake)
     assert m2 == "blame_shifting_fib" and "护短甩锅小谎言" in line2
 
     annoyed_aff = AffectiveVector(irritation=60.0, energy=35.0)
-    m3, line3 = select_deception_strategy("帮我查一下这份资料", annoyed_aff, params, 0.8, False)
+    c_task = SubconsciousChordResult(shadow_trigger="task_request", annoyance=2)
+    m3, line3 = select_deception_strategy(annoyed_aff, params, 0.8, False, chord=c_task)
     assert m3 == "avoidance_excuse_lie" and "敷衍开溜撒谎本能" in line3
 
     calm_aff = AffectiveVector(irritation=0.0, energy=85.0)
-    m4, line4 = select_deception_strategy("今天天气真好", calm_aff, params, 0.45, False)
+    m4, line4 = select_deception_strategy(calm_aff, params, 0.45, False)
     assert m4 == "playful_trickery_lie" and "反忽悠捉弄撒谎本能" in line4
 
     # 4. Verify BDI intention completion popping & CraniMem low-utility card pruning

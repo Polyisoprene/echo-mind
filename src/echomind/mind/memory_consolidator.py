@@ -1,9 +1,8 @@
-"""Per-turn SocialBond/Fact updates and Hippocampal Batch Memory Summarization."""
+"""Per-turn SocialBond/Fact updates and Hippocampal Batch Memory Summarization (Zero Lexicons)."""
 
 from __future__ import annotations
 
-import re
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from echomind.domain.models import (
     EpisodicCard,
@@ -12,6 +11,7 @@ from echomind.domain.models import (
     SemanticFact,
     SocialBondProfile,
     TurnOutcome,
+    TurnRecord,
 )
 from echomind.domain.ports import ILlmGateway, IMemoryReader, IMemoryWriter, IWorkingStateStore
 from echomind.mind.cybernetics import crystallize_self_organizing_schemas
@@ -21,18 +21,27 @@ from echomind.mind.hippocampus import (
     parse_consolidation_json,
 )
 
-FACT_PATTERN = re.compile(
-    r"(?:记住|我叫|我是|我喜欢|我讨厌|我的名字是|他的ID是|她的ID是|外号叫|其实就是|对应的是)"
-    r"([^，。！？\n]{2,36})|([\u4e00-\u9fa5A-Za-z0-9]{2,12}就是[\u4e00-\u9fa5A-Za-z0-9]{2,12})"
-)
-SPOOF_CALLOUT_RE = re.compile(
-    r"忽悠|骗我|骗人|少骗|哄我|才不信|少来这套|蒙我|编瞎话|逗我玩"
-)
-BOT_PUSHBACK_RE = re.compile(r"少来烦我|懒得理你|走开啦|真烦人|不理你了|哼，不跟你说")
-HIPPOCAMPUS_SPOOF_RE = re.compile(r"忽悠|挖坑|骗了|冒充|假称")
+if TYPE_CHECKING:
+    from echomind.mind.subconscious_probe import SubconsciousChordResult
+
 AFFINITY_THRESHOLDS = (50.0, 100.0, 200.0, 500.0)
 DUNBAR_ACQUAINTANCE_CAP = 85.0
 RIVAL_EQUILIBRIUM = 45.0
+
+
+def build_turn_record(outcome: TurnOutcome, now_ms: int) -> TurnRecord:
+    """Construct an immutable TurnRecord from a completed TurnOutcome."""
+    last = outcome.triggers[-1] if outcome.triggers else None
+    trig_label = f"{last.sender_name}：{last.text[:40]}" if last else ""
+    models = [s.name for s in outcome.steps if s.kind == "llm" and s.name]
+    return TurnRecord(
+        turn_id=outcome.session_id, chat_key=outcome.chat_key, ts=now_ms,
+        trigger=trig_label, status=outcome.status, rounds=len(models),
+        sent_count=len(outcome.sent_texts), total_ms=outcome.total_ms,
+        model=models[-1] if models else "", context_count=outcome.context_count,
+        trigger_count=len(outcome.triggers), system_prompt=outcome.system_prompt,
+        user_prompt=outcome.user_prompt, steps=outcome.steps,
+    )
 
 
 def compute_affinity_level(score: float) -> int:
@@ -156,39 +165,32 @@ async def update_sender_bond(
 
 
 async def _extract_explicit_fact(
-    writer: IMemoryWriter, outcome: TurnOutcome, last: Percept, owner_qq: str
+    writer: IMemoryWriter, outcome: TurnOutcome, last: Percept,
+    owner_qq: str, chord: SubconsciousChordResult | None = None,
 ) -> None:
-    if outcome.epistemic_conflict_detected or len(last.text.strip()) > 60:
+    clause = chord.explicit_fact.strip() if chord is not None else ""
+    if outcome.epistemic_conflict_detected or not clause:
         return
-    match = FACT_PATTERN.search(last.text)
-    if not match:
-        return
-    clause = match.group(0).strip()
     is_owner = bool(owner_qq and last.sender_id == owner_qq)
-    fact = SemanticFact(
-        chat_key=outcome.chat_key,
-        subject=f"{last.sender_name}({last.sender_id})"[:40],
-        fact_text=f"{last.sender_name}提到：{clause}"[:160],
-        confidence=0.88 if is_owner else 0.58,
-        is_locked=False,
-        source="owner" if is_owner else "peer",
+    await writer.upsert_semantic_fact(
+        SemanticFact(
+            chat_key=outcome.chat_key, subject=f"{last.sender_name}({last.sender_id})"[:40],
+            fact_text=f"{last.sender_name}提到：{clause}"[:160],
+            confidence=0.88 if is_owner else 0.58, is_locked=False,
+            source="owner" if is_owner else "peer",
+        )
     )
-    await writer.upsert_semantic_fact(fact)
 
 
 async def consolidate_turn_memory(
-    reader: IMemoryReader,
-    writer: IMemoryWriter,
-    outcome: TurnOutcome,
-    _now_ms: int,
-    owner_qq: str = "",
+    reader: IMemoryReader, writer: IMemoryWriter, outcome: TurnOutcome,
+    _now_ms: int, owner_qq: str = "", *, chord: SubconsciousChordResult | None = None,
 ) -> None:
     """Update social bond affinity/trust and explicit facts on turn completion."""
     if not outcome.triggers:
         return
-    bot_txt = " ".join(outcome.sent_texts)
-    called_out = bool(SPOOF_CALLOUT_RE.search(bot_txt))
-    pushed_back = bool(BOT_PUSHBACK_RE.search(bot_txt))
+    called_out = bool(chord and chord.spoof_attempt)
+    pushed_back = bool((chord and chord.annoyance >= 2) or outcome.social_reward <= -0.40)
     seen: set[str] = set()
     for p in reversed(outcome.triggers):
         if p.sender_id in seen:
@@ -200,7 +202,7 @@ async def consolidate_turn_memory(
             spoof_called_out=called_out, bot_pushback=pushed_back,
         )
     if outcome.sent_texts:
-        await _extract_explicit_fact(writer, outcome, outcome.triggers[-1], owner_qq)
+        await _extract_explicit_fact(writer, outcome, outcome.triggers[-1], owner_qq, chord=chord)
 
 
 def _extract_llm_text(resp: dict[str, Any]) -> str:
@@ -231,7 +233,7 @@ async def _apply_hippocampal_working_updates(
 async def _penalize_card_spoofers(
     chat_key: str, card: EpisodicCard, reader: IMemoryReader, writer: IMemoryWriter
 ) -> None:
-    if not HIPPOCAMPUS_SPOOF_RE.search(f"{card.summary} {card.key_detail}"):
+    if card.importance < 4.5 and not card.key_detail:
         return
     for uid in card.participants:
         bond = await reader.get_social_bond(chat_key, uid)

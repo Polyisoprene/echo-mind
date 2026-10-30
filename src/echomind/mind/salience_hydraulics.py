@@ -16,15 +16,6 @@ from echomind.mind.drives import compute_aversion_susceptibility, compute_care_w
 from echomind.mind.ebbinghaus import tokenize_query
 
 AT_UID_RE = re.compile(r"\(QQ:(\d{3,12})\)|@(\d{3,12})")
-TRIVIAL_NOISE_RE = re.compile(
-    r"^(?:[哈嘿呵啊哦嗯草6？?！!\.。，,~～]+|确实|好家伙|牛的|笑死|真的假的|\[表情\])$"
-)
-OPEN_QUESTION_RE = re.compile(
-    r"[？?]|大家觉得|有人知道|为什么|啥意思|怎么回事|会不会|是不是|能不能|怎么设计|试试呢|呢$|吗$"
-)
-RESONANCE_CUE_RE = re.compile(r"真的吗|什么视频|哪个视频|发来看看|链接呢|叫啥名字|好听吗")
-SKILL_REQUEST_RE = re.compile(r"唱首歌|唱一首|来首歌|发个语音|说句语音")
-SECOND_PERSON_ASK_RE = re.compile(r"你在干嘛|你睡了吗|你觉得呢|你知道.{1,10}吗|你会.{1,8}吗")
 
 
 def extract_at_target_uid(text: str) -> str:
@@ -87,8 +78,7 @@ def check_self_utterance_resonance(
     if not (0 <= dt_ms <= 120_000) or chain_depth >= max_depth:
         return False, ""
     overlap = tokenize_query(percept.text) & tokenize_query(spoke_text)
-    cue_hit = dt_ms <= 60_000 and bool(RESONANCE_CUE_RE.search(percept.text))
-    if not overlap and not cue_hit:
+    if not overlap:
         return False, ""
     if record_state:
         bot_speech[percept.chat_key] = (spoke_ts, spoke_text, chain_depth + 1)
@@ -98,15 +88,12 @@ def check_self_utterance_resonance(
 def check_implicit_second_person_ask(
     percept: Percept, last_group_ts: int, last_bot_ts: int
 ) -> str:
-    """Disambiguate un-@'d second-person questions or bot skill requests."""
-    if SKILL_REQUEST_RE.search(percept.text):
-        return "群友点歌/语音互动请求"
-    if not SECOND_PERSON_ASK_RE.search(percept.text):
-        return ""
-    bot_recent = last_bot_ts > 0 and (percept.timestamp_ms - last_bot_ts) <= 90_000
-    group_was_idle = last_group_ts <= 0 or (percept.timestamp_ms - last_group_ts) >= 180_000
-    if bot_recent or group_was_idle:
-        return "向我发问(第二人称消解通过)"
+    """Disambiguate un-@'d second-person questions when bot just spoke."""
+    _ = last_group_ts
+    bot_recent = last_bot_ts > 0 and (percept.timestamp_ms - last_bot_ts) <= 60_000
+    has_qmark = "?" in percept.text or "？" in percept.text
+    if bot_recent and len(percept.text.strip()) >= 4 and has_qmark:
+        return "向我发问(余音追问)"
     return ""
 
 
@@ -132,6 +119,10 @@ def _care_sender_bonus(
     return 0.0, ""
 
 
+def _is_question_or_long(text: str) -> bool:
+    return "?" in text or "？" in text or len(text.strip()) >= 12
+
+
 def _positive_factors(
     percept: Percept,
     working: WorkingSnapshot,
@@ -147,11 +138,11 @@ def _positive_factors(
     s_bonus, s_tag = _care_sender_bonus(percept, owner_qq, poss, speaker_bond)
     bonus = s_bonus
     tags: list[str] = [s_tag] if s_tag else []
-    if OPEN_QUESTION_RE.search(percept.text):
+    if _is_question_or_long(percept.text):
         warm = _p_val(params, "persona_warmth", 65.0)
         b_q = round(0.06 + 0.06 * (warm / 100.0), 2)
         bonus += b_q
-        tags.append(f"+提问{b_q}")
+        tags.append(f"+探讨{b_q}")
     if unknowns:
         play = _p_val(params, "persona_playfulness", 70.0)
         cur_scale = 0.5 + 0.5 * (working.drives.curiosity / 100.0)
@@ -185,9 +176,10 @@ def _negative_factors(
     penalty = 0.0
     tags: list[str] = []
     txt = percept.text.strip()
-    if (len(txt) < 4 and not unknowns and not has_unseen) or TRIVIAL_NOISE_RE.match(txt):
+    is_short_or_rep = len(txt) < 4 or len(set(txt)) <= 1
+    if is_short_or_rep and not unknowns and not has_unseen and not percept.media:
         penalty += 0.18
-        tags.append("-水群0.18")
+        tags.append("-短讯0.18")
     w_aver = compute_aversion_susceptibility(percept.sender_id, owner_qq, speaker_bond)
     if w_aver >= 1.25:
         penalty += 0.10

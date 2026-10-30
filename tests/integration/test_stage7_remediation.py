@@ -596,8 +596,15 @@ async def test_stage10_dynamic_trust_calibration_and_manual_tuning(tmp_path: Pat
         sent_texts=("你少忽悠我了，才不信呢！",),
         social_reward=0.08,
     )
+    from echomind.mind.subconscious_probe import SubconsciousChordResult
+
     await consolidate_turn_memory(
-        container.memory_repo, container.memory_repo, out1, 1000, "10001001"
+        container.memory_repo,
+        container.memory_repo,
+        out1,
+        1000,
+        "10001001",
+        chord=SubconsciousChordResult(spoof_attempt=True),
     )
     bond1 = await container.memory_repo.get_social_bond("group:10002002", "10005005")
     assert bond1 is not None and bond1.trust_score == pytest.approx(0.71, abs=0.005)
@@ -1548,9 +1555,11 @@ async def test_stage22_calibrated_three_attractor_affinity_url_strip_and_rival_f
     dec_rf = gate.evaluate(p_rival_follow, ws, rivals=("汐", "2009"), owner_qq="10001001")
     assert dec_rf.should_wake is False
 
-    # 3. Subject/Negation disambiguation in social reward ("我是笨蛋" vs "我才不喜欢你")
-    assert compute_turn_social_reward("我是笨蛋") > 0.0
-    assert compute_turn_social_reward("我才不喜欢你呢") < 0.0
+    # 3. 6D Chord social reward mapping
+    from echomind.mind.subconscious_probe import SubconsciousChordResult
+
+    assert compute_turn_social_reward(chord=SubconsciousChordResult(joy=0, annoyance=0)) > 0.0
+    assert compute_turn_social_reward(chord=SubconsciousChordResult(hurt=2, annoyance=1)) < 0.0
 
     # 4. Three-Attractor Dunbar Ceiling (85.0) + Cubic Trust Cap + Hippocampal bondAdjustments
     p_chat = Percept(
@@ -1678,6 +1687,7 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         compute_care_weight,
         evaluate_triadic_jealousy,
     )
+    from echomind.mind.subconscious_probe import SubconsciousChordResult
 
     friend_bond = SocialBondProfile(
         chat_key="group:10002002",
@@ -1700,9 +1710,12 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         text="汐儿真聪明，摸摸头",
     )
     j_delta, j_thought = evaluate_triadic_jealousy(
-        p_friend_praise_rival, w_care, ("汐",)
+        p_friend_praise_rival,
+        w_care,
+        ("汐",),
+        chord=SubconsciousChordResult(jealousy=2, thought="冰色夸汐真聪明"),
     )
-    assert j_delta > 8.0 and "冰色" in j_thought
+    assert j_delta > 6.0 and "冰色" in j_thought
 
     # 2. Criticizing a rival triggers validation relief (< 0), NOT jealousy!
     p_critic_rival = Percept(
@@ -1714,7 +1727,9 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         sender_name="L",
         text="汐太吵了，还是回音乖",
     )
-    j_relief, _ = evaluate_triadic_jealousy(p_critic_rival, 1.0, ("汐",))
+    j_relief, _ = evaluate_triadic_jealousy(
+        p_critic_rival, 1.0, ("汐",), chord=SubconsciousChordResult(jealousy=-2)
+    )
     assert j_relief < 0.0
 
     # 3. HRRL Reunion Soothing & Free-Energy RPE: Owner/Friend warm interaction soothes attachment!
@@ -1732,7 +1747,12 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         text="尾尾真乖，摸摸头",
     )
     soothed = apply_turn_affect_and_drives(
-        lonely_snap, (p_warm,), "10001001", ("汐",), bonds_map={"2005": friend_bond}
+        lonely_snap,
+        (p_warm,),
+        "10001001",
+        ("汐",),
+        bonds_map={"2005": friend_bond},
+        chord=SubconsciousChordResult(joy=2, shyness=2),
     )
     assert soothed.drives.attachment < 72.0
     assert soothed.affect.valence > lonely_snap.affect.valence
@@ -1748,7 +1768,13 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         sender_name="L",
         text="你在胡乱回复什么",
     )
-    scolded = apply_turn_affect_and_drives(soothed, (p_scold,), "10001001", ("汐",))
+    scolded = apply_turn_affect_and_drives(
+        soothed,
+        (p_scold,),
+        "10001001",
+        ("汐",),
+        chord=SubconsciousChordResult(hurt=2, annoyance=1),
+    )
     assert scolded.affect.valence < soothed.affect.valence
 
 
