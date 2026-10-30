@@ -285,6 +285,13 @@ async def apply_probe_if_allowed(
     if chord is None:
         return snap, dec
     remember_chord(cache, percept.message_id, chord)
-    new_snap, new_dec = apply_chord_tensor_to_snapshot(snap, chord, percept, owner_qq, bond)
+    from echomind.mind.drives import compute_care_weight
+
+    w_care = compute_care_weight(percept.sender_id, owner_qq, bond)
+    unseen = any(not m.description for m in percept.media)
+    new_dec = evaluate_chord_wake_decision(percept, chord, snap, w_care, has_unseen=unseen)
+    if new_dec.should_wake:
+        return snap, new_dec
+    new_snap, _ = apply_chord_tensor_to_snapshot(snap, chord, percept, owner_qq, bond)
     await working.save_working_state(new_snap)
     return new_snap, new_dec
