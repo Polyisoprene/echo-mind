@@ -1,0 +1,191 @@
+# EchoMind 总账（Master Backlog）：硬编码 · 身份解耦 · 关系模型
+
+> **唯一权威**：本文件以 `main` 分支为准。A 线开工前先执行
+> `git checkout main -- docs/MASTER_BACKLOG.md` 同步，收工前必须回填状态。
+>
+> **纪律（防止跑偏）**
+> 1. 同一时间只允许 **1 个** 未合并的 A 线分支；开新分支前必须先把当前分支收口或登记为"暂停"。
+> 2. 每完成一步，必须在本文对应行把 `⏳` 改为 `✅`，并写上 commit。
+> 3. 任何"顺手发现的新问题"先登记到第六节，不当场开工。
+> 4. 每次会话结束前，更新第八节「变更日志」。
+
+**图例**：✅ 已完成并上线 ｜ 🚧 进行中 ｜ ⏳ 待开工 ｜ ⛔ 已决策不做 ｜ 🧊 暂停（已登记）
+
+**最后更新**：2026-10-30 ｜ 维护者：架构审计会话
+
+---
+
+## 一、 身份、权限与配置（原「19 项」第 1 类 + owner_qq）
+
+### 1.1 已确定的产品决策
+
+| ID | 决策 | 内容 |
+|---|---|---|
+| D1 | 不设 anchor | 她认为"特别的人"由关系账本涌现，不硬编码 |
+| D2 | 只保留管理员 | `operator` 仅用于纠错（改配置/删错误记忆/封禁），**无情感特权** |
+| D3 | 写操作强制 token | 控制台写（POST/PUT/PATCH/DELETE）一律要求 token，取消 loopback 免鉴权 |
+| D4 | 旧关系数据清零 | `affinity=9999` / `role=owner` 全部按新规重来 |
+| D5 | A 方案 | bond_depth 六项全做（不降级为四项） |
+
+### 1.2 硬编码清单（核实后）
+
+| # | 项 | 位置 | 决策/方案 | 状态 |
+|---|---|---|---|---|
+| H1 | 主人 QQ `owner_qq` | `core/config.py:41-42`（实际取值在 `skills.affinity.ownerQq`，见 `config.py:190-191`）；全库 **99 处 / 17 文件** | 走 D1/D2：删除该概念，改用 `operator_ids` + 关系账本 | ⏳ |
+| H2 | 自身 QQ `self_qq` | `config.py:41`、`main.py:155` | 保留但加控制台入口（A5） | ⏳ |
+| H3 | 唤醒小名 `keywords` | **配置里已有** `('回音','尾尾','小回音')`，但 `web/llm_config_service.py:285` 与 `adapters/onebot/live_client.py:73` **硬编码 `("回音","尾尾")`** → 少一个名 | **双源 bug**：两处改读 config | ⏳ (P0) |
+| H4 | 群白名单 `allow.groups` | `config.py:227`、`main.py:156` | 控制台可编辑（A5） | ⏳ |
+| H5 | 私聊白名单 `allow.private` | `config.py:228`、`main.py:157` | 控制台可编辑（A5） | ⏳ |
+| H6 | 默认冒泡群 | `main.py:56,170` 取 `allowed_groups[0]` | 改为显式配置项；**不要**改成"最在乎的人"（会形成注意力自激环） | ⏳ |
+| H7 | NapCat WS/HTTP/Token | `config.py:178-185` | 控制台可改 + 重连（R2）；`http_token` 已于 Stage 28 接线 | 🚧（读取已修，UI 待做） |
+| H8 | 潜意识探针模型/开关 | `main.py:136` 固定复用主模型 | 配置化（可指定更便宜的模型） | ⏳ |
+| H9 | 控制台写鉴权 | `web/app.py:44` loopback 免 token | D3：写操作强制 token + 审计 | ⏳ (P0) |
+| H10 | 3 个 skill 的 `ownerQq` | `data/config.json` → `skills.affinity.ownerQq` / `qzone-mood-showcase.ownerQQ` / `possessive-heart.ownerQq` | 迁 `operatorId` 或删除 | ⏳ |
+
+### 1.3 施工分期（Stage 29-A）
+
+| 期 | 内容 | 状态 |
+|---|---|---|
+| A1 | `operator_ids` + 写鉴权 + 审计（含前端 token 注入） | ⏳ |
+| A2a | bond_depth 六项算法 + Beta 信任 | ✅ `b1c7ec9` |
+| A2b | 事件计数器持久化 + 六特征派生（**尚未接线**） | ✅ `653d0ca`（store 未接线） |
+| A2c | 接线：`chord_gateway` 记 impact/betray，`live_client` 记 msg/responded | ⏳ |
+| A3 | 删除 `owner_qq`（99 处）+ 嫉妒/冷暴力去特权 | ⏳ |
+| A4 | 人格语料去硬编码（见第二节） | ⏳ |
+| A5 | 身份配置卡（名字/小名/白名单/默认群） | ⏳ |
+| A6 | 验证套件（LOGO、跨群一致性、抗操纵、消融） | ⏳ |
+
+---
+
+## 二、 人格语料硬编码（40 处 / 17 文件）
+
+> 说明：报告中列的 7 处是核心；实际扫描到 **40 处 / 17 个源文件**（含 `cybernetics` / `prompt_composer` / `ext_routers` / `enrichers` / `perceptual_gate` / `migrator`）。
+
+| 批次 | 文件 | 硬编码内容 | 状态 |
+|---|---|---|---|
+| P1 核心 prompt | `mind/subconscious_probe.py:29` | 「回音（小名尾尾）…蓝发傲娇少女」 | ⏳ |
+| P1 | `mind/hippocampus.py:18,24,27,31` | 连续 4 行「回音（尾尾）」 | ⏳ |
+| P1 | `runtime/agent_runner.py:294` | `f"回音(我): …"` | ⏳ |
+| P1 | `mind/frame_renderer.py:125`、`mind/personality.py:153`、`runtime/scheduler.py:159` | 「回音此刻的认知…」「请以回音的口吻…」 | ⏳ |
+| P1 | `mind/epistemic.py:10`、`mind/drives.py:22` | 正则「回音的主人」「还是回音\|还是尾尾」 | ⏳ |
+| P2 前端 | `web/static/app.js:600`、`index.html:6,13` | 聊天窗自称「回音」、顶栏品牌 | ⏳ |
+| P3 其它 | `mind/cybernetics.py`、`runtime/prompt_composer.py`、`web/ext_routers.py`、`adapters/onebot/enrichers.py`、`mind/perceptual_gate.py`、`adapters/storage/migrator.py` | 零散出现 | ⏳ |
+
+**做法**：统一改为读取 `bot_name` / `keywords` / `role_text`（模板插值，不引入模板引擎）；P1 完成即"改名后自认知一致"。
+
+---
+
+## 三、 节律 / 门控 / 数值常数（核实值，纠正报告中的 60 秒）
+
+| 常数 | 真实值 | 位置 | 状态 |
+|---|---|---|---|
+| 防抖窗口 | **2.0 秒** | `main.py:165` | ⏳ |
+| 外围插话冷却 | **75 秒** | `perceptual_gate.py:123` | ⏳ |
+| 跟聊窗口 | **300 秒**（报告写 60 秒，有误） | `perceptual_gate.py:123` | ⏳ |
+| 冷暴力时长 | **900 秒（15 分钟）** | `perceptual_gate.py:152` | ⏳ |
+| 作息 | `00:00–07:30` 睡、`13:00–14:00` 午休、"抱着尾巴"文案 | `mind/circadian.py:27-88` | ⏳ |
+| 好感吸引子 | 初始 30 / 对手 45 / Dunbar 85 / owner 9999 / 阈值 (50,100,200,500) | `memory_consolidator.py:27-29,64,153` | ⏳（9999 随 D4 清零） |
+| 检索上限 | 事实 28 / 情景 8 / 性格 15 | `facade.py:241`、`facade.py:150`、`personality.py` | ⏳ |
+
+---
+
+## 四、 关系模型：Earned Bond Depth
+
+### 4.1 算法（已实现）
+
+$$D_u=100\cdot\sigma\big(1.6(1.0f+1.2v+1.4r+1.0c+1.1i-1.6b-2.6)\big),\quad w_{care}=\mathrm{clamp}\Big(\tfrac{A-38}{70}T(0.45+0.55\tfrac{D}{100}),0,0.97\Big)$$
+
+- 文件：`mind/bond_depth.py`（六项 + `beta_trust_update`）
+- 参数溯源：每个常数带 `param: src:|convention:|fit:` 标签，`tests/architecture/test_param_provenance.py` 强制（PARAM-01~04）。
+- 现状：**11 个常数仍是 `fit:pending`**（手调），必须由数据替换。
+
+### 4.2 事件采集（已建，未接线）
+
+| 组件 | 文件 | 状态 |
+|---|---|---|
+| 计数器值对象 | `domain/bond_stats.py`（`BondDepthStats` / `BondFeatures`） | ✅ |
+| 端口 | `domain/ports.py` → `IBondDepthStore` | ✅ |
+| SQLite 适配器 | `adapters/storage/bond_depth_repo.py` | ✅ |
+| 六特征派生 | `mind/bond_features.py` | ✅ |
+| **接线**（msg / 回话 / impact / betray） | `chord_gateway.py`、`live_client.py`、`bootstrap.py` | ⏳ **A2c** |
+
+### 4.3 跨群自适应（B 系列，待做）
+
+| 层 | 内容 | 依据 | 状态 |
+|---|---|---|---|
+| L1 | 群内分位归一化（替代绝对计数） | TF-IDF/BM25 思想 | ⏳ |
+| L2 | 群内仿射/保序校准 + `bond_calibration` 表 | Platt 1999；Zadrozny & Elkan 2002 | ⏳ |
+| L3 | 分层贝叶斯收缩 $\mathbf w_g\sim\mathcal N(\mathbf w_0,\tau^2)$ | Gelman & Hill 2007；Efron & Morris 1975 | ⏳ |
+| L4 | 漂移检测（Page–Hinkley / CUSUM），只告警不自动改 | Page 1954 | ⏳ |
+| 验证 | 留一群交叉验证（LOGO）+ 跨群一致性 | 域泛化惯例 | ⏳ |
+
+### 4.4 拟合数据（人工标注暂缓）
+
+- 已导出 `data/stage29_labels.csv`（29 人）与盲评表（本地、gitignore）；
+- 决策：**不依赖人工标注**，改用"跨群同一人配对一致性 + 对方投资行为 + 极端锚点"弱监督；
+- 结论：先做 L1/L2（无需标签），再做 L3。
+
+---
+
+## 五、 已完成（Stage 28，供追溯）
+
+| 项 | 内容 | 提交 |
+|---|---|---|
+| F1 | 生产链路 `social_reward` 改由 6D 和弦反推 | `e023da4` |
+| F6 | 和弦缓存上界 256 | `9bdcc80` |
+| F4 | 情绪单次应用 | `720b671` |
+| F2/F9 | tier-1 补探针 / 上下文按群隔离 | `dd0255a` / `8cb91e9` |
+| F5 | 冷却传参 + chord 唤醒武装冷却 | `1bedd35` |
+| F3 | 突发探针 1.5 秒合流 | `4476cb2` |
+| F7 | HTTP Token 接线 | `7240f9f` |
+| F8/F8b | 视觉端口化 / enricher 故障隔离 | `a0827cb` / `8bb9ea7` |
+| F10 | 删除 taboo 死分支 | `44ea6db` |
+| C1 | 拆 `ports_media.py` + `cache_media_description` 端口化 | `1019a8d` + `43bca5b` |
+| 契约 | RGR-01~10 + AB-01~08 + Stage 28 评估报告 | `335fb9c` 等 |
+
+---
+
+## 六、 新发现待登记（不立刻开工）
+
+| ID | 发现 | 处理建议 |
+|---|---|---|
+| N1 | `w_aversion` 完全不看 depth，只对 owner 打 0.35 折 | A3 时改为纯关系推导（她会真的对在乎的人发火） |
+| N2 | 7 维人格无"逐日涨幅上限" | 加阻尼（每日 ≤ ±6），防独占焦虑饱和 |
+| N3 | `derive_emergent_trait` 的 taboo 文案固定、不去重 | 去重 + 语义合并，最多 3 条 |
+| N4 | `betrayal` 若把拌嘴计入会与吃醋形成振荡环 | 白名单：仅欺骗/冲突/食言计入 |
+| N5 | `ports.py` 已 234 行、`facade.py` 300 行，长期贴顶 | 继续按域拆分（参照 C1） |
+| N6 | `data/echomind.db` 仅 2 天历史（4116 条） | 深度模型短期内只能"浅层生效"，需时间积累 |
+
+---
+
+## 七、 分支与提交状态
+
+| 线 | 分支 | HEAD | 状态 |
+|---|---|---|---|
+| B（生产） | `main` | `3689d9b` | 服务 :3310 运行中；领先 `origin/main` **3** 个提交（未推送） |
+| A（修复） | `lane/a-stage29` | `653d0ca` | 领先 `main` **6** 个提交，全部门禁绿（99 passed / Cov 90.92%） |
+
+A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数溯源) · `1755e45`(文档) · `171ffa6`(gitignore) · `653d0ca`(A2b)
+
+---
+
+## 八、 建议执行顺序（下一步只做这个）
+
+| 顺序 | 任务 | 验收 |
+|---|---|---|
+| 1 | **A2c 接线**（`chord_gateway` 记 impact/betray；`live_client` 记 msg/responded；bootstrap 注入） | 回放后 `bond_depth_stats` 有数据；红绿测试 |
+| 2 | **回填脚本**（从 `chat_messages` 回填 msgs/replies/responses/sessions） | 29 个联系人计数与手工核对一致 |
+| 3 | **B1 群内归一化** | LOGO 跨群一致性中位差 ≤ 8 分 |
+| 4 | **B2 校准表** | 校准斜率 0.8–1.2 |
+| 5 | **A1 写鉴权 + operator** | 无 token 写 → 403；有 token → 200 + 审计 |
+| 6 | **A3 删除 owner_qq** | 无 owner 时嫉妒仍触发；`w_care` 连续 |
+| 7 | **A4 语料去硬编码** | 改名后自认知一致（回放 + 前端） |
+| 8 | **A5 配置卡** | 控制台可改并热生效 |
+
+---
+
+## 九、 变更日志
+
+| 日期 | 变更 |
+|---|---|
+| 2026-10-30 | 建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
