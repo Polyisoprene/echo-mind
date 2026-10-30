@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from echomind.core.bootstrap import EchoMindContainer
+from echomind.web.audit import write_audit
 from echomind.web.chat_service import ChatStreamService
 from echomind.web.ext_routers import (
     build_llm_and_voice_router,
@@ -25,6 +26,7 @@ from echomind.web.voice_health_service import VoiceHealthService
 
 STATIC_DIR = Path(__file__).parent / "static"
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
+WRITE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
 
 def _extract_request_token(request: Request) -> str:
@@ -43,10 +45,13 @@ def is_request_authorized(
     """Allow loopback/tunnel requests; require token for non-loopback /api/* calls."""
     if not auth_key or not request.url.path.startswith("/api/"):
         return True
-    host = client_host or (request.client.host if request.client else "127.0.0.1")
-    if host in LOOPBACK_HOSTS:
+    token_ok = _extract_request_token(request) == auth_key
+    if request.method.upper() in WRITE_METHODS:
+        return token_ok
+    if token_ok:
         return True
-    return _extract_request_token(request) == auth_key
+    host = client_host or (request.client.host if request.client else "127.0.0.1")
+    return host in LOOPBACK_HOSTS
 
 
 class FactUpsertPayload(BaseModel):
@@ -228,17 +233,23 @@ async def no_cache_static(request: Request, call_next: Any) -> Response:
     return response
 
 
-def build_guard_and_cache_middleware(auth_key: str) -> Any:
-    """Create an HTTP middleware enforcing remote token auth and static no-cache headers."""
+def build_guard_and_cache_middleware(auth_key: str, db: Any = None) -> Any:
+    """Create an HTTP middleware enforcing token auth on writes, plus static no-cache."""
 
     async def _guard_and_cache(request: Request, call_next: Any) -> Response:
+        is_write = request.method.upper() in WRITE_METHODS and request.url.path.startswith("/api/")
         if not is_request_authorized(request, auth_key):
+            if is_write and db is not None:
+                await write_audit(db, request, 401)
             return Response(
                 content='{"ok":false,"error":"unauthorized"}',
                 status_code=401,
                 media_type="application/json",
             )
-        return await no_cache_static(request, call_next)
+        response = await no_cache_static(request, call_next)
+        if is_write and db is not None:
+            await write_audit(db, request, response.status_code)
+        return response
 
     return _guard_and_cache
 
@@ -259,6 +270,12 @@ def create_web_app(
     voice = VoiceHealthService(container)
     skill_cfg = SkillConfigService(container)
 
+    @app.get("/api/session/token")
+    async def _session_token(request: Request) -> dict[str, str]:
+        """Hand the console its token, but only to loopback clients."""
+        host = request.client.host if request.client else "127.0.0.1"
+        return {"token": auth_key if auth_key and host in LOOPBACK_HOSTS else ""}
+
     app.include_router(_page_router())
     app.include_router(_mind_router(inspector, chat))
     app.include_router(_asset_router(chat))
@@ -268,6 +285,6 @@ def create_web_app(
     app.include_router(build_llm_and_voice_router(llm, chat, voice))
     app.include_router(build_skill_config_router(skill_cfg))
     app.include_router(_governance_router(inspector, probe))
-    app.middleware("http")(build_guard_and_cache_middleware(auth_key))
+    app.middleware("http")(build_guard_and_cache_middleware(auth_key, container.db))
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
     return app

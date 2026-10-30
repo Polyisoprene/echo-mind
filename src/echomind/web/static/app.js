@@ -42,8 +42,43 @@ function initTheme() {
   applyTheme(saved);
 }
 
+const TOKEN_KEY = 'echomind_token';
+let sessionToken = '';
+
+async function ensureToken() {
+  if (sessionToken) return sessionToken;
+  try { sessionToken = localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { /* ignore */ }
+  if (sessionToken) return sessionToken;
+  try {
+    const res = await fetch('/api/session/token');
+    if (res.ok) {
+      const body = await res.json();
+      sessionToken = body.token || '';
+    }
+  } catch (e) { /* ignore */ }
+  if (sessionToken) {
+    try { localStorage.setItem(TOKEN_KEY, sessionToken); } catch (e) { /* ignore */ }
+  }
+  return sessionToken;
+}
+
 async function api(path, opts) {
-  const res = await fetch(path, opts);
+  const options = opts || {};
+  const headers = Object.assign({}, options.headers || {});
+  const token = await ensureToken();
+  if (token) headers.Authorization = 'Bearer ' + token;
+  options.headers = headers;
+  let res = await fetch(path, options);
+  if (res.status === 401) {
+    sessionToken = '';
+    const typed = prompt('请输入控制台访问令牌（data/config.json → server.token）');
+    if (typed) {
+      sessionToken = typed.trim();
+      try { localStorage.setItem(TOKEN_KEY, sessionToken); } catch (e) { /* ignore */ }
+      headers.Authorization = 'Bearer ' + sessionToken;
+      res = await fetch(path, options);
+    }
+  }
   if (!res.ok) throw new Error(path + ' -> HTTP ' + res.status);
   return res.json();
 }
