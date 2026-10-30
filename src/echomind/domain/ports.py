@@ -81,10 +81,7 @@ class IMessageSender(Protocol):
     """Segregated actuator port for outbound QQ messaging (<=5 methods)."""
 
     async def send_text(
-        self,
-        chat_key: str,
-        messages: tuple[str, ...],
-        reply_to_mid: str | None = None,
+        self, chat_key: str, messages: tuple[str, ...], reply_to_mid: str | None = None,
         at_user_id: str | None = None,
     ) -> tuple[str, ...]: ...
 
@@ -255,6 +252,13 @@ class IQQMediaGateway(Protocol):
     async def load_data_url(self, item: MediaAttachment) -> str: ...
     async def video_frame_urls(self, item: MediaAttachment, count: int) -> tuple[str, ...]: ...
     async def voice_to_text(self, item: MediaAttachment) -> str: ...
+
+
+@runtime_checkable
+class ICaptionGateway(Protocol):
+    """Segregated port for on-demand image captioning plus durable caption caching."""
+    async def describe_image(self, ref: str) -> str: ...
+    async def cache_media_description(self, item: MediaAttachment, caption: str) -> None: ...
 
 
 @runtime_checkable

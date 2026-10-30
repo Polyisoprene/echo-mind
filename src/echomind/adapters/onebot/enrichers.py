@@ -8,7 +8,7 @@ from typing import Any
 
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import MediaAttachment, Percept
-from echomind.domain.ports import IPerceptEnricher
+from echomind.domain.ports import ICaptionGateway, IPerceptEnricher
 
 ACOUSTIC_ECHO_RE = re.compile(
     r"有回音|产生回音|听到回音|没有回音|回音壁|回音消除|"
@@ -111,7 +111,7 @@ def _inject_caption_tag(text: str, m: MediaAttachment) -> str:
 class ImageCaptionCacheEnricher:
     """Attach cached/live vision descriptions to MediaAttachments and Percept.text."""
 
-    def __init__(self, db: SqliteDatabase, vision_gw: Any = None) -> None:
+    def __init__(self, db: SqliteDatabase, vision_gw: ICaptionGateway | None = None) -> None:
         self._db = db
         self._vision = vision_gw
 

@@ -21,6 +21,7 @@ class FakeMediaGateway:
     def __init__(self, item: MediaAttachment | None = None, frames: tuple[str, ...] = ()) -> None:
         self._item = item
         self._frames = frames
+        self.captions: dict[str, str] = {}
 
     async def newest_media(self, chat_key: str, kind: str) -> MediaAttachment | None:
         return self._item
@@ -33,6 +34,9 @@ class FakeMediaGateway:
 
     async def voice_to_text(self, item: MediaAttachment) -> str:
         return "主人晚安"
+
+    async def cache_media_description(self, item: MediaAttachment, caption: str) -> None:
+        self.captions[item.local_path] = caption
 
 
 class FakeVision:
