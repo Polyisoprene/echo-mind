@@ -1336,6 +1336,39 @@ async function loadPersonaCard(force) {
   } catch (e) { /* 静默 */ }
 }
 
+async function loadIdentity() {
+  try {
+    const d = await api('/api/config/identity');
+    if ($('id-bot-name')) $('id-bot-name').value = d.bot_name || '';
+    if ($('id-keywords')) $('id-keywords').value = (d.keywords || []).join(',');
+    if ($('id-self-qq')) $('id-self-qq').value = d.self_qq || '';
+    if ($('id-groups')) $('id-groups').value = (d.groups || []).join(',');
+    if ($('id-private')) $('id-private').value = (d.private || []).join(',');
+    if ($('id-default-group')) $('id-default-group').value = d.default_group || '';
+    if (d.bot_name) applyBotName(d.bot_name);
+  } catch (e) { /* identity card is optional */ }
+}
+
+async function saveIdentity() {
+  const split = function (id) {
+    const el = $(id);
+    return el ? el.value.split(',').map(function (v) { return v.trim(); }).filter(Boolean) : [];
+  };
+  const body = {
+    bot_name: ($('id-bot-name') && $('id-bot-name').value.trim()) || '',
+    keywords: split('id-keywords'),
+    self_qq: ($('id-self-qq') && $('id-self-qq').value.trim()) || '',
+    groups: split('id-groups'),
+    private: split('id-private'),
+    default_group: ($('id-default-group') && $('id-default-group').value.trim()) || ''
+  };
+  await api('/api/config/identity', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  applyBotName(body.bot_name || window.BOT_NAME || '');
+  toast('身份配置已保存并生效');
+}
+
 async function savePersonaCard() {
   const bot_name = ($('persona-bot-name') && $('persona-bot-name').value.trim()) || (window.BOT_NAME || '我');
   const role_text = ($('persona-role-text') && $('persona-role-text').value.trim()) || '';
@@ -1472,6 +1505,7 @@ function bindEvents() {
   if ($('btn-mode-turns')) $('btn-mode-turns').addEventListener('click', () => setSessionViewMode('turns'));
   if ($('btn-mode-archive')) $('btn-mode-archive').addEventListener('click', () => setSessionViewMode('archive'));
   if ($('btn-save-persona-card')) $('btn-save-persona-card').addEventListener('click', savePersonaCard);
+  if ($('btn-save-identity')) $('btn-save-identity').addEventListener('click', saveIdentity);
   if ($('btn-reconcile-persona')) $('btn-reconcile-persona').addEventListener('click', reconcilePersonaMemory);
   if ($('btn-trigger-surf')) {
     $('btn-trigger-surf').addEventListener('click', async () => {
@@ -1615,6 +1649,7 @@ async function boot() {
   initTheme();
   bindEvents();
   loadPersonaCard(true).catch(function () { /* name is optional at boot */ });
+  loadIdentity();
   const initial = location.hash.slice(1);
   if (initial && document.getElementById('view-' + initial)) switchView(initial);
   await checkConnection();

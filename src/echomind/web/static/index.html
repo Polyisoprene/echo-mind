@@ -161,6 +161,19 @@
   <section id="view-persona" class="view">
     <div class="grid g2" style="margin-bottom:14px">
       <div class="card">
+        <h3>👑 身份与群聊绑定 <span class="hint">保存后即时生效（名字/小名/白名单/默认群）</span></h3>
+        <div class="form-row"><label>机器人名字</label><input id="id-bot-name" placeholder="机器人名字" /></div>
+        <div class="form-row"><label>唤醒小名</label><input id="id-keywords" placeholder="逗号分隔，例如：回音,尾尾,小回音" /></div>
+        <div class="form-row"><label>自身 QQ</label><input id="id-self-qq" placeholder="机器人账号" /></div>
+        <div class="form-row"><label>群白名单</label><input id="id-groups" placeholder="逗号分隔的群号" /></div>
+        <div class="form-row"><label>私聊白名单</label><input id="id-private" placeholder="逗号分隔的 QQ 号" /></div>
+        <div class="form-row"><label>默认冒泡群</label><input id="id-default-group" placeholder="group:123456" /></div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn primary sm" id="btn-save-identity">💾 保存身份配置</button>
+          <span class="hint">需要控制台访问令牌</span>
+        </div>
+      </div>
+      <div class="card">
         <h3>📜 最初基础人设卡 <span class="hint">config.json · persona.roleText（修改后即时热生效）</span></h3>
         <div class="form-row"><label>名字</label><input id="persona-bot-name" placeholder="机器人名字" /></div>
         <div style="margin-bottom:8px">
