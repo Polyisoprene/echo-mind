@@ -31,7 +31,7 @@
 
 | # | 项 | 位置 | 决策/方案 | 状态 |
 |---|---|---|---|---|
-| H1 | 主人 QQ `owner_qq` | `core/config.py:41-42`（实际取值在 `skills.affinity.ownerQq`，见 `config.py:190-191`）；全库 **99 处 / 17 文件** | 走 D1/D2：删除该概念，改用 `operator_ids` + 关系账本 | ⏳ |
+| H1 | 主人 QQ `owner_qq` | 99 处 / 17 文件 | D1/D2：**情感特权已全部移除**（care/aversion/reward/jealousy/stance/salience）；字段删除与 `operator_ids` 迁移待续 | 🚧 |
 | H2 | 自身 QQ `self_qq` | `config.py:41`、`main.py:155` | 保留但加控制台入口（A5） | ⏳ |
 | H3 | 唤醒小名 `keywords` | **配置里已有** `('回音','尾尾','小回音')`，但 `web/llm_config_service.py:285` 与 `adapters/onebot/live_client.py:73` **硬编码 `("回音","尾尾")`** → 少一个名 | **双源 bug**：两处改读 config | ⏳ (P0) |
 | H4 | 群白名单 `allow.groups` | `config.py:227`、`main.py:156` | 控制台可编辑（A5） | ⏳ |
@@ -39,18 +39,18 @@
 | H6 | 默认冒泡群 | `main.py:56,170` 取 `allowed_groups[0]` | 改为显式配置项；**不要**改成"最在乎的人"（会形成注意力自激环） | ⏳ |
 | H7 | NapCat WS/HTTP/Token | `config.py:178-185` | 控制台可改 + 重连（R2）；`http_token` 已于 Stage 28 接线 | 🚧（读取已修，UI 待做） |
 | H8 | 潜意识探针模型/开关 | `main.py:136` 固定复用主模型 | 配置化（可指定更便宜的模型） | ⏳ |
-| H9 | 控制台写鉴权 | `web/app.py:44` loopback 免 token | D3：写操作强制 token + 审计 | ⏳ (P0) |
+| H9 | 控制台写鉴权 | `web/app.py` loopback 免 token | D3：写强制 token + `admin_audit` 审计 + 前端自动取 token | ✅ `rg(A1)` |
 | H10 | 3 个 skill 的 `ownerQq` | `data/config.json` → `skills.affinity.ownerQq` / `qzone-mood-showcase.ownerQQ` / `possessive-heart.ownerQq` | 迁 `operatorId` 或删除 | ⏳ |
 
 ### 1.3 施工分期（Stage 29-A）
 
 | 期 | 内容 | 状态 |
 |---|---|---|
-| A1 | `operator_ids` + 写鉴权 + 审计（含前端 token 注入） | ⏳ |
+| A1 | 写鉴权 + 审计 + 前端 token（`operator_ids` 留到 A3b 与聊天内命令一起做） | ✅ |
 | A2a | bond_depth 六项算法 + Beta 信任 | ✅ `b1c7ec9` |
 | A2b | 事件计数器持久化 + 六特征派生（**尚未接线**） | ✅ `653d0ca`（store 未接线） |
 | A2c | 接线：`live_client` 记 impact/betray；历史回填 30 人计数；饱和点按 P95 校准 | ✅ `e2e6ba9` `/` `6c793f8` |
-| A3 | 删除 `owner_qq`（99 处）+ 嫉妒/冷暴力去特权 | ⏳ |
+| A3 | 去特权（✅ `555a03a`）→ 删字段 + `operator_ids` + 深度写回 | 🚧 |
 | A4 | 人格语料去硬编码（见第二节） | ⏳ |
 | A5 | 身份配置卡（名字/小名/白名单/默认群） | ⏳ |
 | A6 | 验证套件（LOGO、跨群一致性、抗操纵、消融） | ⏳ |
@@ -179,7 +179,7 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 | 2 | **回填脚本**（从 `chat_messages` 回填 msgs/replies/responses/sessions） | 29 个联系人计数与手工核对一致 |
 | 3 | **B1 群内归一化** | LOGO 跨群一致性中位差 ≤ 8 分 |
 | 4 | **B2 校准表** | 校准斜率 0.8–1.2 |
-| 5 | **A1 写鉴权 + operator** | 无 token 写 → 403；有 token → 200 + 审计 |
+| 5 | **A1 写鉴权** | ✅ 无 token 写 → 401；有 token → 200 + 审计 |
 | 6 | **A3 删除 owner_qq** | 无 owner 时嫉妒仍触发；`w_care` 连续 |
 | 7 | **A4 语料去硬编码** | 改名后自认知一致（回放 + 前端） |
 | 8 | **A5 配置卡** | 控制台可改并热生效 |
@@ -190,4 +190,4 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
-| 2026-10-30 | A2c 接线 + 回填 + P95 校准（`e2e6ba9`/`6c793f8`）；深度接入 `w_care`（`dad7a56`，读取时注入）；B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
+| 2026-10-30 | A3 去特权：`w_care` 不再对 owner 短路、`w_aversion` 不再打 0.35 折、奖励不再 ×1.12、嫉妒/立场/显著性不再有 owner 分支（`555a03a`）；4 条相关测试改为「先有 bond 才有关爱」；A1 落地：API 写操作强制 token、`admin_audit` 审计、前端自动获取/提示 token（`operator_ids` 推迟到 A3b）；A2c 接线 + 回填 + P95 校准（`e2e6ba9`/`6c793f8`）；深度接入 `w_care`（`dad7a56`，读取时注入）；B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
