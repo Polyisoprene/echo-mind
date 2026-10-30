@@ -44,7 +44,7 @@ async def test_stats_roundtrip_and_impact_accumulation(tmp_path: Path) -> None:
 async def test_features_and_depth_reflect_reciprocated_history() -> None:
     friend = BondDepthStats(
         chat_key="g", user_id="friend", msgs=180, her_msgs=60, replies_to_them=48,
-        responded_to_her=36, sessions=6, impact_sum=30.0, impact_n=60,
+        responded_to_her=36, sessions=34, impact_sum=30.0, impact_n=60,
     )
     praiser = BondDepthStats(
         chat_key="g", user_id="praiser", msgs=400, her_msgs=60, replies_to_them=6,

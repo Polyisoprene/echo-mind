@@ -30,9 +30,9 @@ W_BETRAY = 1.60  # param: fit:pending-bond-depth
 # Sigmoid calibration is a design choice to be replaced by fitted logistic calibration.
 BIAS = 2.60  # param: fit:pending-bond-depth
 GAIN = 1.60  # param: fit:pending-bond-depth
-# Saturation points should be the P90 of each feature in our own data.
-FREQ_SATURATION = 500.0  # param: fit:pending-bond-depth
-DIVERSITY_SATURATION = 12.0  # param: fit:pending-bond-depth
+# Saturation points use the P95 of the live distribution (28 contacts, 2026-10-30).
+FREQ_SATURATION = 452.0  # param: fit:p95-2026-10-30
+DIVERSITY_SATURATION = 42.0  # param: fit:p95-2026-10-30
 IMPACT_SATURATION = 45.0  # param: fit:pending-bond-depth
 BETRAYAL_HALF_LIFE = 3.0  # param: fit:pending-bond-depth
 DEPTH_CEILING = 0.97  # param: convention:soft-cap

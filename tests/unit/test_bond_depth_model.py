@@ -21,7 +21,7 @@ def test_praise_only_does_not_create_a_favourite() -> None:
         reciprocity=0.1, affect_impact=0.2, betrayal=0,
     )
     friend = compute_bond_depth(
-        msg_count=180, distinct_topics=6, responded_ratio=0.6,
+        msg_count=180, distinct_topics=30, responded_ratio=0.6,
         reciprocity=0.8, affect_impact=0.5, betrayal=0,
     )
     assert praiser < 20.0, f"love bombing must not buy depth, got {praiser}"
@@ -31,11 +31,11 @@ def test_praise_only_does_not_create_a_favourite() -> None:
 
 def test_betrayal_suppresses_depth() -> None:
     clean = compute_bond_depth(
-        msg_count=180, distinct_topics=6, responded_ratio=0.6,
+        msg_count=180, distinct_topics=30, responded_ratio=0.6,
         reciprocity=0.8, affect_impact=0.5, betrayal=0,
     )
     betrayed = compute_bond_depth(
-        msg_count=180, distinct_topics=6, responded_ratio=0.6,
+        msg_count=180, distinct_topics=30, responded_ratio=0.6,
         reciprocity=0.8, affect_impact=0.5, betrayal=3,
     )
     assert clean - betrayed >= 15.0, f"betrayal must cost depth ({clean} -> {betrayed})"

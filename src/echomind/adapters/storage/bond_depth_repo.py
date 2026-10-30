@@ -173,7 +173,7 @@ async def _response_counts(
     conn: aiosqlite.Connection, window_ms: int
 ) -> dict[tuple[str, str], int]:
     cursor = await conn.execute(
-        "SELECT m.chat_key, n.sender_id, COUNT(*) FROM chat_messages m "
+        "SELECT m.chat_key, n.sender_id, COUNT(DISTINCT m.id) FROM chat_messages m "
         "JOIN chat_messages n ON n.chat_key=m.chat_key AND n.is_self=0 "
         "AND n.ts>m.ts AND n.ts-m.ts<=? WHERE m.is_self=1 GROUP BY m.chat_key, n.sender_id",
         (window_ms,),
