@@ -125,7 +125,12 @@ class CognitiveCoreFacade:
                 self._sub_probe, percept, snap, dec, s_bond,
                 working=self._working, owner_qq=self._owner_qq, cache=self._chord_cache,
                 recent_lines=format_recent(self._gate_log, percept.chat_key),
+                in_ambient_cooldown=self._gate.ambient_cooldown_active(
+                    percept.chat_key, percept.timestamp_ms
+                ),
             )
+            if dec.should_wake and dec.tier > 1:
+                self._gate.mark_ambient_wake(percept.chat_key, percept.timestamp_ms)
         if not dry_run:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
         return dec
