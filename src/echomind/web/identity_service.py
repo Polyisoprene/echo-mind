@@ -103,7 +103,7 @@ class IdentityConfigService:
         _write_section(raw, "persona", {"botName": draft.bot_name} if draft.bot_name else {})
         _write_section(raw, "store", {"keywords": draft.keywords} if draft.keywords else {})
         _write_section(raw, "allow", {"groups": draft.groups} if draft.groups else {})
-        if draft.private is not None:
+        if draft.private:
             _write_section(raw, "allow", {"private": draft.private})
         for key, value in (
             ("defaultGroup", draft.default_group), ("selfQq", draft.self_qq),
