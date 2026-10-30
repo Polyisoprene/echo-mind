@@ -60,7 +60,7 @@ async def _poll_ptt_text(caller: OneBotHttpApiCaller, mid: int | str) -> str:
 
 
 async def transcribe_incoming_voice(
-    caller: Any, percept: Percept, bot_name: str = "回音"
+    caller: Any, percept: Percept, bot_names: tuple[str, ...] = ()
 ) -> Percept:
     """Auto-transcribe incoming [语音] messages via NapCat fetch_ptt_text (with retry)."""
     has_voice = percept.text == "[语音]" or any(m.kind == "voice" for m in percept.media)
@@ -71,7 +71,7 @@ async def transcribe_incoming_voice(
     txt = await _poll_ptt_text(caller, mid)
     if not txt:
         return percept
-    called = percept.is_called_by_name or (bot_name in txt) or ("尾尾" in txt)
+    called = percept.is_called_by_name or any(n and n in txt for n in bot_names)
     return percept.model_copy(update={"text": f"[语音转文字] {txt}", "is_called_by_name": called})
 
 
@@ -150,6 +150,7 @@ class OneBotLiveRuntime:
         runner: AgentSessionRunner, scheduler: CognitiveHeartbeatScheduler,
         debounce_s: float = 0.0, http_url: str = "", allowed_private: tuple[str, ...] = (),
         bond_store: IBondDepthStore | None = None,
+        bot_names: tuple[str, ...] = (),
     ) -> None:
         self._ws_url, self._token, self._self_id = ws_url, access_token, self_id
         self._http_url = http_url or ws_url.replace("ws://", "http://").replace(":3001", ":3000")
@@ -158,6 +159,7 @@ class OneBotLiveRuntime:
         self._pipeline, self._cognitive, self._runner = pipeline, cognitive, runner
         self._scheduler, self._debounce_s = scheduler, debounce_s
         self._bond_store = bond_store
+        self._bot_names = tuple(n for n in bot_names if n)
         self._locks: dict[str, asyncio.Lock] = {}
         self._pending_batches: dict[str, list[Percept]] = {}
         self._wake_scheduled: set[str] = set()
@@ -229,7 +231,7 @@ class OneBotLiveRuntime:
         caller = OneBotHttpApiCaller(self._http_url, self._token)
         fwd_expanded = await expand_incoming_forward(caller, parsed)
         piped = await self._pipeline.process(fwd_expanded)
-        enriched = await transcribe_incoming_voice(caller, piped)
+        enriched = await transcribe_incoming_voice(caller, piped, self._bot_names)
         await self._save_incoming(enriched)
         decision = await self._cognitive.evaluate_incoming(enriched)
         print(

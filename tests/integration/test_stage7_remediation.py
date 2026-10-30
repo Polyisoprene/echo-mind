@@ -429,7 +429,7 @@ async def test_m7_4_media_gateway_cleanup_gif_storyboard_bili_wbi_guard_and_live
         text="[语音]",
         media=(MediaAttachment(kind="voice", message_id="555"),),
     )
-    transcribed = await transcribe_incoming_voice(caller, voice_p)
+    transcribed = await transcribe_incoming_voice(caller, voice_p, ("回音", "尾尾"))
     assert "[语音转文字] 尾尾早上好" in transcribed.text
     assert transcribed.is_called_by_name is True
 

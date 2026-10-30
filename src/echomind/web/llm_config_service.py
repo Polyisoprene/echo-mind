@@ -279,10 +279,14 @@ class LlmConfigService:
         )
         if self._c.prompt_composer is not None:
             self._c.prompt_composer.update_role_card(bot_name, role_text)
+        section = _load_raw(self._path).get("store")
+        ids = section.get("keywords") if isinstance(section, dict) else None
+        kept = [str(k).strip() for k in ids] if isinstance(ids, list) else []
+        aliases = tuple(dict.fromkeys([bot_name.strip(), *kept]))
         for sensor in self._c.registry.sensors:
             set_fn = getattr(sensor, "set_bot_names", None)
             if callable(set_fn) and bot_name.strip():
-                set_fn((bot_name.strip(), "回音", "尾尾"))
+                set_fn(aliases)
         res = self.read_persona()
         res["applied"] = self._c.prompt_composer is not None
         return res

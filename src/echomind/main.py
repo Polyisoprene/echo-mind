@@ -165,7 +165,7 @@ def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotL
         allowed_private=cfg.allowed_private, operator_ids=cfg.operator_ids,
         db=container.db, pipeline=PerceptEnrichmentPipeline(container.registry.sensors),
         cognitive=container.cognitive_facade, runner=runner, scheduler=scheduler, debounce_s=2.0,
-        bond_store=container.bond_depth_store,
+        bond_store=container.bond_depth_store, bot_names=tuple(cfg.keywords),
     )
 
 
