@@ -125,8 +125,14 @@ def _build_scheduler(
     )
 
 
+def build_http_caller(cfg: AppConfig) -> OneBotHttpApiCaller:
+    """Build the OneBot HTTP caller, preferring the dedicated HTTP token when set."""
+    token = cfg.onebot.http_token_value or cfg.onebot.access_token_value
+    return OneBotHttpApiCaller(cfg.onebot.http_url, token)
+
+
 def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotLiveRuntime:
-    caller = OneBotHttpApiCaller(cfg.onebot.http_url, cfg.onebot.access_token_value)
+    caller = build_http_caller(cfg)
     container.onebot_caller = caller
     bridge = OneBotV11Bridge(caller, container.db)
     _register_skill_tools(cfg, container, caller, bridge)
