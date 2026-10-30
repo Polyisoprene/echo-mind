@@ -283,6 +283,16 @@ W 的符号固定：温柔+、傲娇−、俏皮+、叛逆−、自信+(俏皮)
 - 新增测试（4 条）：深关系 vs 陌生人温暖差 ≥0.15、持久值不被改写、未知对象零偏移、σ 有界；
 - 回放（120 回合）：`wakes 2 / cooldown_blocks 32 / probe_calls 68 / double_apply 0 / reward_spread 1.09` 与基线一致。
 
+## 9.7 S30-5 已落地（词条作用域 / 类别 / 溯源）
+
+- 迁移：`persona_traits` 新增 `chat_key`、`source`、`last_used_ms`（`storage/migrations.py`，幂等）；
+- 记录来源：`chat_key=outcome.chat_key`、`source=turn:<session>`，控制台可追溯"哪次互动长出来的"；
+- 类别上限：habit 8 / taste 4 / temperament 4 / taboo 3（合计 19，替代原全局 15）；
+- **按类别衰减**：负性事件只削弱 `taboo/temperament`，正性只强化 `habit/taste`；
+  直接调用不传类别时保持旧的全局语义（向后兼容）；
+- 回放（120 回合）：`wakes 2 / probe_calls 67 / double_apply 0 / reward_spread 1.09`
+  （probe 67 vs 基线 68，−1.5%，在 ±5% 容差内；重复回放结果稳定）。
+
 ## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）

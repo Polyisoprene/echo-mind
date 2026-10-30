@@ -19,6 +19,36 @@ from echomind.domain.models import (
 )
 from echomind.domain.persona_specs import PERSONA_SPECS
 
+
+async def _decay_traits(conn: Any, delta: int, categories: tuple[str, ...]) -> None:
+    """Apply a negative shift globally, or only to the given categories when specified."""
+    if not categories:
+        await conn.execute(
+            "UPDATE persona_traits SET strength = MAX(0, strength + ?)", (delta,)
+        )
+        return
+    for category in categories:
+        await conn.execute(
+            "UPDATE persona_traits SET strength = MAX(0, strength + ?) WHERE category = ?",
+            (delta, category),
+        )
+
+
+async def _cap_trait_categories(conn: Any) -> None:
+    """Keep only the strongest traits per category (habit 8 / taste 4 / temperament 4 / taboo 3)."""
+    for category, cap in _TRAIT_CAPS.items():
+        await conn.execute(
+            "DELETE FROM persona_traits WHERE category = ? AND id NOT IN ("
+            "SELECT id FROM persona_traits WHERE category = ? "
+            "ORDER BY strength DESC, created_at DESC LIMIT ?)",
+            (category, category, cap),
+        )
+
+
+_TRAIT_CAPS: dict[str, int] = {
+    "habit": 8, "taste": 4, "temperament": 4, "taboo": 3,
+}
+
 TraitCategory = Literal["habit", "temperament", "taste", "taboo"]
 
 
@@ -213,16 +243,15 @@ class SqliteWorkingStateStore:
         return int(row[0]) if row else 0
 
     async def sync_persona_traits(
-        self, new_trait: PersonaTrait | None = None, strength_delta: int = 0
+        self, new_trait: PersonaTrait | None = None, strength_delta: int = 0,
+        *, chat_key: str = "", source: str = "",
+        decay_categories: tuple[str, ...] = (),
     ) -> tuple[PersonaTrait, ...]:
         now_ms = int(time.time() * 1000)
         stale_cutoff = now_ms - 43_200_000  # 12h without reinforcement triggers decay
         async with self._db.connect() as conn:
             if strength_delta < 0:
-                await conn.execute(
-                    "UPDATE persona_traits SET strength = MAX(0, strength + ?)",
-                    (strength_delta,),
-                )
+                await _decay_traits(conn, strength_delta, decay_categories)
             await conn.execute(
                 "UPDATE persona_traits SET strength = strength - 1, created_at = ? "
                 "WHERE created_at > 0 AND created_at < ?",
@@ -231,16 +260,16 @@ class SqliteWorkingStateStore:
             await conn.execute("DELETE FROM persona_traits WHERE strength <= 0")
             if new_trait and new_trait.trait_text.strip():
                 await conn.execute(
-                    "INSERT INTO persona_traits (category, trait_text, strength, created_at) "
-                    "VALUES (?, ?, ?, ?) ON CONFLICT(trait_text) DO UPDATE SET "
+                    "INSERT INTO persona_traits (category, trait_text, strength, created_at, "
+                    "chat_key, source) VALUES (?, ?, ?, ?, ?, ?) "
+                    "ON CONFLICT(trait_text) DO UPDATE SET "
                     "strength = MIN(10, persona_traits.strength + 2), "
-                    "created_at = excluded.created_at",
-                    (new_trait.category, new_trait.trait_text.strip(), new_trait.strength, now_ms),
+                    "created_at = excluded.created_at, chat_key = excluded.chat_key, "
+                    "source = excluded.source",
+                    (new_trait.category, new_trait.trait_text.strip(), new_trait.strength,
+                     now_ms, chat_key, source),
                 )
-            await conn.execute(
-                "DELETE FROM persona_traits WHERE id NOT IN ("
-                "SELECT id FROM persona_traits ORDER BY strength DESC, created_at DESC LIMIT 15)"
-            )
+            await _cap_trait_categories(conn)
             await conn.commit()
             cursor = await conn.execute(
                 "SELECT id, category, trait_text, strength FROM persona_traits "

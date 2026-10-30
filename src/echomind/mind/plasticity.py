@@ -34,13 +34,17 @@ def boundary_damping(value: float, delta: float, lo: float, hi: float) -> float:
     return delta * max(0.0, min(1.0, headroom * 2.0))
 
 
-def trait_strength_shift(reward: float) -> int:
-    """Map social reward polarity to persona-trait reinforcement direction."""
+def trait_strength_shift(reward: float) -> tuple[int, tuple[str, ...]]:
+    """Map reward polarity to (direction, affected categories).
+
+    Negative experiences only erode taboos/temperament; positive ones only reinforce
+    habits/tastes — one bad turn must not weaken unrelated habits.
+    """
     if reward >= 0.5:
-        return 1
+        return 1, ()
     if reward <= -0.5:
-        return -1
-    return 0
+        return -1, ("taboo", "temperament")
+    return 0, ()
 
 
 def homeostatic_pull(key: str, current: float) -> float:
@@ -121,9 +125,12 @@ class NeuroplasticityEngine:
             if applied is not None:
                 updated.append(applied)
         emergent = derive_emergent_trait(outcome)
-        shift = trait_strength_shift(outcome.social_reward)
+        shift, decay_cats = trait_strength_shift(outcome.social_reward)
         if emergent is not None or shift != 0:
-            await self._store.sync_persona_traits(new_trait=emergent, strength_delta=shift)
+            await self._store.sync_persona_traits(
+                new_trait=emergent, strength_delta=shift, chat_key=outcome.chat_key,
+                source=f"turn:{outcome.session_id}", decay_categories=decay_cats,
+            )
         return tuple(updated)
 
     async def _apply_one(

@@ -82,7 +82,9 @@ class IWorkingStateStore(Protocol):
     ) -> PlasticParamSpec: ...
 
     async def sync_persona_traits(
-        self, new_trait: PersonaTrait | None = None, strength_delta: int = 0
+        self, new_trait: PersonaTrait | None = None, strength_delta: int = 0,
+        *, chat_key: str = "", source: str = "",
+        decay_categories: tuple[str, ...] = (),
     ) -> tuple[PersonaTrait, ...]: ...
 
 
