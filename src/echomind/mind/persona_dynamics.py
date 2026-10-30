@@ -8,6 +8,8 @@ calibrated against replay + operator anchors before being treated as final.
 
 from __future__ import annotations
 
+import time
+
 DELTA_CLIP = 2.0
 DAILY_CAP = 6.0
 REGRESSION_PER_DAY = 0.01
@@ -39,3 +41,14 @@ def budgeted_delta(raw: float, used_today: float, regression: float = 0.0) -> fl
     if wanted > 0:
         return float(min(wanted, budget))
     return float(max(wanted, -budget))
+
+
+async def capped_manual_delta(
+    store: object, key: str, delta: float
+) -> tuple[float, float]:
+    """Apply the daily cap to a console edit; returns (applied, remaining_budget)."""
+    now_ms = int(time.time() * 1000)
+    usage = getattr(store, "persona_day_usage", None)
+    used = await usage(key, now_ms - 86_400_000) if callable(usage) else 0.0
+    applied = budgeted_delta(delta, used)
+    return applied, round(max(0.0, DAILY_CAP - used - abs(applied)), 2)

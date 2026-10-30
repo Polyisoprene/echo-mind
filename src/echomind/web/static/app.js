@@ -135,9 +135,28 @@ function renderPersonaBars(params) {
   host.innerHTML = PERSONA_DIMS.map(([key, label, cls]) => {
     const p = params[key] || { value: 0, min_bound: 0, max_bound: 100 };
     const pct = ((p.value - p.min_bound) / (p.max_bound - p.min_bound || 1)) * 100;
-    return '<div class="row"><span class="lbl">' + label + '</span><span class="val">' + p.value.toFixed(1) + '</span></div>' +
+    return '<div class="row" title="点击设定绝对目标值"><span class="lbl">' + label + '</span>' +
+      '<span class="val" data-key="' + key + '" data-cur="' + p.value + '">' + p.value.toFixed(1) + '</span></div>' +
       '<div class="bar ' + cls + '" style="margin:2px 0 8px"><i style="width:' + Math.max(0, Math.min(100, pct)) + '%"></i></div>';
   }).join('');
+  host.querySelectorAll('.val[data-key]').forEach(function (el) {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function () { setPersonaDimension(el); });
+  });
+}
+
+async function setPersonaDimension(el) {
+  const key = el.getAttribute('data-key');
+  const current = parseFloat(el.getAttribute('data-cur'));
+  const target = parseFloat(prompt('设为多少？（0-100，当前 ' + current.toFixed(1) + '）', current.toFixed(1)));
+  if (isNaN(target)) return;
+  const res = await api('/api/mind/plastic/tune', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key: key, delta: target - current, reason: '控制台绝对值设定' })
+  });
+  const applied = res.applied != null ? res.applied : (target - current);
+  toast('已应用 ' + applied.toFixed(1) + (res.remaining != null ? '，今日剩余额度 ' + res.remaining : ''));
+  await refresh();
 }
 
 function renderOverview(s) {

@@ -302,6 +302,16 @@ W 的符号固定：温柔+、傲娇−、俏皮+、叛逆−、自信+(俏皮)
 - 新测试 2 条（探针含摘要、重复渲染命中缓存）；
 - 回放（120 回合）：`wakes 2 / probe_calls 67 / double_apply 0 / reward_spread 1.09`。
 
+## 9.9 S30-7 已落地（控制台绝对值设定 + 日限约束）
+
+- 控制台人格维度改为**点击数值 → 输入目标值**，前端发送 `delta = 目标 − 当前`；
+- 后端 `manual_tune_plastic_param` 对 `persona_*` 走 `capped_manual_delta`：
+  **单次 ±2 裁剪 + 当日累计 ≤6**，返回 `applied` 与 `remaining`；
+- 提示条显示「已应用 X，今日剩余额度 Y」；
+- 测试：`test_manual_tune_cap`（单次裁剪、日限剩余不为负）+ stage5 断言更新为 54.0；
+- 说明：`plastic_logs` 的**操作者字段**未加（HTTP 层 `admin_audit` 已记录 host/path/status），
+  列为 S30-7b 可选项。
+
 ## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）

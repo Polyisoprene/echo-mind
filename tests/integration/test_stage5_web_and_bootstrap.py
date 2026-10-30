@@ -90,7 +90,8 @@ async def test_ac5_1_to_ac5_5_bootstrap_and_fastapi_mind_inspector(tmp_path: Pat
             json={"key": "persona_guile", "delta": 5.0, "reason": "手动提升小机灵鬼度"},
         )
         assert r_tune.status_code == 200
-        assert r_tune.json()["param"]["value"] == 57.0
+        assert r_tune.json()["param"]["value"] == 54.0
+        assert r_tune.json()["applied"] == 2.0, "console tuning must respect the clip"
 
         r_tick = await client.post("/api/mind/tick")
         assert r_tick.status_code == 200

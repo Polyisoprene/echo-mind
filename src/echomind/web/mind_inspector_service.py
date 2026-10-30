@@ -11,6 +11,7 @@ from echomind.mind.circadian import summarize_wakefulness
 from echomind.mind.cybernetics import compute_cybernetic_core
 from echomind.mind.ebbinghaus import CLEAR_THRESHOLD, compute_retention
 from echomind.mind.memory_consolidator import compute_affinity_level
+from echomind.mind.persona_dynamics import capped_manual_delta
 from echomind.mind.personality import synthesize_live_persona_directive
 
 
@@ -158,8 +159,13 @@ class MindInspectorService:
     async def manual_tune_plastic_param(
         self, key: str, delta: float, reason: str = "控制台手动调校"
     ) -> dict[str, Any]:
-        spec = await self._c.working_store.update_plastic_param(key, delta, reason, reward=0.0)
-        return {"ok": True, "param": spec.model_dump()}
+        """Console tuning. Persona dimensions still obey the daily cap from Stage 30."""
+        applied, remaining = delta, None
+        store = self._c.working_store
+        if key.startswith("persona_"):
+            applied, remaining = await capped_manual_delta(store, key, delta)
+        spec = await store.update_plastic_param(key, applied, reason, reward=0.0)
+        return {"ok": True, "param": spec.model_dump(), "applied": applied, "remaining": remaining}
 
     async def trigger_autonomous_tick(self, idle_offset_min: float = 15.0) -> dict[str, Any]:
         now_ms = int(time.time() * 1000) + int(idle_offset_min * 60_000)
