@@ -127,6 +127,16 @@ recorded_at    → "我们是 10-30 21:12 知道的"
 
 ---
 
+## 四·五、 S39-0 已落地（DDL + 红灯骨架）
+
+- `storage/migrations.py`：新增 `ensure_claim_tables()`（`claims` / `claim_evidence` / `fact_reviews` + 索引），
+  与 `ensure_trait_columns()` 合并为 `ensure_migrations()`，在 `initialize()` 一次执行；
+- 旧表 `semantic_facts` 未改动，读取路径未切换 → **行为零变化**；
+- 新增红灯测试 `tests/integration/test_claim_store.py`：4 条以 `xfail(strict=True)` 钉住目标
+  （断言、冲突复核、撤销保历史、双时态 as-of 查询）；
+- 红灯证据：`reports/S39_RED_EVIDENCE.log`（4 failed / 2 passed）；
+- 门禁：189 passed / 4 xfailed。
+
 ## 五、 迁移步骤（影子优先，零行为改动）
 
 | 阶段 | 内容 | 行为影响 |
