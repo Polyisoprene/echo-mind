@@ -201,5 +201,9 @@ def build_live_asgi_app() -> FastAPI:
 
     app = FastAPI(title="EchoMind Production Server", lifespan=lifespan)
     # 外层 app 拷贝了内层路由，中间件不会继承，需要显式再装一次
-    app.middleware("http")(build_guard_and_cache_middleware(cfg.auth_key))
+    app.middleware("http")(
+        build_guard_and_cache_middleware(
+            cfg.auth_key, lambda: getattr(holder.get("c"), "db", None)
+        )
+    )
     return app

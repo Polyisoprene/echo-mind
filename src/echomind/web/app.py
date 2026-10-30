@@ -240,17 +240,18 @@ def build_guard_and_cache_middleware(auth_key: str, db: Any = None) -> Any:
 
     async def _guard_and_cache(request: Request, call_next: Any) -> Response:
         is_write = request.method.upper() in WRITE_METHODS and request.url.path.startswith("/api/")
+        sink = db() if callable(db) else db
         if not is_request_authorized(request, auth_key):
-            if is_write and db is not None:
-                await write_audit(db, request, 401)
+            if is_write and sink is not None:
+                await write_audit(sink, request, 401)
             return Response(
                 content='{"ok":false,"error":"unauthorized"}',
                 status_code=401,
                 media_type="application/json",
             )
         response = await no_cache_static(request, call_next)
-        if is_write and db is not None:
-            await write_audit(db, request, response.status_code)
+        if is_write and sink is not None:
+            await write_audit(sink, request, response.status_code)
         return response
 
     return _guard_and_cache
