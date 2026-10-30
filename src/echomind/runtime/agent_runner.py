@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import time
 import uuid
 from typing import Any
@@ -19,60 +18,17 @@ from echomind.mind.ban_control import purge_message_batch
 from echomind.mind.naming import bot_naming
 from echomind.runtime.prompt_composer import PromptComposer, StickerCandidate
 from echomind.runtime.reply_rescue import rescue_payload_json, rescue_unsent_reply
+from echomind.runtime.tool_forced_reply import force_send_call
+from echomind.runtime.turn_steps import (
+    _extract_assistant_msg,
+    _llm_step,
+    _parse_tool_args,
+    _tool_reply,
+    _tool_step,
+    has_tool_calls,
+    tool_call_list,
+)
 from echomind.runtime.working_scratchpad import WorkingScratchpad
-
-
-def _extract_assistant_msg(raw_resp: dict[str, Any]) -> dict[str, Any]:
-    choices = raw_resp.get("choices", [])
-    if not isinstance(choices, list) or not choices:
-        return {}
-    first = choices[0]
-    msg = first.get("message", {}) if isinstance(first, dict) else {}
-    return msg if isinstance(msg, dict) else {}
-
-
-def _parse_tool_args(raw_args: Any) -> dict[str, Any]:
-    if isinstance(raw_args, dict):
-        return raw_args
-    if not isinstance(raw_args, str):
-        return {}
-    try:
-        parsed: dict[str, Any] = json.loads(raw_args)
-        return parsed if isinstance(parsed, dict) else {}
-    except Exception:
-        return {}
-
-
-def _llm_step(resp: dict[str, Any], elapsed_ms: int, seq: int) -> TurnStep:
-    usage = resp.get("usage")
-    info = usage if isinstance(usage, dict) else {}
-    prompt = int(info.get("prompt_tokens", 0) or 0)
-    completion = int(info.get("completion_tokens", 0) or 0)
-    details = info.get("prompt_tokens_details")
-    cached = int(details.get("cached_tokens", 0) or 0) if isinstance(details, dict) else 0
-    detail = f"{prompt}→{completion} tok" + (f"（缓存 {cached}）" if cached else "")
-    out = str(_extract_assistant_msg(resp).get("content") or "").strip()[:300]
-    return TurnStep(
-        seq=seq, kind="llm", name=str(resp.get("model") or ""),
-        detail=detail, output=out, elapsed_ms=elapsed_ms,
-    )
-
-
-def _tool_step(
-    name: str, args: dict[str, Any], result_str: str, elapsed_ms: int, seq: int
-) -> TurnStep:
-    snippet = json.dumps(args, ensure_ascii=False)[:240]
-    return TurnStep(
-        seq=seq, kind="tool", name=name, detail=snippet,
-        output=result_str[:300], elapsed_ms=elapsed_ms,
-    )
-
-
-def _tool_reply(tc: dict[str, Any], name: str, content: str) -> dict[str, Any]:
-    return {
-        "role": "tool", "tool_call_id": str(tc.get("id", "call_1")),
-        "name": name, "content": content,
-    }
 
 
 def _init_running_record(
@@ -179,6 +135,7 @@ class AgentSessionRunner:
         steps: list[TurnStep], max_rounds: int = 6, *,
         base_rec: TurnRecord | None = None, t_turn: float = 0.0,
         selected_tools: tuple[str, ...] = (), turn_temp: float | None = None,
+        must_reply: bool = True,
     ) -> tuple[list[str], list[str], str]:
         tools_schema = self._registry.export_openai_tools(selected_tools)
         eff_temp = turn_temp if turn_temp is not None else self._temperature
@@ -197,15 +154,33 @@ class AgentSessionRunner:
             msg = _extract_assistant_msg(resp)
             last_content = str(msg.get("content") or "")
             raw_calls = msg.get("tool_calls")
-            if not isinstance(raw_calls, list) or not raw_calls:
+            if not has_tool_calls(raw_calls):
+                msg, raw_calls, last_content = await self._repair_with_tool(
+                    messages, tools_schema, chat_key, steps, last_content,
+                    must_reply=must_reply,
+                )
+            if not has_tool_calls(raw_calls):
                 break
             messages.append(msg)
             await self._execute_tool_batch(
-                chat_key, raw_calls, tools_used, sent_texts, messages, steps=steps
+                chat_key, tool_call_list(raw_calls), tools_used, sent_texts, messages,
+                steps=steps,
             )
             if base_rec is not None:
                 await self._sync_running_trace(base_rec, steps, len(sent_texts), t_turn)
         return sent_texts, tools_used, last_content
+
+    async def _repair_with_tool(
+        self, messages: list[dict[str, Any]], tools_schema: list[dict[str, Any]] | None,
+        chat_key: str, steps: list[TurnStep], last_content: str, *, must_reply: bool,
+    ) -> tuple[dict[str, Any], Any, str]:
+        """Force one send_message call instead of shipping raw text as a reply."""
+        if not must_reply or not last_content.strip():
+            return {}, None, last_content
+        forced = await force_send_call(self._llm, messages, tools_schema, chat_key)
+        steps.append(_llm_step(forced, 0, len(steps) + 1))
+        msg = _extract_assistant_msg(forced)
+        return msg, msg.get("tool_calls"), str(msg.get("content") or "") or last_content
 
     async def _maybe_rescue_reply(
         self, chat_key: str, last_content: str, sent_texts: list[str],
@@ -260,6 +235,7 @@ class AgentSessionRunner:
         sent_texts, tools_used, last_content = await self._run_tool_loop(
             chat_key, messages, steps, base_rec=base_rec, t_turn=t_turn,
             selected_tools=core.selected_tools, turn_temp=core.recommended_temperature,
+            must_reply=frame.must_reply,
         )
         await self._maybe_rescue_reply(
             chat_key, last_content, sent_texts, tools_used, steps, must_reply=frame.must_reply

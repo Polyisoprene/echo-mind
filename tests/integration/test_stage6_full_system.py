@@ -41,6 +41,7 @@ class FullSystemScriptedLlm:
         chat_key: str = "",
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         return {
             "choices": [

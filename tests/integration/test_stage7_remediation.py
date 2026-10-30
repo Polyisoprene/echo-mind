@@ -89,6 +89,7 @@ class _ScriptedLlm:
         chat_key: str = "",
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         res = self._responses[min(self._idx, len(self._responses) - 1)]
         self._idx += 1
@@ -694,6 +695,7 @@ async def test_stage11_live_session_streaming_multi_provider_chain_and_reply_gua
             chat_key: str = "",
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
         ) -> dict[str, Any]:
             turns_mid = await container.trace_store.list_turns()
             if turns_mid:

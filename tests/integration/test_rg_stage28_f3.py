@@ -34,6 +34,7 @@ class _CountingLlm:
         chat_key: str = "",
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         _ = (messages, tools, temperature, max_tokens, thinking_off, chat_key)
         self.calls += 1

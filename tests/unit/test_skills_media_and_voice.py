@@ -502,6 +502,7 @@ async def test_skill_toggle_delete_restore_and_memory_consolidator(tmp_path: Pat
             chat_key: str = "",
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
         ) -> dict[str, Any]:
             return {
                 "choices": [
@@ -682,6 +683,7 @@ async def test_qzone_tools_and_showcase_scheduler(tmp_path: Path) -> None:
             chat_key: str = "",
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
         ) -> dict[str, Any]:
             return {"choices": [{"message": {"content": "晒着太阳晃尾巴，今天慢慢来"}}]}
 

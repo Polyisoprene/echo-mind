@@ -143,6 +143,7 @@ class FailoverLlmGateway:
         thinking_off: bool = False,
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         url = f"{gw.base_url.rstrip('/')}/chat/completions"
         headers = {"Authorization": f"Bearer {gw.api_key}", "Content-Type": "application/json"}
@@ -154,6 +155,8 @@ class FailoverLlmGateway:
         }
         if tools:
             payload["tools"] = tools
+        if tool_choice:
+            payload["tool_choice"] = tool_choice
         if model_override:
             payload["model"] = model_override
         if json_mode:
@@ -174,6 +177,7 @@ class FailoverLlmGateway:
         chat_key: str = "",
         json_mode: bool = False,
         model_override: str = "",
+        tool_choice: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         last_exc: Exception | None = None
         for idx, gw in enumerate(self._chain):
