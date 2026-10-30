@@ -79,6 +79,7 @@ class EchoMindContainer:
         db_path: Path,
         owner_qq: str = "10001001",
         default_chat_key: str = "group:10002002",
+        operator_ids: tuple[str, ...] = (),
     ) -> EchoMindContainer:
         """Initialize SQLite WAL schema, default 7D plastic params, and core extensions."""
         db = SqliteDatabase(db_path)
@@ -94,6 +95,7 @@ class EchoMindContainer:
             mem_reader=mem_repo, mem_writer=mem_repo, working_store=work_store,
             owner_qq=owner_qq, default_group_key=default_chat_key,
             constraint_store=work_store, trace_store=trace_store, bond_store=bond_store,
+            operator_ids=operator_ids,
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,

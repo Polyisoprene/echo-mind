@@ -40,6 +40,7 @@ class AppConfig(FrozenValueObject):
     bot_name: str = "Echo"
     self_qq: str = ""
     owner_qq: str = ""
+    operator_ids: tuple[str, ...] = ()
     role_text: str = ""
     server_host: str = "127.0.0.1"
     server_port: int = 3310
@@ -185,6 +186,15 @@ def _build_onebot_cfg(sl: dict[str, Any]) -> OneBotConnConfig:
     )
 
 
+def _resolve_operators(raw: dict[str, Any], owner_qq: str) -> tuple[str, ...]:
+    """Read operatorIds (list or comma string); fall back to the owner for compatibility."""
+    value = raw.get("operatorIds")
+    if isinstance(value, str):
+        value = [v.strip() for v in value.split(",")]
+    ids = tuple(str(v).strip() for v in value if str(v).strip()) if isinstance(value, list) else ()
+    return ids or ((owner_qq,) if owner_qq else ())
+
+
 def _resolve_identities(raw: dict[str, Any]) -> tuple[str, str]:
     aff = _sub_dict(_sub_dict(raw, "skills"), "affinity")
     self_qq = _get_str(raw, "selfQq") or _get_str(aff, "botQq")
@@ -220,6 +230,7 @@ def load_config_from_json(path: Path) -> AppConfig:
         bot_name=_get_str(persona, "botName", "Echo"),
         self_qq=self_qq,
         owner_qq=owner_qq,
+        operator_ids=_resolve_operators(raw, owner_qq),
         role_text=_get_str(persona, "roleText", ""),
         server_host=_get_str(server, "host", "127.0.0.1"),
         server_port=_get_int(server, "port", 3310),

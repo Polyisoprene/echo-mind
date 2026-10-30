@@ -27,11 +27,13 @@ def _unique_terms(raw_terms: list[str]) -> tuple[str, ...]:
     return tuple(kept)
 
 
-def extract_new_bans(triggers: tuple[Percept, ...], owner_qq: str) -> tuple[str, ...]:
-    """Extract phrase bans issued by the owner in this turn (e.g. 说话不许带诶)."""
-    if not owner_qq:
+def extract_new_bans(
+    triggers: tuple[Percept, ...], operator_ids: tuple[str, ...] | set[str]
+) -> tuple[str, ...]:
+    """Extract phrase bans issued by a configured operator (e.g. 说话不许带诶)."""
+    if not operator_ids:
         return ()
-    texts = [p.text for p in triggers if p.sender_id == owner_qq]
+    texts = [p.text for p in triggers if p.sender_id in operator_ids]
     raw_terms = [raw for text in texts for raw in BAN_PATTERN.findall(text)]
     return _unique_terms(raw_terms)
 

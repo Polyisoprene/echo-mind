@@ -493,12 +493,12 @@ async def test_m3_6_owner_ban_phrases_extraction_purge_and_injection(tmp_path: P
     )
 
     ban_percept = _make_percept("说话不许带诶", sender_id="10001001", is_called=True)
-    assert extract_new_bans((ban_percept,), "10001001") == ("诶",)
+    assert extract_new_bans((ban_percept,), ("10001001",)) == ("诶",)
     stranger = _make_percept("你不许说诶", sender_id="999999")
-    assert extract_new_bans((stranger,), "10001001") == ()
+    assert extract_new_bans((stranger,), ("10001001",)) == ()
     generic = _make_percept("不要说话", sender_id="10001001")
-    assert extract_new_bans((generic,), "10001001") == ()
-    assert extract_new_bans((ban_percept,), "") == ()
+    assert extract_new_bans((generic,), ("10001001",)) == ()
+    assert extract_new_bans((ban_percept,), ()) == ()
 
     assert purge_banned("好，不带诶", ("诶",)) == "好，不带"
     assert purge_banned("诶", ("诶",)) is None

@@ -78,12 +78,14 @@ class CognitiveCoreFacade:
         constraint_store: IPersonaConstraintStore | None = None,
         trace_store: ITurnTraceStore | None = None,
         bond_store: IBondDepthStore | None = None,
+        operator_ids: tuple[str, ...] = (),
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
         self._owner_qq, self._default_group = owner_qq, default_group_key
         self._gate, self._calibrator = PerceptualGate(), EpistemicCalibrator()
         self._constraints, self._traces = constraint_store, trace_store
         self._bond_store = bond_store
+        self._operator_ids = tuple(operator_ids) or ((owner_qq,) if owner_qq else ())
         self._plasticity = NeuroplasticityEngine(working_store)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
@@ -204,7 +206,7 @@ class CognitiveCoreFacade:
     async def _resolve_bans(self, tr: tuple[Percept, ...], dry: bool = False) -> tuple[str, ...]:
         if self._constraints is None:
             return ()
-        new_bans = extract_new_bans(tr, self._owner_qq)
+        new_bans = extract_new_bans(tr, self._operator_ids)
         if not dry:
             for phrase in new_bans:
                 await self._constraints.add_banned_phrase(phrase, "主人明令禁止的口癖")
