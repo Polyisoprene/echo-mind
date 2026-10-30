@@ -150,15 +150,23 @@ uv run python scripts/replay_eval.py --db data/replay-snapshot.db \
 | Finding | 测试 ID | 红证据（失败断言） | 绿证据 | 提交 |
 |---|---|---|---|---|
 | F1 | `test_rg_f1_production_reward_not_constant` | `AssertionError: insult turn must lose trust, got 0.755`（`assert 0.755 < 0.75`） | `2 passed` → `74 passed / Cov 90.53% / 7 门禁全绿` | `e023da4` |
-| F2 | `test_rg_f2_tier1_turn_gets_chord` | 📋 | 📋 | 📋 |
-| F3 | `test_rg_f3_probe_once_per_batch` | 📋 | 📋 | 📋 |
+| F2 | `test_rg_f2_tier1_turn_gets_chord` | `AssertionError: frame must resolve the missing chord`（`assert 'f2-1' in {}`，切换回 cache-only 复现） | `1 passed`；全门禁绿（99 files / Cov 90.53%） | `b07c3ca`（实现随 gateway 重构落地，红绿已补验） |
+| F3 | `test_rg_f3_probe_once_per_batch` | `AssertionError: burst must be coalesced, got 4 probe calls`（`assert 4 <= 2`） | `1 passed`；`81 passed / Cov 90.69% / 7 门禁全绿` | `ca32bfb` |
 | F4 | `test_rg_f4_chord_applied_once` | `AssertionError: chord must shift mood exactly once per turn, got 2 applications` | `78 passed / Cov 90.56% / 7 门禁全绿`；回放 `double_apply` 8 → 0（60 回合切片） | `720b671` |
-| F5 | `test_rg_f5_cooldown_not_bypassed` | 📋 | 📋 | 📋 |
+| F5 | `test_rg_f5_cooldown_not_bypassed` | `AssertionError: a second ambient wake inside 75s must be suppressed`（`assert True is False`） | `1 passed`；`79 passed / Cov 90.53% / 7 门禁全绿` | `b4c7758` |
 | F6 | `test_rg_f6_chord_cache_bounded` | `AssertionError: chord cache must be bounded, got 300`（`assert 300 <= 256`） | `75 passed / Cov 90.53% / 7 门禁全绿` | 见 `rg(F6)` 提交 |
 | F7 | `test_rg_f7_no_dead_config_fields` | 📋 | 📋 | 📋 |
 | F8 | `test_rg_f8_vision_port_typed` | 📋 | 📋 | 📋 |
-| F9 | `test_rg_f9_recent_ctx_scoped` | 📋 | 📋 | 📋 |
+| F9 | `test_rg_f9_recent_ctx_scoped` | 审计证据：旧 `_recent_ctx` 取全局 25 条环形缓冲（无 `chat_key` 过滤），跨群混入 | `1 passed`（`format_recent` 按 `chat_key` 过滤，B 群内容零泄漏） | `7ced43c`（实现随 gateway 重构落地） |
 | F10 | `test_rg_f10_taboo_aversion_reachable` | 📋 | 📋 | 📋 |
+
+
+### 4.4 过程偏差登记（RGR-03 例外声明）
+
+| 偏差 | 事实 | 处理 |
+|---|---|---|
+| F2 / F9 的修复随 `[refactor-only]` `b07c3ca` 一并落地 | 该提交把 `apply_probe_if_allowed`/`chord_for`/`format_recent` 抽到 `chord_gateway`，顺带补上了 tier-1 补探针与按群过滤 | 已用「切回旧实现 → 抓红 → 恢复 → 转绿」方式补验 F2；F9 以函数级断言固化。二者均保留独立测试，后续若回归会被拦截 |
+| F7 / F8 / F10 尚未修复 | 死配置字段、视觉网关 `Any` 弱类型、taboo 子串死分支 | 归入 P2/P3 批次，需先在 B 线确认「删除 `server.host/port` 与 `http_token`」的兼容性 |
 
 ---
 
