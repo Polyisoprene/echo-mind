@@ -73,10 +73,9 @@ def _compute_stance_order(
     uid = triggers[-1].sender_id if triggers else ""
     bond = bonds_map.get(uid)
     bond_pull = ((bond.affinity_level / 5.0) * bond.trust_score) if bond else 0.35
-    owner_bonus = 0.35 if (owner_qq and uid == owner_qq) else 0.0
     mood_pull = aff.valence / 220.0
     penalty = (aff.irritation / 95.0) + (0.35 if has_conflict else 0.0)
-    return _clamp(bond_pull + owner_bonus + mood_pull - penalty, -1.0, 1.0)
+    return _clamp(bond_pull + mood_pull - penalty, -1.0, 1.0)
 
 
 def _compute_epistemic_order(

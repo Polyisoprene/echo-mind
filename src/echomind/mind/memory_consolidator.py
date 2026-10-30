@@ -61,13 +61,13 @@ def cubic_trust_affinity_cap(trust_score: float, *, is_rival: bool = False) -> f
 
 
 def _default_bond(chat_key: str, percept: Percept, is_owner: bool) -> SocialBondProfile:
-    score = 9999.0 if is_owner else 30.0
+    score = 30.0
     return SocialBondProfile(
         chat_key=chat_key, user_id=percept.sender_id,
         user_name=percept.sender_name or percept.sender_id,
-        group_role="owner" if is_owner else "member",
+        group_role="admin" if is_owner else "member",
         affinity_score=score, affinity_level=compute_affinity_level(score),
-        msg_count=0, trust_score=0.95 if is_owner else 0.75,
+        msg_count=0, trust_score=0.75,
     )
 
 
@@ -150,7 +150,7 @@ async def update_sender_bond(
     eff_delta = 0.0 if (new_trust < 0.55 and delta > 0) else delta
     t_cap = cubic_trust_affinity_cap(new_trust, is_rival=base.is_rival)
     raw_aff = max(0.0, min(t_cap, base.affinity_score + eff_delta))
-    new_score = 9999.0 if is_owner else round(raw_aff, 2)
+    new_score = round(raw_aff, 2)
     await writer.upsert_social_bond(
         base.model_copy(
             update={

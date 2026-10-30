@@ -92,8 +92,6 @@ def _hits_working_focus(
     intent_hit = _match_intention_slice(percept.text, working)
     if intent_hit or _is_rival_speaker(percept, rivals):
         return intent_hit
-    if owner_qq and percept.sender_id != owner_qq:
-        return ""
     hit_r = next((r for r in rivals if r and r in percept.text), "")
     return f"提及吃醋关注对象({hit_r})" if hit_r else ""
 

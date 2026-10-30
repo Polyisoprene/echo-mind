@@ -196,8 +196,13 @@ def test_m3_3_drives_jealousy_and_autonomous_explorer_arbiter() -> None:
     )
     assert check_owner_jealousy_trigger(owner_praise_rival, "10001001", ("汐",)) is True
 
+    loved_bond = SocialBondProfile(
+        chat_key="group:10002002", user_id="10001001", user_name="L",
+        affinity_score=94.0, trust_score=0.95, bond_depth=75.0,
+    )
     updated = apply_turn_affect_and_drives(
-        snap, (owner_praise_rival,), "10001001", ("汐",), ("流云真君",)
+        snap, (owner_praise_rival,), "10001001", ("汐",), ("流云真君",),
+        bonds_map={"10001001": loved_bond},
     )
     assert updated.affect.jealousy >= 20.0
     assert "流云真君" in updated.curiosity_queue

@@ -146,9 +146,8 @@ def compute_chord_social_reward(
         - (0.35 if chord.spoof_attempt else 0.0)
     )
     if abs(raw) < 0.01:
-        return 0.12 if is_owner else 0.08
-    scale = 1.12 if is_owner else 1.0
-    return round(max(-0.85, min(0.85, raw * scale)), 2)
+        return 0.08
+    return round(max(-0.85, min(0.85, raw)), 2)
 
 
 def _evaluate_about_me_wake(

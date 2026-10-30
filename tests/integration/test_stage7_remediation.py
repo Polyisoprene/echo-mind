@@ -1505,10 +1505,17 @@ async def test_stage21_ecological_gate_dyadic_dnd_resonance_and_lorenz_satiation
         sender_name="L",
         text="大家觉得日常待机这首歌好听吗？",
     )
-    dec_own = gate.evaluate(
-        p_owner_q, ws, known_vocab=frozenset({"好听"}), owner_qq="10001001"
+    from echomind.domain.models import SocialBondProfile as _Bond
+
+    earned_bond = _Bond(
+        chat_key="group:10002002", user_id="10001001", user_name="L",
+        affinity_score=96.0, trust_score=0.96, bond_depth=80.0,
     )
-    assert dec_own.should_wake is True and "+主人" in dec_own.reason
+    dec_own = gate.evaluate(
+        p_owner_q, ws, known_vocab=frozenset({"好听"}), owner_qq="10001001",
+        speaker_bond=earned_bond,
+    )
+    assert dec_own.should_wake is True and "在意好友" in dec_own.reason
 
     # 4. Lorenz Hydraulic Satiation Discharge (-22 social_expression after speaking)
     high_snap = ws.model_copy(
@@ -1746,12 +1753,16 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         sender_name="L",
         text="尾尾真乖，摸摸头",
     )
+    warm_bond = friend_bond.model_copy(
+        update={"user_id": "10001001", "affinity_score": 92.0, "trust_score": 0.95,
+                "bond_depth": 75.0}
+    )
     soothed = apply_turn_affect_and_drives(
         lonely_snap,
         (p_warm,),
         "10001001",
         ("汐",),
-        bonds_map={"2005": friend_bond},
+        bonds_map={"2005": friend_bond, "10001001": warm_bond},
         chord=SubconsciousChordResult(joy=2, shyness=2),
     )
     assert soothed.drives.attachment < 72.0

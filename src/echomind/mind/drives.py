@@ -34,8 +34,6 @@ def compute_care_weight(
     sender_id: str, owner_qq: str, bond: SocialBondProfile | None = None
 ) -> float:
     """Compute continuous care/importance weight w_care(u) in [0.0, 1.0] for any person."""
-    if owner_qq and sender_id == owner_qq:
-        return 1.0
     if bond is None or bond.is_rival:
         return 0.0
     return care_weight(bond.affinity_score, bond.trust_score, bond.bond_depth)
@@ -45,8 +43,6 @@ def compute_aversion_susceptibility(
     sender_id: str, owner_qq: str, bond: SocialBondProfile | None = None
 ) -> float:
     """Compute aversion/irritation susceptibility w_aversion(u) in [0.35, 1.75]."""
-    if owner_qq and sender_id == owner_qq:
-        return 0.35
     if bond is None:
         return 1.0
     raw = 1.35 - (bond.affinity_score / 110.0) + (0.82 - bond.trust_score)
@@ -88,9 +84,7 @@ def check_owner_jealousy_trigger(
     percept: Percept, owner_qq: str, rivals: tuple[str, ...],
     *, chord: SubconsciousChordResult | None = None,
 ) -> bool:
-    """Detect whether the owner just triggered triadic jealousy."""
-    if not owner_qq or percept.sender_id != owner_qq:
-        return False
+    """Detect whether a deeply-cared speaker just triggered triadic jealousy."""
     jd, _ = evaluate_triadic_jealousy(percept, 1.0, rivals, chord=chord)
     return jd > 0.0
 

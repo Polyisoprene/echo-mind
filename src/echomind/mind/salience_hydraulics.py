@@ -109,9 +109,6 @@ def _care_sender_bonus(
     poss: float,
     speaker_bond: SocialBondProfile | None,
 ) -> tuple[float, str]:
-    if owner_qq and percept.sender_id == owner_qq:
-        b_own = round(0.14 + 0.14 * (poss / 100.0), 2)
-        return b_own, f"+主人{b_own}"
     w_care = compute_care_weight(percept.sender_id, owner_qq, speaker_bond)
     if w_care >= 0.15:
         b_care = round((0.10 + 0.12 * (poss / 100.0)) * w_care, 2)
