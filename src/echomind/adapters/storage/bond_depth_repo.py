@@ -120,6 +120,15 @@ class SqliteBondDepthStore(IBondDepthStore):
             row = await cursor.fetchone()
         return _row_to_stats(row) if row else None
 
+    async def set_bond_depth(self, chat_key: str, user_id: str, depth: float) -> None:
+        """Persist the derived depth so the console can render it without recomputing."""
+        async with self._db.connect() as conn:
+            await conn.execute(
+                "UPDATE social_bonds SET bond_depth=? WHERE chat_key=? AND user_id=?",
+                (max(0.0, min(100.0, depth)), chat_key, user_id),
+            )
+            await conn.commit()
+
     async def top_stats(self, limit: int = 50) -> tuple[BondDepthStats, ...]:
         async with self._db.connect() as conn:
             cursor = await conn.execute(_TOP_SQL, (limit,))

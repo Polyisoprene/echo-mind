@@ -26,6 +26,9 @@ class _FakeStore(IBondDepthStore):
         _ = limit
         return ()
 
+    async def set_bond_depth(self, chat_key: str, user_id: str, depth: float) -> None:
+        _ = (chat_key, user_id, depth)
+
 
 def _outcome(reward: float, *, conflict: bool, senders: tuple[str, ...]) -> TurnOutcome:
     triggers = tuple(

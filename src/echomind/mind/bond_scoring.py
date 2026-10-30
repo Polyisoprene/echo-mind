@@ -36,8 +36,12 @@ async def attach_bond_depth(
     ranks = dict(
         zip(stats, (n.frequency for n in normalize_group(tuple(stats.values()))), strict=True)
     )
-    return {
-        uid: bond if uid not in stats
-        else bond.model_copy(update={"bond_depth": _blend(stats[uid], ranks[uid])})
-        for uid, bond in bonds.items()
-    }
+    enriched: dict[str, SocialBondProfile] = {}
+    for uid, bond in bonds.items():
+        if uid not in stats:
+            enriched[uid] = bond
+            continue
+        depth = _blend(stats[uid], ranks[uid])
+        await store.set_bond_depth(bond.chat_key, uid, depth)
+        enriched[uid] = bond.model_copy(update={"bond_depth": depth})
+    return enriched
