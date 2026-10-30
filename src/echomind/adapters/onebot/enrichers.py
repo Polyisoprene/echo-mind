@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import MediaAttachment, Percept
 from echomind.domain.ports import IPerceptEnricher
+
+ACOUSTIC_ECHO_RE = re.compile(
+    r"有回音|产生回音|听到回音|没有回音|回音壁|回音消除|"
+    r"(?:麦克风|音响|空间|房间|山谷|耳机|喇叭).{0,6}回音|说一句回音"
+)
 
 
 class QuoteStickerEnricher:
@@ -38,8 +44,8 @@ class QuoteStickerEnricher:
             return f"{prefix}{txt}", is_self
 
     def _check_called_by_name(self, text: str) -> bool:
-        lower = text.lower()
-        return any(name.lower() in lower for name in self._bot_names if name)
+        cleaned = ACOUSTIC_ECHO_RE.sub("", text).lower()
+        return any(name.lower() in cleaned for name in self._bot_names if name)
 
     async def enrich(self, percept: Percept) -> Percept:
         called = percept.is_called_by_name or self._check_called_by_name(percept.text)
@@ -91,11 +97,23 @@ class CardAndForwardEnricher:
         return percept.model_copy(update={"text": card_str})
 
 
-class ImageCaptionCacheEnricher:
-    """Attach cached MD5 vision descriptions to MediaAttachments (0-token instant recognition)."""
+def _inject_caption_tag(text: str, m: MediaAttachment) -> str:
+    if not m.description or m.kind != "image":
+        return text
+    tag = f"[图片:{m.description[:90]}]"
+    if "[图片]" in text:
+        return text.replace("[图片]", tag, 1)
+    if not text.strip() or text.strip() == "[表情]":
+        return tag
+    return text
 
-    def __init__(self, db: SqliteDatabase) -> None:
+
+class ImageCaptionCacheEnricher:
+    """Attach cached/live vision descriptions to MediaAttachments and Percept.text."""
+
+    def __init__(self, db: SqliteDatabase, vision_gw: Any = None) -> None:
         self._db = db
+        self._vision = vision_gw
 
     async def _lookup_caption(self, md5_key: str) -> str:
         if not md5_key:
@@ -106,10 +124,21 @@ class ImageCaptionCacheEnricher:
             row = await cursor.fetchone()
             return str(row[0]) if row else ""
 
+    async def _describe_and_cache(self, att: MediaAttachment) -> str:
+        ref = att.url or att.local_path
+        if self._vision is None or not ref:
+            return ""
+        caption = str(await self._vision.describe_image(ref)).strip()
+        if caption:
+            await self._vision.cache_media_description(att, caption)
+        return caption
+
     async def _enrich_single_media(self, att: MediaAttachment) -> MediaAttachment:
         if att.description or att.kind != "image":
             return att
         caption = await self._lookup_caption(att.local_path)
+        if not caption:
+            caption = await self._describe_and_cache(att)
         if not caption:
             return att
         return att.model_copy(update={"description": caption})
@@ -118,7 +147,10 @@ class ImageCaptionCacheEnricher:
         if not percept.media:
             return percept
         updated = [await self._enrich_single_media(m) for m in percept.media]
-        return percept.model_copy(update={"media": tuple(updated)})
+        new_txt = percept.text
+        for m in updated:
+            new_txt = _inject_caption_tag(new_txt, m)
+        return percept.model_copy(update={"media": tuple(updated), "text": new_txt})
 
 
 class PerceptEnrichmentPipeline:

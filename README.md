@@ -25,7 +25,8 @@
    - **A-MEM 卢曼卡片盒自组织图式结晶**：当多段经历围绕同一核心概念聚集时，海马体自动将其结晶为 `自组织图式:<核心概念>`。
 3. **🎭 突破“讨好型圣母病”的真实人性、三吸引子人际动力学与三维动态可信度**：
    - 具备 **习得性厌恶雷点（Disgust/Aversion）**、**语义饱和厌烦与心理逆反（Reactance）**、**15 分钟冷暴力已读不回（Silent Treatment）** 以及 **四大动机冲突型嘴硬/小谎言策略（DePaulo 1996）**；
-   - **三吸引子均值回归好感度引擎（Ornstein-Uhlenbeck）× 海马体慢通道关系复盘**：区分同行对手均衡点（`45.0`）、邓巴日常熟人天花板（`85.0`）与深度共鸣挚友区，叠加信任度三次方天花板 $A_{\max}(\text{trust}) = 35 + 465 \cdot \text{trust}^3$，杜绝字数打卡刷好感与甜言蜜语洗白失信。
+   - **三吸引子均值回归好感度引擎（Ornstein-Uhlenbeck）× 海马体慢通道关系复盘**：区分同行对手均衡点（`45.0`）、邓巴日常熟人天花板（`85.0`）与深度共鸣挚友区，叠加信任度三次方天花板 $A_{\max}(\text{trust}) = 35 + 465 \cdot \text{trust}^3$，杜绝字数打卡刷好感与甜言蜜语洗白失信；
+   - **🧠 潜意识 6 维情感和弦探针（`SubconsciousChordProbe`）× 连续人格关系张量合成（Stage 24–25）**：采用 Goffman 多方对话语用五分类与 6 维锚定和弦（`joy, hurt, jealousy, shyness, annoyance, curiosity ∈ 0..3`），融合独立人格普适在乎度 $w_{\text{care}}(u)$、HRRL 稳态重聚安抚、跨人情绪迁延余波（Affective Spillover）与入站表情包 MD5 自动视觉品味。
 4. **⏱️ Borbély 双过程生物节律、七相一日生活弧与外源情绪/人格塑造**：
    - 基于 **Borbély 双过程睡眠-觉醒调节模型**（24h 正弦主节律 + `13:30` 午困高斯低谷 + `00:30–07:00` 深度睡眠态）与 **非齐次泊松过程（NHPP）随机抖动唤醒**，彻底告别机械秒表式触发；
    - 上下文逐条标注北京时间 `[HH:MM]`，相邻消息间隔 $\ge 5$ 分钟自动插入 `── ⏱️ [时间断层：旧话题已翻篇] ──`；闲暇自主刷 B 站热门榜（`bili_popular`）或查热梗（`web_search`）不仅更新知识库，还会动态提升愉悦度并微调 7 维性格参数。
@@ -150,9 +151,9 @@ cp data/config.example.json data/config.json
 | **Gate 1A** | `ruff check src tests` | PEP8、`line-length <= 100`、圈复杂度 `C901 <= 6`、`SIM/RET/C4/PLR` | ✅ **0 Errors** |
 | **Gate 1B** | `radon cc src -nc` | 所有函数/方法 Radon 圈复杂度必须为 **Grade A 或 B**（严禁 Grade C~F） | ✅ **0 Functions > B** |
 | **Gate 1C** | `pylint src/echomind` | 强制扁平化代码 `max-nested-blocks <= 2`，满分要求 | ✅ **10.00 / 10** |
-| **Gate 2** | `mypy --strict src tests` | 89 个源文件与测试文件 100% 严格静态类型与协议校验 | ✅ **0 Issues** |
+| **Gate 2** | `mypy --strict src tests` | 90 个源文件与测试文件 100% 严格静态类型与协议校验 | ✅ **0 Issues** |
 | **Gate 3** | `test_solid_boundaries.py` | 单文件 `<= 300` 行、单函数 `<= 40` 行、窄接口 `<= 5` 方法、零跨层依赖 | ✅ **All Passed** |
-| **Gate 4** | `pytest --cov=src/echomind` | 72 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **72 Passed (>90% Cov)** |
+| **Gate 4** | `pytest --cov=src/echomind` | 73 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **73 Passed (>90% Cov)** |
 
 ---
 
@@ -181,3 +182,4 @@ cp data/config.example.json data/config.json
   - [Stage 22：三吸引子均值回归人际动力学、海马体慢通道关系复盘与回放缺陷根治规范](docs/plans/STAGE_22_CALIBRATED_RELATIONAL_DYNAMICS_AND_TRACE_REPLAY_FIXES_PLAN.md)
   - [Stage 23：群聊跟聊窗口无限续杯与路人防抖误开窗根治规范](docs/plans/STAGE_23_GROUP_FOLLOWUP_AND_BYSTANDER_INTERCEPTION_FIX_PLAN.md)
   - [Stage 24：全认知状态空间（24维变量）专项审计、文献调研与全耦合动力学重构规范](docs/plans/STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md)
+  - [Stage 25：潜意识6维情感和弦探针、连续张量合成、跨人情绪迁延与表情包自动品味规范](docs/plans/STAGE_25_SUBCONSCIOUS_CHORD_PROBE_AND_ZERO_HARDCODING_PLAN.md)

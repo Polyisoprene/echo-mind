@@ -21,12 +21,10 @@ from echomind.mind.salience_hydraulics import (
     record_dyadic_pair,
 )
 
-# Genuine unknown terms: quoted terms, "XX是什么梗", or alphanumeric proper nouns
 QUOTED_TERM_RE = re.compile(r"[「『《“\"【]([\u4e00-\u9fa5A-Za-z0-9]{2,10})[」』》”\"】]")
 ASK_MEME_RE = re.compile(
     r"([\u4e00-\u9fa5A-Za-z0-9]{2,8})(?:是什么梗|是什么意思|是什么|是谁呀|怎么看|厉害了|太强了)"
 )
-# 只把纯字母单词当作可疑专有名词；先剥除 URL 与 BV 号防止域名后缀污染好奇心队列
 URL_BV_STRIP_RE = re.compile(r"https?://\S+|b23\.tv/\S+|BV[0-9A-Za-z]{10}|www\.\S+")
 ALNUM_TERM_RE = re.compile(r"\b[A-Za-z]{2,12}\b")
 EN_STOPWORDS = frozenset(
@@ -187,7 +185,9 @@ class PerceptualGate:
                 ts, txt, _ = self._bot_speech[percept.chat_key]
                 self._bot_speech[percept.chat_key] = (ts, txt, 0)
             return _wake_dec(1.0, 1, direct_reason, unknowns, has_unseen)
-        if "@" in percept.text or (percept.quoted_message_id and not percept.is_quoted_me):
+        if bool(extract_at_target_uid(percept.text)) or (
+            percept.quoted_message_id and not percept.is_quoted_me
+        ):
             if record_state:
                 self._followup_until.pop(f"{percept.chat_key}::{percept.sender_id}", None)
                 prev_u = self._last_peer.get(percept.chat_key, ("", 0))[0]

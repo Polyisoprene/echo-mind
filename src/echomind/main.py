@@ -20,6 +20,7 @@ from echomind.adapters.onebot.live_client import OneBotHttpApiCaller, OneBotLive
 from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import AppConfig, load_config_from_json
+from echomind.mind.subconscious_probe import SubconsciousChordProbe
 from echomind.runtime.agent_runner import AgentSessionRunner
 from echomind.runtime.prompt_composer import PromptComposer
 from echomind.runtime.qzone_scheduler import QzoneMoodShowcaseScheduler
@@ -133,6 +134,9 @@ def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotL
         cfg.primary_llm, cfg.fallback_llm, container.db, extra_fallbacks=cfg.fallback_chain
     )
     container.llm_gateway = llm
+    container.cognitive_facade.set_subconscious_probe(
+        SubconsciousChordProbe(llm, owner_qq=cfg.owner_qq)
+    )
     composer = PromptComposer(role_text=cfg.role_text, bot_name=cfg.bot_name)
     container.prompt_composer = composer
     for sensor in container.registry.sensors:

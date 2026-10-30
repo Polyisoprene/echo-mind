@@ -17,9 +17,11 @@ from echomind.mind.ebbinghaus import tokenize_query
 
 AT_UID_RE = re.compile(r"\(QQ:(\d{3,12})\)|@(\d{3,12})")
 TRIVIAL_NOISE_RE = re.compile(
-    r"^(?:[哈嘿呵啊哦嗯草6？?！!\.。，,~～]+|确实|好家伙|牛的|笑死|真的假的|\[表情\]|\[图片\])$"
+    r"^(?:[哈嘿呵啊哦嗯草6？?！!\.。，,~～]+|确实|好家伙|牛的|笑死|真的假的|\[表情\])$"
 )
-OPEN_QUESTION_RE = re.compile(r"[？?]|大家觉得|有人知道|为什么|啥意思|怎么回事")
+OPEN_QUESTION_RE = re.compile(
+    r"[？?]|大家觉得|有人知道|为什么|啥意思|怎么回事|会不会|是不是|能不能|怎么设计|试试呢|呢$|吗$"
+)
 RESONANCE_CUE_RE = re.compile(r"真的吗|什么视频|哪个视频|发来看看|链接呢|叫啥名字|好听吗")
 SKILL_REQUEST_RE = re.compile(r"唱首歌|唱一首|来首歌|发个语音|说句语音")
 SECOND_PERSON_ASK_RE = re.compile(r"你在干嘛|你睡了吗|你觉得呢|你知道.{1,10}吗|你会.{1,8}吗")

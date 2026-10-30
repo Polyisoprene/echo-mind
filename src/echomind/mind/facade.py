@@ -58,6 +58,10 @@ from echomind.mind.shadow_appraisal import (
     evaluate_shadow_appraisal,
     filter_unfulfilled_intentions,
 )
+from echomind.mind.subconscious_probe import (
+    SubconsciousChordProbe,
+    apply_chord_tensor_to_snapshot,
+)
 
 
 def _trigger_label(outcome: TurnOutcome) -> str:
@@ -82,6 +86,11 @@ class CognitiveCoreFacade:
         self._plasticity = NeuroplasticityEngine(working_store)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
+        self._sub_probe: SubconsciousChordProbe | None = None
+
+    def set_subconscious_probe(self, probe: SubconsciousChordProbe | None) -> None:
+        """Attach or replace the Stage 25 Subconscious 6D Chord Probe."""
+        self._sub_probe = probe
 
     @property
     def owner_qq(self) -> str:
@@ -111,6 +120,13 @@ class CognitiveCoreFacade:
             percept, snap, vocab, rivals, talkativeness=talk,
             record_state=not dry_run, owner_qq=self._owner_qq, params=params, speaker_bond=s_bond,
         )
+        if self._sub_probe and not dry_run and dec.tier != 1 and dec.salience_score > 0.12:
+            chord = await self._sub_probe.appraise(percept, (), s_bond)
+            if chord is not None:
+                snap, dec = apply_chord_tensor_to_snapshot(
+                    snap, chord, percept, self._owner_qq, s_bond
+                )
+                await self._working.save_working_state(snap)
         if not dry_run:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
         return dec
@@ -133,13 +149,6 @@ class CognitiveCoreFacade:
                 await self._writer.reinforce_episodic_card(r_item.card.card_id, now_ms)
         return recalled
 
-    def _maybe_impose_cold_shoulder(
-        self, chat_key: str, new_irr: float, triggers: tuple[Percept, ...]
-    ) -> None:
-        if new_irr > 85.0 and triggers and triggers[-1].sender_id != self._owner_qq:
-            last = triggers[-1]
-            self._gate.impose_cold_shoulder(chat_key, last.sender_id, last.timestamp_ms)
-
     async def _apply_shadow_and_save(
         self, chat_key: str, base_snap: WorkingSnapshot, triggers: tuple[Percept, ...],
         bonds_map: dict[str, SocialBondProfile], *, dry_run: bool = False,
@@ -156,7 +165,9 @@ class CognitiveCoreFacade:
         )
         if not dry_run:
             await self._working.save_working_state(updated)
-            self._maybe_impose_cold_shoulder(chat_key, new_irr, triggers)
+            if new_irr > 85.0 and triggers and triggers[-1].sender_id != self._owner_qq:
+                last = triggers[-1]
+                self._gate.impose_cold_shoulder(chat_key, last.sender_id, last.timestamp_ms)
         return updated, shadow, synthesize_live_persona_directive(params, traits)
 
     async def _advance_working_state(
@@ -175,8 +186,7 @@ class CognitiveCoreFacade:
             self._gate.evaluate(
                 triggers[-1], snap, vocab, rivals, talkativeness=talk,
                 record_state=False, owner_qq=self._owner_qq, params=params, speaker_bond=s_bond,
-            )
-            if triggers else None
+            ) if triggers else None
         )
         unknowns = last_dec.detected_unknown_terms if last_dec else ()
         updated = apply_turn_affect_and_drives(
@@ -185,18 +195,15 @@ class CognitiveCoreFacade:
         )
         return updated, last_dec, skep
 
-    async def _resolve_bans(
-        self, triggers: tuple[Percept, ...], *, dry_run: bool = False
-    ) -> tuple[str, ...]:
+    async def _resolve_bans(self, tr: tuple[Percept, ...], dry: bool = False) -> tuple[str, ...]:
         if self._constraints is None:
             return ()
-        new_bans = extract_new_bans(triggers, self._owner_qq)
-        if dry_run:
-            existing = await self._constraints.get_banned_phrases()
-            return tuple(dict.fromkeys([*new_bans, *existing]))
-        for phrase in new_bans:
-            await self._constraints.add_banned_phrase(phrase, "主人明令禁止的口癖")
-        return await self._constraints.get_banned_phrases()
+        new_bans = extract_new_bans(tr, self._owner_qq)
+        if not dry:
+            for phrase in new_bans:
+                await self._constraints.add_banned_phrase(phrase, "主人明令禁止的口癖")
+        existing = await self._constraints.get_banned_phrases()
+        return tuple(dict.fromkeys([*new_bans, *existing]))
 
     async def build_cognitive_frame(
         self, chat_key: str, triggers: tuple[Percept, ...], *, dry_run: bool = False
@@ -207,7 +214,7 @@ class CognitiveCoreFacade:
         uids = extract_mentioned_uids(tr, facts)
         bm = await self._load_bonds_map(chat_key, uids)
         base_snap, last_dec, skep = await self._advance_working_state(chat_key, tr, facts, bm)
-        bans = await self._resolve_bans(tr, dry_run=dry_run)
+        bans = await self._resolve_bans(tr, dry_run)
         snap, shadow, p_blk = await self._apply_shadow_and_save(
             chat_key, base_snap, tr, bm, dry_run=dry_run
         )
@@ -237,31 +244,30 @@ class CognitiveCoreFacade:
         if self._traces is None or not outcome.steps:
             return
         models = [s.name for s in outcome.steps if s.kind == "llm" and s.name]
-        rec = TurnRecord(
-            turn_id=outcome.session_id, chat_key=outcome.chat_key, ts=now_ms,
-            trigger=_trigger_label(outcome), status=outcome.status, rounds=len(models),
-            sent_count=len(outcome.sent_texts), total_ms=outcome.total_ms,
-            model=models[-1] if models else "", context_count=outcome.context_count,
-            trigger_count=len(outcome.triggers), system_prompt=outcome.system_prompt,
-            user_prompt=outcome.user_prompt, steps=outcome.steps,
+        await self._traces.save_turn(
+            TurnRecord(
+                turn_id=outcome.session_id, chat_key=outcome.chat_key, ts=now_ms,
+                trigger=_trigger_label(outcome), status=outcome.status, rounds=len(models),
+                sent_count=len(outcome.sent_texts), total_ms=outcome.total_ms,
+                model=models[-1] if models else "", context_count=outcome.context_count,
+                trigger_count=len(outcome.triggers), system_prompt=outcome.system_prompt,
+                user_prompt=outcome.user_prompt, steps=outcome.steps,
+            )
         )
-        await self._traces.save_turn(rec)
 
     async def on_turn_completed(self, outcome: TurnOutcome) -> None:
-        now_ms = int(time.time() * 1000)
-        if outcome.sent_texts:
-            self._gate.mark_bot_spoke(
-                outcome.chat_key, outcome.sent_texts, now_ms, outcome.triggers
-            )
+        now_ms, o = int(time.time() * 1000), outcome
+        if o.sent_texts:
+            self._gate.mark_bot_spoke(o.chat_key, o.sent_texts, now_ms, o.triggers)
             snap = await self._working.load_working_state("global")
-            rem = filter_unfulfilled_intentions(snap.intentions, outcome.sent_texts, now_ms)
+            rem = filter_unfulfilled_intentions(snap.intentions, o.sent_texts, now_ms)
             satiated = apply_speaking_satiation(
-                snap.model_copy(update={"intentions": rem}), outcome.sent_texts, outcome.tools_used
+                snap.model_copy(update={"intentions": rem}), o.sent_texts, o.tools_used
             )
             await self._working.save_working_state(satiated)
-        await self._persist_turn(outcome, now_ms)
-        await consolidate_turn_memory(self._reader, self._writer, outcome, now_ms, self._owner_qq)
-        await self._plasticity.adapt_from_outcome(outcome)
+        await self._persist_turn(o, now_ms)
+        await consolidate_turn_memory(self._reader, self._writer, o, now_ms, self._owner_qq)
+        await self._plasticity.adapt_from_outcome(o)
 
     async def run_autonomous_tick(self, now_ms: int) -> ProactiveProposal | None:
         raw_snap = await self._working.load_working_state("global")

@@ -131,6 +131,12 @@ def _header_lines(scene: str, snap: WorkingSnapshot) -> list[str]:
         f"依恋渴望({drv.attachment}: 对主人的思念粘人度) · "
         f"吃醋({aff.jealousy}: ≥25泛酸吃味) · "
         f"好奇心({drv.curiosity}: ≥45主动调工具查梗看图)",
+        (
+            "- 💭 潜意识心结与情绪余波（可把这股没消的情绪/小脾气迁延带给当前说话人，"
+            f"但别认错对方是谁）：{snap.inner_thought}"
+            if snap.inner_thought
+            else "- 💭 潜意识心结与情绪余波：平静自然"
+        ),
     ]
 
 

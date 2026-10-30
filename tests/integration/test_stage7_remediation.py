@@ -1752,6 +1752,103 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
     assert scolded.affect.valence < soothed.affect.valence
 
 
+@pytest.mark.asyncio
+async def test_stage25_subconscious_chord_probe_acoustic_echo_and_image_caption_text(
+    tmp_path: Path,
+) -> None:
+    from echomind.adapters.onebot.enrichers import ImageCaptionCacheEnricher, QuoteStickerEnricher
+    from echomind.domain.models import MediaAttachment, SocialBondProfile, WorkingSnapshot
+    from echomind.mind.subconscious_probe import (
+        SubconsciousChordProbe,
+        apply_chord_tensor_to_snapshot,
+        parse_chord_json,
+    )
+
+    container = await EchoMindContainer.create(
+        db_path=tmp_path / "s25.db",
+        owner_qq="10001001",
+        default_chat_key="group:10002002",
+    )
+
+    # 1. Acoustic "有回音" disambiguation: "这个空间太大，有回音" must NOT trigger!
+    q_enricher = QuoteStickerEnricher(container.db, bot_names=("回音", "尾尾"))
+    p_acoustic = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="ac1",
+        timestamp_ms=10_000,
+        sender_id="10005005",
+        sender_name="毛玉",
+        text="这个空间太大，有回音",
+    )
+    enriched_ac = await q_enricher.enrich(p_acoustic)
+    assert enriched_ac.is_called_by_name is False
+
+    # 2. ImageCaptionCacheEnricher injects cached description directly into percept.text!
+    async with container.db.connect() as conn:
+        await conn.execute(
+            "INSERT INTO image_caption_cache (md5, description, updated_at) VALUES (?, ?, 1000)",
+            ("CAFE1234.GIF", "蓝发Q版少女委屈流泪表情包"),
+        )
+        await conn.commit()
+    img_enricher = ImageCaptionCacheEnricher(container.db)
+    p_img = Percept(
+        chat_key="group:10002002",
+        scene="group",
+        message_id="im1",
+        timestamp_ms=12_000,
+        sender_id="2005",
+        sender_name="冰色",
+        text="[图片]",
+        media=(MediaAttachment(kind="image", local_path="cafe1234.gif"),),
+    )
+    enriched_img = await img_enricher.enrich(p_img)
+    assert "蓝发Q版少女委屈流泪表情包" in enriched_img.text
+
+    # 3. 6D Chord Tensor Synthesis, Cringe-Flirt Inversion & Affective Spillover Residue!
+    raw_chord = (
+        '{"role":"about_me","topic_pull":2,'
+        '"chord":{"joy":2,"hurt":1,"jealousy":2,"shyness":3,"annoyance":1,"curiosity":1},'
+        '"shade":"被画成蓝发女仆的羞恼","subtext":"故意发女仆图逗我","thought":"谁让你发我女仆装的！"}'
+    )
+    parsed = parse_chord_json(raw_chord)
+    assert parsed is not None and parsed.shyness == 3 and parsed.jealousy == 2
+    f_bond = SocialBondProfile(
+        chat_key="group:10002002",
+        user_id="2005",
+        user_name="冰色",
+        affinity_score=68.0,
+        trust_score=0.85,
+    )
+    snap0 = WorkingSnapshot(scope_key="global")
+    snap1, dec1 = apply_chord_tensor_to_snapshot(snap0, parsed, enriched_img, "10001001", f_bond)
+    assert dec1.should_wake is True
+    assert "被画成蓝发女仆的羞恼" in dec1.reason
+    assert "源头:冰色" in snap1.inner_thought
+
+    # 4. Cringe-flirt polarity inversion on disliked speaker (affinity < 30): annoyance++
+    low_bond = SocialBondProfile(
+        chat_key="group:10002002",
+        user_id="9999",
+        user_name="油腻路人",
+        affinity_score=15.0,
+        trust_score=0.60,
+    )
+    snap_cringe, _ = apply_chord_tensor_to_snapshot(
+        snap0, parsed, enriched_img, "10001001", low_bond
+    )
+    assert snap_cringe.affect.irritation > snap1.affect.irritation
+
+    # 5. SubconsciousChordProbe end-to-end with scripted LLM via CognitiveCoreFacade
+    await container.memory_repo.upsert_social_bond(f_bond)
+    llm = _ScriptedLlm([{"choices": [{"message": {"content": raw_chord}}]}])
+    probe = SubconsciousChordProbe(llm, owner_qq="10001001")
+    container.cognitive_facade.set_subconscious_probe(probe)
+    dec_live = await container.cognitive_facade.evaluate_incoming(enriched_img)
+    assert dec_live.should_wake is True and "被画成蓝发女仆的羞恼" in dec_live.reason
+
+
+
 
 
 

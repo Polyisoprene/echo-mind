@@ -86,6 +86,8 @@
 | **Stage 23**<br>跟聊无限续杯与二人转拦截根治 | `M23.1` | 根治日志 `#3450-#3480` 群聊跟聊窗口无限续杯、路人防抖误开窗、第三人插话熔断与二人转提权 | `STAGE_23_GROUP_FOLLOWUP_AND_BYSTANDER_INTERCEPTION_FIX_PLAN.md` | `mind/{perceptual_gate,salience_hydraulics,facade}.py`, `runtime/prompt_composer.py` | 71/71 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.37% (90%)** | ✅ 已验收通过 |
 | **Stage 24**<br>HRRL稳态与DynAffect耦合情感 | `M24.1` | 独立人格普适权重（$w_{\text{care}} / w_{\text{aversion}}$）、HRRL 依恋重聚安抚、自由能 RPE 效价与普适三角吃醋 | `STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md` | `mind/{drives,shadow_appraisal}.py` | HRRL Soothing + Triadic Jealousy + RPE Pass / Cov: 95%~96% | ✅ 已验收通过 |
 | **Stage 24** | `M24.2` | `5×5` 情绪-驱力交叉耦合网络与 8 大下游子系统联动（在意好友门控偏爱、好友免冷暴力保护、表情包主导情绪） | `STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md` | `mind/{salience_hydraulics,perceptual_gate,explorer,facade}.py`, `runtime/prompt_composer.py` | 72/72 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.37% (90%)** | ✅ 已验收通过 |
+| **Stage 25**<br>潜意识6维和弦与去硬编码 | `M25.1` | 潜意识 6 维锚定和弦微探针（`SubconsciousChordProbe`）、微情绪染色、弦外之音與连续张量合成 | `STAGE_25_SUBCONSCIOUS_CHORD_PROBE_AND_ZERO_HARDCODING_PLAN.md` | `mind/subconscious_probe.py`, `mind/facade.py` | 64-Batch Replay + Chord Tensor Pass / Cov: 86%~98% | ✅ 已验收通过 |
+| **Stage 25** | `M25.2` | 跨人情绪迁延余波、`“有回音”` 声学消歧、入站图片/表情包 MD5 缓存与自动视觉品味闭环 | `STAGE_25_SUBCONSCIOUS_CHORD_PROBE_AND_ZERO_HARDCODING_PLAN.md` | `adapters/onebot/enrichers.py`, `mind/frame_renderer.py`, `main.py` | 73/73 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.18% (90%)** | ✅ 已验收通过 |
 
 ---
 
