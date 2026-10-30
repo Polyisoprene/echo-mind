@@ -16,7 +16,8 @@ from echomind.adapters.onebot.event_parser import parse_onebot_event
 from echomind.adapters.onebot.forward_expander import expand_incoming_forward
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import Percept
-from echomind.domain.ports import ICognitiveCoreFacade
+from echomind.domain.ports import IBondDepthStore, ICognitiveCoreFacade
+from echomind.mind.bond_recorder import record_turn_events
 from echomind.mind.circadian import next_biological_heartbeat_sec
 from echomind.mind.plasticity import compute_turn_social_reward
 from echomind.runtime.agent_runner import AgentSessionRunner
@@ -148,6 +149,7 @@ class OneBotLiveRuntime:
         pipeline: PerceptEnrichmentPipeline, cognitive: ICognitiveCoreFacade,
         runner: AgentSessionRunner, scheduler: CognitiveHeartbeatScheduler,
         debounce_s: float = 0.0, http_url: str = "", allowed_private: tuple[str, ...] = (),
+        bond_store: IBondDepthStore | None = None,
     ) -> None:
         self._ws_url, self._token, self._self_id = ws_url, access_token, self_id
         self._http_url = http_url or ws_url.replace("ws://", "http://").replace(":3001", ":3000")
@@ -155,6 +157,7 @@ class OneBotLiveRuntime:
         self._priv_users = frozenset(allowed_private)
         self._pipeline, self._cognitive, self._runner = pipeline, cognitive, runner
         self._scheduler, self._debounce_s = scheduler, debounce_s
+        self._bond_store = bond_store
         self._locks: dict[str, asyncio.Lock] = {}
         self._pending_batches: dict[str, list[Percept]] = {}
         self._wake_scheduled: set[str] = set()
@@ -203,9 +206,10 @@ class OneBotLiveRuntime:
             is_poke=any(p.is_poke_me for p in triggers),
             is_owner=is_owner,
         )
-        await self._runner.run_turn(
+        outcome = await self._runner.run_turn(
             chat_key, hist, triggers, stickers=stickers, social_reward=reward
         )
+        await record_turn_events(self._bond_store, outcome)
 
     async def _drain_chat_batches(self, chat_key: str) -> None:
         lock = self._locks.setdefault(chat_key, asyncio.Lock())

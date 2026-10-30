@@ -12,6 +12,7 @@ from echomind.adapters.onebot.enrichers import (
     ImageCaptionCacheEnricher,
     QuoteStickerEnricher,
 )
+from echomind.adapters.storage.bond_depth_repo import SqliteBondDepthStore
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
 from echomind.adapters.storage.skill_config_repo import SqliteSkillConfigStore
@@ -70,6 +71,7 @@ class EchoMindContainer:
         self.event_bus = AsyncEventBus()
         self.published_turns: int = 0
         self.skill_config_store: SqliteSkillConfigStore | None = skill_config_store
+        self.bond_depth_store: SqliteBondDepthStore | None = None
 
     @classmethod
     async def create(
@@ -86,6 +88,8 @@ class EchoMindContainer:
         trace_store = SqliteTurnTraceStore(db)
         skill_store = SqliteSkillConfigStore(db)
         await work_store.ensure_default_params()
+        bond_store = SqliteBondDepthStore(db)
+        await bond_store.ensure_schema()
         facade = CognitiveCoreFacade(
             mem_reader=mem_repo, mem_writer=mem_repo, working_store=work_store,
             owner_qq=owner_qq, default_group_key=default_chat_key,
@@ -97,6 +101,7 @@ class EchoMindContainer:
             trace_store=trace_store, skill_config_store=skill_store,
             default_chat_key=default_chat_key,
         )
+        instance.bond_depth_store = bond_store
 
         async def _on_turn_completed(_outcome: TurnOutcome) -> None:
             instance.published_turns += 1
