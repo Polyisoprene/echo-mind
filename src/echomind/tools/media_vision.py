@@ -49,9 +49,7 @@ class LookAtImageTool:
             return "图片下载失败，可能链接已过期。"
         text = await self._vision.describe((data_url,), IMAGE_PROMPT)
         if text:
-            cache_fn = getattr(self._media, "cache_media_description", None)
-            if callable(cache_fn):
-                await cache_fn(item, text)
+            await self._media.cache_media_description(item, text)
         return text or "图片看得不太清楚。"
 
 
@@ -96,7 +94,5 @@ class WatchVideoTool:
             return "视频抽帧失败，可能文件已过期或格式不支持。"
         text = await self._vision.describe(frames, VIDEO_PROMPT)
         if text:
-            cache_fn = getattr(self._media, "cache_media_description", None)
-            if callable(cache_fn):
-                await cache_fn(item, text)
+            await self._media.cache_media_description(item, text)
         return text or "视频画面没看清。"

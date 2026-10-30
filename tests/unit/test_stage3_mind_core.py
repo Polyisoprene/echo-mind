@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from hypothesis import given
-from hypothesis import strategies as st
+from hypothesis import given, strategies as st
 
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository

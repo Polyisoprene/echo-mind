@@ -22,15 +22,15 @@ from echomind.domain.models import (
     TurnRecord,
     WorkingSnapshot,
 )
-from echomind.domain.ports_media import (  # noqa: F401 - re-exported for a stable import surface
-    IBiliClient,
-    ICaptionGateway,
-    IMessageSender,
-    IOneBotApiCaller,
-    IQQMediaGateway,
-    ISongCoverBackend,
-    IVisionDescriber,
-    IVoiceBackend,
+from echomind.domain.ports_media import (
+    IBiliClient as IBiliClient,
+    ICaptionGateway as ICaptionGateway,
+    IMessageSender as IMessageSender,
+    IOneBotApiCaller as IOneBotApiCaller,
+    IQQMediaGateway as IQQMediaGateway,
+    ISongCoverBackend as ISongCoverBackend,
+    IVisionDescriber as IVisionDescriber,
+    IVoiceBackend as IVoiceBackend,
 )
 
 

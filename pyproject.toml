@@ -55,6 +55,9 @@ src = ["src", "tests"]
 select = ["E", "F", "W", "I", "B", "UP", "ASYNC", "C901", "S", "SIM", "RET", "C4", "PLR"]
 ignore = ["S101", "PLR2004", "PLR0913"]
 
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
 [tool.ruff.lint.mccabe]
 max-complexity = 6
 

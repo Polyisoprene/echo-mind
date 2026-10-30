@@ -7,8 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
+from hypothesis import given, strategies as st
 from PIL import Image
 
 from echomind.adapters.llm.anchor import PrefixAnchorEngine
