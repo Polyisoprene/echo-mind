@@ -120,3 +120,13 @@ uv run python scripts/replay_eval.py --db data/replay-snapshot.db \
 git tag pre-stage28 && git cherry-pick <green-commits>
 ECHOMIND_PORT=3310 ./scripts/service.sh restart
 ```
+
+---
+
+## 八、 追加纪律（Stage 30 复盘，AB-09 ~ AB-11）
+
+| 编号 | 纪律 | 触发场景 |
+|---|---|---|
+| **AB-09** | 测试禁止写生产数据：任何测试若需要配置文件，必须使用 `tmp_path`；`tests/conftest.py` 会在会话结束比对 `data/config.json` 字节，被改即失败 | 曾出现 `qa_gate` 把生产人设改成「设定」 |
+| **AB-10** | 准出必须走 `scripts/promote.sh`（按 patch-id 过滤，避免重复应用已合入提交）；禁止手工 cherry-pick | 曾出现空提交卡死 cherry-pick |
+| **AB-11** | **未经确认不重启生产**；每完成一个子阶段不等于"可以上线"，合并节奏由负责人决定 | Stage 30 曾逐子阶段上线并反复重启 |

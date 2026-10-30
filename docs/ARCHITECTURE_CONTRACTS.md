@@ -99,7 +99,7 @@
   - `shyness: float` (`0.0 ~ 100.0`, 害羞/别扭值)
 - **`DriveState`（四大内驱力向量）**：
   - `curiosity: float` (`0.0 ~ 100.0`, 好奇求知欲)
-  - `attachment: float` (`0.0 ~ 100.0`, 对主人的依恋/独占渴望)
+  - `attachment: float` (`0.0 ~ 100.0`, 对在意之人的依恋/独占渴望，由关系深度驱动而非固定对象)
   - `jealousy_drive: float` (`0.0 ~ 100.0`, 吃醋发作冲动)
   - `social_expression: float` (`0.0 ~ 100.0`, 群聊社交表达欲)
 - **`IntentionItem`（短期挂念栈条目）**：
@@ -136,7 +136,7 @@
 - **`CognitiveFrame`（注入给 Runtime 的唯一不可变认知状态帧）**：
   - `chat_key: str`, `scene: Literal["group", "private"]`, `Must_reply: bool`
   - `affect: AffectiveVector`, `drives: DriveState`
-  - `rendered_mind_block: str`（统一排版好的《🧠 回音此刻的认知与内心状态》文本块）
+  - `rendered_mind_block: str`（统一排版好的《🧠 {bot_name}此刻的认知与内心状态》文本块）
   - `epistemic_warnings: tuple[str, ...]`（元认知防忽悠警报）
   - `curiosity_prompts: tuple[str, ...]`（主动调工具看视频/搜新词的引导）
 - **`TurnOutcome`（单轮对话结束后的反馈载荷）**：
@@ -226,3 +226,17 @@
 - 契约测试必须走生产同一条调用路径，禁止用显式注入绕过生产缺口（RGR-06）；
 - 修复只在 A 线（`lane/a-stage<N>` + 只读快照库 + 录制探针）进行，全绿且回放达标后方可准出至 B 线 `main`（AB-03/04/05）。
 
+
+---
+
+## 八、 人格模型契约（Stage 30 · 7D Persona Contract）
+
+| 契约 | 内容 | 守护测试 |
+|---|---|---|
+| **默认值单一源** | 7 维默认值与边界只能定义在 `domain/persona_specs.py`；禁止在消费者里写字面量 | `tests/architecture/test_persona_single_source.py`（含 AST 守卫） |
+| **叙事连续** | 依恋腔调 = 四象限原型（安全/痴迷/疏离/恐惧）softmax 加权 top-2；禁止硬阈值分支 | `test_personality_invariants.py::test_i3*` |
+| **动力学有界** | 单回合 `|Δ|≤2`；单维日累计 `≤6`；回归 `1%/天`（半衰期≈69 天，追赶上限 30 天） | `test_i2*`、`test_persona_dynamics_wiring.py` |
+| **关系姿态** | `θ_eff = clamp(θ + 8·W·σ_u)`，只影响渲染与显著性，**不得写回** `plastic_params` | `test_persona_stance.py` |
+| **词条作用域** | `chat_key`/`source` 溯源；类别上限 habit 8 / taste 4 / temperament 4 / taboo 3；负性只削弱 taboo/temperament | `test_trait_scope_and_caps.py` |
+| **探针一致** | 潜意识 prompt 必须携带一行人格摘要 | `test_probe_persona_summary.py` |
+| **参数溯源** | 新增常数必须标 `src:` / `convention:` / `fit:`；未拟合的标 `fit:pending` | `test_param_provenance.py` |

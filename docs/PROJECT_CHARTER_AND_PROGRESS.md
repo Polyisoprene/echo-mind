@@ -15,6 +15,21 @@
 | **立项核心目标** | 使用 **Python 3.12+ / NoneBot2 (`nonebot-adapter-onebot`) / FastAPI / Pydantic v2 / SQLite WAL (FTS5)** 从零重建：打造一套严格符合 **SOLID 五大原则 + 迪米特法则**、具备 **微内核五大扩展槽**、内建 **12 层认知核心（注意路由 + 工作记忆 + 五维记忆 + 元认知防忽悠 + 好奇心主动探索 + 海马体睡眠重放 + 神经可塑性参数自演化）** 的工业级生产系统。 |
 | **工程治理铁律** | 1. **先规划后编码**：每一阶段动工前必须先编写 `docs/plans/STAGE_X_PLAN.md` 详细规划书，明确模块拆分、行数上限（`≤300行`）、里程碑与量化验收标准；<br>2. **自动化门禁准出**：每完成一个里程碑必须实跑 `./scripts/qa_gate.sh`（`ruff C901≤10` + `mypy --strict` + `AST SOLID边界` + `pytest 覆盖率≥90%` + `hypothesis 模糊测试`），并将真实终端验收结果回填至规划文档与本进度总表。 |
 
+
+---
+
+## 一·五、 当前工程状态（2026-10-30 快照）
+
+| 维度 | 现状 |
+|---|---|
+| **双线交付（Stage 28 起）** | **A 线** `../echo-mind-a`（`lane/a-stage29`，修复与回放验证）；**B 线** 本仓库 `main`（生产，`:3310`）。代码只允许在 A 线修改，经 `scripts/promote.sh`（门禁 + 回放 + 证据落盘）准出 |
+| **测试与门禁** | `156 passed`，覆盖率 91%+，mypy strict 151 文件，7 道门禁全绿 |
+| **人格模型** | 7 维向量（默认值唯一来源 `domain/persona_specs.py`）；四象限连续叙事；±2/次裁剪 + 6/日上限 + 1%/日慢回归；关系姿态 σ_u（≤8 分，不改本体） |
+| **关系深度** | 六项 earned bond depth（$D=100\sigma(1.0f+1.2v+1.4r+1.0c+1.1i-1.6b-2.6)$），L1–L4 四层自适应已接入评分链路 |
+| **身份与权限** | `operator_ids` 取代 `owner_qq`（无情感特权）；控制台身份配置卡热生效；所有写操作需 token 并写 `admin_audit` |
+| **数据** | D4 已执行：旧号 `9999` 关系清零；`persona_traits` 已加 `chat_key/source/last_used_ms`；人设 278 字已恢复 |
+| **已知纪律** | 测试禁止写入生产 `data/config.json`（`tests/conftest.py` 会话级守卫）；`reports/` 与 `data/*.db` 不进版本库 |
+
 ---
 
 ## 二、 全局阶段与里程碑进度总表（Master Progress Tracker）
@@ -91,6 +106,8 @@
 | **Stage 26**<br>100%潜意识和弦与零词表 | `M26.1` | 彻底清除 `plasticity/drives/shadow/personality/consolidator/cybernetics/salience` 全部 24 处硬编码中文词表，100% 切换为潜意识 6 维和弦驱动 | `STAGE_26_PURE_SUBCONSCIOUS_CHORD_ENGINE_AND_ZERO_LEXICON_PLAN.md` | `mind/{subconscious_probe,drives,shadow_appraisal,plasticity,personality,memory_consolidator,cybernetics,salience_hydraulics,facade}.py` | 73/73 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.24% (90%)** | ✅ 已验收通过 |
 | **Stage 28**<br>A/B双线与红绿交付 | `M28.0` | 缺陷影响建模（F1~F12）、修复后评估报告判据、A/B 双线隔离架构（A 线修复+回放评估 / B 线生产）与 RGR-01~RGR-10 红绿交付契约 | `STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md`<br>`CONTRACT_RED_GREEN_AND_AB_LANES.md` | `docs/plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md`, `docs/CONTRACT_RED_GREEN_AND_AB_LANES.md` | 18 个提交（F1~F10 全部红→绿 + 回放夹具 + 证据表）；B 线与 A 线内容一致 | ✅ 已验收通过（A/B 双线 + 红绿交付） |
 | **Stage 27**<br>括号独白外泄与出站隔离 | `M27.1` | 根治 `（这轮…我先不插嘴）` 括号内心独白被漏发挽救器外发；出站三层剥离思考块；探针补齐门控上下文并跳过同行 Bot 外围发言 | `STAGE_27_INNER_MONOLOGUE_LEAK_AND_OUTBOUND_REASONING_ISOLATION_PLAN.md` | `runtime/{reply_rescue,agent_runner}.py`, `adapters/onebot/send_guard.py`, `mind/{facade,subconscious_probe}.py` | 73/73 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.24% (90%)** | ✅ 已验收通过 |
+| **Stage 29**<br>关系深度与身份解耦 | `M29.1` | earned bond depth 六项模型 + Beta 信任 + L1–L4 自适应；`operator_ids` 取代 `owner_qq`；控制台身份配置卡与写鉴权 | `STAGE_29_IDENTITY_DECOUPLING_AND_BOND_DEPTH_PLAN.md` | `mind/{bond_depth,bond_features,bond_adapt,bond_scoring,bond_recorder}.py`, `domain/{bond_stats,ports}.py`, `web/{identity_service,identity_router,audit}.py` | 156 Tests Pass / Cov 91%+ / 7 门禁全绿 | ✅ 已验收通过 |
+| **Stage 30**<br>人格模型全局重构 | `M30.1` | 不变量骨架（I-1~I-4）、默认值单一源、四象限连续叙事、裁剪+日限+慢回归、关系姿态、词条溯源与类别上限、探针人格摘要、控制台绝对值设定 | `STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md` | `mind/{persona_specs,persona_dynamics,persona_stance,persona_render,personality,plasticity}.py` | 156 Tests Pass / Cov 91%+ / 7 门禁全绿 | ✅ 已验收通过（A 线验证，已合入 B） |
 
 ---
 

@@ -23,7 +23,7 @@
   | `affinity_score` | `float` | 累计好感度分值 |
   | `affinity_level` | `int (0~5)` | 好感等级（0=陌生 ~ 5=挚友） |
   | `msg_count` | `int` | 历史累计互动发言条数 |
-  | `trust_score` | `float (0.0~1.0)` | **元认知防忽悠可信度**（主人可设 `1.0`，普通群友默认 `0.8`，爱开玩笑忽悠人的群友可设 `0.4~0.6`） |
+  | `trust_score` | `float (0.0~1.0)` | **元认知防忽悠可信度**（operator 可设 `1.0`，普通群友默认 `0.8`，常开玩笑忽悠者可设 `0.4~0.6`） |
   | `is_rival` | `bool` | 是否为占有欲系统的“吃醋警惕对象” |
   | `rival_reason` | `str` | 警惕原因说明 |
   | `traits` | `tuple[str, ...]` | 该成员的长期性格与喜好画像列表 |
@@ -49,11 +49,11 @@
   | 字段名 | 类型与范围 | 说明 |
   |---|---|---|
   | `chat_key` | `str` | 作用域会话标识 |
-  | `subject` | `str` | 事实主语/主题（如 `"本群真实群主"`、`"回音的主人"`） |
+  | `subject` | `str` | 事实主语/主题（如 `"本群真实群主"`、`"当前 operator"`） |
   | `fact_text` | `str` | 客观事实陈述 |
   | `confidence` | `float (0.0~1.0)` | 事实置信度 |
   | `is_locked` | `bool` | **防忽悠锁**：设为 `True` 时，任何群友口头忽悠（`source="peer"`）均会被仓储层自动拦截拒绝覆盖 |
-  | `source` | `Literal["system", "owner", "explored", "peer"]` | 事实来源（系统权威 / 主人亲授 / 自主搜索 / 群友自述） |
+  | `source` | `Literal["system", "owner", "explored", "peer"]` | 事实来源（系统权威 / **operator 亲授**（字段名沿用 `owner`）/ 自主搜索 / 群友自述） |
 
 ### 4. `procedural_rules`（程序性条件反射与专属默契表）
 - **唯一约束**：`UNIQUE (chat_key, trigger_keyword, trigger_user_id)`
@@ -147,3 +147,18 @@ uv run python tools_migration/migrate_qq_agent.py \
   --target-db data/echomind.db
 ```
 该工具完全幂等，可重复执行且不会污染 `src/echomind/` 核心代码。
+
+---
+
+## 四、 Stage 29–30 新增表与列（迁移必读）
+
+| 对象 | 变更 | 迁移方式 |
+|---|---|---|
+| `bond_depth_stats` | 新表：`chat_key, user_id, msgs, her_msgs, replies_to_them, responded_to_her, sessions, impact_sum, impact_n, betrayals, updated_ms` | `SqliteBondDepthStore.ensure_schema()`，可用 `backfill_from_history()` 回填历史 |
+| `admin_audit` | 新表：`ts, host, method, path, status` | 写操作中间件自动写入；首次写操作时建表 |
+| `social_bonds.bond_depth` | 新列（0~100） | `database.initialize()` 自动 `ALTER TABLE` |
+| `persona_traits.chat_key / source / last_used_ms` | 新列 | `storage/migrations.py::ensure_trait_columns()`（幂等） |
+| `persona_traits` 类别上限 | habit 8 / taste 4 / temperament 4 / taboo 3 | 运行时裁剪，无需手工迁移 |
+| `operatorQq` / `ownerQq` | **已废弃**，配置改用 `operatorIds`（数组或逗号分隔） | 旧键仍会被读取为兼容回退，但不再提供情感特权 |
+
+> ⚠️ 迁移前请先 `VACUUM INTO 'data/backup_pre_migration.db'`；所有新列均为 `NOT NULL DEFAULT`，旧数据自动填充。
