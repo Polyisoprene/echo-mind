@@ -9,6 +9,7 @@ from typing import Any
 
 from echomind.adapters.onebot.identity_hot_apply import apply_identity
 from echomind.mind.naming import BotNaming, bot_naming, set_bot_naming
+from echomind.mind.probe_runtime import set_probe_model
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,8 @@ class IdentityDraft:
     private: list[str]
     self_qq: str
     default_group: str
+    operators: list[str]
+    probe_model: str
 
 _IDENTITY_KEYS = ("botName", "keywords", "selfQq", "groups", "private", "defaultGroup")
 
@@ -31,6 +34,15 @@ def _as_list(value: Any) -> list[str]:
     if isinstance(value, list):
         return [str(v).strip() for v in value if str(v).strip()]
     return []
+
+
+def _operators(raw: dict[str, Any]) -> list[str]:
+    """Operator ids: new `operatorIds`, falling back to the legacy affinity key."""
+    explicit = _as_list(raw.get("operatorIds"))
+    if explicit:
+        return explicit
+    legacy = _dict_of(_dict_of(raw, "skills"), "affinity").get("ownerQq")
+    return _as_list(legacy)
 
 
 def _self_qq(raw: dict[str, Any]) -> str:
@@ -79,6 +91,8 @@ class IdentityConfigService:
             "groups": _as_list(allow.get("groups")),
             "private": _as_list(allow.get("private")),
             "default_group": str(raw.get("defaultGroup") or ""),
+            "operators": _operators(raw),
+            "probe_model": str(raw.get("probeModel") or ""),
         }
 
     def save(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -89,12 +103,22 @@ class IdentityConfigService:
         private = _as_list(payload.get("private"))
         self_qq = str(payload.get("self_qq") or "").strip()
         default_group = str(payload.get("default_group") or "").strip()
+        operators = _as_list(payload.get("operators"))
+        probe_model = str(payload.get("probe_model") or "").strip()
+        if "operators" in payload and not operators:
+            raise ValueError("operators must not be empty")
 
-        self._merge(raw, IdentityDraft(bot_name, keywords, groups, private, self_qq, default_group))
+        self._merge(
+            raw,
+            IdentityDraft(
+                bot_name, keywords, groups, private, self_qq, default_group, operators, probe_model
+            ),
+        )
         text = json.dumps(raw, ensure_ascii=False, indent=2) + "\n"
         self._path.write_text(text, encoding="utf-8")
         self._apply_naming(bot_name, keywords)
-        self._apply_runtime(bot_name, groups, private, self_qq)
+        set_probe_model(probe_model)
+        self._apply_runtime(bot_name, groups, private, self_qq, operators)
         return self.read()
 
     @staticmethod
@@ -105,6 +129,11 @@ class IdentityConfigService:
         _write_section(raw, "allow", {"groups": draft.groups} if draft.groups else {})
         if draft.private:
             _write_section(raw, "allow", {"private": draft.private})
+        if draft.probe_model is not None:
+            raw["probeModel"] = draft.probe_model
+        if draft.operators:
+            raw["operatorIds"] = list(draft.operators)
+            _dict_of(raw, "skills").setdefault("affinity", {}).pop("ownerQq", None)
         for key, value in (
             ("defaultGroup", draft.default_group), ("selfQq", draft.self_qq),
         ):
@@ -121,7 +150,8 @@ class IdentityConfigService:
         )
 
     def _apply_runtime(
-        self, bot_name: str, groups: list[str], private: list[str], self_qq: str
+        self, bot_name: str, groups: list[str], private: list[str], self_qq: str,
+        operators: list[str],
     ) -> None:
         """Push the new filters into the live runtime and prompt composer, when present."""
         composer = getattr(self._c, "prompt_composer", None) if self._c is not None else None
@@ -131,5 +161,8 @@ class IdentityConfigService:
         if runtime is not None:
             apply_identity(
                 runtime, bot_name=bot_name, groups=tuple(groups),
-                private=tuple(private), self_id=self_qq,
+                private=tuple(private), self_id=self_qq, operators=tuple(operators),
             )
+        facade = getattr(self._c, "cognitive_facade", None) if self._c is not None else None
+        if facade is not None and operators:
+            facade._operator_ids = tuple(operators)

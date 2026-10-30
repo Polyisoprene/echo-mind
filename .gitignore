@@ -25,3 +25,11 @@ data/console.log
 reports/
 data/*.csv
 data/config.json.bak*
+
+# 运行期开关（含密钥可能性），仅保留模板
+.env
+.env.*
+!.env.example
+
+# 第二实例的数据（含真实聊天记录与密钥）
+data-*/

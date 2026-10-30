@@ -30,6 +30,8 @@ class _ChordLlm:
         thinking_off: bool = False,
         *,
         chat_key: str = "",
+        json_mode: bool = False,
+        model_override: str = "",
     ) -> dict[str, Any]:
         _ = (messages, tools, temperature, max_tokens, thinking_off, chat_key)
         return {"choices": [{"message": {"content": PAYLOAD}}]}

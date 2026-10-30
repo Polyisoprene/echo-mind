@@ -93,6 +93,8 @@ class EchoMindContainer:
         set_bot_naming(BotNaming())
         bond_store = SqliteBondDepthStore(db)
         await bond_store.ensure_schema()
+        if await bond_store.needs_backfill():
+            await bond_store.backfill_from_history()
         facade = CognitiveCoreFacade(
             mem_reader=mem_repo, mem_writer=mem_repo, working_store=work_store,
             default_group_key=default_chat_key,

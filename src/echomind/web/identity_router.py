@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from echomind.web.identity_service import IdentityConfigService
@@ -19,6 +19,8 @@ class IdentityPayload(BaseModel):
     groups: list[str] = []
     private: list[str] = []
     default_group: str = ""
+    operators: list[str] = []
+    probe_model: str = ""
 
 
 def build_identity_router(service: IdentityConfigService) -> APIRouter:
@@ -30,6 +32,9 @@ def build_identity_router(service: IdentityConfigService) -> APIRouter:
 
     @router.post("/api/config/identity")
     async def save_identity(payload: IdentityPayload) -> dict[str, Any]:
-        return service.save(payload.model_dump())
+        try:
+            return service.save(payload.model_dump())
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return router

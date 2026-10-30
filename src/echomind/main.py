@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -21,6 +22,7 @@ from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import AppConfig, load_config_from_json
 from echomind.mind.naming import BotNaming, set_bot_naming
+from echomind.mind.probe_runtime import set_probe_model
 from echomind.mind.subconscious_probe import SubconsciousChordProbe
 from echomind.runtime.agent_runner import AgentSessionRunner
 from echomind.runtime.prompt_composer import PromptComposer
@@ -54,6 +56,7 @@ async def create_production_app(
     """Bootstrap the full production EchoMind container and FastAPI ASGI application."""
     cfg = load_config_from_json(config_path) if config_path else AppConfig()
     set_bot_naming(BotNaming(name=cfg.bot_name, aliases=tuple(cfg.keywords)))
+    set_probe_model(cfg.probe_model)
     resolved_db = db_path if db_path is not None else Path("data/echomind.db")
     first_group = cfg.allowed_groups[0] if cfg.allowed_groups else "10002002"
     container = await EchoMindContainer.create(
@@ -171,16 +174,30 @@ def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotL
     return runtime
 
 
+def _instance_config_path() -> Path:
+    """Config path for this instance (ECHOMIND_CONFIG wins, then data dir default)."""
+    explicit = os.getenv("ECHOMIND_CONFIG", "").strip()
+    if explicit:
+        return Path(explicit)
+    return Path(os.getenv("ECHOMIND_DATA_DIR", "data")) / "config.json"
+
+
+def _instance_db_path() -> Path:
+    """Per-instance SQLite file so two bots never share personality/memory."""
+    explicit = os.getenv("ECHOMIND_DATA_DIR", "").strip()
+    return Path(explicit or "data") / "echomind.db"
+
+
 def build_live_asgi_app() -> FastAPI:
     """ASGI factory for uvicorn launching both Web Console and NapCat WS loop."""
-    cfg_path = Path("data/config.json")
+    cfg_path = _instance_config_path()
     cfg = load_config_from_json(cfg_path) if cfg_path.exists() else AppConfig()
     holder: dict[str, EchoMindContainer] = {}
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         container = await EchoMindContainer.create(
-            db_path=Path("data/echomind.db"),
+            db_path=_instance_db_path(),
             operator_ids=cfg.operator_ids,
             default_chat_key=f"group:{cfg.allowed_groups[0]}"
             if cfg.allowed_groups

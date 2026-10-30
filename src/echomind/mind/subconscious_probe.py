@@ -17,6 +17,7 @@ from echomind.domain.models import (
 from echomind.domain.ports import ILlmGateway
 from echomind.mind.naming import bot_naming
 from echomind.mind.persona_render import persona_summary
+from echomind.mind.probe_runtime import run_probe
 
 JSON_EXTRACT_RE = re.compile(r"\{[\s\S]*\}")
 VALID_ROLES = ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise")
@@ -265,12 +266,7 @@ class SubconsciousChordProbe:
                 {"role": "user", "content": u_prompt},
             ]
             ck = f"subconscious:{percept.chat_key}"
-            resp = await asyncio.wait_for(
-                self._llm.complete(msgs, temperature=0.1, max_tokens=160, chat_key=ck),
-                timeout=timeout_s,
-            )
-            choices = resp.get("choices", [])
-            raw = str(choices[0].get("message", {}).get("content", "")) if choices else ""
+            raw = await asyncio.wait_for(run_probe(self._llm, msgs, ck), timeout=timeout_s)
             return parse_chord_json(raw)
         except Exception:
             return None

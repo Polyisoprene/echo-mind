@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from typing import Any, Protocol
 
@@ -138,6 +139,10 @@ class FailoverLlmGateway:
         tools: list[dict[str, Any]] | None,
         temperature: float,
         max_tokens: int,
+        *,
+        thinking_off: bool = False,
+        json_mode: bool = False,
+        model_override: str = "",
     ) -> dict[str, Any]:
         url = f"{gw.base_url.rstrip('/')}/chat/completions"
         headers = {"Authorization": f"Bearer {gw.api_key}", "Content-Type": "application/json"}
@@ -149,6 +154,13 @@ class FailoverLlmGateway:
         }
         if tools:
             payload["tools"] = tools
+        if model_override:
+            payload["model"] = model_override
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+        if not thinking_off and os.getenv("ECHOMIND_THINKING", "on") != "off":
+            payload["thinking"] = {"type": "enabled"}
+            payload["reasoning_effort"] = os.getenv("ECHOMIND_REASONING_EFFORT", "low")
         return await self._transport.post_json(url, headers, payload, gw.timeout_ms / 1000.0)
 
     async def complete(
@@ -160,12 +172,17 @@ class FailoverLlmGateway:
         thinking_off: bool = False,
         *,
         chat_key: str = "",
+        json_mode: bool = False,
+        model_override: str = "",
     ) -> dict[str, Any]:
         last_exc: Exception | None = None
         for idx, gw in enumerate(self._chain):
             t0 = time.monotonic()
             try:
-                resp = await self._call_endpoint(gw, messages, tools, temperature, max_tokens)
+                resp = await self._call_endpoint(
+                    gw, messages, tools, temperature, max_tokens, thinking_off=thinking_off,
+                    json_mode=json_mode, model_override=model_override
+                )
                 elapsed = int((time.monotonic() - t0) * 1000)
                 await self._record_trace(
                     gw, elapsed, resp, is_failover=(idx > 0), chat_key=chat_key

@@ -87,6 +87,8 @@ class _ScriptedLlm:
         thinking_off: bool = False,
         *,
         chat_key: str = "",
+        json_mode: bool = False,
+        model_override: str = "",
     ) -> dict[str, Any]:
         res = self._responses[min(self._idx, len(self._responses) - 1)]
         self._idx += 1
@@ -690,6 +692,8 @@ async def test_stage11_live_session_streaming_multi_provider_chain_and_reply_gua
             thinking_off: bool = False,
             *,
             chat_key: str = "",
+        json_mode: bool = False,
+        model_override: str = "",
         ) -> dict[str, Any]:
             turns_mid = await container.trace_store.list_turns()
             if turns_mid:

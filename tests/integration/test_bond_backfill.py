@@ -38,7 +38,8 @@ async def test_backfill_reconstructs_counters(tmp_path: Path) -> None:
     await store.backfill_from_history()
     u1 = await store.get_stats("group:A", "u1")
     assert u1 is not None
-    assert u1.msgs == 3 and u1.her_msgs == 2
+    # her_msgs 只统计"她对这个人"的回复（她一共回了两条：对 u1、对 u2 各一条）
+    assert u1.msgs == 3 and u1.her_msgs == 1
     assert u1.replies_to_them >= 1
     assert u1.responded_to_her >= 1
     assert depth_from_stats(u1) > 0

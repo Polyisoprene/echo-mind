@@ -188,7 +188,8 @@ class AgentSessionRunner:
         for _ in range(max_rounds):
             t_llm = time.monotonic()
             resp = await self._llm.complete(
-                messages, tools=tools_schema or None, temperature=eff_temp, chat_key=chat_key,
+                messages, tools=tools_schema or None, temperature=eff_temp,
+                max_tokens=1200, chat_key=chat_key,
             )
             steps.append(_llm_step(resp, int((time.monotonic() - t_llm) * 1000), len(steps) + 1))
             if base_rec is not None:

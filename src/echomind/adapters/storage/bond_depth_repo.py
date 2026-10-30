@@ -135,17 +135,25 @@ class SqliteBondDepthStore(IBondDepthStore):
             rows = await cursor.fetchall()
         return tuple(_row_to_stats(r) for r in rows)
 
+    async def needs_backfill(self) -> bool:
+        """True when counters are empty but history exists (e.g. after a reset)."""
+        async with self._db.connect() as conn:
+            stats = await (await conn.execute(
+                "SELECT COALESCE(SUM(msgs), 0) FROM bond_depth_stats"
+            )).fetchone()
+            history = await (await conn.execute("SELECT COUNT(*) FROM chat_messages")).fetchone()
+        return bool(history and history[0]) and not (stats and stats[0])
+
     async def backfill_from_history(self, *, window_ms: int = 300_000) -> int:
         """Rebuild message/reply/response/session counters from chat_messages."""
         async with self._db.connect() as conn:
             counts = await _message_counts(conn)
-            her_msgs = await _her_msg_counts(conn)
             replies = await _reply_counts(conn)
             responses = await _response_counts(conn, window_ms)
             for chat_key, uid, msgs, sessions in counts:
                 await _upsert_counters(
                     conn, (str(chat_key), str(uid), int(msgs), int(sessions)),
-                    her_msgs=her_msgs, replies=replies, responses=responses,
+                    replies=replies, responses=responses,
                 )
             await conn.commit()
         return len(list(counts))
@@ -157,13 +165,6 @@ async def _message_counts(conn: aiosqlite.Connection) -> list[aiosqlite.Row]:
         "FROM chat_messages WHERE is_self=0 GROUP BY chat_key, sender_id"
     )
     return list(await cursor.fetchall())
-
-
-async def _her_msg_counts(conn: aiosqlite.Connection) -> dict[str, int]:
-    cursor = await conn.execute(
-        "SELECT chat_key, COUNT(*) FROM chat_messages WHERE is_self=1 GROUP BY chat_key"
-    )
-    return {str(r[0]): int(r[1]) for r in await cursor.fetchall()}
 
 
 async def _reply_counts(conn: aiosqlite.Connection) -> dict[tuple[str, str], int]:
@@ -192,12 +193,13 @@ async def _response_counts(
 
 async def _upsert_counters(
     conn: aiosqlite.Connection, row: tuple[str, str, int, int], *,
-    her_msgs: dict[str, int], replies: dict[tuple[str, str], int],
-    responses: dict[tuple[str, str], int],
+    replies: dict[tuple[str, str], int], responses: dict[tuple[str, str], int],
 ) -> None:
     chat_key, uid, msgs, sessions = row
     ck, u = str(chat_key), str(uid)
+    # her_msgs counts only her replies *to this person*, not the chat-wide total.
+    hers = replies.get((ck, u), 0)
     await conn.execute(_BACKFILL_SQL, (
-        ck, u, msgs, her_msgs.get(ck, 0), replies.get((ck, u), 0),
-        responses.get((ck, u), 0), sessions, int(time.time() * 1000),
+        ck, u, msgs, hers, hers, responses.get((ck, u), 0), sessions,
+        int(time.time() * 1000),
     ))

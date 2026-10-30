@@ -1,0 +1,167 @@
+{
+  "description": "机器人 A 连续 20 轮 @/提及她，第 5/12/18 轮为新话题",
+  "chat_key": "group:10002002",
+  "bot_id": "10009009",
+  "messages": [
+    {
+      "ts": 1790000000000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "咕噜～",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000035000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "今天的杯战是什么",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000070000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "鲸鱼尾巴能不能摸",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000078000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "鲸鱼尾巴能不能摸",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000086000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "骑车冷不冷",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000100000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "对了，新梗你知道吗？",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000108000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "咕噜～",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000122000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "骑车冷不冷",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000182000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "汐姐在不在",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000242000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "新出的鲸鱼娘表情包你看了吗",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000256000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "今天的杯战是什么",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000264000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "咕噜～",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000299000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "对了，新番你知道吗？",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000313000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "骑车冷不冷",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000333000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "新出的鲸鱼娘表情包你看了吗",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000353000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "骑车冷不冷",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000367000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "骑车冷不冷",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000402000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "咕噜～",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000410000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "对了，新梗你知道吗？",
+      "chat_key": "group:10002002"
+    },
+    {
+      "ts": 1790000430000,
+      "sender_id": "10009009",
+      "sender_name": "菲菲",
+      "is_self": false,
+      "text": "鲸鱼尾巴能不能摸",
+      "chat_key": "group:10002002"
+    }
+  ]
+}

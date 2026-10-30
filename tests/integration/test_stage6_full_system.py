@@ -39,6 +39,8 @@ class FullSystemScriptedLlm:
         thinking_off: bool = False,
         *,
         chat_key: str = "",
+        json_mode: bool = False,
+        model_override: str = "",
     ) -> dict[str, Any]:
         return {
             "choices": [

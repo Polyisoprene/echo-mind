@@ -1363,6 +1363,8 @@ async function loadIdentity() {
     if ($('id-bot-name')) $('id-bot-name').value = d.bot_name || '';
     if ($('id-keywords')) $('id-keywords').value = (d.keywords || []).join(',');
     if ($('id-self-qq')) $('id-self-qq').value = d.self_qq || '';
+    if ($('id-operators')) $('id-operators').value = (d.operators || []).join(',');
+    if ($('id-probe-model')) $('id-probe-model').value = d.probe_model || '';
     if ($('id-groups')) $('id-groups').value = (d.groups || []).join(',');
     if ($('id-private')) $('id-private').value = (d.private || []).join(',');
     if ($('id-default-group')) $('id-default-group').value = d.default_group || '';
@@ -1379,10 +1381,13 @@ async function saveIdentity() {
     bot_name: ($('id-bot-name') && $('id-bot-name').value.trim()) || '',
     keywords: split('id-keywords'),
     self_qq: ($('id-self-qq') && $('id-self-qq').value.trim()) || '',
+    operators: split('id-operators'),
+    probe_model: ($('id-probe-model') && $('id-probe-model').value.trim()) || '',
     groups: split('id-groups'),
     private: split('id-private'),
     default_group: ($('id-default-group') && $('id-default-group').value.trim()) || ''
   };
+  if (!body.operators.length) { alert('管理员 QQ 不能为空'); return; }
   await api('/api/config/identity', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });

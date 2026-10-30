@@ -115,6 +115,8 @@ class ScriptedLlmGateway:
         thinking_off: bool = False,
         *,
         chat_key: str = "",
+        json_mode: bool = False,
+        model_override: str = "",
     ) -> dict[str, Any]:
         resp = self._responses[min(self._idx, len(self._responses) - 1)]
         self._idx += 1

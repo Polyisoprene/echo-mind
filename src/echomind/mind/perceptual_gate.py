@@ -12,6 +12,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.mind.bot_belief import apply_belief
 from echomind.mind.naming import bot_naming
 from echomind.mind.salience_hydraulics import (
     check_implicit_second_person_ask,
@@ -21,6 +22,7 @@ from echomind.mind.salience_hydraulics import (
     is_in_dyadic_dnd,
     record_dyadic_pair,
 )
+from echomind.mind.social_satiation import SatiationState, adjust_decision
 
 QUOTED_TERM_RE = re.compile(r"[「『《“\"【]([\u4e00-\u9fa5A-Za-z0-9]{2,10})[」』》”\"】]")
 ASK_MEME_RE = re.compile(
@@ -133,6 +135,7 @@ class PerceptualGate:
         self._bot_speech: dict[str, tuple[int, str, int]] = {}
         self._last_group_ts: dict[str, int] = {}
         self._last_peer: dict[str, tuple[str, int]] = {}
+        self._satiation = SatiationState()
 
     def mark_replied_to(self, chat_key: str, user_id: str, now_ms: int) -> None:
         """Open or renew a short-followup window for a user we just answered."""
@@ -220,9 +223,8 @@ class PerceptualGate:
         record_state: bool,
     ) -> AttentionDecision | None:
         if is_in_dyadic_dnd(self._dyadic_dnd, percept):
-            return _wake_dec(
-                0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns, has_unseen, wake=False
-            )
+            return _wake_dec(0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns,
+                             has_unseen, wake=False)
         focus_hit = _hits_working_focus(percept, working, rivals)
         if focus_hit or self._in_followup(percept, rivals, record_state=record_state):
             return _wake_dec(0.85, 2, focus_hit or "短期跟聊窗口内", unknowns, has_unseen)
@@ -247,9 +249,8 @@ class PerceptualGate:
         speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:
         if is_in_dyadic_dnd(self._dyadic_dnd, percept):
-            return _wake_dec(
-                0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns, has_unseen, wake=False
-            )
+            return _wake_dec(0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns,
+                             has_unseen, wake=False)
         if record_state and self.ambient_cooldown_active(
             percept.chat_key, percept.timestamp_ms
         ):
@@ -289,10 +290,11 @@ class PerceptualGate:
         if record_state:
             self._last_group_ts[percept.chat_key] = percept.timestamp_ms
             self._last_peer[percept.chat_key] = (percept.sender_id, percept.timestamp_ms)
+        belief = apply_belief(percept.sender_id)
         if t2_dec is not None:
-            return t2_dec
-        return self._evaluate_ambient_with_cooldown(
+            return adjust_decision(t2_dec, percept, self._satiation, belief)
+        ambient = self._evaluate_ambient_with_cooldown(
             percept, working, unknowns, has_unseen, talkativeness,
             record_state=record_state, known_vocab=known_vocab,
-            params=params, speaker_bond=speaker_bond,
-        )
+            params=params, speaker_bond=speaker_bond)
+        return adjust_decision(ambient, percept, self._satiation, belief)

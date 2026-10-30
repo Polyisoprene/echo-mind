@@ -3,17 +3,30 @@
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SCREEN_NAME="qqagent2"
+INSTANCE="${ECHOMIND_INSTANCE:-}"
+ENV_FILE="$APP_DIR/.env${INSTANCE:+.${INSTANCE}}"
+# 实例级开关文件：.env.<instance> 优先，其次通用 .env
+if [[ ! -f "$ENV_FILE" && -f "$APP_DIR/.env" ]]; then ENV_FILE="$APP_DIR/.env"; fi
+if [[ -f "$ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ENV_FILE"
+  set +a
+fi
+export ECHOMIND_DATA_DIR="${ECHOMIND_DATA_DIR:-data${INSTANCE:+-${INSTANCE}}}"
+export ECHOMIND_CONFIG="${ECHOMIND_CONFIG:-$APP_DIR/$ECHOMIND_DATA_DIR/config.json}"
+SCREEN_NAME="qqagent2${INSTANCE:+-${INSTANCE}}"
 PORT="${ECHOMIND_PORT:-3310}"
 HOST="${ECHOMIND_HOST:-0.0.0.0}"
-LOG_FILE="$APP_DIR/data/console.log"
+LOG_FILE="$APP_DIR/$ECHOMIND_DATA_DIR/console.log"
 UVICORN_TARGET="echomind.main:build_live_asgi_app"
 
 export PATH="$HOME/.local/bin:$PATH"
 cd "$APP_DIR"
 
 is_running() {
-  pgrep -f "/.venv/bin/uvicorn ${UVICORN_TARGET}" >/dev/null 2>&1
+  # 按端口区分实例：多机器人共存时不能只看 uvicorn 目标
+  pgrep -f "/.venv/bin/uvicorn ${UVICORN_TARGET}.*--port ${PORT}" >/dev/null 2>&1
 }
 
 do_start() {
@@ -24,7 +37,7 @@ do_start() {
   mkdir -p "$APP_DIR/data"
   : > "$LOG_FILE"
   screen -dmS "$SCREEN_NAME" bash -c \
-    "export PATH=\"\$HOME/.local/bin:\$PATH\"; cd \"$APP_DIR\" && while true; do uv run uvicorn ${UVICORN_TARGET} --factory --host ${HOST} --port ${PORT} >> \"$LOG_FILE\" 2>&1; sleep 3; done" \
+    "export PATH=\"\$HOME/.local/bin:\$PATH\"; export ECHOMIND_DATA_DIR=\"$ECHOMIND_DATA_DIR\" ECHOMIND_CONFIG=\"$ECHOMIND_CONFIG\"; cd \"$APP_DIR\" && while true; do uv run uvicorn ${UVICORN_TARGET} --factory --host ${HOST} --port ${PORT} >> \"$LOG_FILE\" 2>&1; sleep 3; done" \
     </dev/null >/dev/null 2>&1
   for _ in $(seq 1 20); do
     sleep 0.5
@@ -39,7 +52,7 @@ do_start() {
 
 do_stop() {
   # 只杀真正的 venv uvicorn 进程，绝不 pkill 含目标字符串的 screen/bash 包装层
-  pkill -f "/.venv/bin/uvicorn ${UVICORN_TARGET}" 2>/dev/null || true
+  pkill -f "/.venv/bin/uvicorn ${UVICORN_TARGET}.*--port ${PORT}" 2>/dev/null || true
   sleep 1
   if screen -ls 2>/dev/null | grep -q "\.${SCREEN_NAME}"; then
     screen -S "$SCREEN_NAME" -X quit 2>/dev/null || true
