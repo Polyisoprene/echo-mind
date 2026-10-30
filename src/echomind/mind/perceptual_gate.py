@@ -154,6 +154,15 @@ class PerceptualGate:
         """Block an annoying non-owner user for 15 minutes (Silent Treatment)."""
         self._cold_shoulder_until[f"{chat_key}::{user_id}"] = now_ms + duration_ms
 
+    def mark_ambient_wake(self, chat_key: str, now_ms: int) -> None:
+        """Arm the post-ambient-wake cooldown window for a chat."""
+        self._last_ambient_wake_ms[chat_key] = now_ms
+
+    def ambient_cooldown_active(self, chat_key: str, now_ms: int) -> bool:
+        """Return True while the chat sits inside the post-ambient-wake cooldown window."""
+        last = self._last_ambient_wake_ms.get(chat_key, 0)
+        return last > 0 and (now_ms - last) < self._ambient_cooldown_ms
+
     def _in_cold_shoulder(self, percept: Percept) -> bool:
         key = f"{percept.chat_key}::{percept.sender_id}"
         return percept.timestamp_ms <= self._cold_shoulder_until.get(key, 0)
@@ -229,16 +238,9 @@ class PerceptualGate:
         return None
 
     def _evaluate_ambient_with_cooldown(
-        self,
-        percept: Percept,
-        working: WorkingSnapshot,
-        unknowns: tuple[str, ...],
-        has_unseen: bool,
-        talkativeness: float,
-        *,
-        record_state: bool,
-        known_vocab: frozenset[str] = frozenset(),
-        owner_qq: str = "",
+        self, percept: Percept, working: WorkingSnapshot, unknowns: tuple[str, ...],
+        has_unseen: bool, talkativeness: float, *, record_state: bool,
+        known_vocab: frozenset[str] = frozenset(), owner_qq: str = "",
         params: dict[str, PlasticParamSpec] | None = None,
         speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:
@@ -246,8 +248,9 @@ class PerceptualGate:
             return _wake_dec(
                 0.12, 0, "群友二人互动中·礼貌不打扰 [0.12]", unknowns, has_unseen, wake=False
             )
-        last_amb = self._last_ambient_wake_ms.get(percept.chat_key, 0)
-        if record_state and (percept.timestamp_ms - last_amb) < self._ambient_cooldown_ms:
+        if record_state and self.ambient_cooldown_active(
+            percept.chat_key, percept.timestamp_ms
+        ):
             return _wake_dec(0.30, 0, "群聊非点名冷却期内", unknowns, has_unseen, wake=False)
         dec = evaluate_bidirectional_ambient(
             percept, working, unknowns, has_unseen, talkativeness,
@@ -258,15 +261,9 @@ class PerceptualGate:
         return dec
 
     def evaluate(
-        self,
-        percept: Percept,
-        working: WorkingSnapshot,
-        known_vocab: frozenset[str] = frozenset(),
-        rivals: tuple[str, ...] = (),
-        talkativeness: float = 58.0,
-        *,
-        record_state: bool = True,
-        owner_qq: str = "",
+        self, percept: Percept, working: WorkingSnapshot,
+        known_vocab: frozenset[str] = frozenset(), rivals: tuple[str, ...] = (),
+        talkativeness: float = 58.0, *, record_state: bool = True, owner_qq: str = "",
         params: dict[str, PlasticParamSpec] | None = None,
         speaker_bond: SocialBondProfile | None = None,
     ) -> AttentionDecision:

@@ -26,6 +26,7 @@ from echomind.domain.ports import (
 )
 from echomind.mind.ban_control import extract_new_bans
 from echomind.mind.chord_cache import remember_chord
+from echomind.mind.chord_gateway import apply_probe_if_allowed, format_recent
 from echomind.mind.circadian import record_gate_decision
 from echomind.mind.cybernetics import (
     compute_cybernetic_core,
@@ -62,7 +63,6 @@ from echomind.mind.shadow_appraisal import (
 from echomind.mind.subconscious_probe import (
     SubconsciousChordProbe,
     SubconsciousChordResult,
-    apply_probe_if_allowed,
 )
 
 
@@ -104,10 +104,6 @@ class CognitiveCoreFacade:
     def recent_gate_log(self) -> list[dict[str, Any]]:
         return list(reversed(self._gate_log))
 
-    def _recent_ctx(self) -> tuple[str, ...]:
-        lines = (f"{x.get('sender_name', '')}: {x.get('text', '')}" for x in self._gate_log[-6:])
-        return tuple(lines)
-
     async def evaluate_incoming(
         self, percept: Percept, *, dry_run: bool = False
     ) -> AttentionDecision:
@@ -127,8 +123,8 @@ class CognitiveCoreFacade:
         if not dry_run and self._sub_probe is not None:
             snap, dec = await apply_probe_if_allowed(
                 self._sub_probe, percept, snap, dec, s_bond,
-                working=self._working, owner_qq=self._owner_qq,
-                cache=self._chord_cache, recent_lines=self._recent_ctx(),
+                working=self._working, owner_qq=self._owner_qq, cache=self._chord_cache,
+                recent_lines=format_recent(self._gate_log),
             )
         if not dry_run:
             self._gate_log = record_gate_decision(self._gate_log, percept, dec)
@@ -216,11 +212,11 @@ class CognitiveCoreFacade:
         self, chat_key: str, triggers: tuple[Percept, ...], *, dry_run: bool = False
     ) -> CognitiveFrame:
         now_ms, tr = int(time.time() * 1000), triggers
-        chord = self._chord_cache.get(tr[-1].message_id) if tr else None
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
         facts = await self._reader.get_semantic_facts(chat_key)
         uids = extract_mentioned_uids(tr, facts)
         bm = await self._load_bonds_map(chat_key, uids)
+        chord = self._chord_cache.get(tr[-1].message_id) if tr else None
         base_snap, last_dec, skep = await self._advance_working_state(
             chat_key, tr, facts, bm, chord
         )
