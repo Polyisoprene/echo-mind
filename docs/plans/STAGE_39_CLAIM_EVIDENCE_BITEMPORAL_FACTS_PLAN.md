@@ -137,6 +137,15 @@ recorded_at    → "我们是 10-30 21:12 知道的"
 - 红灯证据：`reports/S39_RED_EVIDENCE.log`（4 failed / 2 passed）；
 - 门禁：189 passed / 4 xfailed。
 
+## 四·六、 S39-1 已落地（claim store + 可选双写）
+
+- `adapters/storage/claim_repo.py`：`SqliteClaimStore`
+  （`assert_claim` / `claim_belief` / `claim_status` / `retract` / `open_reviews` / `current_value`）；
+- 后验：`belief = 1 − exp(−Σ wᵢ)`，权重 = 来源权重 × 来源可靠度；
+- 冲突：同一 `(subject,predicate)` 出现 ≥2 个值且 ≥3 个独立 peer 来源 → 自动开 `fact_reviews`；
+- 双写：`FACTS_V2_WRITE=on` 时 `upsert_semantic_fact` 镜像写入 claim + evidence（**默认 off**，读取路径不变）；
+- 测试：`tests/integration/test_claim_store.py` 8 条全绿（含双写开关）。
+
 ## 五、 迁移步骤（影子优先，零行为改动）
 
 | 阶段 | 内容 | 行为影响 |
