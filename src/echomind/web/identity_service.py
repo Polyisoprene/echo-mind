@@ -126,7 +126,7 @@ class IdentityConfigService:
         """Push the new filters into the live runtime and prompt composer, when present."""
         composer = getattr(self._c, "prompt_composer", None) if self._c is not None else None
         if composer is not None and bot_name:
-            composer.update_role_card(bot_name, composer.role_text)
+            composer.update_role_card(bot_name, "")
         runtime = getattr(self._c, "onebot_runtime", None) if self._c is not None else None
         if runtime is not None:
             apply_identity(
