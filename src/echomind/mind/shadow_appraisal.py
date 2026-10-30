@@ -31,16 +31,12 @@ class ShadowAppraisalResult(FrozenValueObject):
     shadow_directives: tuple[str, ...] = ()
 
 
-def _extract_taboo_texts(traits: tuple[PersonaTrait, ...]) -> tuple[str, ...]:
-    return tuple(t.trait_text for t in traits if t.category == "taboo")
-
-
-def _check_aversion(
-    joined: str, taboos: tuple[str, ...], chord: SubconsciousChordResult | None
-) -> str:
+def _check_aversion(joined: str, chord: SubconsciousChordResult | None) -> str:
+    """Derive the aversion directive from the 6D chord (taboo text only steers the persona)."""
+    _ = joined
     trig = chord.shadow_trigger if chord else "none"
     ann = chord.annoyance if chord else 0
-    if trig == "aversion" or ann >= 3 or any(t and t in joined for t in taboos):
+    if trig == "aversion" or ann >= 3:
         return (
             "💢 [触发厌恶雷点 (OCC Disliking)] 对方提到了你最反感的内容或用无礼方式使唤你，"
             "你心里非常嫌弃反感，请直接皱眉表达讨厌或冷淡呛回去，绝不讨好顺从！"
@@ -163,7 +159,7 @@ def evaluate_shadow_appraisal(
     last_uid = triggers[-1].sender_id
     is_owner = (last_uid == owner_qq) if owner_qq else False
 
-    aversion_line = _check_aversion(joined, _extract_taboo_texts(traits), chord)
+    aversion_line = _check_aversion(joined, chord)
     bond = bonds_map.get(last_uid)
     w_care = compute_care_weight(last_uid, owner_qq, bond)
     w_aver = compute_aversion_susceptibility(last_uid, owner_qq, bond)
