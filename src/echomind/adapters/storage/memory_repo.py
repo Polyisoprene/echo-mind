@@ -8,6 +8,7 @@ from typing import Any, Literal, cast
 
 import aiosqlite
 
+from echomind.adapters.storage.claim_repo import mirror_fact
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import (
     EpisodicCard,
@@ -234,7 +235,11 @@ class SqliteMemoryRepository:
                 ),
             )
             await conn.commit()
-            return True, "ok"
+        await mirror_fact(
+            self._db, chat_key=fact.chat_key, subject=fact.subject, value=eff_txt,
+            source=fact.source, is_locked=fact.is_locked, now_ms=now_ms,
+        )
+        return True, "ok"
 
     async def upsert_procedural_rule(self, rule: ProceduralRule) -> int:
         sql = (

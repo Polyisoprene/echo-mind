@@ -1,5 +1,5 @@
 # mypy: disable-error-code="import-untyped"
-"""Stage 39 S39-0: claim/evidence store skeleton (red until S39-1 lands)."""
+"""Stage 39: claim/evidence store (belief, conflict review, retraction, as-of)."""
 
 from __future__ import annotations
 
@@ -27,7 +27,6 @@ async def test_claim_evidence_columns(tmp_path: Path) -> None:
     assert {"claim_id", "source_type", "weight", "observed_at_ms"} <= cols
 
 
-@pytest.mark.xfail(strict=True, reason="S39-1: claim store not implemented yet")
 async def test_upsert_and_believe(tmp_path: Path) -> None:
     from echomind.adapters.storage.claim_repo import SqliteClaimStore
 
@@ -39,7 +38,6 @@ async def test_upsert_and_believe(tmp_path: Path) -> None:
     assert await store.claim_belief(claim_id) > 0.5
 
 
-@pytest.mark.xfail(strict=True, reason="S39-1: claim store not implemented yet")
 async def test_conflict_opens_review(tmp_path: Path) -> None:
     from echomind.adapters.storage.claim_repo import SqliteClaimStore
 
@@ -53,7 +51,6 @@ async def test_conflict_opens_review(tmp_path: Path) -> None:
     assert await store.open_reviews("group:1") >= 1
 
 
-@pytest.mark.xfail(strict=True, reason="S39-1: retraction not implemented yet")
 async def test_retract_keeps_history(tmp_path: Path) -> None:
     from echomind.adapters.storage.claim_repo import SqliteClaimStore
 
@@ -66,7 +63,6 @@ async def test_retract_keeps_history(tmp_path: Path) -> None:
     assert await store.claim_status(claim_id) == "retracted"
 
 
-@pytest.mark.xfail(strict=True, reason="S39-1: bitemporal lookup not implemented yet")
 async def test_as_of_lookup(tmp_path: Path) -> None:
     from echomind.adapters.storage.claim_repo import SqliteClaimStore
 
@@ -82,3 +78,50 @@ async def test_as_of_lookup(tmp_path: Path) -> None:
     )
     assert await store.current_value("group:1", "群主", as_of_ms=500) == "A"
     assert await store.current_value("group:1", "群主", as_of_ms=1_500) == "B"
+
+
+async def test_dual_write_mirrors_fact(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
+    from echomind.domain.models import SemanticFact
+
+    db = SqliteDatabase(tmp_path / "dw.db")
+    await db.initialize()
+    repo = SqliteMemoryRepository(db)
+    fact = SemanticFact(
+        chat_key="group:1", subject="本群群主", fact_text="群主是 A", confidence=0.9,
+        is_locked=True, source="owner",
+    )
+    monkeypatch.setenv("FACTS_V2_WRITE", "on")
+    ok, _ = await repo.upsert_semantic_fact(fact)
+    assert ok
+    claim_id = await _first_claim_id(tmp_path / "dw.db")
+    from echomind.adapters.storage.claim_repo import SqliteClaimStore
+
+    assert await SqliteClaimStore(db).claim_belief(claim_id) > 0.5
+
+
+async def test_dual_write_off_by_default(tmp_path: Path) -> None:
+    from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
+    from echomind.domain.models import SemanticFact
+
+    db = SqliteDatabase(tmp_path / "nw.db")
+    await db.initialize()
+    repo = SqliteMemoryRepository(db)
+    await repo.upsert_semantic_fact(
+        SemanticFact(chat_key="group:1", subject="s", fact_text="v", confidence=0.9)
+    )
+    assert await _claim_count(tmp_path / "nw.db") == 0
+
+
+async def _claim_count(path: Path) -> int:
+    import sqlite3
+
+    con = sqlite3.connect(str(path))
+    return int(con.execute("select count(*) from claims").fetchone()[0])
+
+
+async def _first_claim_id(path: Path) -> int:
+    import sqlite3
+
+    con = sqlite3.connect(str(path))
+    return int(con.execute("select id from claims order by id limit 1").fetchone()[0])
