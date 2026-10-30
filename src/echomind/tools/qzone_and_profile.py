@@ -53,7 +53,7 @@ QZONE_SHOWCASE_FIELDS: tuple[SkillConfigField, ...] = (
         key="proactive_enabled",
         label="定时主动发消息 (1=开/0=关)",
         default="1",
-        placeholder="1 开启在活动时段内主动找主人/群聊说话",
+        placeholder="1 开启在活动时段内主动找在意的人/群聊说话",
     ),
     SkillConfigField(
         key="proactive_interval_min",

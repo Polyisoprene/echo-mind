@@ -125,7 +125,7 @@ class AgentSessionRunner:
                 return None, "本轮已发送过文字或语音回复，请勿重复再用语音念一遍，直接结束即可。"
             kept = purge_message_batch(str(args.get("text", "")), self._active_bans)
             if not kept:
-                return None, "已拦截：语音内容命中主人禁用词，未发送"
+                return None, "已拦截：语音内容命中管理员禁用词，未发送"
             sent_texts.append(kept[0])
             return {**args, "text": kept[0]}, ""
         if name == "feiyu_cover":
@@ -141,7 +141,7 @@ class AgentSessionRunner:
             return None, "本轮已发送过文字消息，请勿重复连发，直接结束即可。"
         kept = purge_message_batch(args.get("messages", []), self._active_bans)
         if not kept:
-            return None, "已拦截：全部内容命中主人禁用词，未发送"
+            return None, "已拦截：全部内容命中管理员禁用词，未发送"
         sent_texts.extend(kept)
         return {**args, "messages": list(kept)}, ""
 

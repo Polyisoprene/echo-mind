@@ -68,7 +68,7 @@ def _propose_idle_social_or_attachment(
         return ProactiveProposal(
             chat_key=owner_private_key, drive_kind="attachment_private", priority=drv.attachment,
             goal_instruction=(
-                f"你很想念主人，结合你此刻正在做的事（{act_str}）"
+                f"你很想念在意的人，结合你此刻正在做的事（{act_str}）"
                 "主动去私聊找他，自然地分享一句你的日常或小挂念。"
             ),
         )

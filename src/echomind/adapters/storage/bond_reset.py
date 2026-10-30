@@ -29,6 +29,9 @@ async def reset_privileged_bonds(
             await conn.execute(RESET_SQL)
             await conn.commit()
         if not dry_run and reset_stats:
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS bond_depth_stats (chat_key TEXT, user_id TEXT)"
+            )
             await conn.execute("DELETE FROM bond_depth_stats")
             await conn.commit()
     return affected

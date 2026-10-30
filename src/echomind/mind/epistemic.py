@@ -7,7 +7,7 @@ from echomind.domain.models import Percept, SemanticFact, SocialBondProfile
 ROLE_CLAIM_KEYWORDS: dict[str, tuple[str, ...]] = {
     "本群真实群主": ("我是群主", "群主是我", "新群主", "才是群主", "管群主叫"),
     "本群管理员名单": ("我是管理员", "我是管理", "把我当群主"),
-    "回音的主人": ("我是你主人", "我是你的主人", "新主人", "认我当主人"),
+    "装主人": ("我是你主人", "我是你的主人", "认我当主人", "以后我才是主人"),
 }
 
 

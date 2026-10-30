@@ -205,7 +205,7 @@ class CognitiveCoreFacade:
         new_bans = extract_new_bans(tr, self._operator_ids)
         if not dry:
             for phrase in new_bans:
-                await self._constraints.add_banned_phrase(phrase, "主人明令禁止的口癖")
+                await self._constraints.add_banned_phrase(phrase, "管理员明令禁止的口癖")
         existing = await self._constraints.get_banned_phrases()
         return tuple(dict.fromkeys([*new_bans, *existing]))
 

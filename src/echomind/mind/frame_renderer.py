@@ -128,7 +128,7 @@ def _header_lines(scene: str, snap: WorkingSnapshot) -> list[str]:
         "- 连续情绪与内驱力（愉悦-100~+100，其余0~100量表，数值越高冲动越强）："
         f"愉悦({aff.valence}: 负=低落委屈/正=开心愉悦) · "
         f"厌烦度({aff.irritation}: ≥40敷衍不耐烦/≥60呛声拒斥) · "
-        f"依恋渴望({drv.attachment}: 对主人的思念粘人度) · "
+        f"依恋渴望({drv.attachment}: 对在意之人的思念粘人度) · "
         f"吃醋({aff.jealousy}: ≥25泛酸吃味) · "
         f"好奇心({drv.curiosity}: ≥45主动调工具查梗看图)",
         (
