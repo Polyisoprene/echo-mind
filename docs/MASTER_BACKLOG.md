@@ -113,10 +113,10 @@ $$D_u=100\cdot\sigma\big(1.6(1.0f+1.2v+1.4r+1.0c+1.1i-1.6b-2.6)\big),\quad w_{ca
 
 | 层 | 内容 | 依据 | 状态 |
 |---|---|---|---|
-| L1 | 群内分位归一化（替代绝对计数） | TF-IDF/BM25 思想 | ⏳ |
-| L2 | 群内仿射/保序校准 + `bond_calibration` 表 | Platt 1999；Zadrozny & Elkan 2002 | ⏳ |
-| L3 | 分层贝叶斯收缩 $\mathbf w_g\sim\mathcal N(\mathbf w_0,\tau^2)$ | Gelman & Hill 2007；Efron & Morris 1975 | ⏳ |
-| L4 | 漂移检测（Page–Hinkley / CUSUM），只告警不自动改 | Page 1954 | ⏳ |
+| L1 | 群内分位归一化（替代绝对计数） | TF-IDF/BM25 思想 | ✅ `bond_adapt.normalize_group`（未接线） |
+| L2 | 群内仿射/保序校准 | Platt 1999；Zadrozny & Elkan 2002 | ✅ 算法 `fit_affine`；表未建 |
+| L3 | 分层贝叶斯收缩 $\mathbf w_g\sim\mathcal N(\mathbf w_0,\tau^2)$ | Gelman & Hill 2007；Efron & Morris 1975 | ✅ `shrink_weights` |
+| L4 | 漂移检测（Page–Hinkley / CUSUM），只告警不自动改 | Page 1954 | ✅ `PageHinkley` |
 | 验证 | 留一群交叉验证（LOGO）+ 跨群一致性 | 域泛化惯例 | ⏳ |
 
 ### 4.4 拟合数据（人工标注暂缓）
@@ -188,4 +188,4 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
-| 2026-10-30 | 建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
+| 2026-10-30 | B1–B4 四层自适应算法落地（`bond_adapt.py`，6 条测试，未接线）；建立本总账；登记 H1–H10、P1–P3、时序常数、bond_depth 现状（A2a/A2b）、B1–B4 自适应计划、N1–N6 新发现、A/B 线状态 |
