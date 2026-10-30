@@ -1027,7 +1027,7 @@ async def test_stage14_cybernetic_order_parameters_hipporag_flotation_and_amem_c
         text="唱首晴天吧，顺便搜一下普汐鲸是什么热梗 https://www.bilibili.com/video/BV1xx411c7mD",
     )
     core = compute_cybernetic_core(
-        "group", snap, (trig,), {}, owner_qq="10001001", unknown_terms=("普汐鲸",)
+        "group", snap, (trig,), {}, unknown_terms=("普汐鲸",)
     )
     assert core.stance_order > 0.4
     assert core.epistemic_order >= 0.55
@@ -1856,7 +1856,7 @@ async def test_stage25_subconscious_chord_probe_acoustic_echo_and_image_caption_
         trust_score=0.85,
     )
     snap0 = WorkingSnapshot(scope_key="global")
-    snap1, dec1 = apply_chord_tensor_to_snapshot(snap0, parsed, enriched_img, "10001001", f_bond)
+    snap1, dec1 = apply_chord_tensor_to_snapshot(snap0, parsed, enriched_img, f_bond)
     assert dec1.should_wake is True
     assert "被画成蓝发女仆的羞恼" in dec1.reason
     assert "源头:冰色" in snap1.inner_thought
@@ -1870,14 +1870,14 @@ async def test_stage25_subconscious_chord_probe_acoustic_echo_and_image_caption_
         trust_score=0.60,
     )
     snap_cringe, _ = apply_chord_tensor_to_snapshot(
-        snap0, parsed, enriched_img, "10001001", low_bond
+        snap0, parsed, enriched_img, low_bond
     )
     assert snap_cringe.affect.irritation > snap1.affect.irritation
 
     # 5. SubconsciousChordProbe end-to-end with scripted LLM via CognitiveCoreFacade
     await container.memory_repo.upsert_social_bond(f_bond)
     llm = _ScriptedLlm([{"choices": [{"message": {"content": raw_chord}}]}])
-    probe = SubconsciousChordProbe(llm, owner_qq="10001001")
+    probe = SubconsciousChordProbe(llm)
     container.cognitive_facade.set_subconscious_probe(probe)
     dec_live = await container.cognitive_facade.evaluate_incoming(enriched_img)
     assert dec_live.should_wake is True and "被画成蓝发女仆的羞恼" in dec_live.reason

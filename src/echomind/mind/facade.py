@@ -129,7 +129,7 @@ class CognitiveCoreFacade:
         if not dry_run and self._sub_probe is not None:
             snap, dec = await apply_probe_if_allowed(
                 self._sub_probe, percept, snap, dec, s_bond,
-                working=self._working, owner_qq=self._owner_qq, cache=self._chord_cache,
+                working=self._working, cache=self._chord_cache,
                 recent_lines=format_recent(self._gate_log, percept.chat_key),
                 in_ambient_cooldown=self._gate.ambient_cooldown_active(
                     percept.chat_key, percept.timestamp_ms
@@ -162,8 +162,7 @@ class CognitiveCoreFacade:
         params = await self._working.get_plastic_params()
         traits = await self._working.sync_persona_traits()
         shadow = evaluate_shadow_appraisal(
-            triggers, base_snap.affect, params, traits, bonds_map,
-            owner_qq=self._owner_qq, chord=chord,
+            triggers, base_snap.affect, params, traits, bonds_map, chord=chord,
         )
         raw_irr = base_snap.affect.irritation + shadow.irritation_delta
         new_irr = max(0.0, min(100.0, round(raw_irr, 2)))
@@ -234,7 +233,7 @@ class CognitiveCoreFacade:
         cur_p = build_curiosity_prompts(tr, last_dec, snap.affect)
         unk = last_dec.detected_unknown_terms if last_dec else ()
         cyber = compute_cybernetic_core(
-            scene, snap, tr, bm, owner_qq=self._owner_qq,
+            scene, snap, tr, bm,
             unknown_terms=unk, warnings=warns, chord_reagents=chord.reagents if chord else (),
         )
         rel_facts = select_relevant_facts(facts, " ".join(p.text for p in tr), limit=28)
@@ -263,7 +262,7 @@ class CognitiveCoreFacade:
             await self._working.save_working_state(satiated)
         if self._traces is not None and o.steps:
             await self._traces.save_turn(build_turn_record(o, now_ms))
-        o, chord = apply_chord_reward(o, self._chord_cache, self._owner_qq)
+        o, chord = apply_chord_reward(o, self._chord_cache)
         await consolidate_turn_memory(
             self._reader, self._writer, o, now_ms, self._owner_qq, chord=chord
         )

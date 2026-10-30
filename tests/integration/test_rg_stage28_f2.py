@@ -40,7 +40,7 @@ async def test_rg_f2_tier1_turn_gets_chord(tmp_path: Path) -> None:
         db_path=tmp_path / "f2.db", owner_qq=OWNER, default_chat_key=CK
     )
     facade = container.cognitive_facade
-    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm(), owner_qq=OWNER))
+    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm()))
 
     percept = Percept(
         chat_key=CK, scene="group", message_id="f2-1", timestamp_ms=1_700_000_000_000,

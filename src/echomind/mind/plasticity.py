@@ -159,7 +159,6 @@ class NeuroplasticityEngine:
 def apply_chord_reward(
     outcome: TurnOutcome,
     cache: dict[str, SubconsciousChordResult],
-    owner_qq: str,
 ) -> tuple[TurnOutcome, SubconsciousChordResult | None]:
     """Re-derive social_reward from the cached 6D chord so learning reflects real semantics."""
     if not outcome.triggers:
@@ -168,7 +167,7 @@ def apply_chord_reward(
     if chord is None:
         return outcome, None
     last = outcome.triggers[-1]
-    is_owner = bool(owner_qq and last.sender_id == owner_qq)
+    is_owner = False
     is_poke = any(p.is_poke_me for p in outcome.triggers)
     reward = compute_chord_social_reward(chord, is_poke=is_poke, is_owner=is_owner)
     return outcome.model_copy(update={"social_reward": reward}), chord

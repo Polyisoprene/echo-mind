@@ -45,7 +45,7 @@ async def test_rg_f3_probe_once_per_batch(tmp_path: Path) -> None:
     )
     facade = container.cognitive_facade
     llm = _CountingLlm()
-    probe = SubconsciousChordProbe(llm, owner_qq=OWNER)
+    probe = SubconsciousChordProbe(llm)
     facade.set_subconscious_probe(probe)
 
     base = 1_700_000_000_000

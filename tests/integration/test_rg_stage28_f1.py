@@ -59,7 +59,7 @@ async def _run_turn(
         db_path=db_path, owner_qq=OWNER, default_chat_key=CK
     )
     facade = container.cognitive_facade
-    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm(payload), owner_qq=OWNER))
+    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm(payload)))
     percept = _percept(uid, text)
     await facade.evaluate_incoming(percept)
     # Parity with live_client: reward is derived from text only at the call site.

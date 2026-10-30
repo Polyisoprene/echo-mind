@@ -201,17 +201,13 @@ def evaluate_chord_wake_decision(
     )
 
 
-def _resolve_speaker_aff_and_trust(
-    uid: str, owner_qq: str, bond: SocialBondProfile | None
-) -> tuple[float, float]:
-    if owner_qq and uid == owner_qq:
-        return 9999.0, 1.0
+def _resolve_speaker_aff_and_trust(bond: SocialBondProfile | None) -> tuple[float, float]:
     return (bond.affinity_score, bond.trust_score) if bond is not None else (35.0, 0.80)
 
 
 def apply_chord_tensor_to_snapshot(
     snapshot: WorkingSnapshot, chord: SubconsciousChordResult, percept: Percept,
-    owner_qq: str, bond: SocialBondProfile | None = None, *, in_ambient_cooldown: bool = False,
+    bond: SocialBondProfile | None = None, *, in_ambient_cooldown: bool = False,
 ) -> tuple[WorkingSnapshot, AttentionDecision]:
     """Apply 6D chord tensor to WorkingSnapshot and compute AttentionDecision."""
     from echomind.mind.drives import apply_turn_affect_and_drives, compute_care_weight
@@ -231,8 +227,8 @@ def apply_chord_tensor_to_snapshot(
 class SubconsciousChordProbe:
     """Lightweight subconscious LLM probe for 6D emotional chord and pragmatic role."""
 
-    def __init__(self, llm: ILlmGateway, owner_qq: str = "") -> None:
-        self._llm, self._owner_qq = llm, owner_qq
+    def __init__(self, llm: ILlmGateway) -> None:
+        self._llm = llm
         self.clock: dict[str, int] = {}
 
     async def appraise(
@@ -240,17 +236,16 @@ class SubconsciousChordProbe:
         bond: SocialBondProfile | None = None, timeout_s: float = 2.8,
     ) -> SubconsciousChordResult | None:
         """Run a fast subconscious JSON probe with timeout protection."""
-        uid = percept.sender_id
-        aff, trust = _resolve_speaker_aff_and_trust(uid, self._owner_qq, bond)
+        aff, trust = _resolve_speaker_aff_and_trust(bond)
         rel = (
-            "唯一主人(至高依恋)" if (self._owner_qq and uid == self._owner_qq)
-            else (f"亲近好友(好感{aff:.0f})" if aff >= 52.0 else f"普通群友(好感{aff:.0f})")
+            f"亲近好友(好感{aff:.0f})" if aff >= 52.0
+            else f"普通群友(好感{aff:.0f})"
         )
         ctx_str = "\n".join(recent_lines[-6:]) if recent_lines else "（无）"
         u_prompt = (
-            f"【发言人】{percept.sender_name}(QQ:{uid}) -> {rel}, 信任度{trust:.2f}\n"
+            f"【发言人】{percept.sender_name}(QQ:{percept.sender_id}) -> {rel}, 信任度{trust:.2f}\n"
             f"【近期上下文】\n{ctx_str}\n"
-            f"【最新消息】\n{percept.sender_name}(QQ:{uid}): {percept.text[:140]}"
+            f"【最新消息】\n{percept.sender_name}(QQ:{percept.sender_id}): {percept.text[:140]}"
         )
         try:
             msgs = [

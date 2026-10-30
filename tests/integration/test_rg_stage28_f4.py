@@ -48,7 +48,7 @@ async def test_rg_f4_chord_applied_once(tmp_path: Path, monkeypatch: Any) -> Non
         db_path=tmp_path / "f4.db", owner_qq=OWNER, default_chat_key=CK
     )
     facade = container.cognitive_facade
-    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm(), owner_qq=OWNER))
+    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm()))
 
     applications: list[str] = []
     orig_rpe = drives_mod._chord_rpe_and_soothing

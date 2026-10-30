@@ -141,7 +141,7 @@ def _build_live_runtime(cfg: AppConfig, container: EchoMindContainer) -> OneBotL
     )
     container.llm_gateway = llm
     container.cognitive_facade.set_subconscious_probe(
-        SubconsciousChordProbe(llm, owner_qq=cfg.owner_qq)
+        SubconsciousChordProbe(llm)
     )
     composer = PromptComposer(role_text=cfg.role_text, bot_name=cfg.bot_name)
     container.prompt_composer = composer

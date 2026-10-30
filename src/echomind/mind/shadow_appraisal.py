@@ -149,7 +149,6 @@ def evaluate_shadow_appraisal(
     traits: tuple[PersonaTrait, ...],
     bonds_map: dict[str, SocialBondProfile],
     *,
-    owner_qq: str = "",
     chord: SubconsciousChordResult | None = None,
 ) -> ShadowAppraisalResult:
     """Run full OCC/CPM aversion, Brehm reactance, and DePaulo deception appraisal."""
@@ -157,7 +156,6 @@ def evaluate_shadow_appraisal(
         return ShadowAppraisalResult()
     joined = " ".join(p.text for p in triggers)
     last_uid = triggers[-1].sender_id
-    is_owner = (last_uid == owner_qq) if owner_qq else False
 
     aversion_line = _check_aversion(joined, chord)
     bond = bonds_map.get(last_uid)
@@ -173,7 +171,7 @@ def evaluate_shadow_appraisal(
     )
     trust = _speaker_trust(bonds_map, last_uid)
     dec_mode, dec_line = select_deception_strategy(
-        updated_affect, params, trust, is_owner, chord=chord
+        updated_affect, params, trust, False, chord=chord
     )
     return ShadowAppraisalResult(
         irritation_delta=total_irr_delta,

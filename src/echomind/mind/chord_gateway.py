@@ -54,7 +54,7 @@ def _has_unseen(percept: Percept) -> bool:
 async def apply_probe_if_allowed(
     probe: SubconsciousChordProbe, percept: Percept, snap: WorkingSnapshot,
     dec: AttentionDecision, bond: SocialBondProfile | None, *,
-    working: IWorkingStateStore, owner_qq: str,
+    working: IWorkingStateStore,
     cache: dict[str, SubconsciousChordResult], recent_lines: tuple[str, ...] = (),
     in_ambient_cooldown: bool = False,
     probe_clock: dict[str, int] | None = None, min_probe_interval_ms: int = 1_500,
@@ -71,17 +71,17 @@ async def apply_probe_if_allowed(
         return snap, dec
     remember_chord(cache, percept.message_id, chord)
     new_dec = evaluate_chord_wake_decision(
-        percept, chord, snap, _care_of(percept, owner_qq, bond),
+        percept, chord, snap, _care_of(percept, bond),
         in_ambient_cooldown=in_ambient_cooldown, has_unseen=_has_unseen(percept),
     )
     if new_dec.should_wake:
         return snap, new_dec
-    new_snap, _ = apply_chord_tensor_to_snapshot(snap, chord, percept, owner_qq, bond)
+    new_snap, _ = apply_chord_tensor_to_snapshot(snap, chord, percept, bond)
     await working.save_working_state(new_snap)
     return new_snap, new_dec
 
 
-def _care_of(percept: Percept, owner_qq: str, bond: SocialBondProfile | None) -> float:
+def _care_of(percept: Percept, bond: SocialBondProfile | None) -> float:
     from echomind.mind.drives import compute_care_weight
 
     return compute_care_weight(percept.sender_id, bond)

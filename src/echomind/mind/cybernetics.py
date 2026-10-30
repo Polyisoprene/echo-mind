@@ -66,7 +66,6 @@ def _compute_stance_order(
     snap: WorkingSnapshot,
     triggers: tuple[Percept, ...],
     bonds_map: dict[str, SocialBondProfile],
-    owner_qq: str,
     has_conflict: bool,
 ) -> float:
     aff = snap.affect
@@ -141,7 +140,6 @@ def compute_cybernetic_core(
     triggers: tuple[Percept, ...],
     bonds_map: dict[str, SocialBondProfile],
     *,
-    owner_qq: str = "",
     unknown_terms: tuple[str, ...] = (),
     warnings: tuple[str, ...] = (),
     chord_reagents: tuple[str, ...] = (),
@@ -149,7 +147,7 @@ def compute_cybernetic_core(
     """Compute Haken's 3 Order Parameters & Ashby's Stage-1 Selected Reagents/Tools."""
     joined = " ".join(p.text for p in triggers)
     has_conflict = any("防忽悠" in w or "可信度" in w for w in warnings)
-    stance = _compute_stance_order(snap, triggers, bonds_map, owner_qq, has_conflict)
+    stance = _compute_stance_order(snap, triggers, bonds_map, has_conflict)
     epistemic = _compute_epistemic_order(snap, joined, len(unknown_terms), has_conflict)
     modality = _compute_modality_order(snap, scene, joined)
     reagents = _select_reagents(

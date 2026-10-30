@@ -47,7 +47,7 @@ async def test_rg_f5_cooldown_not_bypassed(tmp_path: Path) -> None:
         db_path=tmp_path / "f5.db", owner_qq=OWNER, default_chat_key=CK
     )
     facade = container.cognitive_facade
-    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm(), owner_qq=OWNER))
+    facade.set_subconscious_probe(SubconsciousChordProbe(_ChordLlm()))
 
     first = await facade.evaluate_incoming(_percept("f5-1", 1_700_000_000_000))
     second = await facade.evaluate_incoming(_percept("f5-2", 1_700_000_005_000))
