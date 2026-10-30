@@ -230,6 +230,16 @@ AssertionError: rubric says high possessiveness but tone is '软傲娇平衡态�
 
 后续每个阶段都以此为准，漂移超过 ±5% 视为回归。
 
+## 9.3 S30-1 已落地（默认值单一源）
+
+- 新增 `domain/persona_specs.py`（`PERSONA_SPECS` + `persona_default`）；
+- `working_repo` 默认参数、`plasticity.PARAM_BASELINES`、`personality._val`、`salience._p_val` 全部改为引用该表；
+- 新增 `tests/architecture/test_persona_single_source.py`（3 条）：
+  1. 存储默认值与规格一致；
+  2. 可塑性 baseline 与规格一致；
+  3. **AST 守卫**：禁止在 `_val`/`_p_val` 调用里再出现数字字面量默认值。
+- 回放对照（120 回合）：`wakes 2 / probe_calls 68 / double_apply 0 / reward_spread 1.09`，与改造前一致 → 无行为漂移。
+
 ## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）
