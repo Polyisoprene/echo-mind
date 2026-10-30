@@ -196,7 +196,41 @@ prompt 体积变化 ≤ +10%
 
 ---
 
-## 九、 待用户确认的 3 个决策
+## 九、 S30-0 基线（已执行）
+
+### 9.1 不变量骨架（`tests/unit/test_personality_invariants.py`）
+
+| 不变量 | 现状 | 标记 |
+|---|---|---|
+| I-1 边界 | 已成立 | 普通测试 |
+| I-2 日限 | **失败**：100 次正向互动累计温暖漂移 **298.0** 点 | `xfail(strict)` → S30-3 |
+| I-3 叙事一致 | **失败**：独占 93.4 时腔调仍是「软傲娇平衡态」 | `xfail(strict)` → S30-2 |
+| I-4 渲染确定性 | 已成立 | 普通测试 |
+
+红灯原始输出（S30-0 留存）：
+
+```text
+AssertionError: daily warmth drift 298.0 exceeds the 6-point cap
+AssertionError: rubric says high possessiveness but tone is '软傲娇平衡态（…）'
+2 failed, 2 passed
+```
+
+### 9.2 200 回合金标准基线（`reports/S30_BASELINE.json`）
+
+| 指标 | 基线值 |
+|---|---|
+| turns | 200 |
+| wakes | 6 |
+| cooldown_blocks | 47 |
+| probe_calls | 123 |
+| cache_peak | 123 |
+| double_apply | 0 |
+| reward_spread | 1.09 |
+| source sha256(16) | `89ac44109ad8d299` |
+
+后续每个阶段都以此为准，漂移超过 ±5% 视为回归。
+
+## 十、 待用户确认的 3 个决策
 
 1. **关系姿态是否允许改变"语气强度"而不改人格本体？**（本方案：允许，偏移 ≤0.2）
 2. **日限 6 点/维是否合适？**（对照：好感度日限逻辑已有，可调）
