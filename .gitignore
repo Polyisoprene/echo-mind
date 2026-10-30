@@ -22,3 +22,4 @@ data/logs/*
 !data/logs/.gitkeep
 !data/stickers/.gitkeep
 data/console.log
+reports/

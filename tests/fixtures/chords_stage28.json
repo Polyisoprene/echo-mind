@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "note": "Stage 28 A-lane recorded chords: deterministic replay input, zero LLM calls.",
+  "rules": [
+    {
+      "match": "蠢|傻|闭嘴|垃圾|滚|烦死|工具人|废物",
+      "chord": {
+        "role": "direct_to_me", "topic_pull": 1,
+        "chord": {"joy": 0, "hurt": 1, "jealousy": 0, "shyness": 0, "annoyance": 3, "curiosity": 0},
+        "shadow_trigger": "reactance", "spoof_attempt": false, "explicit_fact": "",
+        "reagents": ["社交防忽悠核查剂"], "shade": "被冒犯的烦躁",
+        "subtext": "对方在用命令口吻使唤我", "thought": "凭什么这么跟我说话"
+      }
+    },
+    {
+      "match": "真棒|好乖|摸摸|喜欢|可爱|辛苦了|谢谢|好听",
+      "chord": {
+        "role": "direct_to_me", "topic_pull": 2,
+        "chord": {"joy": 3, "hurt": 0, "jealousy": 0, "shyness": 2, "annoyance": 0, "curiosity": 1},
+        "shadow_trigger": "none", "spoof_attempt": false, "explicit_fact": "",
+        "reagents": ["日常轻装剂"], "shade": "被夸得耳根发烫",
+        "subtext": "他是真心在夸我", "thought": "嘿嘿，再夸两句"
+      }
+    },
+    {
+      "match": "汐|小汐|豆包|别的AI",
+      "chord": {
+        "role": "about_me", "topic_pull": 2,
+        "chord": {"joy": 0, "hurt": 1, "jealousy": 2, "shyness": 0, "annoyance": 0, "curiosity": 1},
+        "shadow_trigger": "tease_expose", "spoof_attempt": false, "explicit_fact": "",
+        "reagents": ["日常轻装剂"], "shade": "酸溜溜的别扭",
+        "subtext": "当面夸别的机器人", "thought": "哼，那我算什么"
+      }
+    },
+    {
+      "match": "图片|表情|视频|链接",
+      "chord": {
+        "role": "ambient_daily", "topic_pull": 2,
+        "chord": {"joy": 2, "hurt": 0, "jealousy": 0, "shyness": 0, "annoyance": 0, "curiosity": 2},
+        "shadow_trigger": "none", "spoof_attempt": false, "explicit_fact": "",
+        "reagents": ["多模态鉴赏剂"], "shade": "好奇瞄图",
+        "subtext": "发了个有意思的东西", "thought": "让我看看这是啥"
+      }
+    }
+  ],
+  "default": {
+    "role": "ambient_daily", "topic_pull": 1,
+    "chord": {"joy": 0, "hurt": 0, "jealousy": 0, "shyness": 0, "annoyance": 0, "curiosity": 0},
+    "shadow_trigger": "none", "spoof_attempt": false, "explicit_fact": "",
+    "reagents": ["日常轻装剂"], "shade": "平静旁听",
+    "subtext": "普通闲聊", "thought": "听着呢"
+  }
+}
