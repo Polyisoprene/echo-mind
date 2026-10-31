@@ -33,7 +33,8 @@ class SemanticMemoryRetriever:
         return await self._relations.boost_ids(facts, query, now_ms)
 
     async def rank_fused(
-        self, facts: tuple[SemanticFact, ...], query: str, now_ms: int
+        self, facts: tuple[SemanticFact, ...], query: str, now_ms: int,
+        *, trait_scores: dict[int, float] | None = None,
     ) -> tuple[SemanticFact, ...] | None:
         if not facts:
             return ()
@@ -48,7 +49,9 @@ class SemanticMemoryRetriever:
                 for f in facts if f.fact_id in vectors
             }
             relations = await self.boost_ids(facts, query, now_ms)
-            return unified_rank(facts, query, dense, relations, now_ms)
+            return unified_rank(
+                facts, query, dense, relations, now_ms, trait_scores=trait_scores
+            )
         except Exception:  # noqa: BLE001 - fall back to lexical retrieval
             logger.warning("fused ranking failed; falling back", exc_info=True)
             return None

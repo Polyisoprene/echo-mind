@@ -667,3 +667,34 @@ D1/D2/D3（独立 backlog）
 - `tests/unit/test_trait_generation.py`：有效候选、伪造 quote 拒绝、单情境不调用 LLM；
 - `tests/integration/test_trait_evidence_ledger.py`：候选表去重；
 - 全门禁：**333 passed / 92%**，fusion 70/70。
+
+### 14.4 P3 trait → 记忆（2026-11-01 已落地基础层，未接 live）
+
+**代码**
+
+- `src/echomind/domain/trait_memory_link.py`；
+- `src/echomind/domain/trait_memory_ports.py`；
+- `src/echomind/adapters/storage/trait_memory_repo.py`；
+- `trait_memory_links` 表（trait/memory/relation 唯一）；
+- `unified_rank(..., trait_scores=...)` 新增 `trait` ranker；
+- `semantic_memory.rank_fused(..., trait_scores=...)` 透传。
+
+**规则**
+
+- 只有 `memory_kind='semantic'` 且 `relation='supports'` 的链接产生 ranker 分数；
+- 分数只有 presence（1.0），没有手调权重；
+- 链接按 trait/memory/relation 去重；
+- **不自动建链**：当前没有可靠的 evidence→memory_id 映射，先保留人工/脚本显式链接；
+- 未接 live：默认 `trait_scores` 为空，行为不变。
+
+**验证**
+
+- `tests/unit/test_trait_memory_ranker.py`：有 trait 分数时能排到目标；空分数无影响；
+- `tests/integration/test_trait_memory_links.py`：链接去重、semantic/episodic 隔离；
+- 全门禁：**336 passed / 92%**，fusion 70/70。
+
+**未完成**
+
+- 自动 evidence→memory 链接生产器；
+- active trait 的 live 注入与 A/B；
+- 隐私/边界回归。

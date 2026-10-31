@@ -106,6 +106,7 @@ def _apply_constraints(
 def _candidate_rankers(
     facts: tuple[SemanticFact, ...], query: str,
     dense: dict[int, float], relations: dict[int, float], now_ms: int,
+    *, trait_scores: dict[int, float] | None = None,
 ) -> dict[str, tuple[int, ...]]:
     recency = {f.fact_id: float(f.event_time_ms) for f in facts}
     order = {f.fact_id: order_score(query, f"{f.subject} {f.fact_text}") for f in facts}
@@ -119,6 +120,7 @@ def _candidate_rankers(
         "relations": _rank(relations),
         "confidence": _rank(confidence),
         "lock": _rank(lock),
+        "trait": _rank(trait_scores or {}),
     }
 
 
@@ -126,6 +128,7 @@ def unified_rank(
     facts: tuple[SemanticFact, ...], query: str,
     dense: dict[int, float], relations: dict[int, float], now_ms: int,
     *, disabled: frozenset[str] = frozenset(), constraints: bool = True,
+    trait_scores: dict[int, float] | None = None,
 ) -> tuple[SemanticFact, ...]:
     """Fuse independent signals as ranks; no hand-tuned feature weights."""
     if not facts:
@@ -134,7 +137,9 @@ def unified_rank(
         facts = _apply_constraints(facts, query)
     if not facts:
         return ()
-    candidates = _candidate_rankers(facts, query, dense, relations, now_ms)
+    candidates = _candidate_rankers(
+        facts, query, dense, relations, now_ms, trait_scores=trait_scores
+    )
     rankers = tuple(
         items for name, items in candidates.items() if name not in disabled
     )

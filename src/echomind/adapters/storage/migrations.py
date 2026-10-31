@@ -122,9 +122,30 @@ async def ensure_trait_candidate_table(conn: Any) -> None:
     await conn.executescript(_TRAIT_CANDIDATE_DDL)
 
 
+_TRAIT_MEMORY_DDL = """
+CREATE TABLE IF NOT EXISTS trait_memory_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  trait_id INTEGER NOT NULL REFERENCES persona_traits(id) ON DELETE CASCADE,
+  memory_kind TEXT NOT NULL CHECK(memory_kind IN ('semantic','episodic')),
+  memory_id INTEGER NOT NULL CHECK(memory_id > 0),
+  relation TEXT NOT NULL DEFAULT 'supports'
+    CHECK(relation IN ('supports','contradicts')),
+  evidence_ms INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(trait_id, memory_kind, memory_id, relation)
+);
+CREATE INDEX IF NOT EXISTS idx_trait_memory_trait
+  ON trait_memory_links(trait_id, memory_kind);
+"""
+
+
+async def ensure_trait_memory_table(conn: Any) -> None:
+    await conn.executescript(_TRAIT_MEMORY_DDL)
+
+
 async def ensure_migrations(conn: Any) -> None:
     """Run every idempotent migration in one call."""
     await ensure_trait_columns(conn)
     await ensure_trait_evidence_table(conn)
     await ensure_trait_candidate_table(conn)
+    await ensure_trait_memory_table(conn)
     await ensure_claim_tables(conn)
