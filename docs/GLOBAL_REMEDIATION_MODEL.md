@@ -1,0 +1,202 @@
+# 全局修复模型与接入影响评估
+
+> 日期：2026-10-31 ｜ 范围：人格/记忆文档中的 P0/P1/P2 + 当前代码
+> 结论：**现在不是“已修复”，而是多个局部增强叠加。** 继续加 boost 会把问题藏得更深；应先合并成一个可校准的评分器，并把所有数值参数纳入同一张依赖图。
+
+---
+
+## 0. 一句话结论
+
+当前检索链路有三套打分：
+
+1. 关键词：`overlap*3 + 主体*6 + locked*5 + confidence + recency*4 + order*6`
+2. 语义：`cosine + recency*0.25 + order*0.5`
+3. RRF 融合后，再用关系可达性做一次“命中前置”
+
+问题不是“某个参数不够好”，而是：
+
+- 同一个 recency/order 在两路各加分一次，RRF 又会放大两路共识；
+- 关系命中在 RRF 之后直接前置，绕过了融合分数；
+- `memory_relations.valid_from/to` 和 `confidence` 有字段但没参与；
+- 多个参数是内联字面量，账本看不到，无法联动校准；
+- 30 天半衰期、4/6 权重、0.25/0.5、2 跳、0.8 置信度都没有直接论文依据。
+
+---
+
+## 1. 当前全局数据流
+
+```
+percept
+  │
+  ├─ 硬门（private/secret；先于任何打分）
+  │
+  ├─ 关键词 rank
+  │    overlap*3 + subject*6 + lock*5 + confidence
+  │    + recency*4 + entity_order*6
+  │
+  ├─ 语义 rank
+  │    cosine + recency*0.25 + entity_order*0.5
+  │
+  ├─ RRF(k=60)  ← 两路 rank 融合
+  │
+  ├─ relation boost ← 关系可达事实直接前置（无 validity、无 confidence）
+  │
+  └─ top-k → prompt
+```
+
+**同一信号被重复计分**：recency 和 order 在关键词、语义两路都出现，再经 RRF 融合。  
+**关系通道是后置补丁**：不在统一分数里，无法与 recency/importance 比较。  
+**validity/confidence 是孤岛**：字段存在，但不影响边是否 active、也不影响 boost 大小。
+
+---
+
+## 2. 参数审计（当前值 + 证据状态）
+
+| 参数 | 当前值 | 位置 | 现状 | 证据状态 |
+|---|---:|---|---|---|
+| `FACT_RECENCY_HALF_LIFE_DAYS` | 30 | `mind/ebbinghaus.py` | 时间衰减半衰期 | ❌ 无直接来源；fit_pending |
+| `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 关键词时间加分 | ❌ 无来源；convention |
+| `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 关键词方向加分 | ❌ 无来源；convention |
+| 语义 recency 权重 | 0.25 | `mind/semantic_retrieval.py` | 内联，不在账本 | ❌ 无来源 |
+| 语义 order 权重 | 0.5 | 同上 | 内联，不在账本 | ❌ 无来源 |
+| `RRF_K` | 60 | `mind/retrieval_fusion.py` | 两路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
+| `max_hops` | 2 | `relation_resolver.py` / `relation_repo.py` | 两跳可达 | ❌ 无来源；且两处重复 |
+| `RELATION_CONFIDENCE` | 0.8 | `mind/relation_extractor.py` | 抽取置信度 | ❌ 未参与排序；值无来源 |
+| 关系 validity | 字段存在 | `memory_relations` | `valid_from/to` 未过滤 | ❌ 孤岛 |
+| 真人感长度 | 40 字 | `personality.REALISM_CONTRACT` | prompt 软约束 | 🟡 来自 50 条人工标签，但样本小 |
+
+### 人工标签对“40 字”的实际支撑
+
+50 条人工总体分中：
+
+- 高分（4–5）n=19：长度中位数 **15**，p75 **20**，最大 **26**；
+- 低分（1–2）n=13：中位数 16，最大 85。
+
+结论：**40 字不是数据支持的阈值**；高分的典型长度更接近 15–25。长度也不是唯一因素，不能只靠截断。
+
+---
+
+## 3. 公开论文/仓库依据
+
+| 方法 | 可用的依据 | 对本项目的含义 |
+|---|---|---|
+| RRF | Cormack et al., SIGIR 2009, k=60 | `RRF_K=60` 可保留；但 RRF 是 rank 融合，不是加权分数 |
+| Generative Agents | Park et al. 2023 + 官方 `retrieve.py` / `scratch.py` | 它用 recency/importance/relevance 三特征，代码里 `recency_decay=0.99` 是**按节点序号**衰减，不是 30 天时间半衰；`gw=[0.5,3,2]` 是经验权重，不是 universal |
+| ACT-R | Anderson et al. 2004 | 若要叫 ACT-R，应实现 base-level `B_i=ln(Σ t_j^-d)` + spreading + partial matching；当前只有指数 recency |
+| HippoRAG | Gutiérrez et al. 2024 | 多跳用 Personalized PageRank，不是固定 2 跳；`max_hops=2` 没有论文依据 |
+| Zep/Graphiti | Rasmussen et al. 2025 | 时间知识图应带 bi-temporal validity；我们的 `valid_from/to` 有字段但没参与检索 |
+| BGE | BAAI/bge-small-zh-v1.5 | 512 维、模型隔离是模型事实，不是打分参数 |
+| 人工标签 | 本项目 50 条 + 90 组成对 | 可用于风格/长度约束；不能反过来证明 30 天/4/6/0.25/0.5/2/0.8 |
+
+**结论：目前只有 RRF_K、BGE 维度和人工风格长度有依据；其余 7 个数值没有直接证据，不能继续当作“科学默认值”。**
+
+---
+
+## 4. 参数联动矩阵
+
+| 参数 | 应该影响 | 现在影响 | 缺口 |
+|---|---|---|---|
+| `event_time` | recency、关系 validity、时间顺序 | 只影响 recency | 关系边不按时间过滤 |
+| `valid_from/to` | 关系是否 active、多跳路径 | 无 | 关系边永远 active |
+| relation confidence | 关系特征强度 | 无 | 0.8 只是存着 |
+| `max_hops` | 多跳范围/成本 | 固定 2 | 无图直径/成本约束 |
+| lexical recency/order | 关键词排序 | 已加，权重独立 | 与语义权重不一致 |
+| semantic recency/order | 语义排序 | 已加，内联 0.25/0.5 | 不在账本、不可联动 |
+| lexical/dense | RRF 融合 | RRF(k=60) | 没有权重/校准 |
+| importance | 事实/情景排序 | 事实未用；情景用 | 两套记忆不一致 |
+| source/scope | 可信度/可见性 | 硬门用 scope；source 未进分 | source 与分数脱节 |
+| 风格长度 | 输出 | prompt 软约束 | 40 字无强证据 |
+
+---
+
+## 5. 建议的统一模型（不是再加 boost）
+
+### 5.1 一个 scorer，硬门在外
+
+```
+active_relation = valid_from <= now < (valid_to or +inf)
+r = normalize(recency(event_time))
+g = graph_score(active_relation, confidence)   # PPR / 可达
+s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
+  + w_i*z(importance) + w_g*z(g) + w_s*z(source)
+```
+
+- 硬门最先，隐私不参与分数；
+- 每个特征先做**同一 query 内归一化**，避免 4/6/0.25/0.5 这种量纲混用；
+- 关系只在 valid 时进入 `g`，confidence 作为 `g` 的系数，不再后置覆盖 RRF；
+- RRF 只作为“没有校准权重时的 fallback”，不与加权分数同时使用；
+- 权重用现有 70 条内部场景 + 50 条人工标签拟合，不拍脑袋。
+
+### 5.2 参数登记
+
+所有数值进入 `docs/params/ledger.json`，并标注：
+
+- `source`：论文/仓库/数据；
+- `fit_pending`：未拟合前不得作为生产真值；
+- `experimental`：只允许 shadow，不允许进默认路径。
+
+内联字面量（0.25/0.5/2/0.8/40）必须消除。
+
+### 5.3 分阶段接入
+
+| 阶段 | 改动 | 不改什么 |
+|---|---|---|
+| P0 | 参数登记；把 0.25/0.5/2/0.8/40 收进配置/常量；关系 validity/confidence 接入 | 不改排序行为 |
+| P1 | 统一 recency/order，去掉双路重复计分；关系进统一分数；RRF 降为 fallback | 不改硬门、不改隐私 |
+| P2 | 用 70 场景 + 50 标签拟合权重；重跑 60/70 关键词、70/70 语义、role/temporal/multihop | 不新增无依据参数 |
+| P3 | PPR/树/HyDE 作为独立实验，先 shadow | 不直接改生产 |
+
+---
+
+## 6. 接入后的影响评估
+
+### 6.1 检索
+
+| 维度 | 当前 | 接入统一 scorer 后 | 风险/缓解 |
+|---|---|---|---|
+| 关键词 recall@5 | 60/70 | 可能变化，必须重跑 | 去掉 4/6 双计分后 role/temporal 可能掉；用校准权重 |
+| 语义 recall@5 | 70/70 | 可能变化 | 关系 validity 过滤会减少旧边；先 shadow |
+| role / temporal | 10/10 / 10/10 | 不应低于基线 | 归一化后重新校准 order/recency |
+| multihop | 10/10（seed） | 真实图更可信 | 线上关系只有 38 条，不能把 seed 10/10 当线上能力 |
+| 隐私 | 0 泄露 | 不变 | 硬门仍在最前 |
+
+### 6.2 延迟/成本
+
+- embedding 调用不变（每轮 ≤1 次）；
+- validity 过滤是 SQL/内存判断，可忽略；
+- PPR 比固定 2 跳贵，需限制节点数/缓存；
+- 关系抽取是离线/整合时，不增加每轮 LLM 调用。
+
+### 6.3 人格
+
+- 风格约束只影响输出，不影响检索；
+- 40 字改为数据支持的 25–30 字区间更合理，但会牺牲技术/安慰长回答；
+- 建议保留“默认短、明确需要时展开”，不做硬截断；
+- 人格→记忆耦合（P6）仍未做，trait 不影响检索。
+
+### 6.4 维护性
+
+- 统一 scorer 后，新增特征只需加一列 + 权重，不再加“后置 boost”；
+- 参数账本 + shadow 开关让回滚成本低；
+- 关系 validity/confidence 接入后，旧关系不会永久污染。
+
+---
+
+## 7. 不建议做的事
+
+1. 不要继续加“关系命中 +6”之类的后置 boost；
+2. 不要把 30 天/4/6/0.25/0.5/2/0.8 当科学默认值；
+3. 不要用单模型 judge 绝对分做门禁（QWK 0.097，已证伪）；
+4. 不要用 seed multihop 10/10 证明线上多跳能力。
+
+---
+
+## 8. 依据链接
+
+- Cormack et al., *Reciprocal Rank Fusion*, SIGIR 2009. [doi:10.1145/1571941.1572114](https://doi.org/10.1145/1571941.1572114)
+- Park et al., *Generative Agents*, 2023. [arXiv:2304.03442](https://arxiv.org/abs/2304.03442)；官方检索代码 [retrieve.py](https://github.com/joonspk-research/generative_agents/blob/main/reverie/backend_server/persona/cognitive_modules/retrieve.py)，参数 [scratch.py](https://github.com/joonspk-research/generative_agents/blob/main/reverie/backend_server/persona/memory_structures/scratch.py)
+- Anderson et al., *An Integrated Theory of the Mind*, 2004. [doi:10.1037/0033-295X.111.4.1036](https://doi.org/10.1037/0033-295X.111.4.1036)
+- Gutiérrez et al., *HippoRAG*, 2024. [arXiv:2405.14831](https://arxiv.org/abs/2405.14831)
+- Rasmussen et al., *Zep*, 2025. [arXiv:2501.13956](https://arxiv.org/abs/2501.13956)
+- BAAI, *bge-small-zh-v1.5*. [Hugging Face](https://huggingface.co/BAAI/bge-small-zh-v1.5)
+- Edge et al., *GraphRAG*, 2024. [arXiv:2404.16130](https://arxiv.org/abs/2404.16130)
