@@ -9,7 +9,7 @@ class IMemoryVectorStore(Protocol):
     """Read-side port for persisted memory vectors."""
 
     async def get(
-        self, memory_kind: str, memory_ids: tuple[int, ...]
+        self, memory_kind: str, memory_ids: tuple[int, ...], model: str = ""
     ) -> dict[int, tuple[float, ...]]: ...
 
 

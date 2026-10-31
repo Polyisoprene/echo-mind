@@ -15,16 +15,17 @@ class SemanticMemoryRetriever:
     """Rerank facts with stored vectors; returns None when coverage is too low."""
 
     def __init__(
-        self, embedder: IEmbeddingGateway, store: IMemoryVectorStore
+        self, embedder: IEmbeddingGateway, store: IMemoryVectorStore, model: str
     ) -> None:
         self._embedder = embedder
         self._store = store
+        self._model = model
 
     async def rerank(
         self, facts: tuple[SemanticFact, ...], query: str, limit: int
     ) -> tuple[SemanticFact, ...] | None:
         ids = tuple(f.fact_id for f in facts if f.fact_id)
-        vectors = await self._store.get("semantic", ids)
+        vectors = await self._store.get("semantic", ids, self._model)
         if len(vectors) < max(1, len(facts) // 2):
             return None
         try:

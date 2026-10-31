@@ -145,6 +145,7 @@ def _wire_semantic(cfg: AppConfig, container: EchoMindContainer) -> None:
         SemanticMemoryRetriever(
             OpenAiEmbeddingGateway(cfg.embedding),
             SqliteMemoryVectorStore(container.db),
+            cfg.embedding.model,
         )
     )
 

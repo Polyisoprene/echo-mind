@@ -14,7 +14,7 @@ class _Store:
         self._vectors = vectors
 
     async def get(
-        self, memory_kind: str, memory_ids: tuple[int, ...]
+        self, memory_kind: str, memory_ids: tuple[int, ...], model: str = ""
     ) -> dict[int, tuple[float, ...]]:
         return {k: v for k, v in self._vectors.items() if k in memory_ids}
 
@@ -34,7 +34,7 @@ def _facts() -> tuple[SemanticFact, ...]:
 @pytest.mark.asyncio
 async def test_rerank_with_full_coverage() -> None:
     service = SemanticMemoryRetriever(
-        _Embedder(), _Store({1: (1.0, 0.0), 2: (0.0, 1.0)})
+        _Embedder(), _Store({1: (1.0, 0.0), 2: (0.0, 1.0)}), "m"
     )
     ranked = await service.rerank(_facts(), "宠物", 1)
     assert ranked is not None and ranked[0].fact_text == "猫粮"
@@ -47,7 +47,7 @@ async def test_low_coverage_falls_back() -> None:
         SemanticFact(fact_id=4, chat_key="g", subject="睡眠", fact_text="熬夜"),
     )
     service = SemanticMemoryRetriever(
-        _Embedder(), _Store({1: (1.0, 0.0)})
+        _Embedder(), _Store({1: (1.0, 0.0)}), "m"
     )
     assert await service.rerank(facts, "宠物", 1) is None
 

@@ -29,7 +29,7 @@ class SqliteMemoryVectorStore:
             await conn.commit()
 
     async def get(
-        self, memory_kind: str, memory_ids: tuple[int, ...]
+        self, memory_kind: str, memory_ids: tuple[int, ...], model: str = ""
     ) -> dict[int, tuple[float, ...]]:
         if not memory_ids:
             return {}
@@ -38,10 +38,12 @@ class SqliteMemoryVectorStore:
             f"SELECT memory_id, vector_json FROM memory_vectors "  # noqa: S608
             f"WHERE memory_kind=? AND memory_id IN ({marks})"
         )
+        params: list[object] = [memory_kind, *memory_ids]
+        if model:
+            sql += " AND model=?"
+            params.append(model)
         async with self._db.connect() as conn:
-            rows = await (await conn.execute(
-                sql, (memory_kind, *memory_ids)
-            )).fetchall()
+            rows = await (await conn.execute(sql, tuple(params))).fetchall()
         return {int(r[0]): tuple(float(x) for x in json.loads(str(r[1]))) for r in rows}
 
     async def load_all(self, memory_kind: str) -> dict[int, tuple[float, ...]]:

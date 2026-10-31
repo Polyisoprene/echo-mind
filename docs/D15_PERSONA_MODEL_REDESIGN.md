@@ -71,6 +71,16 @@
 - `main.py` 仅在 `cfg.embedding.enabled` 时构造 retriever；
 - 默认关闭，当前线上行为不变。
 
+## Mock 端到端验证
+
+`tests/integration/test_semantic_pipeline_mock.py` 用 mock `/embeddings`：
+
+- 10 组同义查询 + 10 条目标事实 + 5 条干扰；
+- 走完整链路：HTTP client → 向量存储 → 余弦 rerank；
+- recall@1 = **10/10**。
+
+这证明管线本身能工作，但 mock 是“按主题给向量”的 oracle，不代表真实 embedding 模型效果。真实 recall 仍需 endpoint。
+
 ## 下一步（需 endpoint）
 
 1. 在 `api.embedding*` 填入可用 endpoint/model/key；
