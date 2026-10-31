@@ -58,6 +58,10 @@
 
 judge 与人工的总体 QWK 仅 **0.097**，旧 rubric 0.034；judge 系统性偏松约 1 分。人工备注集中在“太语C/解释太多/像动漫”。因此 **judge 不能当门禁**，详见 `docs/PERSONA_HUMAN_CALIBRATION_RESULT.md`。
 
+## 人工成对比较包
+
+`eval/calibration/persona_pairwise_v1/` 已生成 30 组同场景 A/B，用来替代不可信的绝对分 judge。
+
 ## 使用建议
 
 - 不要用单一 judge 的绝对分做上线门禁；

@@ -77,6 +77,10 @@
 3. 把“自然度”拆成可判定规则：语C 腔、解释长度、客服腔、动漫腔，减少主观分；
 4. judge 只做**筛坏**（明显越界/提示词泄露），不做质量排序。
 
+## 成对比较包（下一步）
+
+已生成 `eval/calibration/persona_pairwise_v1/`：30 组同场景 A/B，每组只选「哪条更像真人」「哪条更适合发群」。模型名和原分数隐藏，回收后用 `scripts/calibrate_persona_pairwise.py` 算模型胜率与一致性。
+
 ## 文件
 
 - 人工表：`eval/calibration/persona_v1/items.csv`

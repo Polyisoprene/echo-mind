@@ -1,0 +1,424 @@
+{
+  "pairs": [
+    {
+      "pair_id": "Q001",
+      "scenario": "p08",
+      "a": {
+        "item_id": "P029",
+        "model": "kimi-k3",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P028",
+        "model": "glm-5.3",
+        "human_overall": 3
+      }
+    },
+    {
+      "pair_id": "Q002",
+      "scenario": "p11",
+      "a": {
+        "item_id": "P042",
+        "model": "glm-5.3",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P041",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 3
+      }
+    },
+    {
+      "pair_id": "Q003",
+      "scenario": "p02",
+      "a": {
+        "item_id": "P006",
+        "model": "kimi-k3",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P007",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q004",
+      "scenario": "p01",
+      "a": {
+        "item_id": "P002",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 4
+      },
+      "b": {
+        "item_id": "P001",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q005",
+      "scenario": "p03",
+      "a": {
+        "item_id": "P011",
+        "model": "glm-5.3",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P008",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q006",
+      "scenario": "p07",
+      "a": {
+        "item_id": "P026",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 4
+      },
+      "b": {
+        "item_id": "P049",
+        "model": "glm-5.3",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q007",
+      "scenario": "p05",
+      "a": {
+        "item_id": "P019",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P018",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q008",
+      "scenario": "p04",
+      "a": {
+        "item_id": "P013",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P015",
+        "model": "deepseek-v4-pro",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q009",
+      "scenario": "p02",
+      "a": {
+        "item_id": "P006",
+        "model": "kimi-k3",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P005",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q010",
+      "scenario": "p07",
+      "a": {
+        "item_id": "P025",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P027",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q011",
+      "scenario": "p10",
+      "a": {
+        "item_id": "P036",
+        "model": "deepseek-v4-pro",
+        "human_overall": 4
+      },
+      "b": {
+        "item_id": "P037",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q012",
+      "scenario": "p04",
+      "a": {
+        "item_id": "P015",
+        "model": "deepseek-v4-pro",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P014",
+        "model": "glm-5.3",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q013",
+      "scenario": "p09",
+      "a": {
+        "item_id": "P032",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 5
+      },
+      "b": {
+        "item_id": "P048",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q014",
+      "scenario": "p10",
+      "a": {
+        "item_id": "P037",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P039",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q015",
+      "scenario": "p05",
+      "a": {
+        "item_id": "P018",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 4
+      },
+      "b": {
+        "item_id": "P017",
+        "model": "glm-5.3",
+        "human_overall": 5
+      }
+    },
+    {
+      "pair_id": "Q016",
+      "scenario": "p02",
+      "a": {
+        "item_id": "P004",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P005",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q017",
+      "scenario": "p11",
+      "a": {
+        "item_id": "P043",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P042",
+        "model": "glm-5.3",
+        "human_overall": 3
+      }
+    },
+    {
+      "pair_id": "Q018",
+      "scenario": "p06",
+      "a": {
+        "item_id": "P020",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P021",
+        "model": "kimi-k3",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q019",
+      "scenario": "p04",
+      "a": {
+        "item_id": "P014",
+        "model": "glm-5.3",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P013",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q020",
+      "scenario": "p01",
+      "a": {
+        "item_id": "P002",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 4
+      },
+      "b": {
+        "item_id": "P003",
+        "model": "kimi-k3",
+        "human_overall": 3
+      }
+    },
+    {
+      "pair_id": "Q021",
+      "scenario": "p12",
+      "a": {
+        "item_id": "P044",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P046",
+        "model": "kimi-k3",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q022",
+      "scenario": "p09",
+      "a": {
+        "item_id": "P048",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 4
+      },
+      "b": {
+        "item_id": "P035",
+        "model": "kimi-k3",
+        "human_overall": 5
+      }
+    },
+    {
+      "pair_id": "Q023",
+      "scenario": "p03",
+      "a": {
+        "item_id": "P009",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P011",
+        "model": "glm-5.3",
+        "human_overall": 3
+      }
+    },
+    {
+      "pair_id": "Q024",
+      "scenario": "p01",
+      "a": {
+        "item_id": "P003",
+        "model": "kimi-k3",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P001",
+        "model": "deepseek-v4.1-flash",
+        "human_overall": 2
+      }
+    },
+    {
+      "pair_id": "Q025",
+      "scenario": "p12",
+      "a": {
+        "item_id": "P045",
+        "model": "kimi-k3",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P044",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 3
+      }
+    },
+    {
+      "pair_id": "Q026",
+      "scenario": "p06",
+      "a": {
+        "item_id": "P022",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 5
+      },
+      "b": {
+        "item_id": "P021",
+        "model": "kimi-k3",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q027",
+      "scenario": "p08",
+      "a": {
+        "item_id": "P029",
+        "model": "kimi-k3",
+        "human_overall": 3
+      },
+      "b": {
+        "item_id": "P030",
+        "model": "glm-5.3",
+        "human_overall": 4
+      }
+    },
+    {
+      "pair_id": "Q028",
+      "scenario": "p05",
+      "a": {
+        "item_id": "P019",
+        "model": "minimax-m3.1-flash",
+        "human_overall": 2
+      },
+      "b": {
+        "item_id": "P017",
+        "model": "glm-5.3",
+        "human_overall": 5
+      }
+    },
+    {
+      "pair_id": "Q029",
+      "scenario": "p06",
+      "a": {
+        "item_id": "P022",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 5
+      },
+      "b": {
+        "item_id": "P050",
+        "model": "glm-5.3",
+        "human_overall": 3
+      }
+    },
+    {
+      "pair_id": "Q030",
+      "scenario": "p03",
+      "a": {
+        "item_id": "P008",
+        "model": "mimo-v2.6-pro",
+        "human_overall": 4
+      },
+      "b": {
+        "item_id": "P010",
+        "model": "glm-5.3",
+        "human_overall": 2
+      }
+    }
+  ]
+}
