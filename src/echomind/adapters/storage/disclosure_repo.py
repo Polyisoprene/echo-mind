@@ -49,6 +49,40 @@ class SqliteDisclosureLog:
             )
             await conn.commit()
 
+    async def grant(
+        self, *, memory_kind: str, memory_id: int, grantee_id: str,
+        granted_by: str, expires_ms: int | None = None,
+    ) -> None:
+        sql = (
+            "INSERT INTO disclosure_grants "
+            "(memory_kind, memory_id, grantee_id, granted_by, granted_ms, expires_ms) "
+            "VALUES (?, ?, ?, ?, ?, ?) "
+            "ON CONFLICT(memory_kind, memory_id, grantee_id) DO UPDATE SET "
+            "granted_by=excluded.granted_by, granted_ms=excluded.granted_ms, "
+            "expires_ms=excluded.expires_ms"
+        )
+        async with self._db.connect() as conn:
+            await conn.execute(sql, (
+                memory_kind, memory_id, grantee_id, granted_by,
+                int(time.time() * 1000), expires_ms,
+            ))
+            await conn.commit()
+
+    async def has_grant(
+        self, *, memory_kind: str, memory_id: int, grantee_id: str,
+        now_ms: int | None = None,
+    ) -> bool:
+        now = int(time.time() * 1000) if now_ms is None else now_ms
+        sql = (
+            "SELECT 1 FROM disclosure_grants WHERE memory_kind=? AND memory_id=? "
+            "AND grantee_id=? AND (expires_ms IS NULL OR expires_ms > ?)"
+        )
+        async with self._db.connect() as conn:
+            row = await (await conn.execute(
+                sql, (memory_kind, memory_id, grantee_id, now)
+            )).fetchone()
+        return row is not None
+
     async def who_knows(
         self, memory_kind: str, memory_id: int
     ) -> tuple[tuple[str, str], ...]:

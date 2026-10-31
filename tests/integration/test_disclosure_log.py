@@ -31,3 +31,22 @@ async def test_disclosure_log_and_knowledge(tmp_path: Path) -> None:
         "SELECT venue, action, reason, phase FROM disclosures WHERE memory_id=7"
     ).fetchone()
     assert row == ("group:1", "keep", "owner_absent", "gate")
+
+
+@pytest.mark.asyncio
+async def test_grants_expire(tmp_path: Path) -> None:
+    from echomind.adapters.storage.disclosure_repo import SqliteDisclosureLog
+
+    container = await EchoMindContainer.create(db_path=tmp_path / "grant.db")
+    log = SqliteDisclosureLog(container.db)
+    await log.grant(memory_kind="semantic", memory_id=9, grantee_id="L", granted_by="L")
+    assert await log.has_grant(memory_kind="semantic", memory_id=9, grantee_id="L")
+    assert not await log.has_grant(memory_kind="semantic", memory_id=9, grantee_id="M")
+
+    await log.grant(
+        memory_kind="semantic", memory_id=10, grantee_id="L", granted_by="L",
+        expires_ms=1000,
+    )
+    assert not await log.has_grant(
+        memory_kind="semantic", memory_id=10, grantee_id="L", now_ms=2000
+    )

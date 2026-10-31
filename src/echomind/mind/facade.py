@@ -234,8 +234,8 @@ class CognitiveCoreFacade:
         rules = await self._reader.get_procedural_rules(chat_key)
         recalled = await self._recall_and_reinforce(chat_key, tr, uids, now_ms, dry_run)
         facts, recalled = await gate_frame(
-            facts, recalled, audience_of(uids, tr), chat_key, self._disclosure_log
-        )
+            facts, recalled, audience_of(uids, tr), chat_key, self._disclosure_log,
+            working=self._working, bonds=bm)
         cur_p = build_curiosity_prompts(tr, last_dec, snap.affect)
         unk = last_dec.detected_unknown_terms if last_dec else ()
         cyber = compute_cybernetic_core(
