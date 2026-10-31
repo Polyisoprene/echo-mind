@@ -8,7 +8,7 @@ import time
 from typing import Any, cast
 
 from echomind.domain.ports import ILlmGateway
-from echomind.domain.trait_candidate import TraitCandidate
+from echomind.domain.trait_candidate import TraitCandidate, TraitSignature
 from echomind.domain.trait_evidence import TraitEvidence
 
 _CATEGORIES = frozenset({"habit", "temperament", "taste", "taboo"})
@@ -45,8 +45,12 @@ def _prompt(evidence: tuple[TraitEvidence, ...]) -> str:
         "1. category 只能是 habit/temperament/taste/taboo；\n"
         "2. trait_text 用一句中文描述她在什么情境下倾向怎么做；\n"
         "3. evidence_quotes 至少 1 条，必须逐字出现在证据里；\n"
-        "4. 不要编造证据，不要引用隐私细节。\n"
-        '只输出 JSON：{"category":"...","trait_text":"...","evidence_quotes":["..."]}\n'
+        "4. 不要编造证据，不要引用隐私细节；\n"
+        "5. signature 必须包含 situation/behavior/result 三个非空字段，\n"
+        "   分别写清“什么情境/她怎么做/结果或感受”。\n"
+        '只输出 JSON：{"category":"...","trait_text":"...",'
+        '"signature":{"situation":"...","behavior":"...","result":"..."},'
+        '"evidence_quotes":["..."]}\n'
         f"证据：\n{lines}"
     )
 
@@ -74,11 +78,32 @@ def _validate(
     return _validate_quotes(payload, evidence)
 
 
+def _signature(payload: dict[str, Any]) -> TraitSignature | None:
+    raw = payload.get("signature")
+    if not isinstance(raw, dict):
+        return None
+    situation = raw.get("situation")
+    behavior = raw.get("behavior")
+    result = raw.get("result")
+    if not all(
+        isinstance(value, str) and value.strip()
+        for value in (situation, behavior, result)
+    ):
+        return None
+    return TraitSignature(
+        situation=cast(str, situation).strip(),
+        behavior=cast(str, behavior).strip(),
+        result=cast(str, result).strip(),
+    )
+
+
 def _validate_text(payload: dict[str, Any]) -> str | None:
     category = payload.get("category")
     text = payload.get("trait_text")
     if category not in _CATEGORIES or not isinstance(text, str) or not text.strip():
         return "invalid category/text"
+    if _signature(payload) is None:
+        return "missing situation/behavior/result"
     return None
 
 
@@ -134,6 +159,7 @@ class TraitTextGenerator:
         return TraitCandidate(
             trait_id=trait_id, category=cast(Any, str(payload["category"])),
             trait_text=str(payload["trait_text"]).strip(),
+            signature=_signature(payload),
             evidence_json=evidence_json, prompt_hash=digest,
             generator_model=self._model, status="candidate", created_ms=now_ms,
         )

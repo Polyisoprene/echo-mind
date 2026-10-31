@@ -124,6 +124,7 @@ async def ensure_trait_candidate_table(conn: Any) -> None:
         ("promoted_by", "TEXT NOT NULL DEFAULT ''"),
         ("promote_reason", "TEXT NOT NULL DEFAULT ''"),
         ("promoted_ms", "INTEGER NOT NULL DEFAULT 0"),
+        ("signature_json", "TEXT NOT NULL DEFAULT '{}'"),
     ):
         await _ensure_column(conn, "trait_candidates", column, ddl)
 

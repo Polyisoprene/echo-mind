@@ -59,6 +59,8 @@ async def main() -> int:
             "category": trait.category,
             "status": None if candidate is None else candidate.status,
             "trait_text": None if candidate is None else candidate.trait_text,
+            "signature": None if candidate is None or candidate.signature is None
+            else candidate.signature.model_dump(),
             "reject_reason": None if candidate is None else candidate.reject_reason,
         })
     report = {"replay": replay, "candidates": results}

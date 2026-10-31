@@ -12,6 +12,14 @@ TraitCategory = Literal["habit", "temperament", "taste", "taboo"]
 CandidateStatus = Literal["candidate", "rejected", "promoted"]
 
 
+class TraitSignature(FrozenValueObject):
+    """CAPS-style if-situation / then-behavior / result signature."""
+
+    situation: str = Field(min_length=1)
+    behavior: str = Field(min_length=1)
+    result: str = Field(min_length=1)
+
+
 class TraitCandidate(FrozenValueObject):
     """LLM-proposed trait with the evidence quotes that justify it."""
 
@@ -19,6 +27,7 @@ class TraitCandidate(FrozenValueObject):
     trait_id: int = Field(ge=1)
     category: TraitCategory
     trait_text: str = Field(min_length=1)
+    signature: TraitSignature | None = None
     evidence_json: str
     prompt_hash: str = Field(min_length=1)
     generator_model: str = ""

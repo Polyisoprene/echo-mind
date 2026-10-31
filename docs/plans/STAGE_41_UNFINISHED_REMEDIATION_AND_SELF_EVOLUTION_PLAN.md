@@ -1225,3 +1225,49 @@ synthetic 结果：
 **验证**
 
 - 全门禁：**353 passed / 92%**，fusion 70/70。
+
+### 14.22 结构化 trait 签名（2026-11-01）
+
+之前的候选是自由总结，容易出现“倾向于注意到”这类空泛句。  
+现在强制 LLM 输出 **CAPS if-then 签名**：
+
+```json
+{
+  "category": "...",
+  "trait_text": "...",
+  "signature": {
+    "situation": "什么情境",
+    "behavior": "她怎么做",
+    "result": "结果/感受"
+  },
+  "evidence_quotes": ["..."]
+}
+```
+
+结构校验：
+
+- 三个字段都必须非空；
+- 缺任一字段 → rejected；
+- quote 仍需逐字来自证据；
+- 至少一条非 tool 的行为/话语证据。
+
+存储：
+
+- `trait_candidates.signature_json`；
+- `TraitSignature` 值对象；
+- 旧候选没有签名可为空，但新生成必须通过。
+
+真实 LLM smoke：
+
+```text
+text: 在查看图片时，她倾向于反复指出并确认图中的小槽点。
+signature.situation: 查看图片时
+signature.behavior: 反复说“我看到图里那个小槽点了”并继续查看图片
+signature.result: 形成反复确认小槽点的行为模式
+```
+
+比之前多出明确的行为/结果，但仍偏“行为模式总结”，需要后续 A/B 验证，不能直接晋升。
+
+**验证**
+
+- 全门禁：**354 passed / 92%**，fusion 70/70。

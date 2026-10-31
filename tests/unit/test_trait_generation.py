@@ -31,6 +31,10 @@ async def test_two_contexts_generate_quote_grounded_candidate() -> None:
     llm = FakeLlm({
         "category": "habit",
         "trait_text": "看到图会先找画面里的小细节",
+        "signature": {
+            "situation": "看到图", "behavior": "先找小细节",
+            "result": "会停下来看",
+        },
         "evidence_quotes": ["喜欢看猫图"],
     })
     evidence = (
@@ -48,6 +52,10 @@ async def test_fabricated_quote_is_rejected() -> None:
     llm = FakeLlm({
         "category": "habit",
         "trait_text": "喜欢猫",
+        "signature": {
+            "situation": "看到图", "behavior": "看猫",
+            "result": "停下来",
+        },
         "evidence_quotes": ["这句不在证据里"],
     })
     evidence = (
@@ -70,6 +78,10 @@ async def test_one_context_does_not_call_llm() -> None:
 async def test_tool_only_evidence_cannot_generate_prose() -> None:
     llm = FakeLlm({
         "category": "habit", "trait_text": "查看图片",
+        "signature": {
+            "situation": "看图", "behavior": "查看",
+            "result": "确认",
+        },
         "evidence_quotes": ["look_at_image"],
     })
     evidence = (
@@ -86,3 +98,18 @@ async def test_tool_only_evidence_cannot_generate_prose() -> None:
     )
     assert await TraitTextGenerator(llm).generate(1, evidence) is None
     assert llm.calls == 0
+
+
+async def test_missing_signature_is_rejected() -> None:
+    llm = FakeLlm({
+        "category": "habit", "trait_text": "会看细节",
+        "evidence_quotes": ["喜欢看猫图"],
+    })
+    evidence = (
+        _evidence("c1", "喜欢看猫图", 1),
+        _evidence("c2", "看到猫图又停下来看", 2),
+    )
+    candidate = await TraitTextGenerator(llm).generate(1, evidence)
+    assert candidate is not None
+    assert candidate.status == "rejected"
+    assert "situation" in candidate.reject_reason
