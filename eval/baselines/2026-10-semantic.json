@@ -522,8 +522,9 @@
       "visible": true
     }
   ],
-  "dataset_sha256": "d770e7922b26f2f088b221212ea99fb490492ccc512cf7ceed6bc2b9bdd5a498",
+  "dataset_sha256": "1e1e470102abaab842597f9e15945a8c79e0b1368e50f14cb03ec9e8b933bade",
   "mode": "semantic",
+  "ablation": "none",
   "version": "v1",
   "date": "2026-10-31"
 }

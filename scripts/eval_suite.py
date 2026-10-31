@@ -22,6 +22,7 @@ from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import load_config_from_json
 from echomind.domain.models import PlasticParamSpec, SemanticFact, SocialBondProfile
 from echomind.domain.relation import MemoryRelation
+from echomind.mind import ebbinghaus, semantic_retrieval
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.person_level import PersonProfile
 from echomind.mind.persona_stance import apply_stance_for
@@ -83,10 +84,10 @@ async def _retrieval(
         fused = rrf_fuse((tuple(f.fact_id for f in lexical),
                           tuple(f.fact_id for f in semantic)))
         by_id = {f.fact_id: f for f in picked}
-        ranked = tuple(by_id[i] for i in fused if i in by_id)[:5]
+        ranked = tuple(by_id[i] for i in fused if i in by_id)
     else:
         ranked = select_relevant_facts(
-            picked, str(scenario["query"]), limit=5, now_ms=now_ms
+            picked, str(scenario["query"]), limit=len(picked), now_ms=now_ms
         )
     if resolver is not None:
         boosted = await resolver.boost_ids(
@@ -134,12 +135,14 @@ def _persona(scenario: dict[str, Any]) -> dict[str, Any]:
     return {"passed": delta <= float(scenario["max_delta"]), "delta": round(delta, 3)}
 
 
-async def _evaluate(data: dict[str, Any], gateway: Any = None) -> dict[str, Any]:
+async def _evaluate(
+    data: dict[str, Any], gateway: Any = None, use_relations: bool = True
+) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as tmp:
         container = await EchoMindContainer.create(db_path=Path(tmp) / "eval.db")
         repo = container.memory_repo
         relation_store = SqliteRelationStore(container.db)
-        resolver = RelationResolver(relation_store)
+        resolver = RelationResolver(relation_store) if use_relations else None
         results: list[dict[str, Any]] = []
         for scenario in data["scenarios"]:
             if scenario["kind"] == "persona":
@@ -216,7 +219,17 @@ async def main() -> int:
     parser.add_argument("--save-baseline", type=Path)
     parser.add_argument("--check", type=Path)
     parser.add_argument("--semantic", action="store_true")
+    parser.add_argument(
+        "--ablate", choices=("none", "recency", "order", "recency_order", "relations"),
+        default="none",
+    )
     args = parser.parse_args()
+    if args.ablate in ("recency", "recency_order"):
+        ebbinghaus.FACT_RECENCY_WEIGHT = 0.0
+        semantic_retrieval.SEMANTIC_RECENCY_WEIGHT = 0.0
+    if args.ablate in ("order", "recency_order"):
+        ebbinghaus.ENTITY_ORDER_WEIGHT = 0.0
+        semantic_retrieval.SEMANTIC_ORDER_WEIGHT = 0.0
 
     data = json.loads(args.data.read_text(encoding="utf-8"))
     gateway = _gateway(args.semantic)
@@ -224,11 +237,14 @@ async def main() -> int:
         print("embedding is not configured")
         return 2
     try:
-        report = await _evaluate(data, gateway)
+        report = await _evaluate(
+            data, gateway, use_relations=args.ablate != "relations"
+        )
     finally:
         if gateway is not None:
             await gateway.aclose()
     report["mode"] = "semantic" if args.semantic else "lexical"
+    report["ablation"] = args.ablate
     report["version"] = data.get("version", "unknown")
     report["date"] = datetime.now().strftime("%Y-%m-%d")
     _print(report["metrics"])

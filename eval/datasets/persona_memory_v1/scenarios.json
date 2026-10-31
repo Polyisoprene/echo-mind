@@ -1912,7 +1912,7 @@
         "a1",
         "b1"
       ],
-      "query": "a1 的朋友在哪工作",
+      "query": "a1 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b1",
@@ -1929,6 +1929,96 @@
         {
           "subject": "b1_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b1_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b1_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b1_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b1_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b1_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -1958,7 +2048,7 @@
         "a2",
         "b2"
       ],
-      "query": "a2 的朋友在哪工作",
+      "query": "a2 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b2",
@@ -1975,6 +2065,96 @@
         {
           "subject": "b2_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b2_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b2_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b2_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b2_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b2_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2004,7 +2184,7 @@
         "a3",
         "b3"
       ],
-      "query": "a3 的朋友在哪工作",
+      "query": "a3 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b3",
@@ -2021,6 +2201,96 @@
         {
           "subject": "b3_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b3_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b3_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b3_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b3_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b3_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2050,7 +2320,7 @@
         "a4",
         "b4"
       ],
-      "query": "a4 的朋友在哪工作",
+      "query": "a4 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b4",
@@ -2067,6 +2337,96 @@
         {
           "subject": "b4_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b4_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b4_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b4_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b4_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b4_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2096,7 +2456,7 @@
         "a5",
         "b5"
       ],
-      "query": "a5 的朋友在哪工作",
+      "query": "a5 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b5",
@@ -2113,6 +2473,96 @@
         {
           "subject": "b5_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b5_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b5_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b5_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b5_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b5_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2142,7 +2592,7 @@
         "a6",
         "b6"
       ],
-      "query": "a6 的朋友在哪工作",
+      "query": "a6 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b6",
@@ -2159,6 +2609,96 @@
         {
           "subject": "b6_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b6_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b6_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b6_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b6_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b6_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2188,7 +2728,7 @@
         "a7",
         "b7"
       ],
-      "query": "a7 的朋友在哪工作",
+      "query": "a7 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b7",
@@ -2205,6 +2745,96 @@
         {
           "subject": "b7_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b7_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b7_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b7_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b7_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b7_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2234,7 +2864,7 @@
         "a8",
         "b8"
       ],
-      "query": "a8 的朋友在哪工作",
+      "query": "a8 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b8",
@@ -2251,6 +2881,96 @@
         {
           "subject": "b8_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b8_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b8_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b8_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b8_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b8_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2280,7 +3000,7 @@
         "a9",
         "b9"
       ],
-      "query": "a9 的朋友在哪工作",
+      "query": "a9 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b9",
@@ -2297,6 +3017,96 @@
         {
           "subject": "b9_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b9_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b9_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b9_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b9_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b9_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
@@ -2326,7 +3136,7 @@
         "a10",
         "b10"
       ],
-      "query": "a10 的朋友在哪工作",
+      "query": "a10 的朋友现在怎么样",
       "facts": [
         {
           "subject": "b10",
@@ -2343,6 +3153,96 @@
         {
           "subject": "b10_noise2",
           "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10_filler1",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10_filler2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10_filler3",
+          "text": "周末去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10_filler4",
+          "text": "快递到了楼下",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10_filler5",
+          "text": "游戏连跪三把",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_1",
+          "text": "小周的朋友最近在找工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_2",
+          "text": "阿岚的朋友刚升职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_3",
+          "text": "老陈的朋友天天加班",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_4",
+          "text": "小夏的朋友准备跳槽",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_5",
+          "text": "阿北的朋友在创业",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_6",
+          "text": "小许的朋友换了城市",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_7",
+          "text": "阿洛的朋友在实习",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_8",
+          "text": "小唐的朋友刚入职",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_9",
+          "text": "阿远的朋友在休假",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "mh_other_10",
+          "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
         }
