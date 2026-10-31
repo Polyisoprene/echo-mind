@@ -466,3 +466,16 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 - 只测检索，不测 answer generation；不能和论文端到端分数直接比较。
 
 详见 `docs/EXTERNAL_BENCHMARK_LONGMEMEVAL.md`。
+
+
+---
+
+## 20. 第 17 轮：bge-small-zh → bge-m3
+
+- 8010 生产服务切到 `BAAI/bge-m3`（1024 维，FP16，max_length=1024）；
+- 204 + 14 条事实已用新模型回填，`memory_vectors.model` 隔离旧向量；
+- 跨语言 smoke：中英同义 cosine 0.899，无关 0.548；
+- LongMemEval-S 100 题：session recall@5 **0.440 → 0.510**，MRR **0.276 → 0.315**；
+- 代价：显存约 +1.3GB；batch=32 会 OOM，外部评测用 batch=4。
+
+单会话检索仍是最弱项（0.294–0.312），语言不是唯一原因。

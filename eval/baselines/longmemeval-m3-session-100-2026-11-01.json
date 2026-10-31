@@ -1,0 +1,745 @@
+{
+  "benchmark": "LongMemEval-S",
+  "granularity": "session",
+  "n": 100,
+  "summary": {
+    "knowledge-update": {
+      "n": 17,
+      "turn_recall@5": null,
+      "session_recall@5": 0.824,
+      "mrr": 0.606
+    },
+    "multi-session": {
+      "n": 17,
+      "turn_recall@5": null,
+      "session_recall@5": 0.824,
+      "mrr": 0.576
+    },
+    "single-session-assistant": {
+      "n": 17,
+      "turn_recall@5": null,
+      "session_recall@5": 0.294,
+      "mrr": 0.138
+    },
+    "single-session-preference": {
+      "n": 17,
+      "turn_recall@5": null,
+      "session_recall@5": 0.294,
+      "mrr": 0.168
+    },
+    "single-session-user": {
+      "n": 16,
+      "turn_recall@5": null,
+      "session_recall@5": 0.312,
+      "mrr": 0.159
+    },
+    "temporal-reasoning": {
+      "n": 16,
+      "turn_recall@5": null,
+      "session_recall@5": 0.5,
+      "mrr": 0.231
+    }
+  },
+  "results": [
+    {
+      "id": "6a1eabeb",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.2
+    },
+    {
+      "id": "0a995998",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "7161e7e2",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "8a2466db",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "e47becba",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.018867924528301886
+    },
+    {
+      "id": "gpt4_59149c77",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "6aeb4375",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05555555555555555
+    },
+    {
+      "id": "6d550036",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "c4f10528",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05
+    },
+    {
+      "id": "06878be2",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.058823529411764705
+    },
+    {
+      "id": "118b2229",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "gpt4_f49edff3",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "830ce83f",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.041666666666666664
+    },
+    {
+      "id": "gpt4_59c863d7",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "89527b6b",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.16666666666666666
+    },
+    {
+      "id": "75832dbd",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.125
+    },
+    {
+      "id": "51a45a95",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.047619047619047616
+    },
+    {
+      "id": "71017276",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.047619047619047616
+    },
+    {
+      "id": "852ce960",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "b5ef892d",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.125
+    },
+    {
+      "id": "e9327a54",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "0edc2aef",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05555555555555555
+    },
+    {
+      "id": "58bf7951",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.09090909090909091
+    },
+    {
+      "id": "b46e15ed",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "945e3d21",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "e831120c",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "4c36ccef",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05
+    },
+    {
+      "id": "35a27287",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.04
+    },
+    {
+      "id": "1e043500",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "gpt4_fa19884c",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.125
+    },
+    {
+      "id": "d7c942c3",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "3a704032",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "6ae235be",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.14285714285714285
+    },
+    {
+      "id": "32260d93",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.047619047619047616
+    },
+    {
+      "id": "c5e8278d",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05263157894736842
+    },
+    {
+      "id": "0bc8ad92",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "71315a70",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "gpt4_d84a3211",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "7e00a6cb",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05555555555555555
+    },
+    {
+      "id": "195a1a1b",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.06666666666666667
+    },
+    {
+      "id": "6ade9755",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05555555555555555
+    },
+    {
+      "id": "af082822",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "89941a93",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "aae3761f",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "1903aded",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "afdc33df",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "6f9b354f",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05555555555555555
+    },
+    {
+      "id": "gpt4_4929293a",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.14285714285714285
+    },
+    {
+      "id": "ce6d2d27",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "gpt4_f2262a51",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "ceb54acb",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.09090909090909091
+    },
+    {
+      "id": "caf03d32",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.043478260869565216
+    },
+    {
+      "id": "58ef2f1c",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.06666666666666667
+    },
+    {
+      "id": "gpt4_b5700ca9",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.06666666666666667
+    },
+    {
+      "id": "9ea5eabc",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.3333333333333333
+    },
+    {
+      "id": "dd2973ad",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.07142857142857142
+    },
+    {
+      "id": "f523d9fe",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.1111111111111111
+    },
+    {
+      "id": "54026fce",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.0625
+    },
+    {
+      "id": "f8c5f88b",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.07142857142857142
+    },
+    {
+      "id": "9a707b81",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.2
+    },
+    {
+      "id": "07741c44",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "c4a1ceb8",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "0e5e2d1a",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "06f04340",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "5d3d2817",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05555555555555555
+    },
+    {
+      "id": "gpt4_1d4ab0c9",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "a1eacc2a",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "gpt4_a56e767c",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.2
+    },
+    {
+      "id": "fea54f57",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.1111111111111111
+    },
+    {
+      "id": "6b7dfb22",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.2
+    },
+    {
+      "id": "7527f7e2",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "gpt4_e072b769",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.09090909090909091
+    },
+    {
+      "id": "184da446",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "6cb6f249",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.1111111111111111
+    },
+    {
+      "id": "cc539528",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05263157894736842
+    },
+    {
+      "id": "1a1907b4",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "c960da58",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "0db4c65d",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.1
+    },
+    {
+      "id": "031748ae",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "46a3abf7",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "dc439ea3",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "09d032c9",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.06666666666666667
+    },
+    {
+      "id": "3b6f954b",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.06666666666666667
+    },
+    {
+      "id": "gpt4_1d80365e",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "4d6b87c8",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.16666666666666666
+    },
+    {
+      "id": "36b9f61e",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.2
+    },
+    {
+      "id": "18dcd5a5",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.047619047619047616
+    },
+    {
+      "id": "38146c39",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.07142857142857142
+    },
+    {
+      "id": "726462e0",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.25
+    },
+    {
+      "id": "gpt4_7f6b06db",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.041666666666666664
+    },
+    {
+      "id": "0f05491a",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "28dc39ac",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "488d3006",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.047619047619047616
+    },
+    {
+      "id": "d24813b1",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.038461538461538464
+    },
+    {
+      "id": "94f70d80",
+      "type": "single-session-user",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05263157894736842
+    },
+    {
+      "id": "gpt4_6dc9b45b",
+      "type": "temporal-reasoning",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05
+    },
+    {
+      "id": "08e075c7",
+      "type": "knowledge-update",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 0.5
+    },
+    {
+      "id": "gpt4_2f8be40d",
+      "type": "multi-session",
+      "turn_hit": null,
+      "session_hit": true,
+      "mrr": 1.0
+    },
+    {
+      "id": "58470ed2",
+      "type": "single-session-assistant",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.08333333333333333
+    },
+    {
+      "id": "57f827a0",
+      "type": "single-session-preference",
+      "turn_hit": null,
+      "session_hit": false,
+      "mrr": 0.05555555555555555
+    }
+  ]
+}

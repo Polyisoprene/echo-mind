@@ -9,9 +9,10 @@
 
 ## 模型
 
-- `BAAI/bge-small-zh-v1.5`，512 维；
-- 目录：`/home/polyisoprene/embedding-service/bge-small-zh-v1.5`；
-- 下载脚本：`scripts/download_bge_small_zh.sh`（默认 hf-mirror，失败回退官方）。
+- `BAAI/bge-m3`，1024 维，多语言；
+- 目录：`/home/polyisoprene/embedding-service/bge-m3`；
+- 旧模型目录保留，可回滚：`bge-small-zh-v1.5`；
+- 下载源：hf-mirror 的 `BAAI/bge-m3`。
 
 ## 服务
 
@@ -22,7 +23,7 @@ screen -dmS embedding bash /home/polyisoprene/embedding-service/run.sh
 curl http://192.168.3.2:8010/health
 ```
 
-- `run.sh` 循环启动 `server.py --model ... --host 0.0.0.0 --port 8010 --device cuda`；
+- `run.sh` 循环启动 `server.py --model bge-m3 --host 0.0.0.0 --port 8010 --device cuda --dtype float16 --max-length 1024`；
 - 日志：`~/embedding-service/embedding.log`；
 - OpenAI 兼容：`POST http://192.168.3.2:8010/v1/embeddings`。
 
@@ -30,24 +31,23 @@ curl http://192.168.3.2:8010/health
 
 | 项 | 数值 |
 |---|---|
-| 启动前显存 | 8.96GB |
-| 空闲 | 9.26GB（+282MB） |
-| 回填后 | 9.59GB（+632MB） |
-| 进程 RSS | 约 1.45GB |
-| 单条查询 | 约 10–85ms |
-| 3 条批量 | 约 13ms（热） |
+| bge-small 服务时显存 | 约 10.4GB |
+| bge-m3（FP16）服务时显存 | 约 11.7GB（+1.3GB） |
+| 空闲显存 | 约 5.4GB |
+| 批量 32×1024 token | **OOM** |
+| 外部评测安全 batch | 4 |
 
-剩余显存约 7.5GB，安全。
+bge-m3 比 bge-small 多约 1.3GB 显存；单请求批量不要拉到 32。
 
 ## EchoMind 配置
 
 两份 `data*/config.json` 的 `api` 段：
 
 ```json
-"embeddingModel": "BAAI/bge-small-zh-v1.5",
+"embeddingModel": "BAAI/bge-m3",
 "embeddingBaseUrl": "http://192.168.3.2:8010/v1",
 "embeddingApiKey": "local",
-"embeddingDimensions": 512
+"embeddingDimensions": 1024
 ```
 
 回填：
@@ -59,12 +59,13 @@ curl http://192.168.3.2:8010/health
 
 ## 效果
 
-- 同义查询 recall@5：关键词 5/10 → **9/10**；
-- BGE 查询前缀 8/10，因此不加前缀；
+- 同义查询 recall@5：关键词 5/10 → bge-small **9/10**；
+- LongMemEval-S 100 题检索：bge-small 44.0% → **bge-m3 51.0%**；
+- 跨语言对照：`猫粮快没了` vs `the cat food is running low` cosine **0.899**，vs 无关句 0.548；
 - frame 在覆盖足够时走语义 rerank，失败自动回退关键词。
 
 ## 注意
 
 - 服务重启后需确认 `screen embedding` 存在；
 - 模型/向量切换时 `memory_vectors.model` 会隔离，避免混用；
-- 当前是 10 条合成查询，不是 GroupMemBench/人工盲评。
+- LongMemEval 仍是英文检索-only，不是端到端 QA；中文外部集/GroupMemBench 还没接。

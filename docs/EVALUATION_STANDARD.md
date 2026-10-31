@@ -243,7 +243,7 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 
 - 数据：LongMemEval-S cleaned，100 题分层抽样，session 粒度；
 - 适配器：`scripts/eval_longmemeval.py`；
-- 结果：session recall@5 **0.440**，MRR **0.276**；
+- 结果：bge-small session recall@5 **0.440** → bge-m3 **0.510**；MRR 0.276 → **0.315**；
 - 详见 `docs/EXTERNAL_BENCHMARK_LONGMEMEVAL.md`；
 - 注意：这是检索基线，不是端到端 QA。
 
