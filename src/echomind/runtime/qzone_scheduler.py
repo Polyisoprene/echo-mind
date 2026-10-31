@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import Any
 
 from echomind.domain.ports import (
     ILlmGateway,
@@ -17,6 +16,7 @@ from echomind.domain.ports import (
 from echomind.mind.circadian import biological_jitter_factor, resolve_circadian_phase
 from echomind.mind.drives import circadian_energy_target
 from echomind.mind.personality import synthesize_live_persona_directive
+from echomind.runtime.qzone_budgets import budget, extract_content, is_truncated
 
 QZONE_CFG_KEY = "qzone_showcase"
 QZONE_STATE_KEY = "__qzone_state__"
@@ -122,16 +122,6 @@ def _is_due(
     return (now_ms - last_ms) >= int(eff_min * 60_000)
 
 
-def _extract_content(resp: dict[str, Any]) -> str:
-    choices = resp.get("choices")
-    if not isinstance(choices, list) or not choices:
-        return ""
-    first = choices[0] if isinstance(choices[0], dict) else {}
-    raw_msg = first.get("message")
-    msg = raw_msg if isinstance(raw_msg, dict) else {}
-    return str(msg.get("content") or "").strip().strip('"“”')
-
-
 class QzoneMoodShowcaseScheduler:
     """Autonomously update QQ signature, post Qzone mood updates, and send proactive messages."""
 
@@ -181,7 +171,7 @@ class QzoneMoodShowcaseScheduler:
         return ctx, snap.affect.energy
 
     async def _generate_and_set_signature(
-        self, ctx_text: str, state: dict[str, str], now_ms: int
+        self, ctx_text: str, state: dict[str, str], now_ms: int, cfg: dict[str, str]
     ) -> str:
         prompt = (
             "请以第一人称写一句此刻的 QQ 个性签名（10~26字，口语自然，带一点当下心情或小动作，"
@@ -189,9 +179,10 @@ class QzoneMoodShowcaseScheduler:
         )
         resp = await self._llm.complete(
             [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
-            temperature=0.85, max_tokens=80, chat_key="qzone:signature",
+            temperature=0.85, max_tokens=budget(cfg, "token_budget_signature", 120),
+            chat_key="qzone:signature",
         )
-        sig = _extract_content(resp)[:50]
+        sig = extract_content(resp)[:50]
         if not sig:
             return ""
         await self._caller.call_api("set_self_longnick", longNick=sig)
@@ -199,7 +190,7 @@ class QzoneMoodShowcaseScheduler:
         return sig
 
     async def _generate_and_post_qzone(
-        self, ctx_text: str, state: dict[str, str], now_ms: int
+        self, ctx_text: str, state: dict[str, str], now_ms: int, cfg: dict[str, str]
     ) -> str:
         prompt = (
             "请以第一人称写一条发在自己 QQ 空间的日常说说（35~95字，像真人朋友一样自然碎碎念，"
@@ -207,9 +198,10 @@ class QzoneMoodShowcaseScheduler:
         )
         resp = await self._llm.complete(
             [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
-            temperature=0.85, max_tokens=220, chat_key="qzone:post",
+            temperature=0.85, max_tokens=budget(cfg, "token_budget_post", 400),
+            chat_key="qzone:post",
         )
-        post = _extract_content(resp)[:280]
+        post = extract_content(resp)[:280]
         if not post:
             return ""
         await self._caller.call_api("send_qzone_msg", content=post, ugc_right=1)
@@ -217,16 +209,24 @@ class QzoneMoodShowcaseScheduler:
         return post
 
     async def _send_one_proactive_target(
-        self, ctx_text: str, chat_key: str, at_uid: str | None
+        self, ctx_text: str, chat_key: str, at_uid: str | None,
+        cfg: dict[str, str] | None = None,
     ) -> str:
+        cfg = cfg or {}
         if self._sender is None:
             return ""
         prompt = _proactive_prompt_for(chat_key, at_uid)
+        max_tok = budget(cfg, "token_budget_proactive", 300)
         resp = await self._llm.complete(
             [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
-            temperature=0.85, max_tokens=140, chat_key=chat_key,
+            temperature=0.85, max_tokens=max_tok, chat_key=chat_key,
         )
-        msg = _extract_content(resp)[:140]
+        if is_truncated(resp):
+            resp = await self._llm.complete(
+                [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
+                temperature=0.85, max_tokens=max_tok, chat_key=chat_key, thinking_off=True,
+            )
+        msg = extract_content(resp).strip()
         if not msg:
             return ""
         await self._sender.send_text(chat_key, (msg,), at_user_id=at_uid)
@@ -240,7 +240,7 @@ class QzoneMoodShowcaseScheduler:
         targets = parse_proactive_targets(cfg.get("proactive_target", "private:10001001"))
         sent_msgs: list[str] = []
         for chat_key, at_uid in targets:
-            msg = await self._send_one_proactive_target(ctx_text, chat_key, at_uid)
+            msg = await self._send_one_proactive_target(ctx_text, chat_key, at_uid, cfg)
             if msg:
                 sent_msgs.append(msg)
         if not sent_msgs:
@@ -289,9 +289,9 @@ class QzoneMoodShowcaseScheduler:
         sig_due, qz_due, pro_due = flags
         out: dict[str, str] = {}
         if sig_due:
-            out["signature"] = await self._generate_and_set_signature(ctx_text, state, now_ms)
+            out["signature"] = await self._generate_and_set_signature(ctx_text, state, now_ms, cfg)
         if qz_due:
-            out["qzone"] = await self._generate_and_post_qzone(ctx_text, state, now_ms)
+            out["qzone"] = await self._generate_and_post_qzone(ctx_text, state, now_ms, cfg)
         if pro_due:
             out["proactive"] = await self._generate_and_send_proactive(ctx_text, state, cfg, now_ms)
         return out

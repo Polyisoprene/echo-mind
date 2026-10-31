@@ -649,7 +649,7 @@ async def test_qzone_tools_and_showcase_scheduler(tmp_path: Path) -> None:
     caller = _QzoneCaller()
     qz_tool = QzonePublishTool(caller)
     sig_tool = ProfileSignatureTool(caller)
-    assert len(qz_tool.config_fields()) == 10
+    assert len(qz_tool.config_fields()) == 13
     assert "ok" in await qz_tool.execute(
         "group:1", {"content": "今天阳光真好", "visibility": "public"}
     )
@@ -707,9 +707,9 @@ async def test_qzone_tools_and_showcase_scheduler(tmp_path: Path) -> None:
     assert is_within_active_hours("22:00-02:00", noon_cst_ms) is False
     assert is_within_active_hours("", noon_cst_ms) is True
     assert is_within_active_hours("bad:spec", noon_cst_ms) is True
-    assert qz_tool.name == "qzone_publish" and sig_tool.name == "profile_signature"
+    assert qz_tool.name == "qzone_showcase" and sig_tool.name == "qzone_showcase"
     assert "content" in qz_tool.parameters_schema()["properties"]
-    assert "signature" in sig_tool.parameters_schema()["properties"]
+    assert "content" in sig_tool.parameters_schema()["properties"]
     assert qz_tool.description != "" and sig_tool.description != ""
 
     from echomind.domain.models import TurnOutcome

@@ -9,6 +9,12 @@ from echomind.domain.models import SkillConfigField
 from echomind.domain.ports import IOneBotApiCaller
 
 QZONE_SHOWCASE_FIELDS: tuple[SkillConfigField, ...] = (
+    SkillConfigField(key="token_budget_proactive", label="主动发言 token 预算",
+                     kind="number", default="300", placeholder="默认 300"),
+    SkillConfigField(key="token_budget_post", label="空间说说 token 预算",
+                     kind="number", default="400", placeholder="默认 400"),
+    SkillConfigField(key="token_budget_signature", label="签名 token 预算",
+                     kind="number", default="120", placeholder="默认 120"),
     SkillConfigField(
         key="signature_enabled",
         label="自动改个性签名 (1=开/0=关)",
@@ -79,7 +85,7 @@ QZONE_SHOWCASE_FIELDS: tuple[SkillConfigField, ...] = (
 VISIBILITY_MAP: dict[str, int] = {"public": 1, "friends": 4, "self": 64}
 
 
-class QzonePublishTool:
+class QzoneAndProfileTool:
     """Publish a text post to QQ Space (Qzone) via OneBot send_qzone_msg."""
 
     category = "空间与资料"
@@ -93,17 +99,18 @@ class QzonePublishTool:
 
     @property
     def name(self) -> str:
-        return "qzone_publish"
+        return "qzone_showcase"
 
     @property
     def description(self) -> str:
-        return "发一条 QQ 空间说说动态（1~3句日常碎碎念或心情分享，默认公开可见）。"
+        return "空间与资料：action=post 发一条 QQ 空间说说；action=signature 修改个性签名。"
 
     def parameters_schema(self) -> dict[str, Any]:
         return {
             "type": "object",
             "properties": {
-                "content": {"type": "string", "description": "说说正文内容（10~200字）"},
+                "action": {"type": "string", "description": "post=发说说；signature=改签名"},
+                "content": {"type": "string", "description": "正文（说说 10~200字/签名 5~50字）"},
                 "visibility": {
                     "type": "string",
                     "description": "可见范围：public(所有人) / friends(好友) / self(仅自己)",
@@ -113,9 +120,16 @@ class QzonePublishTool:
         }
 
     async def execute(self, _chat_key: str, args: dict[str, Any]) -> str:
-        content = str(args.get("content", "")).strip()[:400]
+        content = str(args.get("content") or args.get("signature") or "").strip()[:400]
+        default_action = "signature" if "signature" in args else "post"
         if not content:
-            return "未发布：说说正文为空"
+            return "未修改：签名内容为空" if default_action == "signature" else "未发布：内容为空"
+        if str(args.get("action", default_action)).strip() == "signature":
+            try:
+                await self._caller.call_api("set_self_longnick", longNick=content)
+            except Exception as exc:
+                return f"修改签名失败：{exc}"
+            return json.dumps({"ok": True, "signature": content}, ensure_ascii=False)
         vis_key = str(args.get("visibility", "public")).strip()
         right = VISIBILITY_MAP.get(vis_key, 1)
         try:
@@ -126,41 +140,7 @@ class QzonePublishTool:
         return json.dumps({"ok": True, "tid": tid, "content": content}, ensure_ascii=False)
 
 
-class ProfileSignatureTool:
-    """Update the bot's own QQ personal signature (longNick) via OneBot."""
 
-    category = "空间与资料"
-    config_key = "qzone_showcase"
-
-    def __init__(self, caller: IOneBotApiCaller) -> None:
-        self._caller = caller
-
-    def config_fields(self) -> tuple[SkillConfigField, ...]:
-        return QZONE_SHOWCASE_FIELDS
-
-    @property
-    def name(self) -> str:
-        return "profile_signature"
-
-    @property
-    def description(self) -> str:
-        return "修改自己 QQ 账号的个性签名（传入一句 5~50 字的当前心情或状态签名）。"
-
-    def parameters_schema(self) -> dict[str, Any]:
-        return {
-            "type": "object",
-            "properties": {
-                "signature": {"type": "string", "description": "新的个性签名内容（最长 60 字）"},
-            },
-            "required": ["signature"],
-        }
-
-    async def execute(self, _chat_key: str, args: dict[str, Any]) -> str:
-        sig = str(args.get("signature", "")).strip()[:60]
-        if not sig:
-            return "未修改：签名内容为空"
-        try:
-            await self._caller.call_api("set_self_longnick", longNick=sig)
-        except Exception as exc:
-            return f"修改个性签名失败：{exc}"
-        return json.dumps({"ok": True, "signature": sig}, ensure_ascii=False)
+# Backwards-compatible aliases: the two plugins are now one tool.
+QzonePublishTool = QzoneAndProfileTool
+ProfileSignatureTool = QzoneAndProfileTool

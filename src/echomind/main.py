@@ -43,7 +43,7 @@ from echomind.tools.messaging_and_group import (
     SendPokeTool,
     SendStickerTool,
 )
-from echomind.tools.qzone_and_profile import ProfileSignatureTool, QzonePublishTool
+from echomind.tools.qzone_and_profile import QzoneAndProfileTool
 from echomind.tools.voice_tools import FeiyuCoverTool, FeiyuSayTool, ReadVoiceTool
 from echomind.web.app import build_guard_and_cache_middleware, create_web_app
 from echomind.web.skill_config_service import SkillConfigService
@@ -87,7 +87,7 @@ def _register_skill_tools(
     for tool in (
         SendMessageTool(bridge), SendStickerTool(bridge), SendPokeTool(bridge),
         GetGroupMembersTool(bridge), RememberMemberTool(m, m), RecallMemoryTool(m),
-        QzonePublishTool(caller), ProfileSignatureTool(caller),
+        QzoneAndProfileTool(caller),
         LookAtImageTool(media, vision), WatchVideoTool(media, vision),
         ReadVoiceTool(media), ReadForwardTool(caller, container.db),
         BiliSearchTool(bili), BiliVideoTool(bili), BiliPopularTool(bili),
