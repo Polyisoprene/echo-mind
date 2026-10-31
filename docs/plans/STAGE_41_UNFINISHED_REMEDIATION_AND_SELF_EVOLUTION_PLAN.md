@@ -1665,3 +1665,22 @@ active-only prompt 影响：
 **验证**
 
 - 全门禁沿用：**369 passed / 92%**，fusion 70/70。
+
+### 14.36 facade 全链路测试（2026-11-01）
+
+新增 `tests/integration/test_trait_shadow_facade.py`：
+
+- 临时 `EchoMindContainer`；
+- 手工把 trait 45 同文案推到 active；
+- 写入一个 included semantic fact；
+- 调用真实 `CognitiveCoreFacade.on_turn_completed`；
+- 验证：
+  - `trait_action_shadow` 记录 active trait id；
+  - `trait_memory_links` 记录该 fact 的 causal link。
+
+这不是只测子函数，而是走真实 facade 回合完成路径。  
+测试 0.38s，不依赖真实流量。
+
+**验证**
+
+- 全门禁：**370 passed / 92%**，fusion 70/70。
