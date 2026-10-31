@@ -32,16 +32,30 @@ BOOTSTRAP_N = 2000
 BOOTSTRAP_SEED = 42
 
 
-def _scenarios(per_category: int) -> list[dict[str, str]]:
+def _grouped_scenarios() -> dict[str, list[dict[str, str]]]:
     data = json.loads(DATA.read_text(encoding="utf-8"))
-    counts: dict[str, int] = {}
-    picked: list[dict[str, str]] = []
+    groups: dict[str, list[dict[str, str]]] = {}
     for scenario in data["scenarios"]:
-        category, query = scenario["category"], scenario.get("query", "")
-        if not query or counts.get(category, 0) >= per_category:
+        query = scenario.get("query", "")
+        if not query:
             continue
-        counts[category] = counts.get(category, 0) + 1
-        picked.append({"id": scenario["id"], "category": category, "query": query})
+        item = {"id": scenario["id"], "category": scenario["category"], "query": query}
+        groups.setdefault(scenario["category"], []).append(item)
+    return groups
+
+
+def _scenarios(limit: int) -> list[dict[str, str]]:
+    groups = _grouped_scenarios()
+    picked: list[dict[str, str]] = []
+    index = 0
+    while len(picked) < limit:
+        before = len(picked)
+        for category in sorted(groups):
+            if index < len(groups[category]) and len(picked) < limit:
+                picked.append(groups[category][index])
+        if len(picked) == before:
+            break
+        index += 1
     return picked
 
 
@@ -70,19 +84,26 @@ def _bootstrap_ci(values: list[float]) -> tuple[float, float]:
             round(means[int(0.975 * BOOTSTRAP_N) - 1], 3))
 
 
-def _deltas(old: list[str], new: list[str]) -> dict[str, dict[str, Any]]:
-    fields = {
-        "length": lambda text: float(len(text)),
-        "long": lambda text: float(text_flags(text, REALISM_MAX_CHARS)["long"]),
-        "explain": lambda text: float(text_flags(text, REALISM_MAX_CHARS)["explain"]),
-        "roleplay": lambda text: float(text_flags(text, REALISM_MAX_CHARS)["roleplay"]),
-        "multi_question": lambda text: float(
-            text_flags(text, REALISM_MAX_CHARS)["multi_question"]
-        ),
+def _means(texts: list[str]) -> dict[str, float]:
+    flags = [text_flags(text, REALISM_MAX_CHARS) for text in texts]
+    return {
+        "length": sum(float(len(text)) for text in texts) / len(texts),
+        "long": sum(float(item["long"]) for item in flags) / len(flags),
+        "explain": sum(float(item["explain"]) for item in flags) / len(flags),
+        "roleplay": sum(float(item["roleplay"]) for item in flags) / len(flags),
+        "multi_question": sum(float(item["multi_question"]) for item in flags) / len(flags),
     }
+
+
+def _deltas(by_scenario: list[tuple[list[str], list[str]]]) -> dict[str, dict[str, Any]]:
+    """Scenario-level deltas: repeats within a scenario are not independent samples."""
     out: dict[str, dict[str, Any]] = {}
-    for name, fn in fields.items():
-        values = [fn(new_item) - fn(old_item) for old_item, new_item in zip(old, new, strict=True)]
+    for name in ("length", "long", "explain", "roleplay", "multi_question"):
+        values = []
+        for old_texts, new_texts in by_scenario:
+            old_mean = _means(old_texts)[name]
+            new_mean = _means(new_texts)[name]
+            values.append(new_mean - old_mean)
         low, high = _bootstrap_ci(values)
         out[name] = {"mean": round(sum(values) / len(values), 3), "ci95": [low, high]}
     return out
@@ -92,7 +113,7 @@ async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--days", type=int, default=30)
     parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--per-category", type=int, default=2)
+    parser.add_argument("--scenarios", type=int, default=12)
     parser.add_argument(
         "--out", type=Path,
         default=ROOT / "eval" / "baselines" / "persona-prompt-ab-2026-11-01.json",
@@ -134,27 +155,36 @@ async def main() -> int:
     rows: list[dict[str, Any]] = []
     old_texts: list[str] = []
     new_texts: list[str] = []
-    for scenario in _scenarios(args.per_category):
+    by_scenario: list[tuple[list[str], list[str]]] = []
+    for scenario in _scenarios(args.scenarios):
+        scenario_old: list[str] = []
+        scenario_new: list[str] = []
         for repeat in range(args.repeats):
             old = await _reply(llm, shadow.old, scenario["query"])
             new = await _reply(llm, shadow.new, scenario["query"])
             old_texts.append(old)
             new_texts.append(new)
+            scenario_old.append(old)
+            scenario_new.append(new)
             rows.append({**scenario, "repeat": repeat, "old": old, "new": new})
+        by_scenario.append((scenario_old, scenario_new))
     report = {
         "candidate": saved.trait_text,
         "old_directive_len": shadow.old_len,
         "new_directive_len": shadow.new_len,
         "n_pairs": len(rows),
+        "n_scenarios": len(by_scenario),
         "old_summary": summarize(old_texts, long_chars=REALISM_MAX_CHARS),
         "new_summary": summarize(new_texts, long_chars=REALISM_MAX_CHARS),
-        "paired_delta": _deltas(old_texts, new_texts),
+        "paired_delta": _deltas(by_scenario),
         "rows": rows,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(
-        {key: report[key] for key in ("n_pairs", "old_summary", "new_summary", "paired_delta")},
+        {key: report[key] for key in (
+            "n_pairs", "n_scenarios", "old_summary", "new_summary", "paired_delta",
+        )},
         ensure_ascii=False, indent=2,
     ))
     return 0
