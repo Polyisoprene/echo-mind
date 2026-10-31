@@ -55,5 +55,23 @@
       "human_mean": 3.24,
       "judge_mean": 4.3
     }
+  },
+  "fewshot_4": {
+    "n": 46,
+    "qwk": 0.304,
+    "mae": 1.0,
+    "base_same_items": {
+      "qwk": 0.101,
+      "mae": 1.217
+    }
+  },
+  "fewshot_12": {
+    "n": 38,
+    "qwk": 0.178,
+    "mae": 1.026,
+    "base_same_items": {
+      "qwk": -0.002,
+      "mae": 1.263
+    }
   }
 }

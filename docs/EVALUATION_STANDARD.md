@@ -235,7 +235,7 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 - `评分说明.md`：每一档 1–5 的中文含义；
 - `key.json`：模型名与 judge 分数，评分人不可见；
 - `scripts/calibrate_persona_judge.py`：回收后算二次加权 kappa + MAE；
-- 50 条已回收：旧 rubric overall QWK 0.034，新 rubric 0.097；**仍远低于 0.6，judge 不能当门禁**；详见 `docs/PERSONA_HUMAN_CALIBRATION_RESULT.md`。
+- 50 条已回收：旧 rubric overall QWK 0.034，新 rubric 0.097，4 条 few-shot 0.304；**仍远低于 0.6，judge 不能当门禁**；详见 `docs/PERSONA_HUMAN_CALIBRATION_RESULT.md`。
 
 ### Phase 3 原计划：外部 benchmark
 
