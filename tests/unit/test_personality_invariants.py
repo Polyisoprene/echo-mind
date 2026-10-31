@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import random
 
-from echomind.domain.models import Percept, PlasticParamSpec, TurnOutcome
+from echomind.domain.models import Percept, PersonaTrait, PlasticParamSpec, TurnOutcome
 from echomind.mind.persona_rubrics import DIMENSION_RUBRICS
 from echomind.mind.personality import (
     compute_personality_deltas,
@@ -86,3 +86,17 @@ def test_i4_render_is_deterministic() -> None:
 def _spec(key: str) -> PlasticParamSpec:
     return PlasticParamSpec(key=key, value=PARAM_BASELINES[key], min_bound=0.0, max_bound=100.0,
                             description=key)
+
+
+def test_only_active_and_legacy_traits_reach_the_prompt() -> None:
+    traits = (
+        PersonaTrait(trait_text="活跃习惯", status="active"),
+        PersonaTrait(trait_text="旧习惯", status="legacy_unverified"),
+        PersonaTrait(trait_text="候选不该出现", status="candidate"),
+        PersonaTrait(trait_text="退休不该出现", status="retired"),
+    )
+    directive = synthesize_live_persona_directive({}, traits, max_traits=10)
+    assert "活跃习惯" in directive
+    assert "旧习惯" in directive
+    assert "候选不该出现" not in directive
+    assert "退休不该出现" not in directive

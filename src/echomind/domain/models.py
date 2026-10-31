@@ -176,13 +176,14 @@ class SocialBondProfile(FrozenValueObject):
 
 class PersonaTrait(FrozenValueObject):
     """Dynamically grown personality habit, quirk, or preference."""
-
     trait_id: int = 0
     category: Literal["habit", "temperament", "taste", "taboo"] = "habit"
     trait_text: str
     strength: int = Field(default=5, ge=0, le=10)
     evidence_count: int = Field(default=1, ge=0)
     contradiction_count: int = Field(default=0, ge=0)
+    status: Literal["candidate", "active", "dormant", "retired",
+                    "legacy_unverified"] = "legacy_unverified"
 
 
 class PlasticParamSpec(FrozenValueObject):

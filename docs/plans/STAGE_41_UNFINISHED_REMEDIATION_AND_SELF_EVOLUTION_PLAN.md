@@ -1722,3 +1722,33 @@ GET /api/mind/trait-health
 **验证**
 
 - 全门禁：**370 passed / 92%**，fusion 70/70。
+
+### 14.38 prompt 生命周期可见性修复（2026-11-01）
+
+发现：
+
+- `PersonaTrait` 没有 `status`；
+- `synthesize_live_persona_directive` 直接渲染 `sync_persona_traits()` 返回的所有 trait；
+- 结果：`candidate`/`retired` 也可能提前进入 prompt。
+
+修复：
+
+- `PersonaTrait.status` 增加；
+- `sync_persona_traits` 查询并返回 status；
+- prompt 只显示：
+  - `active`
+  - `legacy_unverified`
+
+不显示：
+
+- `candidate`
+- `dormant`
+- `retired`
+
+当前真实库仍是 9 条（2 active + 7 legacy），所以线上 prompt 内容不变；  
+但未来候选不会在晋升前偷偷改人格。
+
+**验证**
+
+- 新增测试：active/legacy 可见，candidate/retired 不可见；
+- 全门禁：**371 passed / 92%**，fusion 70/70。
