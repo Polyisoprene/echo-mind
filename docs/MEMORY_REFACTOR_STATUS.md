@@ -12,7 +12,9 @@
 | **P0** | 关系归人：人级 trust/depth，温柔/耐心一致，俏皮归场合，care 修复 | ✅ 已部署 |
 | **P2.1** | 记忆来源字段：scope/source/owner/sensitivity/audience/quote + 迁移回填 | ✅ 已部署 |
 | **P2.2** | 检索分层：person_facts 全局、venue_events 本地、source-aware 召回 | ✅ 已部署 |
-| **P3** | `knowledge_state`（谁知道）+ `disclosures`（说过什么）+ private/secret 硬门 | ⏳ |
+| **P3.1** | 硬门（粗粒度）：private 仅源场合/owner 私聊，secret 默认拒绝 + 三张表 | ✅ 已部署 |
+| **P3.2** | `disclosure_repo`：log_disclosure / mark_known / who_knows | ✅ 已部署 |
+| **P3.3** | 敏感性分类 + frame 级受众门 + 实际披露日志 | ⏳ 下一步 |
 | **P4** | 人格分寸：public/group 的 say/hint/keep 接 7 维 | ⏳ |
 | **P5** | 评测：一致性 + 授权边界 + 多人记忆子集 | ⏳ |
 
@@ -78,7 +80,15 @@ get_global_facts(allow=True)                 # 显式
 2. 群里的往事（scope=venue）不会出现在私聊；
 3. 召回结果带 `source`（谁/哪/何时），供披露层使用。
 
-## P3 设计（下一步）
+## P3 已落地（粗粒度硬门 + 审计）
+
+- `mind/disclosure.py`：纯门（public/group 放行；private 需 owner 在场；secret 需授权；未知拒绝）；
+- 检索层粗粒度版本：private 仅源场合或 owner 私聊可见；secret 永不出现；owner 私聊隐式召回关于 owner 的 person facts；
+- 三张表：`disclosures`、`memory_knowledge`、`disclosure_grants`；
+- `SqliteDisclosureLog`：写入披露/保留决策、标记谁知道、查询谁知道；
+- 现网 193 条事实的 sensitivity 全是默认 `group`——硬门目前**休眠**，等敏感性分类或新写入触发。
+
+## P3.3 设计（下一步）
 
 - `knowledge_state(memory_id, person_id, state)`：told_by_me / told_to_me / overheard / inferred；
 - `disclosures`：她说给谁、在哪、说了什么、为什么；
