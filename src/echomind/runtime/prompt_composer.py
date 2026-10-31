@@ -12,6 +12,20 @@ from echomind.mind.naming import bot_naming
 CST = datetime.timezone(datetime.timedelta(hours=8))
 GAP_BREAK_MS = 300_000
 
+def must_reply_hint(must_reply: bool) -> str:
+    """Return the direct-address or group-etiquette reminder for this turn."""
+    if must_reply:
+        return (
+            "⚡【最高优先级提醒】本轮有人直接点名/引用/私聊找你，哪怕其他机器人(如汐)已先回，"
+            "你也必须调用 send_message / feiyu_say / feiyu_cover 亲自回应！"
+        )
+    return (
+        "💡【群聊分寸提醒】本轮无人显式点名/@你！若《已读上下文》显示两位群友正在"
+        "互相讨论游戏/事务（而非对你说话），请直接保持安静结束本轮（不调用任何发送工具）；"
+        "仅在话题真正适合你自然搭话时调用 send_message 或 feiyu_say。"
+    )
+
+
 SCENE_TAGS = (
     "开心",
     "卖萌",
@@ -166,9 +180,12 @@ VOICE_AND_SPEAK_GUIDE = (
 class PromptComposer:
     """Pure assembler rendering Role + Rotated Stickers + CognitiveFrame + Messages."""
 
-    def __init__(self, role_text: str, bot_name: str = "") -> None:
+    def __init__(
+        self, role_text: str, bot_name: str = "", *, persona_in_system: bool = False
+    ) -> None:
         self._role_text = role_text
         self._bot_name = bot_name or bot_naming().label()
+        self._persona_in_system = persona_in_system
 
     def role_card(self) -> tuple[str, str]:
         return self._bot_name, self._role_text
@@ -187,27 +204,20 @@ class PromptComposer:
         now_ms: int = 0,
     ) -> list[dict[str, Any]]:
         sticker_block = _build_sticker_block(stickers, now_ms, preferred_tags(frame.affect))
-        must_hint = (
-            "⚡【最高优先级提醒】本轮有人直接点名/引用/私聊找你，哪怕其他机器人(如汐)已先回，"
-            "你也必须调用 send_message / feiyu_say / feiyu_cover 亲自回应！"
-            if frame.must_reply
-            else (
-                "💡【群聊分寸提醒】本轮无人显式点名/@你！若《已读上下文》显示两位群友正在"
-                "互相讨论游戏/事务（而非对你说话），请直接保持安静结束本轮（不调用任何发送工具）；"
-                "仅在话题真正适合你自然搭话时调用 send_message 或 feiyu_say。"
-            )
-        )
+        must_hint = must_reply_hint(frame.must_reply)
         sys_parts = [
             f"你是「{self._bot_name}」。{self._role_text}",
             EPISTEMIC_HIERARCHY_NOTE,
             sticker_block,
             VOICE_AND_SPEAK_GUIDE,
         ]
+        if self._persona_in_system:
+            sys_parts.append(frame.rendered_mind_block)
         read_lines, gap_note = _render_temporal_history(read_history, unread_triggers)
         unread_lines = [_format_percept_line(p) for p in unread_triggers]
         user_blocks = [
             "【已读上下文（带北京时间，注意 ⏱️ 时间断层）】\n" + "\n".join(read_lines),
-            frame.rendered_mind_block,
+            "" if self._persona_in_system else frame.rendered_mind_block,
             gap_note,
             must_hint,
             "【最新待处理消息】\n" + "\n".join(unread_lines),
