@@ -11,7 +11,7 @@
 |---|---|---|
 | **P0** | 关系归人：人级 trust/depth，温柔/耐心一致，俏皮归场合，care 修复 | ✅ 已部署 |
 | **P2.1** | 记忆来源字段：scope/source/owner/sensitivity/audience/quote + 迁移回填 | ✅ 已部署 |
-| **P2.2** | 检索分层：person_facts 全局、venue_events 本地、source-aware 召回 | ⏳ 下一步 |
+| **P2.2** | 检索分层：person_facts 全局、venue_events 本地、source-aware 召回 | ✅ 已部署 |
 | **P3** | `knowledge_state`（谁知道）+ `disclosures`（说过什么）+ private/secret 硬门 | ⏳ |
 | **P4** | 人格分寸：public/group 的 say/hint/keep 接 7 维 | ⏳ |
 | **P5** | 评测：一致性 + 授权边界 + 多人记忆子集 | ⏳ |
@@ -50,7 +50,13 @@ source_quote     原文片段（无证据不标注）
 
 ---
 
-## P2.2 设计（下一步）
+## P2.2 已落地（含分类）
+
+- `get_semantic_facts(chat_key, person_ids=...)` 联合召回：本场合 + global + 关于这些人的 person facts；
+- facade 先抽 mentioned uids，再按人重读事实；
+- `scripts/classify_person_facts.py` 保守分类：subject 内嵌 QQ 命中成员，或唯一成员名；跳过 `自组织图式:`；
+- 现网：venue 139 / person 30 / global 24；person 覆盖 14 人；
+- 线上核对：私聊 plain 召回 1 条，带 person_ids 召回 3 条（+2）。
 
 **目标**：同一条记忆，按“人”还是按“场合”召回，分开。
 
@@ -72,7 +78,7 @@ get_global_facts(allow=True)                 # 显式
 2. 群里的往事（scope=venue）不会出现在私聊；
 3. 召回结果带 `source`（谁/哪/何时），供披露层使用。
 
-## P3 设计（再下一步）
+## P3 设计（下一步）
 
 - `knowledge_state(memory_id, person_id, state)`：told_by_me / told_to_me / overheard / inferred；
 - `disclosures`：她说给谁、在哪、说了什么、为什么；
