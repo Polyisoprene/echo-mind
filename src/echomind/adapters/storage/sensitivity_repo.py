@@ -16,11 +16,11 @@ class SqliteSensitivityReviewer:
     def __init__(self, db: SqliteDatabase) -> None:
         self._db = db
 
-    async def list_non_group(self, memory_kind: str = "semantic") -> list[dict[str, object]]:
+    async def list_flagged(self, memory_kind: str = "semantic") -> list[dict[str, object]]:
         table = _TABLES[memory_kind]
         sql = (
             f"SELECT id, subject, sensitivity, source_quote FROM {table} "  # noqa: S608
-            "WHERE sensitivity != 'group' ORDER BY id"
+            "WHERE sensitivity IN ('private','secret') ORDER BY id"
         )
         async with self._db.connect() as conn:
             rows = await (await conn.execute(sql)).fetchall()

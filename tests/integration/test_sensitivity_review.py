@@ -25,7 +25,7 @@ async def test_review_downgrades_and_records(tmp_path: Path) -> None:
         "SELECT id FROM semantic_facts WHERE subject='误报'"
     ).fetchone()[0]
     reviewer = SqliteSensitivityReviewer(container.db)
-    pending = await reviewer.list_non_group()
+    pending = await reviewer.list_flagged()
     assert any(row["id"] == fact_id for row in pending)
 
     previous = await reviewer.apply(

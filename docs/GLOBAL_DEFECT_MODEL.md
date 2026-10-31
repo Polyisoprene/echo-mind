@@ -54,7 +54,7 @@ percept
 
 - `semantic_facts` / `episodic_memories` 的 INSERT/UPDATE 触发器写入 `memory_knowledge`：
   `source_person_id → told_to_me`，`owner_id → knows`；
-- 迁移时回填存量；主库现有 **29** 条知识行。
+- 迁移时回填存量；主库现有 **29** 条知识行（均为 `knows`：owner 有值、source 为空），新写入会按 source/owner 分别记；
 
 ### D5 授权入口
 
@@ -70,7 +70,7 @@ percept
 ### D7 敏感度复核
 
 - `sensitivity_reviews` 表 + `SqliteSensitivityReviewer`；
-- `scripts/review_sensitivity.py --list` / `--id N --set group --reason ... --apply`；
+- `scripts/review_sensitivity.py --list` 只列 `private/secret`；`--id N --set group --reason ... --apply`；
 - 复核写入审计行，误报可降级。
 
 ## 4. 修复顺序（按依赖）

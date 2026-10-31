@@ -31,7 +31,7 @@ async def main() -> int:
     await db.initialize()
     reviewer = SqliteSensitivityReviewer(db)
     if args.list or args.id is None:
-        for row in await reviewer.list_non_group(args.kind):
+        for row in await reviewer.list_flagged(args.kind):
             print(row)
         return 0
     if args.set is None:
