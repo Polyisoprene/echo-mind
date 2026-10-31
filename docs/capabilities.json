@@ -107,9 +107,9 @@
         "scripts/param_gate.py"
       ],
       "status": "partial",
-      "gap": "E0 建立 50 条台账并门禁化；代码内联 param: 标签仍只有少量，多数条目为 fit_pending（实验未做）",
+      "gap": "E1 分类完成：32 条 fit_pending → 4 转 convention、2 条可用现有数据、21 条待实验、5 条被样本量阻塞（2 个群、2 个情敌）、0 删除。发现 AFFINITY_THRESHOLDS 与实测分布脱节：87.8% 停在 Lv.1，Lv.3+ 不可达",
       "acceptance_test": "tests/architecture/test_evidence_ledger.py::test_param_ledger_is_consistent",
-      "evidence_report": "",
+      "evidence_report": "docs/params/E1_CLASSIFICATION.md",
       "target_release": "E1"
     },
     {

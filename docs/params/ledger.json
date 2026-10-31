@@ -14,7 +14,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-006",
       "experiment": "LOGO 留一群交叉验证选 τ",
-      "conservative_value": "0.35"
+      "conservative_value": "0.35",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_adapt.py::MIN_OBS_FOR_CALIBRATION",
@@ -28,7 +32,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-006",
       "experiment": "小样本收缩：模拟确定最小观测数",
-      "conservative_value": "20"
+      "conservative_value": "20",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_adapt.py::SLOPE_BOUNDS",
@@ -42,7 +50,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-006",
       "experiment": "校准斜率边界；用校准曲线斜率分布确定",
-      "conservative_value": "(0.5, 2.0)"
+      "conservative_value": "(0.5, 2.0)",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::AFFINITY_OFFSET",
@@ -58,7 +70,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "38.0"
+      "conservative_value": "38.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::AFFINITY_SPAN",
@@ -74,7 +90,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "70.0"
+      "conservative_value": "70.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::BETA_PRIOR",
@@ -103,7 +123,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "3.0"
+      "conservative_value": "3.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::BIAS",
@@ -119,7 +143,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "2.6"
+      "conservative_value": "2.6",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::DEPTH_BONUS",
@@ -135,7 +163,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "0.35"
+      "conservative_value": "0.35",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::DEPTH_CEILING",
@@ -143,15 +175,12 @@
       "symbol": "DEPTH_CEILING",
       "line": 38,
       "value": "0.97",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "class": "convention",
+      "status": "active",
       "claim": "",
       "evidence": {
-        "raw_tag": "fit:pending"
-      },
-      "issue": "ECHOMIND-PARAM-BOND",
-      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "0.97"
+        "rationale": "策略上限：w_care 封顶 0.97，避免单点关系无限接近 1；无自由参数"
+      }
     },
     {
       "id": "mind/bond_depth.py::DIVERSITY_SATURATION",
@@ -167,7 +196,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "42.0"
+      "conservative_value": "42.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::FREQ_SATURATION",
@@ -183,7 +216,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "452.0"
+      "conservative_value": "452.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::GAIN",
@@ -199,7 +236,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "1.6"
+      "conservative_value": "1.6",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::IMPACT_SATURATION",
@@ -215,7 +256,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "45.0"
+      "conservative_value": "45.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::W_BETRAY",
@@ -231,7 +276,11 @@
       },
       "issue": "ECHOMIND-PARAM-BOND",
       "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
-      "conservative_value": "1.6"
+      "conservative_value": "1.6",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_depth.py::W_DIV",
@@ -300,7 +349,11 @@
       "issue": "ECHOMIND-PARAM-BOND-SRC",
       "experiment": "确认该权重是否真出自文献；若不是，改为弱监督拟合",
       "conservative_value": "1.4",
-      "contradiction": "原 param: src 标签只指向依恋模型 DOI，未给出 1.4 这个数值的页码/公式"
+      "contradiction": "原 param: src 标签只指向依恋模型 DOI，未给出 1.4 这个数值的页码/公式",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/bond_scoring.py::SHRINK_TAU",
@@ -314,7 +367,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-007",
       "experiment": "经验贝叶斯收缩强度；用群规模与深度方差比值确定",
-      "conservative_value": "2.0"
+      "conservative_value": "2.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/chord_cache.py::CACHE_LIMIT",
@@ -341,7 +398,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-009",
       "experiment": "用回放中强信号事件的唤醒命中率确定阈值",
-      "conservative_value": "0.55"
+      "conservative_value": "0.55",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/dialogue_context.py::MAX_CHARS",
@@ -394,7 +455,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-010",
       "experiment": "召回质量评测后定清晰/模糊分界",
-      "conservative_value": "0.55"
+      "conservative_value": "0.55",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/ebbinghaus.py::FUZZY_THRESHOLD",
@@ -408,7 +473,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-010",
       "experiment": "同上：低于此值不召回",
-      "conservative_value": "0.22"
+      "conservative_value": "0.22",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/ebbinghaus.py::MS_PER_HOUR",
@@ -461,7 +530,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-008",
       "experiment": "用好友互动频次的分位点替代绝对阈值",
-      "conservative_value": "(50.0, 100.0, 200.0, 500.0)"
+      "conservative_value": "(50.0, 100.0, 200.0, 500.0)",
+      "e1_proposed_class": "data",
+      "e1_group": "E1-F 关系等级",
+      "e1_dataset": "social_bonds.affinity_score 分位（n=41；p25=30、p50=31.1、p75=42.8、p90=53.2）；现阈值 50/100/200/500 导致 90% 停在 Lv.1",
+      "e1_action": "拟合并给出点估计 + 95% CI + 脚本"
     },
     {
       "id": "mind/memory_consolidator.py::DUNBAR_ACQUAINTANCE_CAP",
@@ -469,13 +542,12 @@
       "symbol": "DUNBAR_ACQUAINTANCE_CAP",
       "line": 29,
       "value": "85.0",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "class": "convention",
+      "status": "active",
       "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-008",
-      "experiment": "确认 85 分的依据；Dunbar 层数不直接给出 0-100 刻度上的截断",
-      "conservative_value": "85.0"
+      "evidence": {
+        "rationale": "产品策略：熟人区上限 85 分。Dunbar 层数只提供“分层”概念，不提供 85 这个数"
+      }
     },
     {
       "id": "mind/memory_consolidator.py::RIVAL_EQUILIBRIUM",
@@ -489,7 +561,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-008",
       "experiment": "情敌均衡点；用对手关系样本拟合",
-      "conservative_value": "45.0"
+      "conservative_value": "45.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-E 情敌均衡",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/persona_dynamics.py::DAILY_CAP",
@@ -516,7 +592,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-001",
       "experiment": "敏感性扫描 clip∈[1,4]：回放终态、唤醒率、盲评区分度的变化",
-      "conservative_value": "2.0"
+      "conservative_value": "2.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/persona_dynamics.py::MAX_CATCHUP_DAYS",
@@ -545,7 +625,11 @@
       },
       "issue": "ECHOMIND-E1-014",
       "experiment": "状态半衰期 20/45/90 分钟，测对话内连贯性与跨会话复位速度",
-      "conservative_value": "45.0"
+      "conservative_value": "45.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/persona_dynamics.py::STATE_MAX_ABS",
@@ -561,7 +645,11 @@
       },
       "issue": "ECHOMIND-E1-013",
       "experiment": "敏感性审计：状态幅度 ±5/±10/±15 三档，测盲评可辨性与跨会话一致性",
-      "conservative_value": "10.0"
+      "conservative_value": "10.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/persona_dynamics.py::STATE_MAX_STEP",
@@ -577,7 +665,11 @@
       },
       "issue": "ECHOMIND-E1-013",
       "experiment": "同上：单步上限 2/4/6，测单轮反应强度与人格稳定感",
-      "conservative_value": "4.0"
+      "conservative_value": "4.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/persona_dynamics.py::TRAIT_ANNUAL_BUDGET",
@@ -617,7 +709,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-011",
       "experiment": "姿态偏移幅度；用盲评区分『对熟人更暖』与『人设漂移』的临界值",
-      "conservative_value": "8.0"
+      "conservative_value": "8.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/personality.py::ATTACHMENT_BETA",
@@ -633,7 +729,11 @@
       },
       "issue": "ECHOMIND-E1-005",
       "experiment": "β∈[3,12] 扫描：只改变混合比例不改变 top-2 排序，用盲评区分度选点",
-      "conservative_value": "6.0"
+      "conservative_value": "6.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/plasticity.py::DAY_MS",
@@ -660,7 +760,11 @@
       "evidence": {},
       "issue": "ECHOMIND-E1-004",
       "experiment": "回放中关闭稳态回拉，比较 7 维漂移幅度与饱和率",
-      "conservative_value": "0.02"
+      "conservative_value": "0.02",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     },
     {
       "id": "mind/probe_runtime.py::PROBE_MAX_TOKENS",
@@ -681,13 +785,12 @@
       "symbol": "ALPHA",
       "line": 26,
       "value": "0.4",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "class": "convention",
+      "status": "active",
       "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-012",
-      "experiment": "由目标『8 次往返后意愿 <= 0.4』反解，需回放验证",
-      "conservative_value": "0.4"
+      "evidence": {
+        "rationale": "由产品目标「8 次往返后意愿 ≤0.4」反解，公式在模块注释中；属约定不是拟合"
+      }
     },
     {
       "id": "mind/social_satiation.py::FLOOR",
@@ -695,13 +798,12 @@
       "symbol": "FLOOR",
       "line": 27,
       "value": "0.08",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "class": "convention",
+      "status": "active",
       "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-012",
-      "experiment": "由目标『日回合数 <= 18』反解，需回放验证",
-      "conservative_value": "0.08"
+      "evidence": {
+        "rationale": "由产品目标「日回合 ≤18」反解，公式在模块注释中；属约定不是拟合"
+      }
     },
     {
       "id": "mind/social_satiation.py::GAMMA",
@@ -729,7 +831,11 @@
       "issue": "ECHOMIND-E1-012",
       "experiment": "用 chat_messages 的突发/静默间隔分布重估恢复时间",
       "conservative_value": "1800.0",
-      "contradiction": "注释称 1800s 来自突发结构，但实测消息间隔 p95 仅 181s，需复核口径"
+      "contradiction": "注释称 1800s 来自突发结构，但实测消息间隔 p95 仅 181s，需复核口径",
+      "e1_proposed_class": "data",
+      "e1_group": "E1-G 社交饱和",
+      "e1_dataset": "chat_messages 的突发间隔分布（n=5,850；p50=7s、p95=181s、p99=1,144s）；拟合习惯化恢复时间",
+      "e1_action": "拟合并给出点估计 + 95% CI + 脚本"
     }
   ]
 }

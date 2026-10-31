@@ -10,6 +10,7 @@
 | `baseline.json` | 债务基线：`debt` 只允许下降，不允许上升 |
 | `../capabilities.json` | 每个"已实现/部分/缺失/自相矛盾"的功能声明 |
 | `../CAPABILITY_STATUS.md` | 由脚本生成的状态表，**不要手改** |
+| `E1_CLASSIFICATION.md` | 32 条 fit_pending 的去向与实验队列 |
 
 ## 二、四类溯源
 
