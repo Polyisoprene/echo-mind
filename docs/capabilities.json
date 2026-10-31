@@ -1,0 +1,322 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "CAP-PERSONA-SINGLE-SOURCE",
+      "claim": "7 维人格默认值与边界只有一处定义",
+      "docs": [
+        "docs/ARCHITECTURE_CONTRACTS.md",
+        "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md"
+      ],
+      "code": [
+        "src/echomind/domain/persona_specs.py"
+      ],
+      "status": "implemented",
+      "gap": "",
+      "acceptance_test": "tests/architecture/test_persona_single_source.py::test_storage_defaults_come_from_the_shared_table",
+      "evidence_report": "",
+      "target_release": "S30"
+    },
+    {
+      "id": "CAP-ATTACHMENT-CONTINUOUS",
+      "claim": "依恋腔调由四象限原型 softmax 连续加权，无硬阈值跳变",
+      "docs": [
+        "docs/plans/STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/mind/personality.py"
+      ],
+      "status": "implemented",
+      "gap": "",
+      "acceptance_test": "tests/unit/test_personality_invariants.py::test_i3b_tone_is_continuous",
+      "evidence_report": "",
+      "target_release": "S30"
+    },
+    {
+      "id": "CAP-DYNAMICS-BOUNDED",
+      "claim": "人格动力学有界：单回合 |Δ|≤2、日累计 ≤6、1%/日慢回归",
+      "docs": [
+        "docs/ARCHITECTURE_CONTRACTS.md",
+        "docs/plans/STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/mind/persona_dynamics.py",
+        "src/echomind/mind/plasticity.py"
+      ],
+      "status": "partial",
+      "gap": "上下限成立，但 (DAILY_CAP=6, REGRESSION=0.01) 的稳态偏移 D/r=600 远超量程，持续正向互动必然贴边饱和；见 ECHOMIND-E1-002",
+      "acceptance_test": "tests/unit/test_personality_invariants.py::test_i2_daily_change_is_capped",
+      "evidence_report": "",
+      "target_release": "E2"
+    },
+    {
+      "id": "CAP-STANCE",
+      "claim": "关系姿态只影响渲染与显著性，≤8 分且不回写人格本体",
+      "docs": [
+        "docs/plans/STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/mind/persona_stance.py"
+      ],
+      "status": "implemented",
+      "gap": "",
+      "acceptance_test": "tests/unit/test_persona_stance.py::test_stored_personality_is_not_mutated",
+      "evidence_report": "",
+      "target_release": "S30"
+    },
+    {
+      "id": "CAP-TRAIT-SCOPE",
+      "claim": "词条按类别上限（8/4/4/3）与作用域衰减",
+      "docs": [
+        "docs/ARCHITECTURE_CONTRACTS.md",
+        "docs/plans/STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/adapters/storage/working_repo.py"
+      ],
+      "status": "implemented",
+      "gap": "",
+      "acceptance_test": "tests/integration/test_trait_scope_and_caps.py::test_category_caps_are_enforced",
+      "evidence_report": "",
+      "target_release": "S30"
+    },
+    {
+      "id": "CAP-PROBE-DIGEST",
+      "claim": "潜意识探针 prompt 携带一行人格摘要",
+      "docs": [
+        "docs/plans/STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/mind/subconscious_probe.py",
+        "src/echomind/mind/persona_render.py"
+      ],
+      "status": "implemented",
+      "gap": "",
+      "acceptance_test": "tests/unit/test_probe_persona_summary.py::test_probe_prompt_contains_persona_digest",
+      "evidence_report": "",
+      "target_release": "S30"
+    },
+    {
+      "id": "CAP-PARAM-PROVENANCE",
+      "claim": "所有可调常数声明来源（src/data/convention/fit_pending）",
+      "docs": [
+        "docs/ARCHITECTURE_CONTRACTS.md"
+      ],
+      "code": [
+        "docs/params/ledger.json",
+        "scripts/param_gate.py"
+      ],
+      "status": "partial",
+      "gap": "E0 已建立 45 条台账并门禁化；代码内联 param: 标签仍只有 17 处，且 45 条中多数为 fit_pending（实验未做）",
+      "acceptance_test": "tests/architecture/test_evidence_ledger.py::test_param_ledger_is_consistent",
+      "evidence_report": "",
+      "target_release": "E1"
+    },
+    {
+      "id": "CAP-TRAIT-GROWTH",
+      "claim": "人格会从互动中长出新的习惯/喜好/雷点",
+      "docs": [
+        "README.md",
+        "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md"
+      ],
+      "code": [
+        "src/echomind/mind/personality.py"
+      ],
+      "status": "absent",
+      "gap": "derive_emergent_trait 只有 5 条固定文案；trait_text 精确去重；last_used_ms 列从未读写",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "P6c"
+    },
+    {
+      "id": "CAP-CLOSED-LOOP",
+      "claim": "人格由可观测反馈闭环驱动",
+      "docs": [
+        "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md",
+        "docs/plans/STAGE_24_AFFECTIVE_AND_DRIVE_AUDIT_AND_LITERATURE_SURVEY.md"
+      ],
+      "code": [
+        "src/echomind/mind/plasticity.py"
+      ],
+      "status": "absent",
+      "gap": "reward 来自探针自评；探针失败时退化为常数 0.08；全库无延迟反馈/后续消息评估",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "P6b"
+    },
+    {
+      "id": "CAP-SELF-NARRATIVE",
+      "claim": "存在跨会话的自我叙事，并参与冲突判定",
+      "docs": [
+        "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md"
+      ],
+      "code": [
+        "src/echomind/mind/drives.py",
+        "src/echomind/runtime/prompt_composer.py"
+      ],
+      "status": "absent",
+      "gap": "只有 140 字情绪余波；role_text 静态；冲突优先级是 prompt 内的硬编码段落",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "P6d"
+    },
+    {
+      "id": "CAP-FTS5",
+      "claim": "SQLite FTS5 全文检索",
+      "docs": [
+        "docs/PROJECT_CHARTER_AND_PROGRESS.md",
+        "README.md"
+      ],
+      "code": [
+        "src/echomind/adapters/storage/database.py"
+      ],
+      "status": "absent",
+      "gap": "全库无 FTS5；召回是 Python 侧中文 2-gram 重叠",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "C1"
+    },
+    {
+      "id": "CAP-INTENTION-STACK",
+      "claim": "短期挂念栈（BDI 意图，≤3 槽）",
+      "docs": [
+        "docs/ARCHITECTURE_CONTRACTS.md",
+        "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md"
+      ],
+      "code": [
+        "src/echomind/domain/models.py"
+      ],
+      "status": "absent",
+      "gap": "IntentionItem 在全库从未被构造；filter_unfulfilled_intentions 永远作用于空元组",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "E2"
+    },
+    {
+      "id": "CAP-FIVE-SLOTS",
+      "claim": "微内核五大扩展槽全部可用",
+      "docs": [
+        "docs/ARCHITECTURE_CONTRACTS.md"
+      ],
+      "code": [
+        "src/echomind/extensions/registry.py",
+        "src/echomind/core/bootstrap.py"
+      ],
+      "status": "partial",
+      "gap": "sensor/tool 已用；facet/proposer/panel 三个槽位零注册实现",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "E4"
+    },
+    {
+      "id": "CAP-SEVEN-GATES",
+      "claim": "7 道自动化质量门禁",
+      "docs": [
+        "docs/ARCHITECTURE_CONTRACTS.md",
+        "README.md"
+      ],
+      "code": [
+        "scripts/qa_gate.sh"
+      ],
+      "status": "partial",
+      "gap": "脚本实际 5 步；hypothesis 未独立成门禁；迁移对账与故障注入缺失（E0 新增了参数/能力两道）",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "E1"
+    },
+    {
+      "id": "CAP-SEMANTIC-EVAL",
+      "claim": "对人格一致性/记忆准确率/情绪合理性有语义评测",
+      "docs": [
+        "docs/plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md"
+      ],
+      "code": [
+        "scripts/replay_eval.py"
+      ],
+      "status": "absent",
+      "gap": "回放只输出 wakes/probe_calls/double_apply/reward_spread/cache_peak",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "P6e"
+    },
+    {
+      "id": "CAP-HEXACO",
+      "claim": "7 维人格对应 HEXACO 六轴",
+      "docs": [
+        "README.md",
+        "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md"
+      ],
+      "code": [
+        "src/echomind/domain/persona_specs.py"
+      ],
+      "status": "contradicted",
+      "gap": "7 维为 warmth/tsundere/playfulness/possessiveness/confidence/guile/defiance，与 HEXACO 无映射矩阵，缺 C/O 轴",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "E1"
+    },
+    {
+      "id": "CAP-ZERO-LEXICON",
+      "claim": "全链路零硬编码词表（Stage 26）",
+      "docs": [
+        "docs/plans/STAGE_26_PURE_SUBCONSCIOUS_CHORD_ENGINE_AND_ZERO_LEXICON_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/mind/perceptual_gate.py",
+        "src/echomind/mind/epistemic.py",
+        "src/echomind/mind/bot_belief.py"
+      ],
+      "status": "contradicted",
+      "gap": "mind/ 下仍有 40+ 处中文词表与正则（角色冒充词、停用词、机器人关键词）",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "E1"
+    },
+    {
+      "id": "CAP-OPERATOR-NO-PRIVILEGE",
+      "claim": "operator 只有纠错权限，无情感特权",
+      "docs": [
+        "docs/MASTER_BACKLOG.md"
+      ],
+      "code": [
+        "src/echomind/mind/memory_consolidator.py"
+      ],
+      "status": "contradicted",
+      "gap": "update_sender_bond 对 is_owner 直接置 trust=1.0；且 _check_reactance 对 w_care>=0.85 免除逆反",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "E1"
+    },
+    {
+      "id": "CAP-MEMORY-EVIDENCE",
+      "claim": "事实带来源与时效，冲突可复核",
+      "docs": [
+        "docs/plans/STAGE_39_CLAIM_EVIDENCE_BITEMPORAL_FACTS_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/adapters/storage/claim_views.py",
+        "src/echomind/adapters/storage/claim_repo.py"
+      ],
+      "status": "partial",
+      "gap": "claims/evidence 表已建但读路径默认关闭（FACTS_V2=off），且转换时 chat_key 被置空",
+      "acceptance_test": null,
+      "evidence_report": "",
+      "target_release": "E3"
+    },
+    {
+      "id": "CAP-AUTH-WRITE",
+      "claim": "控制台写操作强制 token 并留审计",
+      "docs": [
+        "docs/MASTER_BACKLOG.md"
+      ],
+      "code": [
+        "src/echomind/web/app.py"
+      ],
+      "status": "partial",
+      "gap": "auth_key 为空时全放行；/api/session/token 把 token 发给 loopback（隧道下等同公开）",
+      "acceptance_test": "tests/unit/test_web_write_auth.py::test_writes_require_the_token_even_on_loopback",
+      "evidence_report": "",
+      "target_release": "E2"
+    }
+  ]
+}

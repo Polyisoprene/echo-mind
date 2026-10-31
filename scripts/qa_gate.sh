@@ -30,6 +30,16 @@ echo "================================================================"
 uv run mypy --strict src tests
 
 echo "================================================================"
+echo "🛡️  [Gate 2B] Parameter Provenance Ledger (docs/params/ledger.json)"
+echo "================================================================"
+uv run python scripts/param_gate.py
+
+echo "================================================================"
+echo "🛡️  [Gate 2C] Capability Ledger (docs/capabilities.json)"
+echo "================================================================"
+uv run python scripts/capability_gate.py --check
+
+echo "================================================================"
 echo "🛡️  [Gate 3 & 4] AST Flat-Code/SOLID Boundaries & Pytest (>=90%)"
 echo "================================================================"
 uv run pytest --cov=src/echomind --cov-report=term-missing --cov-fail-under=90

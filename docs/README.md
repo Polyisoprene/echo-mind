@@ -13,6 +13,8 @@
 | [`ARCHITECTURE_CONTRACTS.md`](ARCHITECTURE_CONTRACTS.md) | 分层边界、SOLID 硬约束、领域契约、7 道门禁、**人格模型契约（§八）** | 架构或契约变化时 |
 | [`CONTRACT_RED_GREEN_AND_AB_LANES.md`](CONTRACT_RED_GREEN_AND_AB_LANES.md) | 红绿交付 RGR-01~10、A/B 双线 AB-01~11 | 交付纪律变化时 |
 | [`PROJECT_CHARTER_AND_PROGRESS.md`](PROJECT_CHARTER_AND_PROGRESS.md) | 立项书 + 全阶段进度总表 + 当前工程状态 | 每阶段验收后 |
+| [`params/ledger.json`](params/ledger.json) + [`params/README.md`](params/README.md) | **参数溯源台账**：每个可调常数的 src/data/convention/fit_pending 分类与证据 | 每次改常数时（门禁强制） |
+| [`capabilities.json`](capabilities.json) + [`CAPABILITY_STATUS.md`](CAPABILITY_STATUS.md) | **能力台账**：每个功能声明的实现状态、缺口与验收测试（状态表自动生成） | 每次功能变更时 |
 
 ## 二、 设计与专项说明（按主题）
 
@@ -25,6 +27,15 @@
 | [`plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md`](plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md) | 缺陷影响建模、修复后评估判据、A/B 双线 |
 | [`plans/STAGE_31_BOT_AWARENESS_AND_SOCIAL_SATIATION_PLAN.md`](plans/STAGE_31_BOT_AWARENESS_AND_SOCIAL_SATIATION_PLAN.md) | 机器人互刷抑制：社交习惯化 + 印象模型（含文献与参数依据） |
 | [`plans/STAGE_39_CLAIM_EVIDENCE_BITEMPORAL_FACTS_PLAN.md`](plans/STAGE_39_CLAIM_EVIDENCE_BITEMPORAL_FACTS_PLAN.md) | 事实层重构：主张/证据/双时态（替代“锁定事实 + 时间补丁”） |
+
+## 二·五、 证据台账（E0）
+
+"不拍脑门"的执行基础设施：每个常数必须有来源，每个功能声明必须有验收。
+
+- 参数台账 [`params/ledger.json`](params/ledger.json)：45 条，`scripts/param_gate.py` 强制；
+- 能力台账 [`capabilities.json`](capabilities.json)：20 条，`scripts/capability_gate.py` 强制；
+- 状态表 [`CAPABILITY_STATUS.md`](CAPABILITY_STATUS.md)：**自动生成，不要手改**；
+- 使用方式见 [`params/README.md`](params/README.md)。
 
 ## 三、 历史阶段规划（`plans/STAGE_0` ~ `STAGE_27`）
 
