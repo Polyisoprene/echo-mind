@@ -16,9 +16,9 @@
       "rate": 1.0
     },
     "role": {
-      "passed": 0,
+      "passed": 10,
       "total": 10,
-      "rate": 0.0
+      "rate": 1.0
     },
     "temporal": {
       "passed": 10,
@@ -31,8 +31,8 @@
       "rate": 1.0
     },
     "privacy_leaks": 0,
-    "mrr": 0.833,
-    "overall_passed": 50,
+    "mrr": 1.0,
+    "overall_passed": 60,
     "overall_total": 60
   },
   "results": [
@@ -249,82 +249,72 @@
     {
       "id": "role_01",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_02",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_03",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_04",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_05",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_06",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_07",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_08",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_09",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "role_10",
       "category": "role",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "relation graph not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_01",

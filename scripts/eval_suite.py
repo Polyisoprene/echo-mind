@@ -76,10 +76,6 @@ async def _retrieval(
     rank = subjects.index(target) + 1 if target in subjects else None
     visible = rank is not None
 
-    if scenario["category"] == "role":
-        return {"passed": False, "rank": rank, "visible": visible,
-                "note": "relation graph not implemented"}
-
     if scenario["expect_visible"]:
         forbidden = scenario.get("forbidden")
         passed = visible

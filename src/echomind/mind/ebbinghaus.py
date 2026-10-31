@@ -8,6 +8,7 @@ from typing import Literal
 
 from echomind.domain.models import EpisodicCard, Percept, SemanticFact
 from echomind.mind.cybernetics import compute_associative_flotation_boosts
+from echomind.mind.entity_order import order_score
 from echomind.mind.recall_types import RecalledMemoryItem
 
 CLEAR_THRESHOLD = 0.55
@@ -90,6 +91,7 @@ def format_recalled_item(item: RecalledMemoryItem) -> str:
 
 FACT_RECENCY_HALF_LIFE_DAYS = 30.0
 FACT_RECENCY_WEIGHT = 4.0
+ENTITY_ORDER_WEIGHT = 6.0
 
 
 def fact_recency(
@@ -103,7 +105,7 @@ def fact_recency(
 
 
 def _fact_relevance_score(
-    fact: SemanticFact, q_tokens: frozenset[str], q_low: str,
+    fact: SemanticFact, q_tokens: frozenset[str], q_low: str, query_text: str,
     now_ms: int | None = None,
 ) -> float:
     f_tokens = tokenize_query(f"{fact.subject} {fact.fact_text}")
@@ -112,7 +114,8 @@ def _fact_relevance_score(
     subj_hit = 6.0 if (head and head in q_low) else 0.0
     lock_bonus = 5.0 if fact.is_locked else 0.0
     recency = fact_recency(fact.event_time_ms, now_ms or 0) * FACT_RECENCY_WEIGHT
-    return overlap * 3.0 + subj_hit + lock_bonus + fact.confidence + recency
+    order = order_score(query_text, f"{fact.subject} {fact.fact_text}") * ENTITY_ORDER_WEIGHT
+    return overlap * 3.0 + subj_hit + lock_bonus + fact.confidence + recency + order
 
 
 def select_relevant_facts(
@@ -125,7 +128,7 @@ def select_relevant_facts(
     q_tokens = tokenize_query(query_text)
     q_low = query_text.lower()
     scored = [
-        (_fact_relevance_score(f, q_tokens, q_low, now_ms), idx, f)
+        (_fact_relevance_score(f, q_tokens, q_low, query_text, now_ms), idx, f)
         for idx, f in enumerate(facts)
     ]
     scored.sort(key=lambda item: (item[0], -item[1]), reverse=True)

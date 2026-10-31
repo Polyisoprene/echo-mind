@@ -1021,6 +1021,19 @@
       "evidence": {
         "rationale": "让时间项与一次词重叠同量级：1 天≈0.98×4≈3.9，约等于 overlap×3+confidence；先保证同分时时间能打破平局，融合权重待 E1 拟合"
       }
+    },
+    {
+      "id": "mind/ebbinghaus.py::ENTITY_ORDER_WEIGHT",
+      "module": "mind/ebbinghaus.py",
+      "symbol": "ENTITY_ORDER_WEIGHT",
+      "line": 94,
+      "value": "6.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "6 分≈两次词重叠；让实体顺序在关键词同分时翻转 A→B/B→A；完整关系图（memory_relations）前的守卫，权重待角色探针拟合"
+      }
     }
   ]
 }

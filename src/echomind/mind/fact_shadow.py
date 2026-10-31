@@ -38,7 +38,7 @@ def claim_rank(views: list[ClaimView], query: str, limit: int, now_ms: int) -> l
             chat_key="", subject=view.subject, fact_text=view.value,
             confidence=min(1.0, view.belief), is_locked=view.locked,
         )
-        base = _fact_relevance_score(fact_like, tokens, low)
+        base = _fact_relevance_score(fact_like, tokens, low, query)
         age_days = 0.0
         if view.recorded_at_ms:
             age_days = max(0.0, (now_ms - view.recorded_at_ms) / MS_PER_DAY)
