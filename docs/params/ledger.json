@@ -1060,6 +1060,78 @@
       "evidence": {
         "rationale": "与事实默认置信度一致；规则抽取只在高精度模式下使用，置信度不抬高来源可信度"
       }
+    },
+    {
+      "id": "mind/semantic_retrieval.py::SEMANTIC_RECENCY_WEIGHT",
+      "module": "mind/semantic_retrieval.py",
+      "symbol": "SEMANTIC_RECENCY_WEIGHT",
+      "line": 1,
+      "value": "0.25",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-016",
+      "experiment": "用 70 条内部场景 + 50 条人工标签拟合/消融；语义通道时间权重；未与关键词 recency 权重联动",
+      "conservative_value": "0.25",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/semantic_retrieval.py::SEMANTIC_ORDER_WEIGHT",
+      "module": "mind/semantic_retrieval.py",
+      "symbol": "SEMANTIC_ORDER_WEIGHT",
+      "line": 1,
+      "value": "0.5",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-016",
+      "experiment": "用 70 条内部场景 + 50 条人工标签拟合/消融；语义通道实体顺序权重；未与关键词 order 权重联动",
+      "conservative_value": "0.5",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "domain/relation.py::RELATION_MAX_HOPS",
+      "module": "domain/relation.py",
+      "symbol": "RELATION_MAX_HOPS",
+      "line": 1,
+      "value": "2",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-016",
+      "experiment": "用 70 条内部场景 + 50 条人工标签拟合/消融；固定 2 跳；无图直径/成本依据",
+      "conservative_value": "2",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/personality.py::REALISM_MAX_CHARS",
+      "module": "mind/personality.py",
+      "symbol": "REALISM_MAX_CHARS",
+      "line": 1,
+      "value": "40",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-016",
+      "experiment": "用 70 条内部场景 + 50 条人工标签拟合/消融；真人感长度上限；50 条人工标签高分中位 15、p75 20、max 26",
+      "conservative_value": "40",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
     }
   ]
 }

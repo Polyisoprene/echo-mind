@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from echomind.adapters.storage.database import SqliteDatabase
-from echomind.domain.relation import MemoryRelation
+from echomind.domain.relation import RELATION_MAX_HOPS, MemoryRelation
 
 
 class SqliteRelationStore:
@@ -59,7 +59,9 @@ class SqliteRelationStore:
             found |= await self._objects(subject)
         return found - seen
 
-    async def reachable(self, starts: tuple[str, ...], max_hops: int = 2) -> set[str]:
+    async def reachable(
+        self, starts: tuple[str, ...], max_hops: int = RELATION_MAX_HOPS
+    ) -> set[str]:
         seen: set[str] = set(starts)
         frontier: set[str] = set(starts)
         for _ in range(max_hops):

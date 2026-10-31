@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from echomind.domain.memory_ports import IRelationStore
 from echomind.domain.models import SemanticFact
+from echomind.domain.relation import RELATION_MAX_HOPS
 from echomind.mind.entity_order import entities
 
 
 class RelationResolver:
-    def __init__(self, store: IRelationStore, max_hops: int = 2) -> None:
+    def __init__(self, store: IRelationStore, max_hops: int = RELATION_MAX_HOPS) -> None:
         self._store = store
         self._max_hops = max_hops
 

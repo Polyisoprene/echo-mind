@@ -57,13 +57,13 @@ percept
 | `FACT_RECENCY_HALF_LIFE_DAYS` | 30 | `mind/ebbinghaus.py` | 时间衰减半衰期 | ❌ 无直接来源；fit_pending |
 | `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 关键词时间加分 | ❌ 无来源；convention |
 | `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 关键词方向加分 | ❌ 无来源；convention |
-| 语义 recency 权重 | 0.25 | `mind/semantic_retrieval.py` | 内联，不在账本 | ❌ 无来源 |
-| 语义 order 权重 | 0.5 | 同上 | 内联，不在账本 | ❌ 无来源 |
+| 语义 recency 权重 | 0.25 | `mind/semantic_retrieval.py::SEMANTIC_RECENCY_WEIGHT` | 已收常量/账本，fit_pending | ❌ 无来源 |
+| 语义 order 权重 | 0.5 | `mind/semantic_retrieval.py::SEMANTIC_ORDER_WEIGHT` | 已收常量/账本，fit_pending | ❌ 无来源 |
 | `RRF_K` | 60 | `mind/retrieval_fusion.py` | 两路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
-| `max_hops` | 2 | `relation_resolver.py` / `relation_repo.py` | 两跳可达 | ❌ 无来源；且两处重复 |
+| `max_hops` | 2 | `domain/relation.py::RELATION_MAX_HOPS` | 两跳可达 | ❌ 无来源；已由一处常量统一，fit_pending |
 | `RELATION_CONFIDENCE` | 0.8 | `mind/relation_extractor.py` | 抽取置信度 | ❌ 未参与排序；值无来源 |
 | 关系 validity | 字段存在 | `memory_relations` | `valid_from/to` 未过滤 | ❌ 孤岛 |
-| 真人感长度 | 40 字 | `personality.REALISM_CONTRACT` | prompt 软约束 | 🟡 来自 50 条人工标签，但样本小 |
+| 真人感长度 | 40 字 | `personality.REALISM_MAX_CHARS` | 已收常量/账本，prompt 软约束 | 🟡 来自 50 条人工标签，但样本小 |
 
 ### 人工标签对“40 字”的实际支撑
 
@@ -135,13 +135,13 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 - `fit_pending`：未拟合前不得作为生产真值；
 - `experimental`：只允许 shadow，不允许进默认路径。
 
-内联字面量（0.25/0.5/2/0.8/40）必须消除。
+内联字面量（0.25/0.5/2/40）已收进常量/账本；`RELATION_CONFIDENCE=0.8` 已有账本。它们仍标记为 `fit_pending`，不是生产真值。
 
 ### 5.3 分阶段接入
 
 | 阶段 | 改动 | 不改什么 |
 |---|---|---|
-| P0 | 参数登记；把 0.25/0.5/2/0.8/40 收进配置/常量；关系 validity/confidence 接入 | 不改排序行为 |
+| P0 | ✅ 参数登记（0.25/0.5/2/40 已收常量/账本）；⬜ 关系 validity/confidence 接入 | 本轮未改排序行为 |
 | P1 | 统一 recency/order，去掉双路重复计分；关系进统一分数；RRF 降为 fallback | 不改硬门、不改隐私 |
 | P2 | 用 70 场景 + 50 标签拟合权重；重跑 60/70 关键词、70/70 语义、role/temporal/multihop | 不新增无依据参数 |
 | P3 | PPR/树/HyDE 作为独立实验，先 shadow | 不直接改生产 |
@@ -182,7 +182,14 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 
 ---
 
-## 7. 不建议做的事
+## 7. 本轮已经落地的部分
+
+- 0.25/0.5（语义权重）、2（关系跳数）、40（风格长度）已从内联字面量收成显式常量；
+- 全部登记到 `docs/params/ledger.json`，状态为 `fit_pending/quarantined`；
+- `param_gate` 通过（60 constants compliant）；
+- **没有改线上排序行为**，只是把“孤立参数”变成可审计、可联动的债务项。
+
+## 8. 不建议做的事
 
 1. 不要继续加“关系命中 +6”之类的后置 boost；
 2. 不要把 30 天/4/6/0.25/0.5/2/0.8 当科学默认值；
@@ -191,7 +198,7 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 
 ---
 
-## 8. 依据链接
+## 9. 依据链接
 
 - Cormack et al., *Reciprocal Rank Fusion*, SIGIR 2009. [doi:10.1145/1571941.1572114](https://doi.org/10.1145/1571941.1572114)
 - Park et al., *Generative Agents*, 2023. [arXiv:2304.03442](https://arxiv.org/abs/2304.03442)；官方检索代码 [retrieve.py](https://github.com/joonspk-research/generative_agents/blob/main/reverie/backend_server/persona/cognitive_modules/retrieve.py)，参数 [scratch.py](https://github.com/joonspk-research/generative_agents/blob/main/reverie/backend_server/persona/memory_structures/scratch.py)
