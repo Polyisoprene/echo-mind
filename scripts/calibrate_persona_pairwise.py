@@ -45,6 +45,8 @@ def _record(choice: str, pair: dict[str, Any],
 
 
 def _agrees(choice: str, pair: dict[str, Any]) -> bool | None:
+    if "human_overall" not in pair["a"] or "human_overall" not in pair["b"]:
+        return None
     a_score = int(pair["a"]["human_overall"])
     b_score = int(pair["b"]["human_overall"])
     if a_score == b_score:
@@ -87,7 +89,7 @@ def _summarize(rows: list[dict[str, str]], key: dict[str, Any], header: str) -> 
                 if v["game"] else 0.0,
             } for model, v in stats.items()
         },
-        "agreement_with_absolute": round(agree / total, 3) if total else 0.0,
+        "agreement_with_absolute": round(agree / total, 3) if total else None,
         "comparable_pairs": total,
     }
 
