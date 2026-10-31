@@ -99,9 +99,13 @@ def _validate_quotes(
 class TraitTextGenerator:
     """Generate candidates without touching the live prompt."""
 
-    def __init__(self, llm: ILlmGateway, model_name: str = "") -> None:
+    def __init__(
+        self, llm: ILlmGateway, model_name: str = "", *,
+        temperature: float | None = 0.0,
+    ) -> None:
         self._llm = llm
         self._model = model_name
+        self._temperature = temperature
 
     async def generate(
         self, trait_id: int, evidence: tuple[TraitEvidence, ...]
@@ -111,9 +115,13 @@ class TraitTextGenerator:
             return None
         if not any(item.quote_kind != "tool" for item in evidence):
             return None
-        response = await self._llm.complete(
-            [{"role": "user", "content": _prompt(evidence)}],
-            temperature=0.0, json_mode=True,
+        messages = [{"role": "user", "content": _prompt(evidence)}]
+        response = (
+            await self._llm.complete(messages, json_mode=True)
+            if self._temperature is None else
+            await self._llm.complete(
+                messages, temperature=self._temperature, json_mode=True
+            )
         )
         payload = _parse_json(_extract_text(response))
         now_ms = int(time.time() * 1000)
