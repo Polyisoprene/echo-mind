@@ -64,6 +64,13 @@
 - 测试：mock `/embeddings`、向量 roundtrip、余弦排序；
 - **默认关闭**：当前三个 provider 的 `/embeddings` 都返回 404/不支持，没有可用 endpoint，所以线上行为不变。
 
+## 接入状态
+
+- 已接入 frame：`build_cognitive_frame` 在 `_semantic` 存在时调用 `SemanticMemoryRetriever`，否则走原关键词选择；
+- 覆盖不足或 API 失败时自动回退关键词；
+- `main.py` 仅在 `cfg.embedding.enabled` 时构造 retriever；
+- 默认关闭，当前线上行为不变。
+
 ## 下一步（需 endpoint）
 
 1. 在 `api.embedding*` 填入可用 endpoint/model/key；

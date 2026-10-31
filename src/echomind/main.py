@@ -11,6 +11,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from echomind.adapters.llm.client import FailoverLlmGateway
+from echomind.adapters.llm.embedding_client import OpenAiEmbeddingGateway
 from echomind.adapters.media.bili import BiliClient
 from echomind.adapters.media.feiyu import FeiyuVoiceBackend
 from echomind.adapters.media.vision import OpenAiVisionDescriber
@@ -19,11 +20,13 @@ from echomind.adapters.onebot.enrichers import PerceptEnrichmentPipeline
 from echomind.adapters.onebot.forward_expander import ReadForwardTool
 from echomind.adapters.onebot.live_client import OneBotHttpApiCaller, OneBotLiveRuntime
 from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
+from echomind.adapters.storage.memory_vector_repo import SqliteMemoryVectorStore
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import AppConfig, load_config_from_json
 from echomind.mind.memory_budget import set_consolidation_budget, set_consolidation_thinking
 from echomind.mind.naming import BotNaming, set_bot_naming
 from echomind.mind.probe_runtime import set_probe_model
+from echomind.mind.semantic_memory import SemanticMemoryRetriever
 from echomind.mind.subconscious_probe import SubconsciousChordProbe
 from echomind.runtime.agent_runner import AgentSessionRunner
 from echomind.runtime.prompt_composer import PromptComposer
@@ -67,6 +70,7 @@ async def create_production_app(
         default_chat_key=f"group:{first_group}",
         operator_ids=cfg.operator_ids,
     )
+    _wire_semantic(cfg, container)
     app = create_web_app(container, config_path=config_path, auth_key=cfg.auth_key)
     return app, container
 
@@ -131,6 +135,17 @@ def _build_scheduler(
         trace_store=container.trace_store,
         llm=llm,
         persona_layers=container.persona_layers,
+    )
+
+
+def _wire_semantic(cfg: AppConfig, container: EchoMindContainer) -> None:
+    if not cfg.embedding.enabled:
+        return
+    container.cognitive_facade.set_semantic_retriever(
+        SemanticMemoryRetriever(
+            OpenAiEmbeddingGateway(cfg.embedding),
+            SqliteMemoryVectorStore(container.db),
+        )
     )
 
 
@@ -207,6 +222,7 @@ def build_live_asgi_app() -> FastAPI:
             if cfg.allowed_groups
             else "group:10002002",
         )
+        _wire_semantic(cfg, container)
         holder["c"] = container
         sub_app = create_web_app(container, config_path=cfg_path, auth_key=cfg.auth_key)
         app.router.routes.extend(sub_app.routes)

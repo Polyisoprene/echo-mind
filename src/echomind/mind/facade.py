@@ -37,7 +37,6 @@ from echomind.mind.cybernetics import (
 )
 from echomind.mind.dialogue_context import DialogueContext
 from echomind.mind.drives import apply_turn_affect_and_drives
-from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.epistemic import EpistemicCalibrator
 from echomind.mind.facade_accessors import FacadeAccessors
 from echomind.mind.facade_autonomy import run_autonomous_tick
@@ -229,7 +228,7 @@ class CognitiveCoreFacade(FacadeAccessors):
             scene, snap, tr, bm,
             unknown_terms=unk, warnings=warns, chord_reagents=chord.reagents if chord else (),
         )
-        rel_facts = select_relevant_facts(facts, " ".join(p.text for p in tr), limit=28)
+        rel_facts = await mem.select_facts(self._semantic, facts, " ".join(p.text for p in tr), 28)
         core_blk = render_mind_block(
             scene, snap, bonds=bm, facts=rel_facts, warnings=warns,
             shadow_directives=shadow.shadow_directives, rule_lines=match_active_rules(rules, tr),

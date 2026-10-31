@@ -17,9 +17,14 @@ from echomind.mind.bond_scoring import attach_bond_depth as attach
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
 from echomind.mind.disclosure import gate_episode, gate_fact
 from echomind.mind.disclosure_choice import DisclosureChoice, choose
-from echomind.mind.ebbinghaus import extract_mentioned_uids, recall_episodic_memories
+from echomind.mind.ebbinghaus import (
+    extract_mentioned_uids,
+    recall_episodic_memories,
+    select_relevant_facts,
+)
 from echomind.mind.memory_consolidator import run_hippocampal_batch_consolidation
 from echomind.mind.recall_types import RecalledMemoryItem
+from echomind.mind.semantic_memory import SemanticMemoryRetriever
 
 
 async def recall_and_reinforce(
@@ -208,6 +213,17 @@ async def load_bonds_for(
 ) -> dict[str, SocialBondProfile]:
     pairs = [(u, await reader.get_social_bond(chat_key, u)) for u in uids]
     return await attach(bond_store, {u: b for u, b in pairs if b is not None})
+
+
+async def select_facts(
+    semantic: SemanticMemoryRetriever | None,
+    facts: tuple[SemanticFact, ...], query: str, limit: int
+) -> tuple[SemanticFact, ...]:
+    if semantic is not None:
+        ranked = await semantic.rerank(facts, query, limit)
+        if ranked is not None:
+            return ranked
+    return select_relevant_facts(facts, query, limit)
 
 
 IncludedFact = tuple[int, str, str]

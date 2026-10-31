@@ -5,6 +5,10 @@ from __future__ import annotations
 from typing import Any, Protocol, runtime_checkable
 
 from echomind.domain.bond_stats import BondDepthStats
+from echomind.domain.memory_ports import (
+    IEmbeddingGateway as IEmbeddingGateway,
+    IMemoryVectorStore as IMemoryVectorStore,
+)
 from echomind.domain.models import (
     AffectiveVector,
     AttentionDecision,
@@ -77,12 +81,6 @@ class IDisclosureLog(Protocol):
         self, *, memory_kind: str, memory_id: int, grantee_id: str,
         now_ms: int | None = None,
     ) -> bool: ...
-
-
-class IEmbeddingGateway(Protocol):
-    """OpenAI-compatible text embedding gateway."""
-
-    async def embed(self, texts: tuple[str, ...]) -> tuple[tuple[float, ...], ...]: ...
 
 
 @runtime_checkable
