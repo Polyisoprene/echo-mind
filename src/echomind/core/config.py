@@ -21,6 +21,20 @@ class GatewayEndpointConfig(FrozenValueObject):
     timeout_ms: int = 120000
 
 
+class EmbeddingConfig(FrozenValueObject):
+    """OpenAI-compatible embedding endpoint; disabled when model is empty."""
+
+    model: str = ""
+    base_url: str = ""
+    api_key: str = ""
+    dimensions: int = 0
+    timeout_ms: int = 30000
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.model and self.base_url)
+
+
 class OneBotConnConfig(FrozenValueObject):
     """NapCat OneBot v11 connection settings."""
 
@@ -65,6 +79,7 @@ class AppConfig(FrozenValueObject):
         )
     )
     fallback_chain: tuple[GatewayEndpointConfig, ...] = ()
+    embedding: EmbeddingConfig = EmbeddingConfig()
     temperature: float = 0.8
     onebot: OneBotConnConfig = OneBotConnConfig()
     feiyu_base_url: str = "http://192.168.3.2:9880"
@@ -109,6 +124,16 @@ def _build_primary_llm(api: dict[str, Any]) -> GatewayEndpointConfig:
         api_key=_get_str(api, "apiKey", ""),
         model=_get_str(api, "model", "deepseek-chat"),
         timeout_ms=_get_int(api, "timeoutMs", 120000),
+    )
+
+
+def _build_embedding(api: dict[str, Any]) -> EmbeddingConfig:
+    return EmbeddingConfig(
+        model=_get_str(api, "embeddingModel", ""),
+        base_url=_get_str(api, "embeddingBaseUrl", _get_str(api, "baseUrl", "")),
+        api_key=_get_str(api, "embeddingApiKey", _get_str(api, "apiKey", "")),
+        dimensions=_get_int(api, "embeddingDimensions", 0),
+        timeout_ms=_get_int(api, "embeddingTimeoutMs", 30000),
     )
 
 
@@ -246,6 +271,7 @@ def load_config_from_json(path: Path) -> AppConfig:
         primary_llm=_build_primary_llm(api_section),
         fallback_llm=fb_one,
         fallback_chain=_build_fallback_chain(raw, api_section, fb_one),
+        embedding=_build_embedding(api_section),
         onebot=_build_onebot_cfg(_sub_dict(raw, "snowluma")),
         feiyu_base_url=f_url,
         feiyu_api_key=f_key,

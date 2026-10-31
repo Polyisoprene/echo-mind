@@ -48,6 +48,29 @@
 - **Step 2（prompt 筛选）**：`synthesize_live_persona_directive(..., min_evidence=0, max_traits=6)`，默认 0 保持现状；离线测试证明 `min_evidence=2` 只保留高证据特质。
 - **现网分布**：9 条特质全部 `evidence=1`，现在开 `min_evidence=2` 会把 9 条全过滤掉，所以**默认仍为 0**，等证据累积。
 
+## API embedding 管线（已实现，默认关闭）
+
+- 配置（`data/config.json` 的 `api` 段）：
+  ```json
+  "embeddingModel": "your-embedding-model",
+  "embeddingBaseUrl": "https://your-endpoint/v1",
+  "embeddingApiKey": "sk-...",
+  "embeddingDimensions": 0
+  ```
+- 客户端：`adapters/llm/embedding_client.py`，OpenAI `/embeddings` 形状；
+- 存储：`memory_vectors` 表 + `SqliteMemoryVectorStore`；
+- 检索：`mind/semantic_retrieval.py` 余弦 rerank；
+- 回填：`scripts/backfill_memory_vectors.py --apply`；
+- 测试：mock `/embeddings`、向量 roundtrip、余弦排序；
+- **默认关闭**：当前三个 provider 的 `/embeddings` 都返回 404/不支持，没有可用 endpoint，所以线上行为不变。
+
+## 下一步（需 endpoint）
+
+1. 在 `api.embedding*` 填入可用 endpoint/model/key；
+2. 跑 `backfill_memory_vectors.py --apply` 建索引；
+3. 用 `eval_memory_retrieval.py` 的同义集对比 recall@5；
+4. 达标后把 `rerank_facts` 接入 frame 检索（硬门仍在渲染前）。
+
 ## 本轮不做
 
 - 不改线上人格；

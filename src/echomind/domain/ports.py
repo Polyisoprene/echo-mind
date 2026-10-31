@@ -79,6 +79,12 @@ class IDisclosureLog(Protocol):
     ) -> bool: ...
 
 
+class IEmbeddingGateway(Protocol):
+    """OpenAI-compatible text embedding gateway."""
+
+    async def embed(self, texts: tuple[str, ...]) -> tuple[tuple[float, ...], ...]: ...
+
+
 @runtime_checkable
 class IMemoryWriter(Protocol):
     """Write-only segregated port for memory consolidation and reinforcement (<=5 methods)."""

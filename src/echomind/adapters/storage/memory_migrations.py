@@ -36,6 +36,15 @@ CREATE TABLE IF NOT EXISTS memory_knowledge (
   updated_ms INTEGER NOT NULL,
   PRIMARY KEY(memory_kind, memory_id, person_id)
 );
+CREATE TABLE IF NOT EXISTS memory_vectors (
+  memory_kind TEXT NOT NULL,
+  memory_id INTEGER NOT NULL,
+  model TEXT NOT NULL,
+  dim INTEGER NOT NULL,
+  vector_json TEXT NOT NULL,
+  updated_ms INTEGER NOT NULL,
+  PRIMARY KEY(memory_kind, memory_id)
+);
 CREATE TABLE IF NOT EXISTS persons (
   person_id TEXT PRIMARY KEY,
   display_name TEXT NOT NULL DEFAULT '',
