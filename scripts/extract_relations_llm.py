@@ -29,6 +29,13 @@ GENERIC_OBJECTS = {
     "大家", "所有人", "成员",
 }
 PRONOUNS = {"我", "他", "她", "它", "他们", "她们"}
+HINTS = {
+    "works_at": ("工作", "上班", "就职", "公司"),
+    "friend": ("朋友",),
+    "gave_to": ("给",),
+    "owns": ("主人", "属于", "拥有"),
+    "alias": ("叫", "昵称", "外号", "小名", "QQ", "称呼", "群友"),
+}
 SYSTEM = (
     "你是关系抽取器。只抽取事实文本中明确表达的关系，不推断、不补全。"
     "predicate 只能是：works_at, friend, sibling, gave_to, alias, owns。"
@@ -39,8 +46,8 @@ SYSTEM = (
 )
 
 
-def _cache_key(fact_id: int, subject: str, text: str) -> str:
-    return hashlib.sha256(f"{fact_id}\n{subject}\n{text}".encode()).hexdigest()
+def _cache_key(source: str, memory_id: int, subject: str, text: str) -> str:
+    return hashlib.sha256(f"{source}\n{memory_id}\n{subject}\n{text}".encode()).hexdigest()
 
 
 def _parse_content(raw: dict[str, Any]) -> list[dict[str, Any]]:
@@ -82,6 +89,8 @@ def _valid(item: dict[str, Any], text: str) -> dict[str, Any] | None:
         word in evidence for word in ("哥哥", "弟弟", "姐姐", "妹妹")
     ):
         return None
+    if predicate in HINTS and not any(word in evidence for word in HINTS[predicate]):
+        return None
     confidence = max(0.0, min(1.0, float(item.get("confidence", 0.7))))
     return {"subject": subject, "predicate": predicate, "object": obj,
             "confidence": confidence, "evidence": evidence}
@@ -108,14 +117,26 @@ async def _batch(
     return found
 
 
-def _load_rows(db: Path, limit: int) -> list[tuple[int, str, str]]:
+def _load_rows(db: Path, limit: int, source: str) -> list[tuple[int, str, str]]:
     conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
-    rows = [
-        (int(fact_id), str(subject), str(text))
-        for fact_id, subject, text in conn.execute(
-            "SELECT id, subject, fact_text FROM semantic_facts ORDER BY id"
-        )
-    ]
+    if source == "facts":
+        rows = [
+            (int(fact_id), str(subject), str(text))
+            for fact_id, subject, text in conn.execute(
+                "SELECT id, subject, fact_text FROM semantic_facts ORDER BY id"
+            )
+        ]
+    else:
+        rows = []
+        for memory_id, participants_json, summary, detail in conn.execute(
+            "SELECT id, participants_json, summary, key_detail FROM episodic_memories "
+            "WHERE sensitivity != 'secret' ORDER BY id"
+        ):
+            participants = json.loads(str(participants_json or "[]"))
+            if not participants:
+                continue
+            rows.append((int(memory_id), str(participants[0]),
+                         f"{summary}；{detail or ''}"))
     return rows[:limit] if limit else rows
 
 
@@ -129,6 +150,7 @@ def _load_cache(path: Path) -> dict[str, list[dict[str, Any]]]:
 async def _extract_all(
     gateway: FailoverLlmGateway, pending: list[tuple[int, str, str]],
     batch: int, cache: dict[str, list[dict[str, Any]]], cache_path: Path,
+    *, source: str,
 ) -> list[dict[str, Any]]:
     found: list[dict[str, Any]] = []
     for start in range(0, len(pending), batch):
@@ -140,7 +162,7 @@ async def _extract_all(
             continue
         found.extend(chunk_found)
         for fact_id, subject, text in chunk:
-            cache[_cache_key(fact_id, subject, text)] = [
+            cache[_cache_key(source, fact_id, subject, text)] = [
                 item for item in chunk_found if item["fact_id"] == fact_id
             ]
         await asyncio.to_thread(cache_path.write_text,
@@ -177,14 +199,16 @@ async def main() -> int:
     parser.add_argument("--batch", type=int, default=8)
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--cache", type=Path, default=ROOT / "data" / "relation_llm_cache.json")
+    parser.add_argument("--source", choices=("facts", "episodes"), default="facts")
     args = parser.parse_args()
 
-    rows = _load_rows(args.db, args.limit)
+    rows = _load_rows(args.db, args.limit, args.source)
     cache = _load_cache(args.cache)
-    pending = [row for row in rows if _cache_key(*row) not in cache]
+    pending = [row for row in rows
+               if _cache_key(args.source, *row) not in cache]
     found: list[dict[str, Any]] = []
     for fact_id, subject, text in rows:
-        for item in cache.get(_cache_key(fact_id, subject, text), []):
+        for item in cache.get(_cache_key(args.source, fact_id, subject, text), []):
             valid = _valid(item, text)
             if valid is not None:
                 valid["fact_id"] = fact_id
@@ -194,7 +218,9 @@ async def main() -> int:
     db = SqliteDatabase(args.db)
     await db.initialize()
     gateway = FailoverLlmGateway(cfg.primary_llm, cfg.fallback_llm, db)
-    found.extend(await _extract_all(gateway, pending, args.batch, cache, args.cache))
+    found.extend(await _extract_all(
+        gateway, pending, args.batch, cache, args.cache, source=args.source
+    ))
     _report(rows, pending, found)
     if not args.apply:
         print("dry-run: pass --apply to write")
