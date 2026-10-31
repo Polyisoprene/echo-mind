@@ -35,6 +35,13 @@
 2. 灰度 10% 会话，比较召回与人格一致性；
 3. 达标再全量。
 
+## 进展（2026-10-31）
+
+- **Step 1 已落地（存储层）**：`persona_traits` 增加 `evidence_count`、`contradiction_count`、`last_evidence_ms`；
+- 每次巩固强化 `evidence_count +1`、刷新 `last_evidence_ms`；
+- prompt 仍按原逻辑读取，未改变线上人格；
+- 测试：同一特质强化两次 → `evidence_count=2`。
+
 ## 本轮不做
 
 - 不改线上人格；

@@ -18,6 +18,9 @@ async def ensure_trait_columns(conn: Any) -> None:
         ("chat_key", "TEXT NOT NULL DEFAULT ''"),
         ("source", "TEXT NOT NULL DEFAULT ''"),
         ("last_used_ms", "INTEGER NOT NULL DEFAULT 0"),
+        ("evidence_count", "INTEGER NOT NULL DEFAULT 1"),
+        ("contradiction_count", "INTEGER NOT NULL DEFAULT 0"),
+        ("last_evidence_ms", "INTEGER NOT NULL DEFAULT 0"),
     ):
         await _ensure_column(conn, "persona_traits", column, ddl)
 

@@ -224,13 +224,16 @@ class SqliteWorkingStateStore:
             if new_trait and new_trait.trait_text.strip():
                 await conn.execute(
                     "INSERT INTO persona_traits (category, trait_text, strength, created_at, "
-                    "chat_key, source) VALUES (?, ?, ?, ?, ?, ?) "
+                    "chat_key, source, evidence_count, last_evidence_ms) "
+                    "VALUES (?, ?, ?, ?, ?, ?, 1, ?) "
                     "ON CONFLICT(trait_text) DO UPDATE SET "
                     "strength = MIN(10, persona_traits.strength + 2), "
                     "created_at = excluded.created_at, chat_key = excluded.chat_key, "
-                    "source = excluded.source",
+                    "source = excluded.source, "
+                    "evidence_count = persona_traits.evidence_count + 1, "
+                    "last_evidence_ms = excluded.last_evidence_ms",
                     (new_trait.category, new_trait.trait_text.strip(), new_trait.strength,
-                     now_ms, chat_key, source),
+                     now_ms, chat_key, source, now_ms),
                 )
             await _cap_trait_categories(conn)
             await conn.commit()
