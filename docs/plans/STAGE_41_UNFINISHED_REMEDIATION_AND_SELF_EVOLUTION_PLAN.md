@@ -1453,3 +1453,40 @@ signature.result: 形成反复确认小槽点的行为模式
 **验证**
 
 - 全门禁：**360 passed / 92%**，fusion 70/70。
+
+### 14.29 真实 trace 回填与首个 active trait（2026-11-01）
+
+`turn_traces` 里有 156 条真实 `look_at_image` 回合。  
+回填规则收紧为：
+
+- quote **只取真实发送工具**（`send_message`/`feiyu_say`/`feiyu_cover`）的文本；
+- 不用 LLM 中间输出（避免把内心独白当证据）；
+- 每个 UTC 日只取一个 context；
+- 已有 context 的日期跳过；
+- 先 dry-run，再 `--apply`。
+
+dry-run 结果：
+
+- 2 条可回填的真实发送文本；
+- 加上原有 1 个 context → 3 个独立 context。
+
+执行后：
+
+```text
+trait 45 status=active
+ledger_rows=3
+distinct_contexts=3
+```
+
+这是第一个**真实数据驱动**的 active trait，不是合成 replay。
+
+但：
+
+- `trait_memory_links` 精确匹配为 0（semantic=0, episodic=0）；
+- 所以 trait ranker 仍然不生效；
+- shadow 历史 12 行仍是空，下一次真实回合才会记录非空 trait_ids。
+
+**验证**
+
+- 全门禁：**363 passed / 92%**，fusion 70/70；
+- 参数账本：**59 compliant**（新增 `DAY_MS` 单位换算）。

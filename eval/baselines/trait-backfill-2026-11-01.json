@@ -1,0 +1,19 @@
+{
+  "trait_id": 45,
+  "trait_text": "看到群友发图或视频会凑上去仔细看细节，顺着画面里的小槽点接话",
+  "existing_contexts": 1,
+  "candidates": [
+    {
+      "turn_id": "e80276dbcc0f",
+      "event_ms": 1793284452977,
+      "context_hash": "6958e2ac3027dc31a9b1a793dd5b962a44dd6c81475ef08a16ca7a0206cb7adb",
+      "quote": "哦哦把指令历史打开啦，这下按不出来的动作都能逮着看，毛玉老师这招比截图靠谱"
+    },
+    {
+      "turn_id": "5a948a362347",
+      "event_ms": 1793361555585,
+      "context_hash": "2a9233296b126d9d7257ed0c2d0ca5c1364686498af520b11d593ed7deed6417",
+      "quote": "这张蓝发女仆是谁呀，不会是我吧，你从哪翻出来的"
+    }
+  ]
+}

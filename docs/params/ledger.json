@@ -1099,6 +1099,19 @@
         "source": "NetworkX pagerank defaults (alpha=0.85, max_iter=100, tol=1e-6); HippoRAG uses Personalized PageRank",
         "repo": "https://github.com/networkx/networkx/blob/main/networkx/algorithms/link_analysis/pagerank_alg.py"
       }
+    },
+    {
+      "id": "mind/trait_trace_backfill.py::DAY_MS",
+      "module": "mind/trait_trace_backfill.py",
+      "symbol": "DAY_MS",
+      "line": 11,
+      "value": "86400000",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "单位换算（24*3600*1000），用于 UTC 日桶去重；无自由度"
+      }
     }
   ]
 }

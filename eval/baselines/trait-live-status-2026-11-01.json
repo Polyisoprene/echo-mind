@@ -6,10 +6,10 @@
         "id": 45,
         "category": "habit",
         "text": "看到群友发图或视频会凑上去仔细看细节，顺着画面里的小槽点接话",
-        "status": "candidate",
+        "status": "active",
         "cached_evidence": 4,
-        "ledger_rows": 1,
-        "distinct_contexts": 1,
+        "ledger_rows": 3,
+        "distinct_contexts": 3,
         "quote_kinds": [
           "assistant"
         ],
