@@ -879,3 +879,36 @@ assistant text > tool > user trigger
 
 - `tests/unit/test_trait_evidence_writer.py`；
 - 全门禁：**347 passed / 92%**，fusion 70/70。
+
+### 14.11 90 天 replay（2026-11-01，192.168.3.2）
+
+在远程服务器运行 `scripts/persona_replay.py --days 90`，产物：
+
+`eval/baselines/persona-replay-90d-2026-11-01.json`
+
+| 流 | active trait | shadow 行 | allowed/actual | 允许拒绝 | max drift |
+|---|---|---:|---|---:|---:|
+| warm | habit | 90 | `look_at_image` 一致 | 0 | 1.141 |
+| offense | taboo | 90 | 空 | 89/90 | 1.141 |
+| mixed | taboo + habit | 90 | `look_at_image` 一致 | 88/90 | 0.571 |
+
+对比 30 天：
+
+| 流 | 30 天 drift | 90 天 drift |
+|---|---:|---:|
+| warm | 0.39 | 1.141 |
+| offense | 0.39 | 1.141 |
+| mixed | 0.195 | 0.571 |
+
+结论：
+
+- 漂移随天数增长，但 90 天仍只有边界的 **9.5%**；
+- trait 结构没有跑偏；
+- offense/ mixed 的拒绝资格因为第一天是 candidate，分别从第 2/第 3 天才生效；
+- 远程 90 天约 **8.75s**，不占本机。
+
+**限制**
+
+- 合成流，不是真实聊天；
+- 只验证结构一致性，不验证真人感；
+- 没有接 live 行为仲裁。
