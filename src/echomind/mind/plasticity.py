@@ -132,11 +132,13 @@ class NeuroplasticityEngine:
         await self._layers.save_state(key, offset, now_ms)
         await self._layers.record_observation(key, delta, now_ms)
 
-    async def adapt_from_outcome(self, outcome: TurnOutcome) -> tuple[PlasticParamSpec, ...]:
+    async def adapt_from_outcome(
+        self, outcome: TurnOutcome, *, now_ms: int | None = None
+    ) -> tuple[PlasticParamSpec, ...]:
         deltas = compute_param_deltas(outcome)
         if not deltas:
             return ()
-        now_ms = int(time.time() * 1000)
+        now_ms = now_ms or int(time.time() * 1000)
         current = await self._store.get_plastic_params()
         updated: list[PlasticParamSpec] = []
         for key, delta, reason in deltas:
@@ -148,10 +150,13 @@ class NeuroplasticityEngine:
             applied = await self._apply_one(key, delta, reason, current, outcome.social_reward)
             if applied is not None:
                 updated.append(applied)
-        await self._learn_traits(outcome)
+        await self._learn_traits(outcome, now_ms=now_ms)
         return tuple(updated)
 
-    async def _learn_traits(self, outcome: TurnOutcome) -> None:
+    async def _learn_traits(
+        self, outcome: TurnOutcome, *, now_ms: int | None = None
+    ) -> None:
+        now_ms = now_ms or int(time.time() * 1000)
         emergent = derive_emergent_trait(outcome)
         shift, decay_cats = trait_strength_shift(outcome.social_reward)
         if emergent is None and shift == 0:
@@ -169,7 +174,6 @@ class NeuroplasticityEngine:
         )
         if quote is None or match is None or self._evidence is None:
             return
-        now_ms = int(time.time() * 1000)
         quote_kind, quote_text = quote
         await self._evidence.record_trait_evidence(TraitEvidence(
             trait_id=match.trait_id, session_id=outcome.session_id,

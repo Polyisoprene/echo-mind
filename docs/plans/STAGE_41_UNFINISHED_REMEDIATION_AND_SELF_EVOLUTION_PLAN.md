@@ -759,3 +759,29 @@ TurnOutcome(day2) ─┴→ trait evidence（2 独立 context）
 - 全门禁：**338 passed / 92%**，fusion 70/70。
 
 仍是离线闭环：没有接 live，没有自动提升 trait，没有跑真实 30 天数据。
+
+### 14.7 30 天 synthetic replay（2026-11-01）
+
+新增 `tests/integration/test_persona_30_day_replay.py`：
+
+- 三条流：warm / offense / mixed；
+- 每流 30 天，每天一个事件；
+- 事件时间传给 `adapt_from_outcome(..., now_ms=event_ms)`；
+- 日结算后检查 7 维仍在 `TRAIT_MAX_DEVIATION=12` 内；
+- warm 长出 habit，offense 长出 taboo，mixed 两条都出现；
+- 每条 active trait 有 30 个独立 context。
+
+为支持 replay，给 `NeuroplasticityEngine.adapt_from_outcome()` 增加可选 `now_ms`；线上不传，仍用当前时间。  
+这不是新参数，是事件时间入口。
+
+**验证**
+
+- replay 用时约 12.7s；
+- 全门禁：**340 passed / 92%**，fusion 70/70。
+
+**仍未做**
+
+- 用真实 LLM 生成候选（P2 仍是离线脚本）；
+- 接 live 的 trait ranker；
+- 隐私/边界回归；
+- 30 天结果目前是“结构一致性”，不是“人格更像真人”。
