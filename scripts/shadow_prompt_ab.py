@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Shadow A/B with repeated generations, paired deltas and bootstrap CI."""
+"""Shadow A/B with repeated generations, scenario-level paired bootstrap."""
 
 from __future__ import annotations
 
@@ -23,13 +23,15 @@ from echomind.core.config import load_config_from_json
 from echomind.mind.style_metrics import summarize, text_flags
 from echomind.mind.trait_generation import TraitTextGenerator
 from echomind.mind.trait_promotion import review_candidate
-from echomind.mind.trait_prompt_shadow import build_shadow_prompts
+from echomind.mind.trait_prompt_shadow import PromptShadow, build_shadow_prompts
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "eval" / "datasets" / "persona_memory_v1" / "scenarios.json"
 REALISM_MAX_CHARS = 26
+NEUTRAL_SPACE = "　"
 BOOTSTRAP_N = 2000
 BOOTSTRAP_SEED = 42
+METRICS = ("length", "long", "explain", "roleplay", "multi_question")
 
 
 def _grouped_scenarios() -> dict[str, list[dict[str, str]]]:
@@ -96,30 +98,48 @@ def _means(texts: list[str]) -> dict[str, float]:
 
 
 def _deltas(by_scenario: list[tuple[list[str], list[str]]]) -> dict[str, dict[str, Any]]:
-    """Scenario-level deltas: repeats within a scenario are not independent samples."""
     out: dict[str, dict[str, Any]] = {}
-    for name in ("length", "long", "explain", "roleplay", "multi_question"):
-        values = []
-        for old_texts, new_texts in by_scenario:
-            old_mean = _means(old_texts)[name]
-            new_mean = _means(new_texts)[name]
-            values.append(new_mean - old_mean)
+    for name in METRICS:
+        values = [
+            _means(new_texts)[name] - _means(old_texts)[name]
+            for old_texts, new_texts in by_scenario
+        ]
         low, high = _bootstrap_ci(values)
         out[name] = {"mean": round(sum(values) / len(values), 3), "ci95": [low, high]}
     return out
 
 
-async def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--days", type=int, default=30)
-    parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--scenarios", type=int, default=12)
-    parser.add_argument(
-        "--out", type=Path,
-        default=ROOT / "eval" / "baselines" / "persona-prompt-ab-2026-11-01.json",
-    )
-    args = parser.parse_args()
+async def _run_replies(
+    llm: FailoverLlmGateway, shadow: PromptShadow,
+    scenarios: list[dict[str, str]], repeats: int,
+) -> tuple[list[dict[str, Any]], list[str], list[str], list[tuple[list[str], list[str]]]]:
+    rows: list[dict[str, Any]] = []
+    old_texts: list[str] = []
+    new_texts: list[str] = []
+    by_scenario: list[tuple[list[str], list[str]]] = []
+    for scenario in scenarios:
+        scenario_old: list[str] = []
+        scenario_new: list[str] = []
+        for repeat in range(repeats):
+            old = await _reply(llm, shadow.old, scenario["query"])
+            new = await _reply(llm, shadow.new, scenario["query"])
+            old_texts.append(old)
+            new_texts.append(new)
+            scenario_old.append(old)
+            scenario_new.append(new)
+            rows.append({**scenario, "repeat": repeat, "old": old, "new": new})
+        by_scenario.append((scenario_old, scenario_new))
+    return rows, old_texts, new_texts, by_scenario
 
+
+def _filler(needed: int) -> str:
+    """Character-length control: add only neutral full-width spaces."""
+    return NEUTRAL_SPACE * max(0, needed)
+
+
+async def _build_ab(
+    args: argparse.Namespace,
+) -> tuple[FailoverLlmGateway, Any, PromptShadow, Any] | None:
     workdir = Path(tempfile.mkdtemp(prefix="echo-prompt-ab-"))
     db_path = workdir / "ab.db"
     await run_stream("warm", args.days, db_path)
@@ -127,8 +147,7 @@ async def main() -> int:
     await db.initialize()
     active = await SqliteTraitShadowStore(db).active_traits()
     if not active:
-        print("no active traits")
-        return 0
+        return None
     trait = active[0]
     evidence = await SqliteTraitEvidenceStore(db).list_trait_evidence(trait.trait_id, 200)
     cfg = load_config_from_json(ROOT / "data" / "config.json")
@@ -139,37 +158,50 @@ async def main() -> int:
         trait.trait_id, evidence
     )
     if candidate is None:
-        print("candidate generation skipped")
-        return 0
+        return None
     candidates = SqliteTraitCandidateStore(db)
     await candidates.save_candidate(candidate)
     saved = (await candidates.list_candidates(trait.trait_id))[0]
     if not review_candidate(saved, evidence).eligible:
-        print("candidate failed structural review")
-        return 0
+        return None
     await candidates.promote_candidate(saved.candidate_id, "benchmark-operator", "shadow A/B")
     working = SqliteWorkingStateStore(db)
-    shadow = build_shadow_prompts(
-        await working.get_plastic_params(), await working.sync_persona_traits(), saved
+    params = await working.get_plastic_params()
+    traits = await working.sync_persona_traits()
+    shadow = build_shadow_prompts(params, traits, saved)
+    tested = saved
+    if args.matched:
+        needed = shadow.old_len - shadow.new_len
+        tested = saved.model_copy(update={"trait_text": saved.trait_text + _filler(needed)})
+        shadow = build_shadow_prompts(params, traits, tested)
+        if shadow.old_len != shadow.new_len:
+            raise ValueError(f"length match failed: {shadow.old_len} != {shadow.new_len}")
+    return llm, saved, shadow, tested
+
+
+async def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--days", type=int, default=30)
+    parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--scenarios", type=int, default=12)
+    parser.add_argument("--matched", action="store_true")
+    parser.add_argument(
+        "--out", type=Path,
+        default=ROOT / "eval" / "baselines" / "persona-prompt-ab-2026-11-01.json",
     )
-    rows: list[dict[str, Any]] = []
-    old_texts: list[str] = []
-    new_texts: list[str] = []
-    by_scenario: list[tuple[list[str], list[str]]] = []
-    for scenario in _scenarios(args.scenarios):
-        scenario_old: list[str] = []
-        scenario_new: list[str] = []
-        for repeat in range(args.repeats):
-            old = await _reply(llm, shadow.old, scenario["query"])
-            new = await _reply(llm, shadow.new, scenario["query"])
-            old_texts.append(old)
-            new_texts.append(new)
-            scenario_old.append(old)
-            scenario_new.append(new)
-            rows.append({**scenario, "repeat": repeat, "old": old, "new": new})
-        by_scenario.append((scenario_old, scenario_new))
+    args = parser.parse_args()
+    built = await _build_ab(args)
+    if built is None:
+        print("no active trait/candidate")
+        return 0
+    llm, saved, shadow, tested = built
+    rows, old_texts, new_texts, by_scenario = await _run_replies(
+        llm, shadow, _scenarios(args.scenarios), args.repeats
+    )
     report = {
         "candidate": saved.trait_text,
+        "tested_trait": tested.trait_text,
+        "matched": args.matched,
         "old_directive_len": shadow.old_len,
         "new_directive_len": shadow.new_len,
         "n_pairs": len(rows),
