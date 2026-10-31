@@ -1589,3 +1589,37 @@ causal_links=0
 **验证**
 
 - 全门禁沿用：**369 passed / 92%**，fusion 70/70。
+
+### 14.34 active-only prompt 影响（2026-11-01）
+
+新增 `scripts/trait_prompt_impact.py`。
+
+真实主库：
+
+| 项 | 值 |
+|---|---:|
+| 当前 traits | 9 |
+| active traits | 1 |
+| 当前 prompt | 1367 字 |
+| active-only prompt | 1181 字 |
+| delta | -186 |
+
+会移除 8 条 legacy trait，包括：
+
+- 讨厌被命令使唤（taboo）；
+- 情绪上来会发语音；
+- 熬夜赖床；
+- 被说偷懒会反驳；
+- 困了直说；
+- 还有 3 条“嘴硬心软/记小账本”类习惯。
+
+**结论**
+
+- 现在切 active-only 会丢掉 8 条未迁移的真实人格；
+- 不能因为 trait 45 active 就切；
+- 需要先给 legacy trait 做证据迁移（或明确保留策略）；
+- 当前 prompt 继续显示全部 traits。
+
+**验证**
+
+- 全门禁：**369 passed / 92%**，fusion 70/70。
