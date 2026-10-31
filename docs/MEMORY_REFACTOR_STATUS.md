@@ -14,7 +14,8 @@
 | **P2.2** | 检索分层：person_facts 全局、venue_events 本地、source-aware 召回 | ✅ 已部署 |
 | **P3.1** | 硬门（粗粒度）：private 仅源场合/owner 私聊，secret 默认拒绝 + 三张表 | ✅ 已部署 |
 | **P3.2** | `disclosure_repo`：log_disclosure / mark_known / who_knows | ✅ 已部署 |
-| **P3.3** | 敏感性分类 + frame 级受众门 + 实际披露日志 | ⏳ 下一步 |
+| **P3.3a** | 敏感度线索分类（secret/private）+ 写入时升级 | ✅ 已部署 |
+| **P3.3b** | frame 级受众门 + 实际披露日志 | ⏳ 下一步 |
 | **P4** | 人格分寸：public/group 的 say/hint/keep 接 7 维 | ⏳ |
 | **P5** | 评测：一致性 + 授权边界 + 多人记忆子集 | ⏳ |
 
@@ -88,7 +89,15 @@ get_global_facts(allow=True)                 # 显式
 - `SqliteDisclosureLog`：写入披露/保留决策、标记谁知道、查询谁知道；
 - 现网 193 条事实的 sensitivity 全是默认 `group`——硬门目前**休眠**，等敏感性分类或新写入触发。
 
-## P3.3 设计（下一步）
+## P3.3a 已落地（线索分类）
+
+- `mind/sensitivity.py`：强 secret 短语（别告诉别人/这是秘密/只告诉你一个人…）、private 短语（悄悄告诉你/私聊/别在群里说…）；
+- `upgrade_fact` / `upgrade_episode`：只升不降，owner 取 source_person；
+- 写入路径先升级再入库；检索硬门立刻生效；
+- 现网存量 0 条命中——分类器只影响新写入，硬门继续休眠；
+- 误报风险：引用/角色扮演可能触发；已设计为“强短语+只升不降”，人工可改回。
+
+## P3.3b 设计（下一步）
 
 - `knowledge_state(memory_id, person_id, state)`：told_by_me / told_to_me / overheard / inferred；
 - `disclosures`：她说给谁、在哪、说了什么、为什么；
