@@ -1,4 +1,4 @@
-"""M3.4/M3.5/M26.2 7D HEXACO Dynamic Personality, 2D Attachment & Persona Trait Synthesizer."""
+"""M3.4/M3.5/M26.2 7D persona vector, 2D Attachment & Persona Trait Synthesizer."""
 
 from __future__ import annotations
 
@@ -105,7 +105,7 @@ def synthesize_live_persona_directive(
     params: dict[str, PlasticParamSpec],
     traits: tuple[PersonaTrait, ...],
 ) -> str:
-    """Compile the 7D HEXACO personality vector & grown traits into a live prompt directive."""
+    """Compile the 7D persona vector & grown traits into a live prompt directive."""
     cache_key = repr((bot_naming().display(), sorted((k, v.value) for k, v in params.items()),
                       tuple((t.category, t.trait_text, t.strength) for t in traits)))
     cached = render_lookup(cache_key)
@@ -124,7 +124,7 @@ def synthesize_live_persona_directive(
     sub_tone = _describe_shadow_and_playfulness(playful, conf, guile, defiance)
     rubric_lines = [_format_dim_rubric(params, spec) for spec in DIMENSION_RUBRICS]
     lines = [
-        f"【🌱 {bot_naming().label()}当前随经历演化出的 7 维性格底色（HEXACO & 2D Attachment）】",
+        f"【🌱 {bot_naming().label()}当前随经历演化出的 7 维性格底色（自研 7D + 2D Attachment）】",
         f"- 七维性格向量：温柔({warmth}) · 傲娇回避({tsundere}) · 俏皮({playful}) "
         f"· 独占焦虑({possess}) · 自信({conf}) · 狡黠撒谎度({guile}) · 叛逆刺头度({defiance})",
         "- 各维度量表含义与当前分值行为准则"
@@ -163,7 +163,7 @@ def _reward_personality_deltas(reward: float, conflict: bool) -> list[tuple[str,
 
 
 def compute_personality_deltas(outcome: TurnOutcome) -> list[tuple[str, float, str]]:
-    """Compute how a turn's experience reshapes the 7D HEXACO personality vector."""
+    """Compute how a turn's experience reshapes the 7D persona vector."""
     deltas: list[tuple[str, float, str]] = []
     if outcome.epistemic_conflict_detected:
         deltas.append(("persona_tsundere", 4.0, "被群友忽悠逗弄，防御性傲娇嘴硬指数上升"))

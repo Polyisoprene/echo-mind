@@ -391,7 +391,7 @@ async def test_m3_4_dynamic_personality_evolution_and_trait_lifecycle(tmp_path: 
 
     frame = await facade.build_cognitive_frame("group:10002002", (trig,))
     assert (
-        "【🌱 回音当前随经历演化出的 7 维性格底色（HEXACO & 2D Attachment）】"
+        "【🌱 回音当前随经历演化出的 7 维性格底色（自研 7D + 2D Attachment）】"
         in frame.rendered_mind_block
     )
     assert "拆穿" in frame.rendered_mind_block

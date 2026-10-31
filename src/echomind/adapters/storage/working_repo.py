@@ -1,4 +1,4 @@
-"""SQLite implementation of IWorkingStateStore with 7D HEXACO personality & homeostatic bounds."""
+"""SQLite implementation of IWorkingStateStore with a 7D persona vector & homeostatic bounds."""
 
 from __future__ import annotations
 
