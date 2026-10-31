@@ -524,17 +524,46 @@
       "symbol": "AFFINITY_THRESHOLDS",
       "line": 28,
       "value": "(50.0, 100.0, 200.0, 500.0)",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "class": "data",
+      "status": "active",
       "claim": "",
-      "evidence": {},
+      "evidence": {
+        "dataset_sha256": "89d93a500788b87066b8beed4aad98616161a29e2dc6be0eb991e8e486fd11d9",
+        "n": 26,
+        "estimate": [
+          31.77,
+          40.75,
+          48.2,
+          56.79
+        ],
+        "ci95": {
+          "0.25": [
+            31.06,
+            40.39
+          ],
+          "0.5": [
+            34.12,
+            45.41
+          ],
+          "0.75": [
+            42.35,
+            56.52
+          ],
+          "0.9": [
+            48.12,
+            88.2
+          ]
+        },
+        "script": "scripts/fit_affinity_thresholds.py",
+        "note": "41 total bonds, 16 dormant at the default 30; quantiles fitted on the 26 active"
+      },
       "issue": "ECHOMIND-E1-008",
       "experiment": "用好友互动频次的分位点替代绝对阈值",
       "conservative_value": "(50.0, 100.0, 200.0, 500.0)",
       "e1_proposed_class": "data",
       "e1_group": "E1-F 关系等级",
       "e1_dataset": "social_bonds.affinity_score 分位（n=41；p25=30、p50=31.1、p75=42.8、p90=53.2）；现阈值 50/100/200/500 导致 90% 停在 Lv.1",
-      "e1_action": "拟合并给出点估计 + 95% CI + 脚本"
+      "e1_action": "已完成（2026-10-31）"
     },
     {
       "id": "mind/memory_consolidator.py::DUNBAR_ACQUAINTANCE_CAP",

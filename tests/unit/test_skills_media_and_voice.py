@@ -587,7 +587,7 @@ async def test_persona_card_hot_reload_and_bidirectional_affinity(tmp_path: Path
     )
     assert tuned["ok"] is True
     assert tuned["bond"]["affinity_score"] == 260.0
-    assert tuned["bond"]["affinity_level"] == 4
+    assert tuned["bond"]["affinity_level"] == 5
     assert tuned["bond"]["is_rival"] is True
     from echomind.tools.member_memory import RememberMemberTool
 

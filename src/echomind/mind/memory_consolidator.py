@@ -25,7 +25,8 @@ from echomind.mind.memory_budget import consolidation_budget, consolidation_thin
 if TYPE_CHECKING:
     from echomind.mind.subconscious_probe import SubconsciousChordResult
 
-AFFINITY_THRESHOLDS = (50.0, 100.0, 200.0, 500.0)
+# param: data:affinity-quantiles - q25/50/75/90 of active bonds; CI in the ledger.
+AFFINITY_THRESHOLDS = (31.77, 40.75, 48.2, 56.79)
 DUNBAR_ACQUAINTANCE_CAP = 85.0
 RIVAL_EQUILIBRIUM = 45.0
 
@@ -46,11 +47,8 @@ def build_turn_record(outcome: TurnOutcome, now_ms: int) -> TurnRecord:
 
 
 def compute_affinity_level(score: float) -> int:
-    """Map raw affinity score to Lv.1..Lv.5 using thresholds (50, 100, 200, 500)."""
-    for idx, threshold in enumerate(AFFINITY_THRESHOLDS, start=1):
-        if score < threshold:
-            return idx
-    return 5
+    """Map raw affinity score to Lv.1..Lv.5 using the fitted quantile thresholds."""
+    return 1 + sum(1 for threshold in AFFINITY_THRESHOLDS if score >= threshold)
 
 
 def cubic_trust_affinity_cap(trust_score: float, *, is_rival: bool = False) -> float:

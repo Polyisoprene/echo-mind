@@ -19,7 +19,7 @@ PACKAGES = ("mind", "domain")
 LEDGER_PATH = ROOT / "docs" / "params" / "ledger.json"
 BASELINE_PATH = ROOT / "docs" / "params" / "baseline.json"
 
-TAG_RE = re.compile(r"param:\s*(src|convention|fit)\b", re.IGNORECASE)
+TAG_RE = re.compile(r"param:\s*(src|convention|fit|data)\b", re.IGNORECASE)
 ALLOWED_CLASSES = ("src", "data", "convention", "fit_pending", "unknown")
 CLASS_REQUIREMENTS: dict[str, tuple[str, ...]] = {
     "src": ("evidence.doi", "evidence.locator", "evidence.derivation"),
@@ -89,6 +89,8 @@ def _classify(tag: str) -> tuple[str, dict[str, Any]]:
         return "convention", {"raw_tag": "convention"}
     if tag == "fit":
         return "fit_pending", {"raw_tag": "fit:pending"}
+    if tag == "data":
+        return "data", {"raw_tag": "data"}
     return "unknown", {}
 
 

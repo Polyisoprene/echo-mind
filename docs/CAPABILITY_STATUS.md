@@ -17,7 +17,7 @@
 | CAP-STANCE | 关系姿态只影响渲染与显著性，≤8 分且不回写人格本体 | ✅ implemented | tests/unit/test_persona_stance.py::test_stored_personality_is_not_mutated |
 | CAP-TRAIT-SCOPE | 词条按类别上限（8/4/4/3）与作用域衰减 | ✅ implemented | tests/integration/test_trait_scope_and_caps.py::test_category_caps_are_enforced |
 | CAP-PROBE-DIGEST | 潜意识探针 prompt 携带一行人格摘要 | ✅ implemented | tests/unit/test_probe_persona_summary.py::test_probe_prompt_contains_persona_digest |
-| CAP-PARAM-PROVENANCE | 所有可调常数声明来源（src/data/convention/fit_pending） | ⚠️ partial | E1 分类完成：32 条 fit_pending → 4 转 convention、2 条可用现有数据、21 条待实验、5 条被样本量阻塞（2 个群、2 个情敌）、0 删除。发现 AFFINITY_THRESHOLDS 与实测分布脱节：87.8% 停在 Lv.1，Lv.3+ 不可达 |
+| CAP-PARAM-PROVENANCE | 所有可调常数声明来源（src/data/convention/fit_pending） | ⚠️ partial | E1 分类完成：32 条 fit_pending → 4 convention、1 条已用数据解决（好感分档改分位阈值）、1 条待拟合（TAU_S）、21 条待实验、5 条被样本量阻塞（2 个群、2 个情敌）、0 删除 |
 | CAP-TRAIT-GROWTH | 人格会从互动中长出新的习惯/喜好/雷点 | ❌ absent | derive_emergent_trait 只有 5 条固定文案；trait_text 精确去重；last_used_ms 列从未读写 |
 | CAP-CLOSED-LOOP | 人格由可观测反馈闭环驱动 | ❌ absent | reward 来自探针自评；探针失败时退化为常数 0.08；全库无延迟反馈/后续消息评估 |
 | CAP-SELF-NARRATIVE | 存在跨会话的自我叙事，并参与冲突判定 | ❌ absent | 只有 140 字情绪余波；role_text 静态；冲突优先级是 prompt 内的硬编码段落 |
