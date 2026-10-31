@@ -730,7 +730,17 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-C 人格动力学",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "动力学包络：45min 减半、3h 剩 6%；半衰期属设计选择，暂不改",
+      "e1_dynamics": {
+        "turns_to_cap_step4": 3,
+        "turns_to_cap_step2": 5,
+        "decay_45min": 0.5,
+        "decay_90min": 0.25,
+        "decay_180min": 0.0625,
+        "share_at_cap_mixed": 0.096,
+        "share_at_cap_consistent": 0.774,
+        "script": "scripts/persona_state_envelope.py"
+      }
     },
     {
       "id": "mind/persona_dynamics.py::STATE_MAX_ABS",
@@ -750,7 +760,33 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-C 人格动力学",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "已验证 ±10 可辨（R=4）；上限属设计选择，暂不改",
+      "e1_dynamics": {
+        "turns_to_cap_step4": 3,
+        "turns_to_cap_step2": 5,
+        "decay_45min": 0.5,
+        "decay_90min": 0.25,
+        "decay_180min": 0.0625,
+        "share_at_cap_mixed": 0.096,
+        "share_at_cap_consistent": 0.774,
+        "script": "scripts/persona_state_envelope.py"
+      },
+      "e1_perceptibility": {
+        "delta": 10,
+        "runs": [
+          0.6458,
+          0.75,
+          0.75,
+          0.7292
+        ],
+        "mean": 0.7188,
+        "ci95": [
+          0.6398,
+          0.7977
+        ],
+        "pass": true,
+        "protocol": "scripts/persona_sensitivity.py --delta 10 --repeats 3"
+      }
     },
     {
       "id": "mind/persona_dynamics.py::STATE_MAX_STEP",
@@ -770,7 +806,17 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-C 人格动力学",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "动力学包络：+4 三轮到顶；步长属设计选择，暂不改",
+      "e1_dynamics": {
+        "turns_to_cap_step4": 3,
+        "turns_to_cap_step2": 5,
+        "decay_45min": 0.5,
+        "decay_90min": 0.25,
+        "decay_180min": 0.0625,
+        "share_at_cap_mixed": 0.096,
+        "share_at_cap_consistent": 0.774,
+        "script": "scripts/persona_state_envelope.py"
+      }
     },
     {
       "id": "mind/persona_dynamics.py::TRAIT_ANNUAL_BUDGET",

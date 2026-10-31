@@ -31,4 +31,4 @@
 | CAP-OPERATOR-NO-PRIVILEGE | operator 只有纠错权限，无情感特权 | ⛔ contradicted | update_sender_bond 对 is_owner 直接置 trust=1.0；且 _check_reactance 对 w_care>=0.85 免除逆反 |
 | CAP-MEMORY-EVIDENCE | 事实带来源与时效，冲突可复核 | ⚠️ partial | claims/evidence 表已建但读路径默认关闭（FACTS_V2=off），且转换时 chat_key 被置空 |
 | CAP-AUTH-WRITE | 控制台写操作强制 token 并留审计 | ⚠️ partial | auth_key 为空时全放行；/api/session/token 把 token 发给 loopback（隧道下等同公开） |
-| CAP-PERSONA-EFFECTIVE | 7 维人格在生成输出上可被盲评识别 | ⚠️ partial | 7/7 维均有证据：极端档 5 维单轮大效应；占有欲专属情境 0.833（单轮试点）；狡黠 R=3 确立 0.708 [0.605,0.812]；温柔 ±15 R=6 确立 0.747 [0.636,0.858]。阈值曲线（±5/10/20/30）仍为单轮试点；自评、无人工盲评、生成方差大 |
+| CAP-PERSONA-EFFECTIVE | 7 维人格在生成输出上可被盲评识别 | ⚠️ partial | 7/7 维有证据；狡黠 R=3 0.708 [0.605,0.812]、温柔 ±15 R=6 0.747 [0.636,0.858]、±10 R=4 0.719 [0.640,0.798] 均确立；状态层 +2/轮 5 轮到顶、77% 时间在顶；阈值 ≤10；自评、无人工盲评 |
