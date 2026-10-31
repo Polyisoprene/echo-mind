@@ -22,14 +22,17 @@ class SemanticMemoryRetriever:
         self._model = model
 
     async def rerank(
-        self, facts: tuple[SemanticFact, ...], query: str, limit: int
+        self, facts: tuple[SemanticFact, ...], query: str, limit: int,
+        now_ms: int = 0,
     ) -> tuple[SemanticFact, ...] | None:
         ids = tuple(f.fact_id for f in facts if f.fact_id)
         vectors = await self._store.get("semantic", ids, self._model)
         if len(vectors) < max(1, len(facts) // 2):
             return None
         try:
-            return await rerank_facts(facts, query, self._embedder, vectors, limit)
+            return await rerank_facts(
+                facts, query, self._embedder, vectors, limit, now_ms=now_ms
+            )
         except Exception:  # noqa: BLE001 - fall back to lexical retrieval
             logger.warning("semantic rerank failed; falling back", exc_info=True)
             return None

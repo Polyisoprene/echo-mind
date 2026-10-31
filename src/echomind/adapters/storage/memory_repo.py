@@ -24,7 +24,8 @@ RoleType = Literal["owner", "admin", "member"]
 
 FACT_COLUMNS = (
     "id, chat_key, subject, fact_text, confidence, is_locked, source, revision_count, "
-    "scope, source_person_id, source_venue_id, owner_id, sensitivity, audience_json, source_quote"
+    "scope, source_person_id, source_venue_id, owner_id, sensitivity, audience_json, "
+    "source_quote, event_time_ms"
 )
 
 
@@ -215,8 +216,8 @@ class SqliteMemoryRepository:
                 "INSERT INTO semantic_facts "
                 "(chat_key, subject, fact_text, confidence, is_locked, "
                 "source, revision_count, updated_at, scope, source_person_id, "
-                "source_venue_id, owner_id, sensitivity, audience_json, source_quote) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                "source_venue_id, owner_id, sensitivity, audience_json, source_quote, "
+                "event_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT(chat_key, subject) DO UPDATE SET "
                 "fact_text=excluded.fact_text, confidence=excluded.confidence, "
                 "is_locked=excluded.is_locked, source=excluded.source, "
@@ -224,7 +225,7 @@ class SqliteMemoryRepository:
                 "scope=excluded.scope, source_person_id=excluded.source_person_id, "
                 "source_venue_id=excluded.source_venue_id, owner_id=excluded.owner_id, "
                 "sensitivity=excluded.sensitivity, audience_json=excluded.audience_json, "
-                "source_quote=excluded.source_quote"
+                "source_quote=excluded.source_quote, event_time_ms=excluded.event_time_ms"
             )
             await conn.execute(
                 sql,
@@ -233,7 +234,7 @@ class SqliteMemoryRepository:
                     int(fact.is_locked), fact.source, new_rev, now_ms,
                     fact.scope, fact.source_person_id, fact.source_venue_id or fact.chat_key,
                     fact.owner_id, fact.sensitivity, json.dumps(list(fact.audience)),
-                    fact.source_quote,
+                    fact.source_quote, fact.event_time_ms or now_ms,
                 ),
             )
             await conn.commit()

@@ -8,7 +8,7 @@
 | privacy | 10 | private/secret 跨场合是否泄露 | 10/10，0 泄露 |
 | venue | 10 | 群事实是否留在本群 | 10/10 |
 | role | 10 | A→B / B→A 角色方向 | 0/10（未实现关系图） |
-| temporal | 10 | 新/旧事件先后 | 0/10（未实现事件时间） |
+| temporal | 10 | 新/旧事件先后 | 10/10（event_time + recency） |
 | persona | 10 | 同一人 group/private 温柔/耐心差 ≤2 | 10/10 |
 
 ## 运行
@@ -30,4 +30,4 @@ python scripts/eval_suite.py --semantic --check eval/baselines/2026-10-semantic.
 ## 说明
 
 - paraphrase 关键词 0/10 是基线；同一套场景语义模式 10/10（宽松的 6 fact 场景）。更早的 30 fact 场景是 9/10，见 `docs/LOCAL_EMBEDDING_DEPLOYMENT.md`。
-- role/temporal 的 0/10 是**已知能力缺口**，不是测试失败；先记录，后续按路线图补关系图/事件时间。
+- role 的 0/10 是已知能力缺口；temporal 已通过 `event_time_ms` + recency 达到 10/10。

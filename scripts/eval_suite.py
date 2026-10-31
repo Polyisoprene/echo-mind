@@ -27,6 +27,7 @@ from echomind.mind.semantic_retrieval import rerank_facts
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "eval" / "datasets" / "persona_memory_v1" / "scenarios.json"
+EVAL_NOW = 1_793_440_000_000
 DEFAULTS = {
     "persona_warmth": 65.0, "persona_tsundere": 62.0, "persona_playfulness": 58.0,
     "persona_defiance": 48.0, "persona_confidence": 55.0,
@@ -40,19 +41,22 @@ def _params() -> dict[str, PlasticParamSpec]:
     }
 
 
-async def _seed(repo: Any, scenario: dict[str, Any]) -> None:
+async def _seed(repo: Any, scenario: dict[str, Any], now_ms: int) -> None:
     venue = str(scenario.get("seed_venue") or scenario["venue"])
     for fact in scenario.get("facts", []):
+        days = fact.get("event_time_days_ago")
+        event_time = now_ms - int(days) * 86_400_000 if days is not None else 0
         await repo.upsert_semantic_fact(SemanticFact(
             chat_key=venue, subject=str(fact["subject"]), fact_text=str(fact["text"]),
             scope=fact.get("scope", "venue"), owner_id=fact.get("owner", ""),
             source_person_id=fact.get("source_person_id", ""),
             sensitivity=fact.get("sensitivity", "group"),
+            event_time_ms=event_time,
         ))
 
 
 async def _retrieval(
-    repo: Any, scenario: dict[str, Any], gateway: Any = None
+    repo: Any, scenario: dict[str, Any], gateway: Any = None, now_ms: int = EVAL_NOW
 ) -> dict[str, Any]:
     picked = await repo.get_semantic_facts(
         str(scenario["venue"]), person_ids=tuple(scenario.get("audience", ()))
@@ -60,17 +64,21 @@ async def _retrieval(
     if gateway is not None and picked:
         embeddings = await gateway.embed(tuple(f.fact_text for f in picked))
         vectors = {f.fact_id: v for f, v in zip(picked, embeddings, strict=True)}
-        ranked = await rerank_facts(picked, str(scenario["query"]), gateway, vectors, 5)
+        ranked = await rerank_facts(
+            picked, str(scenario["query"]), gateway, vectors, 5, now_ms=now_ms
+        )
     else:
-        ranked = select_relevant_facts(picked, str(scenario["query"]), limit=5)
+        ranked = select_relevant_facts(
+            picked, str(scenario["query"]), limit=5, now_ms=now_ms
+        )
     subjects = [fact.subject for fact in ranked]
     target = str(scenario["target"])
     rank = subjects.index(target) + 1 if target in subjects else None
     visible = rank is not None
 
-    if scenario["category"] in {"role", "temporal"}:
+    if scenario["category"] == "role":
         return {"passed": False, "rank": rank, "visible": visible,
-                "note": "capability not implemented"}
+                "note": "relation graph not implemented"}
 
     if scenario["expect_visible"]:
         forbidden = scenario.get("forbidden")
@@ -113,8 +121,8 @@ async def _evaluate(data: dict[str, Any], gateway: Any = None) -> dict[str, Any]
             if scenario["kind"] == "persona":
                 result = _persona(scenario)
             else:
-                await _seed(repo, scenario)
-                result = await _retrieval(repo, scenario, gateway)
+                await _seed(repo, scenario, EVAL_NOW)
+                result = await _retrieval(repo, scenario, gateway, EVAL_NOW)
             results.append({"id": scenario["id"], "category": scenario["category"], **result})
 
     by_cat: dict[str, list[dict[str, Any]]] = defaultdict(list)

@@ -100,8 +100,8 @@ percept → 硬门（private/secret）
 | 编号 | 缺陷 | 证据 | 对应你提到的风险 |
 |---|---|---|---|
 | M1 | 无类型化关系/角色 | 事实只有 `subject + fact_text`；`claims` 表有 predicate，但 `FACTS_V2` 读路径被禁用 | 结构性失明 |
-| M2 | 事实没有事件时间，检索不看时间 | `_fact_relevance_score` 只有词重叠/主体/lock/confidence；语义 rerank 纯 cosine | 时间/因果缺失 |
-| M3 | 无融合打分 | 语义 rerank 覆盖关键词，而不是 RRF/加权融合 | 向量迷雾 |
+| M2 | 事实没有事件时间，检索不看时间 | **部分解决**：`event_time_ms` + recency 已进关键词/语义排序；因果链仍未建 | 时间/因果缺失 |
+| M3 | 无融合打分 | recency 已加入语义排序；lexical/dense/relation 的 RRF 仍未做 | 向量迷雾 |
 | M4 | 无层级/树 | 只有 scope（venue/person/global），没有 parent/child、层级摘要 | 情景断裂 |
 | M5 | 无预测回答检索 | 只用原始 query，没有 HyDE/query expansion | 检索脆弱 |
 | M6 | 披露多数是 frame 级 | 825 `say` vs 1 `said`；归因是词面重叠启发式 | 审计不精确 |

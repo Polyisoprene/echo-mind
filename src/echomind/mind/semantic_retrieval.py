@@ -6,6 +6,7 @@ import math
 
 from echomind.domain.models import SemanticFact
 from echomind.domain.ports import IEmbeddingGateway
+from echomind.mind.ebbinghaus import fact_recency
 
 
 def cosine(left: tuple[float, ...], right: tuple[float, ...]) -> float:
@@ -22,13 +23,16 @@ async def rerank_facts(
     embedder: IEmbeddingGateway,
     vectors: dict[int, tuple[float, ...]],
     limit: int = 28,
+    *,
+    now_ms: int = 0,
 ) -> tuple[SemanticFact, ...]:
     """Rank facts by query similarity; facts without vectors fall to the end."""
     if not facts:
         return ()
     query_vector = (await embedder.embed((query,)))[0]
     scored = [
-        (cosine(query_vector, vectors.get(fact.fact_id, ())), index, fact)
+        (cosine(query_vector, vectors.get(fact.fact_id, ()))
+         + 0.25 * fact_recency(fact.event_time_ms, now_ms), index, fact)
         for index, fact in enumerate(facts)
     ]
     scored.sort(key=lambda item: (item[0], -item[1]), reverse=True)

@@ -63,6 +63,7 @@ def row_to_fact(row: aiosqlite.Row) -> SemanticFact:
         owner_id=str(row[11]), sensitivity=_sensitivity(row[12]),
         audience=tuple(str(p) for p in json.loads(str(row[13] or "[]")) if p),
         source_quote=str(row[14]),
+        event_time_ms=int(row[15]) if len(row) > 15 else 0,
     )
 
 

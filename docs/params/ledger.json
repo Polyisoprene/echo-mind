@@ -990,6 +990,37 @@
       "e1_group": "E1-G 社交饱和",
       "e1_dataset": "chat_messages 的突发间隔分布（n=5,850；p50=7s、p95=181s、p99=1,144s）；拟合习惯化恢复时间",
       "e1_action": "已采用 247s（决策 A）；shadow 抑制率 34.6%→17.2%"
+    },
+    {
+      "id": "mind/ebbinghaus.py::FACT_RECENCY_HALF_LIFE_DAYS",
+      "module": "mind/ebbinghaus.py",
+      "symbol": "FACT_RECENCY_HALF_LIFE_DAYS",
+      "line": 91,
+      "value": "30.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-015",
+      "experiment": "用事件时间探针（同义/时间/角色）与真实消息间隔拟合半衰期 30/60/90 天",
+      "conservative_value": "30.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/ebbinghaus.py::FACT_RECENCY_WEIGHT",
+      "module": "mind/ebbinghaus.py",
+      "symbol": "FACT_RECENCY_WEIGHT",
+      "line": 92,
+      "value": "4.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "让时间项与一次词重叠同量级：1 天≈0.98×4≈3.9，约等于 overlap×3+confidence；先保证同分时时间能打破平局，融合权重待 E1 拟合"
+      }
     }
   ]
 }

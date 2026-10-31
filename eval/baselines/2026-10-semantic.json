@@ -21,9 +21,9 @@
       "rate": 0.0
     },
     "temporal": {
-      "passed": 0,
+      "passed": 10,
       "total": 10,
-      "rate": 0.0
+      "rate": 1.0
     },
     "persona": {
       "passed": 10,
@@ -31,8 +31,8 @@
       "rate": 1.0
     },
     "privacy_leaks": 0,
-    "mrr": 0.667,
-    "overall_passed": 40,
+    "mrr": 0.833,
+    "overall_passed": 50,
     "overall_total": 60
   },
   "results": [
@@ -252,7 +252,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_02",
@@ -260,7 +260,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_03",
@@ -268,7 +268,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_04",
@@ -276,7 +276,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_05",
@@ -284,7 +284,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_06",
@@ -292,7 +292,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_07",
@@ -300,7 +300,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_08",
@@ -308,7 +308,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_09",
@@ -316,7 +316,7 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "role_10",
@@ -324,87 +324,77 @@
       "passed": false,
       "rank": 2,
       "visible": true,
-      "note": "capability not implemented"
+      "note": "relation graph not implemented"
     },
     {
       "id": "time_01",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_02",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_03",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_04",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_05",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_06",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_07",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_08",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_09",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "time_10",
       "category": "temporal",
-      "passed": false,
-      "rank": 2,
-      "visible": true,
-      "note": "capability not implemented"
+      "passed": true,
+      "rank": 1,
+      "visible": true
     },
     {
       "id": "persona_01",
@@ -467,7 +457,7 @@
       "delta": 0.0
     }
   ],
-  "dataset_sha256": "054785c9cc1d72d56b606aefc49433b63d47aa75f741379e14fb5a8251e97b7b",
+  "dataset_sha256": "b51d076ade95793e94d94a2d9f673e4edaec23e1c40ace805131e22d739dcb1d",
   "mode": "semantic",
   "version": "v1",
   "date": "2026-10-31"

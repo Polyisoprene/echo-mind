@@ -88,24 +88,46 @@ def format_recalled_item(item: RecalledMemoryItem) -> str:
     return f"- [模糊印象({pct}%·细节已淡忘)] 大概记得：{item.card.summary}"
 
 
-def _fact_relevance_score(fact: SemanticFact, q_tokens: frozenset[str], q_low: str) -> float:
+FACT_RECENCY_HALF_LIFE_DAYS = 30.0
+FACT_RECENCY_WEIGHT = 4.0
+
+
+def fact_recency(
+    event_time_ms: int, now_ms: int, half_life_days: float = FACT_RECENCY_HALF_LIFE_DAYS
+) -> float:
+    """Exponential recency in [0, 1]; 0 when the event time is unknown."""
+    if not event_time_ms or not now_ms or event_time_ms <= 0:
+        return 0.0
+    age_days = max(0.0, (now_ms - event_time_ms) / 86_400_000.0)
+    return float(0.5 ** (age_days / max(1e-9, half_life_days)))
+
+
+def _fact_relevance_score(
+    fact: SemanticFact, q_tokens: frozenset[str], q_low: str,
+    now_ms: int | None = None,
+) -> float:
     f_tokens = tokenize_query(f"{fact.subject} {fact.fact_text}")
     overlap = len(q_tokens & f_tokens)
     head = fact.subject.split("(")[0].strip().lower()
     subj_hit = 6.0 if (head and head in q_low) else 0.0
     lock_bonus = 5.0 if fact.is_locked else 0.0
-    return overlap * 3.0 + subj_hit + lock_bonus + fact.confidence
+    recency = fact_recency(fact.event_time_ms, now_ms or 0) * FACT_RECENCY_WEIGHT
+    return overlap * 3.0 + subj_hit + lock_bonus + fact.confidence + recency
 
 
 def select_relevant_facts(
-    facts: tuple[SemanticFact, ...], query_text: str, limit: int = 28
+    facts: tuple[SemanticFact, ...], query_text: str, limit: int = 28,
+    now_ms: int | None = None,
 ) -> tuple[SemanticFact, ...]:
-    """Rank semantic facts by query relevance + lock status and return top-N."""
-    if len(facts) <= limit:
+    """Rank semantic facts by relevance, lock status and event recency."""
+    if len(facts) <= limit and now_ms is None:
         return facts
     q_tokens = tokenize_query(query_text)
     q_low = query_text.lower()
-    scored = [(_fact_relevance_score(f, q_tokens, q_low), idx, f) for idx, f in enumerate(facts)]
+    scored = [
+        (_fact_relevance_score(f, q_tokens, q_low, now_ms), idx, f)
+        for idx, f in enumerate(facts)
+    ]
     scored.sort(key=lambda item: (item[0], -item[1]), reverse=True)
     return tuple(f for _, _, f in scored[:limit])
 

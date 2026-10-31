@@ -142,6 +142,7 @@ class SemanticFact(FrozenValueObject):
     sensitivity: Literal["public", "group", "private", "secret"] = "group"
     audience: tuple[str, ...] = ()
     source_quote: str = ""
+    event_time_ms: int = 0
 
 
 class ProceduralRule(FrozenValueObject):

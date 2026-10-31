@@ -217,13 +217,15 @@ async def load_bonds_for(
 
 async def select_facts(
     semantic: SemanticMemoryRetriever | None,
-    facts: tuple[SemanticFact, ...], query: str, limit: int
+    facts: tuple[SemanticFact, ...], query: str, limit: int,
+    now_ms: int | None = None,
 ) -> tuple[SemanticFact, ...]:
+    current = int(time.time() * 1000) if now_ms is None else now_ms
     if semantic is not None:
-        ranked = await semantic.rerank(facts, query, limit)
+        ranked = await semantic.rerank(facts, query, limit, current)
         if ranked is not None:
             return ranked
-    return select_relevant_facts(facts, query, limit)
+    return select_relevant_facts(facts, query, limit, now_ms=current)
 
 
 IncludedFact = tuple[int, str, str]

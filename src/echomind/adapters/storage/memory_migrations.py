@@ -99,10 +99,12 @@ async def ensure_columns(conn: aiosqlite.Connection) -> None:
         await _ensure_column(conn, table, "sensitivity", "TEXT NOT NULL DEFAULT 'group'")
         await _ensure_column(conn, table, "audience_json", "TEXT NOT NULL DEFAULT '[]'")
         await _ensure_column(conn, table, "source_quote", "TEXT NOT NULL DEFAULT ''")
+        await _ensure_column(conn, table, "event_time_ms", "INTEGER NOT NULL DEFAULT 0")
     await conn.execute(
         "UPDATE semantic_facts SET source_venue_id=chat_key WHERE source_venue_id=''"
     )
     await conn.execute("UPDATE semantic_facts SET scope='global' WHERE chat_key='global'")
+    await conn.execute("UPDATE semantic_facts SET event_time_ms=updated_at WHERE event_time_ms=0")
     await conn.execute(
         "UPDATE episodic_memories SET source_venue_id=chat_key WHERE source_venue_id=''"
     )
