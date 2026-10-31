@@ -54,7 +54,8 @@ async def _run_backfill(bond_store: SqliteBondDepthStore) -> None:
 def _build_person_services(db: SqliteDatabase) -> tuple[PersonLevelService, SqliteDisclosureLog]:
     store = SqlitePersonStore(db)
     service = PersonLevelService(
-        bonds=lambda: load_bonds(db), stats=lambda: load_stats(db), persist=store.save,
+        bonds=lambda: load_bonds(db), stats=lambda: load_stats(db),
+        persist=store.save, load=store.load_with_ts,
     )
     return service, SqliteDisclosureLog(db)
 

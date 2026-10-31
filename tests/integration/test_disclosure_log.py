@@ -50,3 +50,28 @@ async def test_grants_expire(tmp_path: Path) -> None:
     assert not await log.has_grant(
         memory_kind="semantic", memory_id=10, grantee_id="L", now_ms=2000
     )
+
+
+@pytest.mark.asyncio
+async def test_prune_removes_old_rows(tmp_path: Path) -> None:
+
+    from echomind.adapters.storage.disclosure_repo import SqliteDisclosureLog
+
+    db_path = tmp_path / "prune.db"
+    container = await EchoMindContainer.create(db_path=db_path)
+    log = SqliteDisclosureLog(container.db)
+    await log.log_disclosure(
+        memory_kind="semantic", memory_id=1, venue="g", audience=("L",),
+        action="say", reason="persona",
+    )
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "INSERT INTO disclosures (memory_kind, memory_id, venue, audience_json, "
+        "action, reason, phase, persona_json, ts_ms) VALUES "
+        "('semantic', 2, 'g', '[]', 'keep', 'old', 'gate', '{}', 1)"
+    )
+    conn.commit()
+    deleted = await log.prune(1000)
+    assert deleted == 1
+    remaining = conn.execute("SELECT memory_id FROM disclosures").fetchall()
+    assert remaining == [(1,)]

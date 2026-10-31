@@ -83,6 +83,15 @@ class SqliteDisclosureLog:
             )).fetchone()
         return row is not None
 
+    async def prune(self, before_ms: int) -> int:
+        """Delete disclosure rows older than the cutoff; returns the deleted count."""
+        async with self._db.connect() as conn:
+            cursor = await conn.execute(
+                "DELETE FROM disclosures WHERE ts_ms < ?", (before_ms,)
+            )
+            await conn.commit()
+        return int(cursor.rowcount)
+
     async def who_knows(
         self, memory_kind: str, memory_id: int
     ) -> tuple[tuple[str, str], ...]:

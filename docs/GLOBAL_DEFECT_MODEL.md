@@ -29,9 +29,9 @@ percept
 | D5 | 授权无法创建 | 只有 `grant/has_grant` 适配器 | `disclosure_grants` 0 行，secret 永远放不出 | person / 5 / 4 | ✅ CLI |
 | D6 | 26 条 global 事实未审 | 迁移默认 `scope=global`、`sensitivity=group` | 任何群可见，可能含私人信息 | all / 3 / 5 | ✅ 已审 |
 | D7 | 敏感度误报不可逆 | 分类器只升不降、无复核入口 | 一条误判 secret 永久不可召回 | one / 2 / 4 | ✅ 复核台 |
-| D8 | P1 表只写不读 | 检索仍实时计算 | 控制台/工具读表得到快照，可能与实时不一致 | person / 3 / 2 | ⏳ |
-| D9 | 披露日志不是“实际说了” | 只在 frame 记 include/keep | 168 行全是 `say/persona`，无法审计真正说出的内容 | all / 5 / 3 | ⏳ |
-| D10 | 人格特质按场合分裂 | `persona_traits` 6 条 global + 3 条 group | 群里长出的习惯私聊没有 | person / 4 / 4 | ⏳ |
+| D8 | P1 表只写不读 | 检索仍实时计算 | 控制台/工具读表得到快照，可能与实时不一致 | person / 3 / 2 | ✅ 读表 |
+| D9 | 披露日志不是“实际说了” | 只在 frame 记 include/keep | 168 行全是 `say/persona`，无法审计真正说出的内容 | all / 5 / 3 | ✅ 归因 |
+| D10 | 人格特质按场合分裂 | `persona_traits` 6 条 global + 3 条 group | 读路径本就全局（无 chat 过滤），`chat_key` 只是来源 | person / 4 / 4 | ✅ 非缺陷 |
 | D11 | 好感常数未重标定 | `AFFINITY_OFFSET/SPAN` 仍是 legacy | 人级 care 排序可能偏 | person / 3 / 3 | ⏳ |
 | D12 | FACTS_V2 未接新字段 | 读路径默认 off，新 provenance 只在 legacy | 一旦开启，来源/敏感度全丢 | all / 2 / 4 | ⏳ |
 | D13 | token 端点仅靠 loopback | `/api/session/token` 对本机任意进程发 token | 同机反代/恶意进程可拿 token | host / 2 / 4 | ⏳ |
@@ -39,11 +39,11 @@ percept
 | D15 | 特质模型与命名 | HEXACO 命名、5 条固定涌现特质、无语义检索 | 人格解释力/自适应不足 | persona / 5 / 3 | ⏳ |
 | D16 | 工作状态多写入点 | 多处 `save_working_state` | 后写覆盖，情绪/驱动漂移 | all / 3 / 3 | ⏳ |
 | D17 | 扩展好感阈值旧标尺 | 配置仍是 50/200/500/1000 | 扩展侧等级与核心分位不一致 | one / 5 / 2 | ⏳ |
-| D18 | 披露日志无保留策略 | 只增不删 | 168 行已在短时间累积 | all / 5 / 2 | ⏳ |
+| D18 | 披露日志无保留策略 | 只增不删 | 168 行已在短时间累积 | all / 5 / 2 | ✅ 清理 |
 | D19 | 缺外部评测 | 只有单测/集成 | 无法证明跨会话一致性与授权边界 | all / 5 / 3 | ⏳ |
 | D20 | 本地领先 origin 24 提交 | 多轮提交未 push | 远端缺 P0-P5/P1 | ops / 5 / 3 | ⏳ |
 
-## 3. 已修（D1-D7）
+## 3. 已修（D1-D9、D18）
 
 - `bot_belief`：`_BELIEFS` 改为 `dict[chat_key, dict[uid, score]]`；`set_beliefs(chat_key, ...)`、`apply_belief(chat_key, sender_id)`；感知门按 `percept.chat_key` 取。
 - `DialogueContext`：内部改为 `dict[scope, deque]`；`add/note/lines/clear` 都带 scope；facade 用 `percept.chat_key` / `outcome.chat_key`。
@@ -73,6 +73,28 @@ percept
 - `scripts/review_sensitivity.py --list` 只列 `private/secret`；`--id N --set group --reason ... --apply`；
 - 复核写入审计行，误报可降级。
 
+### D8 P1 读取切表
+
+- `SqlitePersonStore.load_with_ts` 返回画像与最近 `updated_ms`；
+- `PersonLevelService` 在缓存失效时先读表，快照在 TTL 内则直接使用，否则重算并写穿；
+- 重启后不会立刻重算，只有在快照超过 60s 时才回退到实时计算。
+
+### D9 生成后引用归因
+
+- frame 记录本会话纳入的 person 事实（`_included`，回合结束即弹出）；
+- `attribute_reply` 用“主体出现或 8 字重叠”保守判断回复是否引用；
+- 命中写 `disclosures(action='said', phase='post', reason='reply_overlap')`。
+- **限制**：这是词面重叠启发式，不是语义归因；只记录“可能说了”，不保证精确。
+
+### D18 披露日志保留
+
+- `SqliteDisclosureLog.prune(before_ms)` + `scripts/prune_disclosures.py --days 30 [--apply]`。
+
+### D10 复核结论：非缺陷
+
+- `sync_persona_traits` 的查询没有 `chat_key` 过滤，返回全局 top 12；
+- `chat_key` 只作来源标记，不是读取作用域；所以不存在“群里长出的习惯私聊没有”的行为分裂。
+
 ## 4. 修复顺序（按依赖）
 
 1. **披露闭环**：D4 告知史生产者 → D5 授权入口 → D6 global 审计 → D7 复核/降级。
@@ -86,4 +108,4 @@ percept
 
 - 每个 D 项：有复现/证据、有测试、有部署验证；
 - D1-D3 已满足：`tests/unit/test_bot_belief.py`、`test_dialogue_context.py`、发送拦截集成测试；
-- 全量门禁：277 passed / 92%。
+- 全量门禁：281 passed / 92%。

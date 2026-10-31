@@ -26,6 +26,7 @@ from echomind.domain.ports import (
     ITurnTraceStore,
     IWorkingStateStore,
 )
+from echomind.mind import facade_memory as mem
 from echomind.mind.ban_control import resolve_bans
 from echomind.mind.bond_scoring import attach_bond_depth as attach
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
@@ -41,13 +42,6 @@ from echomind.mind.drives import apply_turn_affect_and_drives
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.epistemic import EpistemicCalibrator
 from echomind.mind.facade_autonomy import run_autonomous_tick
-from echomind.mind.facade_memory import (
-    audience_of,
-    consolidate_dialogue,
-    gate_frame,
-    load_facts,
-    recall_and_reinforce,
-)
 from echomind.mind.frame_renderer import (
     build_curiosity_prompts,
     match_active_rules,
@@ -102,6 +96,7 @@ class CognitiveCoreFacade:
         self._layers = persona_layers
         self._person_level = person_level
         self._disclosure_log = disclosure_log
+        self._included: dict[str, tuple[tuple[int, str, str], ...]] = {}
         self._plasticity = NeuroplasticityEngine(working_store, persona_layers)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
@@ -156,7 +151,7 @@ class CognitiveCoreFacade:
         self, chat_key: str, triggers: tuple[Percept, ...], uids: tuple[str, ...],
         now_ms: int, dry_run: bool = False,
     ) -> tuple[RecalledMemoryItem, ...]:
-        return await recall_and_reinforce(
+        return await mem.recall_and_reinforce(
             self._reader, self._writer, chat_key=chat_key, triggers=triggers,
             uids=uids, now_ms=now_ms, dry_run=dry_run,
         )
@@ -224,8 +219,7 @@ class CognitiveCoreFacade:
     ) -> CognitiveFrame:
         now_ms, tr = int(time.time() * 1000), triggers
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
-        facts, uids = await load_facts(self._reader, chat_key, tr)
-        set_beliefs(chat_key, rebuild_beliefs(_belief_facts(facts)))
+        facts, uids = await mem.load_facts(self._reader, chat_key, tr)
         pairs = [(u, await self._reader.get_social_bond(chat_key, u)) for u in uids]
         bm = await attach(self._bond_store, {u: b for u, b in pairs if b is not None})
         chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
@@ -237,9 +231,10 @@ class CognitiveCoreFacade:
         warns, _ = self._calibrator.calibrate(tr, facts, bm, skepticism=skep)
         rules = await self._reader.get_procedural_rules(chat_key)
         recalled = await self._recall_and_reinforce(chat_key, tr, uids, now_ms, dry_run)
-        facts, recalled = await gate_frame(
-            facts, recalled, audience_of(uids, tr), chat_key, self._disclosure_log,
+        facts, recalled = await mem.gate_frame(
+            facts, recalled, mem.audience_of(uids, tr), chat_key, self._disclosure_log,
             working=self._working, bonds=bm)
+        self._included[chat_key] = mem.included_facts(facts)
         cur_p = build_curiosity_prompts(tr, last_dec, snap.affect)
         unk = last_dec.detected_unknown_terms if last_dec else ()
         cyber = compute_cybernetic_core(
@@ -261,8 +256,13 @@ class CognitiveCoreFacade:
         )
 
     async def on_turn_completed(self, outcome: TurnOutcome) -> None:
+        sender = outcome.triggers[-1].sender_id if outcome.triggers else ""
+        included = self._included.pop(outcome.chat_key, ())
         for sent in outcome.sent_texts:
             self._dialogue.add(outcome.chat_key, "我", sent)
+            await mem.attribute_reply(
+                sent, included, outcome.chat_key, sender, self._disclosure_log,
+            )
         now_ms, o = int(time.time() * 1000), outcome
         if o.sent_texts:
             self._gate.mark_bot_spoke(o.chat_key, o.sent_texts, now_ms, o.triggers)
@@ -291,7 +291,7 @@ class CognitiveCoreFacade:
         self, chat_key: str, transcript_lines: tuple[str, ...],
         llm: ILlmGateway, *, role_text: str = "",
     ) -> int:
-        return await consolidate_dialogue(
+        return await mem.consolidate_dialogue(
             self._reader, self._writer, llm, self._working,
             chat_key=chat_key, transcript_lines=transcript_lines, role_text=role_text,
         )

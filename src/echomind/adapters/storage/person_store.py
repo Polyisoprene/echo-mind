@@ -74,19 +74,27 @@ class SqlitePersonStore:
                 await _save_person(conn, person_id, profile, by_person.get(person_id, []), now)
             await conn.commit()
 
-    async def load(self) -> dict[str, PersonProfile]:
+    async def load_with_ts(self) -> tuple[dict[str, PersonProfile], int]:
         async with self._db.connect() as conn:
             rows = await (await conn.execute(
                 "SELECT person_id, trust, affinity, depth_raw, depth_percentile "
                 "FROM person_bonds"
             )).fetchall()
-        return {
+            ts = await (await conn.execute(
+                "SELECT COALESCE(MAX(updated_ms), 0) FROM person_bonds"
+            )).fetchone()
+        profiles = {
             str(r[0]): PersonProfile(
                 person_id=str(r[0]), trust=float(r[1]), affinity=float(r[2]),
                 depth_raw=float(r[3]), depth_percentile=float(r[4]),
             )
             for r in rows
         }
+        return profiles, int(ts[0]) if ts else 0
+
+    async def load(self) -> dict[str, PersonProfile]:
+        profiles, _ = await self.load_with_ts()
+        return profiles
 
     async def sync_from(
         self, bonds: tuple[SocialBondProfile, ...], stats: tuple[BondDepthStats, ...]

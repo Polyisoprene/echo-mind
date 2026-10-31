@@ -12,6 +12,7 @@ from echomind.domain.ports import (
     IMemoryWriter,
     IWorkingStateStore,
 )
+from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
 from echomind.mind.disclosure import gate_episode, gate_fact
 from echomind.mind.disclosure_choice import DisclosureChoice, choose
 from echomind.mind.ebbinghaus import extract_mentioned_uids, recall_episodic_memories
@@ -57,6 +58,8 @@ async def load_facts(
     reader: IMemoryReader, chat_key: str, triggers: tuple[Percept, ...]
 ) -> tuple[tuple[SemanticFact, ...], tuple[str, ...]]:
     facts = await reader.get_semantic_facts(chat_key)
+    set_beliefs(chat_key, rebuild_beliefs(
+        tuple((f.subject, f.fact_text, f.confidence) for f in facts)))
     uids = extract_mentioned_uids(triggers, facts)
     facts = await reader.get_semantic_facts(chat_key, person_ids=uids)
     return facts, uids
@@ -197,7 +200,40 @@ async def gate_frame(
     return gated_facts, gated_recalled
 
 
+IncludedFact = tuple[int, str, str]
+
+
+def included_facts(facts: tuple[SemanticFact, ...]) -> tuple[IncludedFact, ...]:
+    return tuple(
+        (fact.fact_id, fact.subject, fact.fact_text)
+        for fact in facts if fact.scope == "person"
+    )
+
+
+def _overlaps(text: str, subject: str, body: str) -> bool:
+    if len(subject) >= 2 and subject in text:
+        return True
+    clean = " ".join(body.split())
+    return any(clean[i:i + 8] in text for i in range(max(0, len(clean) - 7)))
+
+
+async def attribute_reply(
+    text: str, included: tuple[IncludedFact, ...], venue: str,
+    sender: str, log: IDisclosureLog | None,
+) -> None:
+    """D9: log a person fact as actually said when the reply overlaps it."""
+    if log is None:
+        return
+    for fact_id, subject, body in included:
+        if _overlaps(text, subject, body):
+            await log.log_disclosure(
+                memory_kind="semantic", memory_id=fact_id, venue=venue,
+                audience=(sender,) if sender else (), action="said",
+                reason="reply_overlap", phase="post",
+            )
+
+
 __all__ = [
-    "audience_of", "consolidate_dialogue", "gate_frame", "load_facts",
-    "recall_and_reinforce",
+    "attribute_reply", "audience_of", "consolidate_dialogue", "gate_frame",
+    "included_facts", "load_facts", "recall_and_reinforce",
 ]

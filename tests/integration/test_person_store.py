@@ -81,3 +81,27 @@ async def test_service_writes_through(tmp_path: Path) -> None:
     )
     await service.profiles(1000)
     assert calls == [0]
+
+
+@pytest.mark.asyncio
+async def test_service_reads_persisted_profiles(tmp_path: Path) -> None:
+    import time
+
+    container = await EchoMindContainer.create(db_path=tmp_path / "read.db")
+    store = SqlitePersonStore(container.db)
+    await store.save(
+        {"u": PersonProfile(person_id="u", trust=0.7, affinity=50.0,
+                            depth_raw=2.0, depth_percentile=90.0)},
+        (),
+    )
+
+    async def boom_bonds() -> tuple[SocialBondProfile, ...]:
+        raise AssertionError("must not recompute when the snapshot is fresh")
+
+    async def boom_stats() -> tuple[BondDepthStats, ...]:
+        raise AssertionError("must not recompute when the snapshot is fresh")
+
+    service = PersonLevelService(boom_bonds, boom_stats, load=store.load_with_ts)
+    got = await service.profiles(int(time.time() * 1000))
+    assert got["u"].trust == 0.7
+    assert got["u"].depth_percentile == 90.0

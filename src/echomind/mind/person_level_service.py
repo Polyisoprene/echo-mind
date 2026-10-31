@@ -11,6 +11,7 @@ from echomind.mind.person_level import PersonProfile, build_profiles
 BondsLoader = Callable[[], Awaitable[tuple[SocialBondProfile, ...]]]
 StatsLoader = Callable[[], Awaitable[tuple[BondDepthStats, ...]]]
 Persist = Callable[[dict[str, PersonProfile], tuple[SocialBondProfile, ...]], Awaitable[None]]
+Load = Callable[[], Awaitable[tuple[dict[str, PersonProfile], int]]]
 
 
 class PersonLevelService:
@@ -22,17 +23,25 @@ class PersonLevelService:
         stats: StatsLoader,
         ttl_ms: int = 60_000,
         persist: Persist | None = None,
+        load: Load | None = None,
     ) -> None:
         self._bonds = bonds
         self._stats = stats
         self._ttl_ms = ttl_ms
         self._persist = persist
+        self._load = load
         self._cache: dict[str, PersonProfile] = {}
         self._loaded_ms = -1
 
     async def profiles(self, now_ms: int) -> dict[str, PersonProfile]:
         if self._cache and now_ms - self._loaded_ms < self._ttl_ms:
             return self._cache
+        if self._load is not None:
+            cached, ts = await self._load()
+            if cached and now_ms - ts < self._ttl_ms:
+                self._cache = cached
+                self._loaded_ms = ts
+                return cached
         bonds = await self._bonds()
         self._cache = build_profiles(bonds, await self._stats())
         self._loaded_ms = now_ms
