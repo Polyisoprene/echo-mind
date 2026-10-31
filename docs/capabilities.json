@@ -107,7 +107,7 @@
         "scripts/param_gate.py"
       ],
       "status": "partial",
-      "gap": "E1 分类完成：32 条 → 4 convention、2 条已用数据解决（好感分档、TAU_S=247）、21 条待实验、5 条被样本量阻塞、0 删除。TAU_S 改后 shadow 抑制率 34.6%→17.2%",
+      "gap": "E1 分类完成：32 条 → 4 convention、2 条已用数据解决（好感分档、TAU_S=247）、21 条待实验、5 条被样本量阻塞、0 删除。E1-A：排序对 ±20% 鲁棒（rank≥0.996），绝对深度对 BIAS/W_RESP/W_RECIP/W_FREQ 敏感；W_BETRAY 从未被触发（0 次背叛）",
       "acceptance_test": "tests/architecture/test_evidence_ledger.py::test_param_ledger_is_consistent",
       "evidence_report": "docs/params/E1_CLASSIFICATION.md",
       "target_release": "E1"

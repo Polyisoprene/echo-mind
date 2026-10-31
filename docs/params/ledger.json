@@ -127,7 +127,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.0,
+        "status": "unexercised",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_depth.py::BIAS",
@@ -147,7 +153,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 20.51,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_depth.py::DEPTH_BONUS",
@@ -200,7 +212,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 0.9981,
+        "max_depth_delta": 5.78,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_depth.py::FREQ_SATURATION",
@@ -220,7 +238,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 1.24,
+        "status": "medium",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_depth.py::GAIN",
@@ -240,7 +264,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 4.91,
+        "status": "medium",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_depth.py::IMPACT_SATURATION",
@@ -260,7 +290,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.03,
+        "status": "low",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_depth.py::W_BETRAY",
@@ -280,7 +316,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.0,
+        "status": "unexercised",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_depth.py::W_DIV",
@@ -293,6 +335,12 @@
       "claim": "",
       "evidence": {
         "rationale": "权重相对量级由 S29 设计固定，用于排序而非绝对值；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 0.9973,
+        "max_depth_delta": 5.29,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
       }
     },
     {
@@ -306,6 +354,12 @@
       "claim": "",
       "evidence": {
         "rationale": "同上；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 0.9973,
+        "max_depth_delta": 6.81,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
       }
     },
     {
@@ -319,6 +373,12 @@
       "claim": "",
       "evidence": {
         "rationale": "同上；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.03,
+        "status": "low",
+        "protocol": "scripts/bond_param_sensitivity.py"
       }
     },
     {
@@ -332,6 +392,12 @@
       "claim": "",
       "evidence": {
         "rationale": "同上；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 0.996,
+        "max_depth_delta": 7.09,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
       }
     },
     {
@@ -353,7 +419,13 @@
       "e1_proposed_class": "experiment",
       "e1_group": "E1-A 关系模型",
       "e1_blocked": false,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 11.14,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
     },
     {
       "id": "mind/bond_scoring.py::SHRINK_TAU",
