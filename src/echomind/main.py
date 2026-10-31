@@ -22,6 +22,8 @@ from echomind.adapters.onebot.live_client import OneBotHttpApiCaller, OneBotLive
 from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
 from echomind.adapters.storage.memory_vector_repo import SqliteMemoryVectorStore
 from echomind.adapters.storage.relation_repo import SqliteRelationStore
+from echomind.adapters.storage.trait_memory_repo import SqliteTraitMemoryLinkStore
+from echomind.adapters.storage.trait_shadow_repo import SqliteTraitShadowStore
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import AppConfig, load_config_from_json
 from echomind.mind.memory_budget import set_consolidation_budget, set_consolidation_thinking
@@ -149,6 +151,8 @@ def _wire_semantic(cfg: AppConfig, container: EchoMindContainer) -> None:
             SqliteMemoryVectorStore(container.db),
             cfg.embedding.model,
             RelationResolver(SqliteRelationStore(container.db)),
+            trait_reader=SqliteTraitShadowStore(container.db),
+            trait_links=SqliteTraitMemoryLinkStore(container.db),
         )
     )
 

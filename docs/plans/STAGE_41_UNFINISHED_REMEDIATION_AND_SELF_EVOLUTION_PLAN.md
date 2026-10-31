@@ -1305,3 +1305,34 @@ signature.result: 形成反复确认小槽点的行为模式
 **验证**
 
 - 全门禁：**354 passed / 92%**，fusion 70/70。
+
+### 14.24 trait→记忆接入 live retriever（2026-11-01）
+
+**代码**
+
+- `SemanticMemoryRetriever` 新增可选：
+  - `trait_reader: IActiveTraitReader`
+  - `trait_links: ITraitMemoryLinkStore`
+- `active_trait_scores()`：只取 active trait，再查 supports 链接；
+- `rank_fused()` 把 scores 传给 `unified_rank(..., trait_scores=...)`；
+- `main._wire_semantic` 注入 `SqliteTraitShadowStore` + `SqliteTraitMemoryLinkStore`。
+
+**默认行为**
+
+- 线上 9 条 legacy trait 不是 active；
+- `trait_memory_links` 为 0；
+- 因此 `trait_scores={}`，RRF 行为与之前一致；
+- fusion 仍 70/70。
+
+**验证**
+
+- `tests/unit/test_semantic_memory.py`：
+  - active trait 分数注入；
+  - 无 reader/links 返回空；
+- 全门禁：**356 passed / 92%**，fusion 70/70。
+
+**边界**
+
+- 只有 active + exact source_quote link 才生效；
+- 没有自动建链/晋升；
+- 真实流量生效前仍需真实 active trait。

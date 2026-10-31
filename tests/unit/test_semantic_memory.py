@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from echomind.domain.models import SemanticFact
@@ -80,3 +82,45 @@ async def test_low_coverage_uses_lexical_ranker_fusion() -> None:
     )
     picked = await select_facts(service, facts, "猫", 1)
     assert picked[0].fact_text == "猫粮"
+
+
+class _TraitReader:
+    async def active_traits(self) -> tuple[Any, ...]:
+        from echomind.domain.models import PersonaTrait
+        return (PersonaTrait(trait_id=7, category="habit", trait_text="t"),)
+
+
+class _TraitLinks:
+    def __init__(self) -> None:
+        self.seen: tuple[int, ...] = ()
+
+    async def link(self, link: object) -> None:
+        raise AssertionError("not used")
+
+    async def list_links(self, trait_id: int, limit: int = 50) -> tuple[Any, ...]:
+        raise AssertionError("not used")
+
+    async def ranker_scores(
+        self, trait_ids: tuple[int, ...], memory_kind: str = "semantic"
+    ) -> dict[int, float]:
+        self.seen = trait_ids
+        return {2: 1.0}
+
+
+@pytest.mark.asyncio
+async def test_active_trait_scores_are_injected_into_fusion() -> None:
+    links = _TraitLinks()
+    service = SemanticMemoryRetriever(
+        _Embedder(), _Store({1: (1.0, 0.0), 2: (0.0, 1.0)}), "m",
+        trait_reader=_TraitReader(), trait_links=links,
+    )
+    assert await service.active_trait_scores() == {2: 1.0}
+    assert links.seen == (7,)
+
+
+@pytest.mark.asyncio
+async def test_no_trait_links_means_empty_scores() -> None:
+    service = SemanticMemoryRetriever(
+        _Embedder(), _Store({1: (1.0, 0.0), 2: (0.0, 1.0)}), "m"
+    )
+    assert await service.active_trait_scores() == {}
