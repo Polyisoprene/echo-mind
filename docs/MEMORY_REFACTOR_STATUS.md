@@ -105,7 +105,14 @@ get_global_facts(allow=True)                 # 显式
 - `load_facts` / `audience_of` 移入 `facade_memory`，保持 frame 函数长度；
 - 现网仍是 193 条 group 事实，门默认全放行；拒绝路径由单测（private/secret）覆盖。
 
-## P4 设计（下一步）
+## P4 已落地（人格分寸）
+
+- `mind/disclosure_choice.py`：默认 say；狡黠/傲娇高 → hint；占有欲高且情敌在场 → keep；叛逆高 → say；secret/无 owner → keep；
+- `facade_memory` 在门放行后对 `scope=person` 事实做选择；keep 的条目不渲染，并写 `disclosures`（reason=possessive_rival/indirect/secret…）；
+- `SqliteDisclosureLog.grant/has_grant`：授权存储 + 过期（**尚未接入门**，P5 接）；
+- 现网默认 7 维（55/62/52/75/48）→ say，行为不变；keep 只在性格参数越线时触发。
+
+## P5 设计（最后一步）
 
 - `knowledge_state(memory_id, person_id, state)`：told_by_me / told_to_me / overheard / inferred；
 - `disclosures`：她说给谁、在哪、说了什么、为什么；
