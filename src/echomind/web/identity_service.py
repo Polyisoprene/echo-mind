@@ -26,7 +26,7 @@ class IdentityDraft:
     operators: list[str]
     probe_model: str
     memory_budget: int
-    memory_thinking: int
+    memory_thinking: int | None
 
 _IDENTITY_KEYS = ("botName", "keywords", "selfQq", "groups", "private", "defaultGroup")
 
@@ -100,35 +100,41 @@ class IdentityConfigService:
             "memory_thinking": int(raw.get("memoryThinking") or 0),
         }
 
-    def save(self, payload: dict[str, Any]) -> dict[str, Any]:
-        raw = self._raw()
-        bot_name = str(payload.get("bot_name") or "").strip()
-        keywords = _as_list(payload.get("keywords"))
-        groups = _as_list(payload.get("groups"))
-        private = _as_list(payload.get("private"))
-        self_qq = str(payload.get("self_qq") or "").strip()
-        default_group = str(payload.get("default_group") or "").strip()
+    @staticmethod
+    def _draft(payload: dict[str, Any]) -> IdentityDraft:
+        """Parse and validate one submitted identity payload."""
         operators = _as_list(payload.get("operators"))
-        probe_model = str(payload.get("probe_model") or "").strip()
-        memory_budget = int(payload.get("memory_budget") or 0)
-        memory_thinking = int(payload.get("memory_thinking") or 0)
         if "operators" in payload and not operators:
             raise ValueError("operators must not be empty")
-
-        self._merge(
-            raw,
-            IdentityDraft(
-                bot_name, keywords, groups, private, self_qq, default_group, operators,
-                probe_model, memory_budget, memory_thinking,
-            ),
+        marker = payload.get("memory_thinking")
+        thinking = None if marker is None else int(marker)
+        return IdentityDraft(
+            str(payload.get("bot_name") or "").strip(),
+            _as_list(payload.get("keywords")),
+            _as_list(payload.get("groups")),
+            _as_list(payload.get("private")),
+            str(payload.get("self_qq") or "").strip(),
+            str(payload.get("default_group") or "").strip(),
+            operators,
+            str(payload.get("probe_model") or "").strip(),
+            int(payload.get("memory_budget") or 0),
+            thinking,
         )
+
+    def save(self, payload: dict[str, Any]) -> dict[str, Any]:
+        raw = self._raw()
+        draft = self._draft(payload)
+        self._merge(raw, draft)
         text = json.dumps(raw, ensure_ascii=False, indent=2) + "\n"
         self._path.write_text(text, encoding="utf-8")
-        self._apply_naming(bot_name, keywords)
-        set_probe_model(probe_model)
-        set_consolidation_budget(memory_budget or 900)
-        set_consolidation_thinking(bool(memory_thinking))
-        self._apply_runtime(bot_name, groups, private, self_qq, operators)
+        self._apply_naming(draft.bot_name, draft.keywords)
+        set_probe_model(draft.probe_model)
+        set_consolidation_budget(draft.memory_budget or 900)
+        if draft.memory_thinking is not None:
+            set_consolidation_thinking(bool(draft.memory_thinking))
+        self._apply_runtime(
+            draft.bot_name, draft.groups, draft.private, draft.self_qq, draft.operators
+        )
         return self.read()
 
     @staticmethod
@@ -151,7 +157,8 @@ class IdentityConfigService:
         """Merge budget/probe-model/operator fields into the raw config."""
         if draft.memory_budget:
             _write_section(raw, "memory", {"budget": draft.memory_budget})
-        raw["memoryThinking"] = int(draft.memory_thinking)
+        if draft.memory_thinking is not None:
+            raw["memoryThinking"] = int(draft.memory_thinking)
         if draft.probe_model is not None:
             raw["probeModel"] = draft.probe_model
         if draft.operators:

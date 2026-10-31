@@ -1372,7 +1372,6 @@ async function loadIdentity() {
     if ($('id-keywords')) $('id-keywords').value = (d.keywords || []).join(',');
     if ($('id-self-qq')) $('id-self-qq').value = d.self_qq || '';
     if ($('id-operators')) $('id-operators').value = (d.operators || []).join(',');
-    if ($('id-probe-model')) $('id-probe-model').value = d.probe_model || '';
     if ($('id-memory-budget')) $('id-memory-budget').value = d.memory_budget || 900;
     if ($('id-memory-thinking')) $('id-memory-thinking').value = d.memory_thinking || 0;
     if ($('id-groups')) $('id-groups').value = (d.groups || []).join(',');
@@ -1392,7 +1391,6 @@ async function saveIdentity() {
     keywords: split('id-keywords'),
     self_qq: ($('id-self-qq') && $('id-self-qq').value.trim()) || '',
     operators: split('id-operators'),
-    probe_model: ($('id-probe-model') && $('id-probe-model').value.trim()) || '',
     memory_budget: parseInt(($('id-memory-budget') && $('id-memory-budget').value) || '900', 10) || 900,
     memory_thinking: parseInt(($('id-memory-thinking') && $('id-memory-thinking').value) || '0', 10) || 0,
     groups: split('id-groups'),
@@ -1544,6 +1542,8 @@ function bindEvents() {
   if ($('btn-mode-archive')) $('btn-mode-archive').addEventListener('click', () => setSessionViewMode('archive'));
   if ($('btn-save-persona-card')) $('btn-save-persona-card').addEventListener('click', savePersonaCard);
   if ($('btn-save-identity')) $('btn-save-identity').addEventListener('click', saveIdentity);
+  if ($('btn-save-probe-model')) $('btn-save-probe-model').addEventListener('click', saveProbeModel);
+  loadProbeModels();
   if ($('btn-reconcile-persona')) $('btn-reconcile-persona').addEventListener('click', reconcilePersonaMemory);
   if ($('btn-trigger-surf')) {
     $('btn-trigger-surf').addEventListener('click', async () => {
@@ -1710,3 +1710,36 @@ async function boot() {
 }
 
 boot();
+
+
+async function loadProbeModels() {
+  const sel = $('probe-model-select');
+  if (!sel) return;
+  try {
+    const cfg = await api('/api/mind/llm');
+    const names = [];
+    (cfg.providers || []).forEach((p) => (p.models || []).forEach((m) => {
+      if (m && m !== 'default' && names.indexOf(m) < 0) names.push(m);
+    }));
+    names.forEach((m) => {
+      const o = document.createElement('option');
+      o.value = m; o.textContent = m; sel.appendChild(o);
+    });
+    const idn = await api('/api/config/identity');
+    if (idn && idn.probe_model) sel.value = idn.probe_model;
+  } catch (e) { /* 忽略：不影响探针本身 */ }
+}
+
+async function saveProbeModel() {
+  const sel = $('probe-model-select');
+  if (!sel) return;
+  try {
+    await api('/api/config/identity', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ probe_model: sel.value }),
+    });
+    if ($('probe-model-status')) $('probe-model-status').textContent = '已保存：' + (sel.value || '跟随主模型');
+  } catch (e) {
+    if ($('probe-model-status')) $('probe-model-status').textContent = '保存失败';
+  }
+}
