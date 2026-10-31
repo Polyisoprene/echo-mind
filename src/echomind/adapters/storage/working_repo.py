@@ -9,6 +9,7 @@ from typing import Any, Literal, cast
 import aiosqlite
 
 from echomind.adapters.storage.database import SqliteDatabase
+from echomind.adapters.storage.working_writer import save_snapshot
 from echomind.domain.models import (
     AffectiveVector,
     DriveState,
@@ -68,23 +69,6 @@ DEFAULT_PLASTIC_PARAMS: tuple[PlasticParamSpec, ...] = (
     ),
 )
 
-UPSERT_WORKING_SQL = (
-    "INSERT INTO working_state "
-    "(scope_key, valence, energy, jealousy, shyness, irritation, curiosity_drive, "
-    "attachment_drive, jealousy_drive, social_drive, current_activity, inner_thought, "
-    "intentions_json, curiosity_queue_json, updated_at) "
-    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-    "ON CONFLICT(scope_key) DO UPDATE SET "
-    "valence=excluded.valence, energy=excluded.energy, jealousy=excluded.jealousy, "
-    "shyness=excluded.shyness, irritation=excluded.irritation, "
-    "curiosity_drive=excluded.curiosity_drive, attachment_drive=excluded.attachment_drive, "
-    "jealousy_drive=excluded.jealousy_drive, social_drive=excluded.social_drive, "
-    "current_activity=excluded.current_activity, inner_thought=excluded.inner_thought, "
-    "intentions_json=excluded.intentions_json, "
-    "curiosity_queue_json=excluded.curiosity_queue_json, updated_at=excluded.updated_at"
-)
-
-
 def _clamp_val(val: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, val))
 
@@ -114,6 +98,7 @@ def _row_to_snapshot(scope_key: str, row: aiosqlite.Row | None) -> WorkingSnapsh
             jealousy_drive=float(row[7]),
             social_expression=float(row[8]),
         ),
+        revision=int(row[13]),
         current_activity=str(row[9]),
         inner_thought=str(row[10]),
         intentions=intents,
@@ -160,37 +145,15 @@ class SqliteWorkingStateStore:
         sql = (
             "SELECT valence, energy, jealousy, shyness, irritation, curiosity_drive, "
             "attachment_drive, jealousy_drive, social_drive, current_activity, inner_thought, "
-            "intentions_json, curiosity_queue_json FROM working_state WHERE scope_key = ?"
+            "intentions_json, curiosity_queue_json, updated_at "
+            "FROM working_state WHERE scope_key = ?"
         )
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, (scope_key,))
             return _row_to_snapshot(scope_key, await cursor.fetchone())
 
     async def save_working_state(self, snapshot: WorkingSnapshot) -> None:
-        now_ms = int(time.time() * 1000)
-        intents = json.dumps([i.model_dump() for i in snapshot.intentions], ensure_ascii=False)
-        queue = json.dumps(list(snapshot.curiosity_queue), ensure_ascii=False)
-        aff, drv = snapshot.affect, snapshot.drives
-        row = (
-            snapshot.scope_key,
-            aff.valence,
-            aff.energy,
-            aff.jealousy,
-            aff.shyness,
-            aff.irritation,
-            drv.curiosity,
-            drv.attachment,
-            drv.jealousy_drive,
-            drv.social_expression,
-            snapshot.current_activity,
-            snapshot.inner_thought,
-            intents,
-            queue,
-            now_ms,
-        )
-        async with self._db.connect() as conn:
-            await conn.execute(UPSERT_WORKING_SQL, row)
-            await conn.commit()
+        await save_snapshot(self._db, snapshot)
 
     async def get_plastic_params(self) -> dict[str, PlasticParamSpec]:
         await self.ensure_default_params()

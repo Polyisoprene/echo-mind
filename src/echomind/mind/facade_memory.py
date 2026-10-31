@@ -6,12 +6,14 @@ import time
 
 from echomind.domain.models import Percept, SemanticFact, SocialBondProfile
 from echomind.domain.ports import (
+    IBondDepthStore,
     IDisclosureLog,
     ILlmGateway,
     IMemoryReader,
     IMemoryWriter,
     IWorkingStateStore,
 )
+from echomind.mind.bond_scoring import attach_bond_depth as attach
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
 from echomind.mind.disclosure import gate_episode, gate_fact
 from echomind.mind.disclosure_choice import DisclosureChoice, choose
@@ -198,6 +200,14 @@ async def gate_frame(
     )
     gated_recalled = await _gate_recalled(recalled, audience, venue, log)
     return gated_facts, gated_recalled
+
+
+async def load_bonds_for(
+    reader: IMemoryReader, bond_store: IBondDepthStore | None, chat_key: str,
+    uids: tuple[str, ...],
+) -> dict[str, SocialBondProfile]:
+    pairs = [(u, await reader.get_social_bond(chat_key, u)) for u in uids]
+    return await attach(bond_store, {u: b for u, b in pairs if b is not None})
 
 
 IncludedFact = tuple[int, str, str]

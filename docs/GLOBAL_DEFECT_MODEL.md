@@ -37,7 +37,7 @@ percept
 | D13 | token 端点仅靠 loopback | `/api/session/token` 对本机任意进程发 token | 同机反代/恶意进程可拿 token | host / 2 / 4 | ✅ Host/Origin |
 | D14 | 人格块在 user 消息 | A3 placement 实验撤回后未再动 | 指令权威性/近因偏置 | one / 3 / 2 | ⏳ |
 | D15 | 特质模型与命名 | HEXACO 命名、5 条固定涌现特质、无语义检索 | 人格解释力/自适应不足 | persona / 5 / 3 | ⏳ |
-| D16 | 工作状态多写入点 | 9 处 `save_working_state`，scheduler 与 turn 可并发 | 后写覆盖，情绪/驱动漂移 | all / 3 / 3 | ⏳ 方案回滚 |
+| D16 | 工作状态多写入点 | 9 处 `save_working_state`，scheduler 与 turn 可并发 | 后写覆盖，情绪/驱动漂移 | all / 3 / 3 | ✅ 版本+重试 |
 | D17 | 扩展好感阈值旧标尺 | 配置仍是 50/200/500/1000 | 无代码读取，死配置 | one / 5 / 2 | ✅ 非缺陷 |
 | D18 | 披露日志无保留策略 | 只增不删 | 168 行已在短时间累积 | all / 5 / 2 | ✅ 清理 |
 | D19 | 缺外部评测 | 只有单测/集成 | 无法证明跨会话一致性与授权边界 | all / 5 / 3 | ✅ 内部基线 |
@@ -150,4 +150,4 @@ percept
 
 - 每个 D 项：有复现/证据、有测试、有部署验证；
 - D1-D3 已满足：`tests/unit/test_bot_belief.py`、`test_dialogue_context.py`、发送拦截集成测试；
-- 全量门禁：287 passed / 92%。
+- 全量门禁：289 passed / 92%。

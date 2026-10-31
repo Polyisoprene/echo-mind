@@ -14,8 +14,9 @@ from echomind.domain.ports import (
     IWorkingStateStore,
 )
 from echomind.mind.circadian import biological_jitter_factor, resolve_circadian_phase
-from echomind.mind.drives import circadian_energy_target
+from echomind.mind.drives import circadian_energy_snapshot
 from echomind.mind.personality import synthesize_live_persona_directive
+from echomind.mind.working_update import mutate_working_state
 from echomind.runtime.qzone_budgets import budget, extract_content, is_truncated
 
 QZONE_CFG_KEY = "qzone_showcase"
@@ -151,13 +152,8 @@ class QzoneMoodShowcaseScheduler:
         )
 
     async def _recover_idle_energy_and_context(self, now_ms: int) -> tuple[str, float]:
-        snap = await self._working.load_working_state("global")
-        target_e = circadian_energy_target(now_ms)
-        new_e = round(snap.affect.energy + (target_e - snap.affect.energy) * 0.25, 2)
-        if abs(new_e - snap.affect.energy) >= 0.5:
-            new_aff = snap.affect.model_copy(update={"energy": max(0.0, min(100.0, new_e))})
-            snap = snap.model_copy(update={"affect": new_aff})
-            await self._working.save_working_state(snap)
+        snap = await mutate_working_state(
+            self._working, "global", lambda s: circadian_energy_snapshot(s, now_ms))
         params = await self._working.get_plastic_params()
         traits = await self._working.sync_persona_traits()
         cards = await self._reader.get_episodic_cards(self._chat_key)
@@ -248,11 +244,10 @@ class QzoneMoodShowcaseScheduler:
                 sent_msgs.append(msg)
         if not sent_msgs:
             return ""
-        snap = await self._working.load_working_state("global")
-        if "B站" in snap.current_activity or "http" in snap.current_activity:
-            await self._working.save_working_state(
-                snap.model_copy(update={"current_activity": "戴着耳机边听歌边看群聊"})
-            )
+        await mutate_working_state(
+            self._working, "global",
+            lambda s: s.model_copy(update={"current_activity": "戴着耳机边听歌边看群聊"})
+            if ("B站" in s.current_activity or "http" in s.current_activity) else s)
         joined = " | ".join(sent_msgs)
         await self._save_state_counter("pro", state, now_ms, joined, inc=len(sent_msgs))
         return joined

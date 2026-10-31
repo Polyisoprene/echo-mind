@@ -12,6 +12,7 @@ from echomind.mind.persona_reconciler import (
     matches_any_keyword,
     parse_reconcile_plan,
 )
+from echomind.mind.working_update import mutate_working_state
 
 RECONCILE_SQL: dict[str, tuple[str, str]] = {
     "traits": (
@@ -122,8 +123,10 @@ async def run_persona_reconciliation(
     plan = parse_reconcile_plan(_extract_llm_content(resp), role_text=role_text, bot_name=bot_name)
     counts = await _apply_reconcile_plan(container, plan)
     if plan.new_activity:
-        await container.working_store.save_working_state(
-            snap.model_copy(update={"current_activity": plan.new_activity, "intentions": ()})
+        await mutate_working_state(
+            container.working_store, "global",
+            lambda s: s.model_copy(update={
+                "current_activity": plan.new_activity, "intentions": ()}),
         )
     return {
         "ok": True,

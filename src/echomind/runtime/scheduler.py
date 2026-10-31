@@ -30,6 +30,7 @@ from echomind.mind.drives_temporal import apply_exogenous_surf_affect
 from echomind.mind.naming import bot_naming
 from echomind.mind.plasticity import NeuroplasticityEngine
 from echomind.mind.shadow_appraisal import should_prune_card
+from echomind.mind.working_update import mutate_working_state
 
 BV_ID_RE = re.compile(r"BV[0-9A-Za-z]{10}")
 TITLE_BOOK_RE = re.compile(r"《([^》]{2,40})》")
@@ -225,9 +226,9 @@ class CognitiveHeartbeatScheduler:
         if self._working is None:
             return
         if unseen_line or spoken:
-            snap = await self._working.load_working_state("global")
-            updated = apply_exogenous_surf_affect(snap, unseen_line, shared_to_chat=bool(spoken))
-            await self._working.save_working_state(updated)
+            def _surf(s: Any) -> Any:
+                return apply_exogenous_surf_affect(s, unseen_line, shared_to_chat=bool(spoken))
+            await mutate_working_state(self._working, "global", _surf)
         if unseen_line:
             await NeuroplasticityEngine(self._working, self._layers).adapt_from_exogenous_info(
                 proposal.drive_kind, unseen_line

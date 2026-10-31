@@ -28,9 +28,7 @@ from echomind.domain.ports import (
 )
 from echomind.mind import facade_memory as mem
 from echomind.mind.ban_control import resolve_bans
-from echomind.mind.bond_scoring import attach_bond_depth as attach
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
-from echomind.mind.chord_cache import remember_chord
 from echomind.mind.chord_gateway import apply_probe_if_allowed, chord_for
 from echomind.mind.circadian import record_gate_decision
 from echomind.mind.cybernetics import (
@@ -41,6 +39,7 @@ from echomind.mind.dialogue_context import DialogueContext
 from echomind.mind.drives import apply_turn_affect_and_drives
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.epistemic import EpistemicCalibrator
+from echomind.mind.facade_accessors import FacadeAccessors
 from echomind.mind.facade_autonomy import run_autonomous_tick
 from echomind.mind.frame_renderer import (
     build_curiosity_prompts,
@@ -56,23 +55,19 @@ from echomind.mind.persona_state import effective_params_of
 from echomind.mind.personality import synthesize_live_persona_directive
 from echomind.mind.plasticity import NeuroplasticityEngine, apply_chord_reward
 from echomind.mind.recall_types import RecalledMemoryItem
-from echomind.mind.salience_hydraulics import apply_speaking_satiation
 from echomind.mind.shadow_appraisal import (
     ShadowAppraisalResult,
     evaluate_shadow_appraisal,
-    filter_unfulfilled_intentions,
 )
 from echomind.mind.subconscious_probe import (
     SubconsciousChordProbe,
     SubconsciousChordResult,
 )
+from echomind.mind.turn_mutations import satiate_snapshot, with_irritation_delta
+from echomind.mind.working_update import mutate_working_state
 
 
-def _belief_facts(facts: tuple[SemanticFact, ...]) -> tuple[tuple[str, str, float], ...]:
-    return tuple((f.subject, f.fact_text, f.confidence) for f in facts)
-
-
-class CognitiveCoreFacade:
+class CognitiveCoreFacade(FacadeAccessors):
     """Unified 12-Layer Cognitive Core Facade satisfying ICognitiveCoreFacade."""
 
     def __init__(
@@ -104,21 +99,6 @@ class CognitiveCoreFacade:
         self._chord_cache: dict[str, SubconsciousChordResult] = {}
         self._dialogue = DialogueContext()
 
-    def set_subconscious_probe(self, probe: SubconsciousChordProbe | None) -> None:
-        self._sub_probe = probe
-
-    def cache_chord(self, message_id: str, chord: SubconsciousChordResult) -> None:
-        remember_chord(self._chord_cache, message_id, chord)
-
-
-    @property
-    def last_active_ms(self) -> int:
-        return self._last_active_ms
-
-    @property
-    def recent_gate_log(self) -> list[dict[str, Any]]:
-        return list(reversed(self._gate_log))
-
     async def evaluate_incoming(
         self, percept: Percept, *, dry_run: bool = False
     ) -> AttentionDecision:
@@ -128,7 +108,8 @@ class CognitiveCoreFacade:
         params = await effective_params_of(self._working, self._layers, percept.timestamp_ms)
         talk = params["talkativeness"].value if "talkativeness" in params else 58.0
         facts = await self._reader.get_semantic_facts(percept.chat_key)
-        set_beliefs(percept.chat_key, rebuild_beliefs(_belief_facts(facts)))
+        set_beliefs(percept.chat_key, rebuild_beliefs(
+            tuple((f.subject, f.fact_text, f.confidence) for f in facts)))
         rivals = await self._reader.get_rival_names(percept.chat_key)
         s_bond = await self._reader.get_social_bond(percept.chat_key, percept.sender_id)
         vocab = frozenset(f.subject.lower() for f in facts)
@@ -174,10 +155,12 @@ class CognitiveCoreFacade:
         )
         raw_irr = base_snap.affect.irritation + shadow.irritation_delta
         new_irr = max(0.0, min(100.0, round(raw_irr, 2)))
+        delta = new_irr - base_snap.affect.irritation
         affect = base_snap.affect.model_copy(update={"irritation": new_irr})
         updated = base_snap.model_copy(update={"affect": affect})
         if not dry_run:
-            await self._working.save_working_state(updated)
+            await mutate_working_state(
+                self._working, "global", lambda s: with_irritation_delta(s, delta))
             if new_irr > 85.0 and triggers:
                 last = triggers[-1]
                 self._gate.impose_cold_shoulder(chat_key, last.sender_id, last.timestamp_ms)
@@ -186,7 +169,7 @@ class CognitiveCoreFacade:
     async def _advance(
         self, chat_key: str, triggers: tuple[Percept, ...], facts: tuple[SemanticFact, ...],
         bonds_map: dict[str, SocialBondProfile] | None = None,
-        chord: SubconsciousChordResult | None = None,
+        chord: SubconsciousChordResult | None = None, *, dry_run: bool = False,
     ) -> tuple[WorkingSnapshot, AttentionDecision | None, float]:
         snap = await self._working.load_working_state("global")
         now_ms = int(time.time() * 1000)
@@ -208,10 +191,15 @@ class CognitiveCoreFacade:
             ) if triggers else None
         )
         unknowns = last_dec.detected_unknown_terms if last_dec else ()
-        updated = apply_turn_affect_and_drives(
-            snap, triggers, rivals, unknowns, curiosity_rate=cur_rate,
-            bonds_map=bonds_map, params=params, chord=chord, profiles=profiles,
-        )
+        def _apply(s: WorkingSnapshot) -> WorkingSnapshot:
+            return apply_turn_affect_and_drives(
+                s, triggers, rivals, unknowns, curiosity_rate=cur_rate,
+                bonds_map=bonds_map, params=params, chord=chord, profiles=profiles)
+
+        if dry_run:
+            updated = _apply(snap)
+        else:
+            updated = await mutate_working_state(self._working, "global", _apply)
         return updated, last_dec, skep
 
     async def build_cognitive_frame(
@@ -220,10 +208,10 @@ class CognitiveCoreFacade:
         now_ms, tr = int(time.time() * 1000), triggers
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
         facts, uids = await mem.load_facts(self._reader, chat_key, tr)
-        pairs = [(u, await self._reader.get_social_bond(chat_key, u)) for u in uids]
-        bm = await attach(self._bond_store, {u: b for u, b in pairs if b is not None})
+        bm = await mem.load_bonds_for(self._reader, self._bond_store, chat_key, uids)
         chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
-        base_snap, last_dec, skep = await self._advance(chat_key, tr, facts, bm, chord)
+        base_snap, last_dec, skep = await self._advance(
+            chat_key, tr, facts, bm, chord, dry_run=dry_run)
         bans = await resolve_bans(self._constraints, tr, self._operator_ids, dry=dry_run)
         snap, shadow, p_blk = await self._apply_shadow_and_save(
             chat_key, base_snap, tr, bm, dry_run=dry_run, chord=chord
@@ -266,12 +254,9 @@ class CognitiveCoreFacade:
         now_ms, o = int(time.time() * 1000), outcome
         if o.sent_texts:
             self._gate.mark_bot_spoke(o.chat_key, o.sent_texts, now_ms, o.triggers)
-            snap = await self._working.load_working_state("global")
-            rem = filter_unfulfilled_intentions(snap.intentions, o.sent_texts, now_ms)
-            satiated = apply_speaking_satiation(
-                snap.model_copy(update={"intentions": rem}), o.sent_texts, o.tools_used
-            )
-            await self._working.save_working_state(satiated)
+            await mutate_working_state(
+                self._working, "global",
+                lambda s: satiate_snapshot(s, o.sent_texts, o.tools_used, now_ms))
         if self._traces is not None and o.steps:
             await self._traces.save_turn(build_turn_record(o, now_ms))
         o, chord = apply_chord_reward(o, self._chord_cache)

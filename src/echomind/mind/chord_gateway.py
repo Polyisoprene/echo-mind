@@ -18,6 +18,7 @@ from echomind.mind.subconscious_probe import (
     apply_chord_tensor_to_snapshot,
     evaluate_chord_wake_decision,
 )
+from echomind.mind.working_update import mutate_working_state
 
 STRONG_SIGNAL_SCORE = 0.55
 
@@ -76,8 +77,10 @@ async def apply_probe_if_allowed(
     )
     if new_dec.should_wake:
         return snap, new_dec
-    new_snap, _ = apply_chord_tensor_to_snapshot(snap, chord, percept, bond)
-    await working.save_working_state(new_snap)
+    new_snap = await mutate_working_state(
+        working, "global",
+        lambda s: apply_chord_tensor_to_snapshot(s, chord, percept, bond)[0],
+    )
     return new_snap, new_dec
 
 

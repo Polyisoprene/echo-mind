@@ -21,6 +21,7 @@ from echomind.mind.hippocampus import (
     parse_consolidation_json,
 )
 from echomind.mind.memory_budget import consolidation_budget, consolidation_thinking
+from echomind.mind.working_update import mutate_working_state
 
 if TYPE_CHECKING:
     from echomind.mind.subconscious_probe import SubconsciousChordResult
@@ -226,9 +227,9 @@ async def _apply_hippocampal_working_updates(
         trait = PersonaTrait(category="habit", trait_text=new_trait, strength=6)
         await working_store.sync_persona_traits(new_trait=trait)
     if new_activity:
-        snap = await working_store.load_working_state("global")
-        await working_store.save_working_state(
-            snap.model_copy(update={"current_activity": new_activity})
+        await mutate_working_state(
+            working_store, "global",
+            lambda s: s.model_copy(update={"current_activity": new_activity}),
         )
 
 

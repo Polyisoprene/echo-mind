@@ -93,6 +93,7 @@ class WorkingSnapshot(FrozenValueObject):
     inner_thought: str = ""
     intentions: tuple[IntentionItem, ...] = ()
     curiosity_queue: tuple[str, ...] = ()
+    revision: int = 0
 
 
 class TheoryOfMindFrame(FrozenValueObject):

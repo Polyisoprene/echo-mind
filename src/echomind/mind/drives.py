@@ -100,6 +100,16 @@ def check_owner_jealousy_trigger(
     return jd > 0.0
 
 
+def circadian_energy_snapshot(snapshot: WorkingSnapshot, now_ms: int) -> WorkingSnapshot:
+    target = circadian_energy_target(now_ms)
+    new_energy = round(snapshot.affect.energy + (target - snapshot.affect.energy) * 0.25, 2)
+    if abs(new_energy - snapshot.affect.energy) < 0.5:
+        return snapshot
+    energy = max(0.0, min(100.0, new_energy))
+    return snapshot.model_copy(update={"affect": snapshot.affect.model_copy(
+        update={"energy": energy})})
+
+
 def circadian_energy_target(now_ms: int | None = None) -> float:
     """Return Borbély Two-Process continuous circadian resting energy target."""
     return resolve_circadian_phase(now_ms).energy_target
