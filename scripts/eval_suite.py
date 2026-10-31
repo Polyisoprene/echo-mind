@@ -70,6 +70,7 @@ async def _seed(repo: Any, scenario: dict[str, Any], now_ms: int,
 async def _retrieval(
     repo: Any, scenario: dict[str, Any], gateway: Any = None, now_ms: int = EVAL_NOW,
     resolver: RelationResolver | None = None, *, fusion: bool = False,
+    fusion_drop: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
     picked = await repo.get_semantic_facts(
         str(scenario["venue"]), person_ids=tuple(scenario.get("audience", ()))
@@ -85,7 +86,7 @@ async def _retrieval(
                 await resolver.boost_ids(tuple(picked), query, now_ms)
                 if resolver is not None else {}
             )
-            ranked = unified_rank(picked, query, dense, relations, now_ms)
+            ranked = unified_rank(picked, query, dense, relations, now_ms, disabled=fusion_drop)
         else:
             lexical = select_relevant_facts(picked, query, len(picked), now_ms=now_ms)
             semantic = await rerank_facts(picked, query, gateway, vectors, len(picked))
@@ -145,7 +146,7 @@ def _persona(scenario: dict[str, Any]) -> dict[str, Any]:
 
 async def _evaluate(
     data: dict[str, Any], gateway: Any = None, use_relations: bool = True,
-    fusion: bool = False,
+    fusion: bool = False, fusion_drop: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as tmp:
         container = await EchoMindContainer.create(db_path=Path(tmp) / "eval.db")
@@ -159,7 +160,8 @@ async def _evaluate(
             else:
                 await _seed(repo, scenario, EVAL_NOW, relation_store)
                 result = await _retrieval(
-                    repo, scenario, gateway, EVAL_NOW, resolver, fusion=fusion
+                    repo, scenario, gateway, EVAL_NOW, resolver, fusion=fusion,
+                    fusion_drop=fusion_drop
                 )
             results.append({"id": scenario["id"], "category": scenario["category"], **result})
 
@@ -236,6 +238,7 @@ async def main() -> int:
     parser.add_argument("--check", type=Path)
     parser.add_argument("--semantic", action="store_true")
     parser.add_argument("--ranker-fusion", action="store_true")
+    parser.add_argument("--fusion-drop", default="")
     parser.add_argument(
         "--ablate",
         choices=("none", "recency", "order", "recency_order", "relations",
@@ -255,7 +258,8 @@ async def main() -> int:
     try:
         report = await _evaluate(
             data, gateway, use_relations=args.ablate != "relations",
-            fusion=args.ranker_fusion
+            fusion=args.ranker_fusion,
+            fusion_drop=frozenset(x for x in args.fusion_drop.split(",") if x),
         )
     finally:
         if gateway is not None:

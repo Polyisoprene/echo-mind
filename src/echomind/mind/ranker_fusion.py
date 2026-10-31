@@ -50,27 +50,37 @@ def _rank(scores: dict[int, float]) -> tuple[int, ...]:
     return tuple(sorted(scores, key=lambda item: (-scores[item], item)))
 
 
-def unified_rank(
+def _candidate_rankers(
     facts: tuple[SemanticFact, ...], query: str,
     dense: dict[int, float], relations: dict[int, float], now_ms: int,
-) -> tuple[SemanticFact, ...]:
-    """Fuse independent signals as ranks; no hand-tuned feature weights."""
+) -> dict[str, tuple[int, ...]]:
     recency = {f.fact_id: fact_recency(f.event_time_ms, now_ms) for f in facts}
     order = {f.fact_id: order_score(query, f"{f.subject} {f.fact_text}") for f in facts}
     confidence = {f.fact_id: f.confidence for f in facts}
     lock = {f.fact_id: 1.0 if f.is_locked else 0.0 for f in facts}
-    rankers = (
-        _rank(bm25_scores(facts, query)),
-        _rank(dense),
-        _rank(recency),
-        _rank(order),
-        _rank(relations),
-        _rank(confidence),
-        _rank(lock),
+    return {
+        "bm25": _rank(bm25_scores(facts, query)),
+        "dense": _rank(dense),
+        "recency": _rank(recency),
+        "order": _rank(order),
+        "relations": _rank(relations),
+        "confidence": _rank(confidence),
+        "lock": _rank(lock),
+    }
+
+
+def unified_rank(
+    facts: tuple[SemanticFact, ...], query: str,
+    dense: dict[int, float], relations: dict[int, float], now_ms: int,
+    *, disabled: frozenset[str] = frozenset(),
+) -> tuple[SemanticFact, ...]:
+    """Fuse independent signals as ranks; no hand-tuned feature weights."""
+    candidates = _candidate_rankers(facts, query, dense, relations, now_ms)
+    rankers = tuple(
+        items for name, items in candidates.items() if name not in disabled
     )
     fused = rrf_fuse(rankers, RRF_K)
     by_id = {fact.fact_id: fact for fact in facts}
     return tuple(by_id[fact_id] for fact_id in fused if fact_id in by_id)
-
 
 __all__ = ["BM25_B", "BM25_K1", "bm25_scores", "unified_rank"]
