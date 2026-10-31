@@ -25,11 +25,11 @@ class SemanticMemoryRetriever:
         self._relations = relations
 
     async def boost_ids(
-        self, facts: tuple[SemanticFact, ...], query: str
-    ) -> set[int]:
+        self, facts: tuple[SemanticFact, ...], query: str, now_ms: int
+    ) -> dict[int, float]:
         if self._relations is None:
-            return set()
-        return await self._relations.boost_ids(facts, query)
+            return {}
+        return await self._relations.boost_ids(facts, query, now_ms)
 
     async def rerank(
         self, facts: tuple[SemanticFact, ...], query: str, limit: int,

@@ -89,11 +89,14 @@ async def _retrieval(
             picked, str(scenario["query"]), limit=5, now_ms=now_ms
         )
     if resolver is not None:
-        boosted = await resolver.boost_ids(tuple(ranked), str(scenario["query"]))
-        ranked = tuple(
-            [f for f in ranked if f.fact_id in boosted]
-            + [f for f in ranked if f.fact_id not in boosted]
+        boosted = await resolver.boost_ids(
+            tuple(ranked), str(scenario["query"]), now_ms
         )
+        head = sorted(
+            (f for f in ranked if f.fact_id in boosted),
+            key=lambda f: -boosted[f.fact_id],
+        )
+        ranked = tuple(head + [f for f in ranked if f.fact_id not in boosted])
     subjects = [fact.subject for fact in ranked]
     target = str(scenario["target"])
     rank = subjects.index(target) + 1 if target in subjects else None

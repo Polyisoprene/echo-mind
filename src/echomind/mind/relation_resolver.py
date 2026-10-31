@@ -1,4 +1,4 @@
-"""Multi-hop relation boost for fact retrieval (P2)."""
+"""Multi-hop, validity-aware relation boost for fact retrieval (P2)."""
 
 from __future__ import annotations
 
@@ -21,17 +21,22 @@ class RelationResolver:
         return starts
 
     async def boost_ids(
-        self, facts: tuple[SemanticFact, ...], query: str
-    ) -> set[int]:
+        self, facts: tuple[SemanticFact, ...], query: str, now_ms: int
+    ) -> dict[int, float]:
         starts = await self._query_entities(query)
         if not starts:
-            return set()
-        reached = await self._store.reachable(tuple(starts), self._max_hops)
-        boosted: set[int] = set()
+            return {}
+        reached = await self._store.reachable_scored(
+            tuple(starts), self._max_hops, now_ms
+        )
+        boosted: dict[int, float] = {}
         for fact in facts:
             fact_entities = set(entities(f"{fact.subject} {fact.fact_text}"))
-            if fact.subject.lower() in reached or fact_entities & reached:
-                boosted.add(fact.fact_id)
+            scores = [reached.get(fact.subject.lower(), 0.0)]
+            scores.extend(reached.get(entity, 0.0) for entity in fact_entities)
+            best = max(scores)
+            if best > 0:
+                boosted[fact.fact_id] = best
         return boosted
 
 

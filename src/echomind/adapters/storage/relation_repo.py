@@ -25,12 +25,17 @@ class SqliteRelationStore:
             )
             await conn.commit()
 
-    async def neighbors(self, subject_id: str) -> tuple[MemoryRelation, ...]:
+    async def neighbors(
+        self, subject_id: str, now_ms: int = 0
+    ) -> tuple[MemoryRelation, ...]:
         async with self._db.connect() as conn:
             rows = await (await conn.execute(
                 "SELECT id, subject_id, predicate, object_id, valid_from_ms, "
                 "valid_to_ms, source_memory_id, confidence "
-                "FROM memory_relations WHERE subject_id = ?", (subject_id,)
+                "FROM memory_relations WHERE subject_id = ? "
+                "AND (valid_from_ms = 0 OR valid_from_ms <= ?) "
+                "AND (valid_to_ms IS NULL OR valid_to_ms > ?)",
+                (subject_id, now_ms, now_ms),
             )).fetchall()
         return tuple(
             MemoryRelation(
@@ -50,26 +55,42 @@ class SqliteRelationStore:
             )).fetchall()
         return tuple(str(r[0]) for r in rows if str(r[0]))
 
-    async def _objects(self, subject: str) -> set[str]:
-        return {relation.object_id for relation in await self.neighbors(subject)}
+    async def _expand(
+        self, subject: str, base: float, now_ms: int
+    ) -> dict[str, float]:
+        return {
+            relation.object_id: base * relation.confidence
+            for relation in await self.neighbors(subject, now_ms)
+        }
 
-    async def _next_frontier(self, frontier: set[str], seen: set[str]) -> set[str]:
-        found: set[str] = set()
-        for subject in frontier:
-            found |= await self._objects(subject)
-        return found - seen
+    @staticmethod
+    def _merge(
+        target: dict[str, float], scores: dict[str, float], candidates: dict[str, float]
+    ) -> None:
+        for obj, candidate in candidates.items():
+            if candidate > scores.get(obj, 0.0):
+                scores[obj] = candidate
+                target[obj] = max(target.get(obj, 0.0), candidate)
 
-    async def reachable(
-        self, starts: tuple[str, ...], max_hops: int = RELATION_MAX_HOPS
-    ) -> set[str]:
-        seen: set[str] = set(starts)
-        frontier: set[str] = set(starts)
+    async def reachable_scored(
+        self, starts: tuple[str, ...], max_hops: int, now_ms: int
+    ) -> dict[str, float]:
+        scores: dict[str, float] = dict.fromkeys(starts, 1.0)
+        frontier: dict[str, float] = dict(scores)
         for _ in range(max_hops):
-            frontier = await self._next_frontier(frontier, seen)
-            seen |= frontier
+            nxt: dict[str, float] = {}
+            for subject, base in frontier.items():
+                self._merge(nxt, scores, await self._expand(subject, base, now_ms))
+            frontier = nxt
             if not frontier:
                 break
-        return seen
+        return scores
+
+    async def reachable(
+        self, starts: tuple[str, ...], max_hops: int = RELATION_MAX_HOPS,
+        now_ms: int = 0,
+    ) -> set[str]:
+        return set(await self.reachable_scored(starts, max_hops, now_ms))
 
 
 __all__ = ["SqliteRelationStore"]

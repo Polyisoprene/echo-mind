@@ -221,14 +221,18 @@ async def _apply_boost(
     facts: tuple[SemanticFact, ...],
     query: str,
     ordered: list[SemanticFact],
+    now_ms: int,
 ) -> list[SemanticFact]:
     if semantic is None:
         return ordered
-    boosted = await semantic.boost_ids(facts, query)
+    boosted = await semantic.boost_ids(facts, query, now_ms)
     if not boosted:
         return ordered
-    return ([f for f in ordered if f.fact_id in boosted]
-            + [f for f in ordered if f.fact_id not in boosted])
+    head = sorted(
+        (f for f in ordered if f.fact_id in boosted),
+        key=lambda f: -boosted[f.fact_id],
+    )
+    return head + [f for f in ordered if f.fact_id not in boosted]
 
 
 async def select_facts(
@@ -246,7 +250,7 @@ async def select_facts(
     fused = rrf_fuse((tuple(f.fact_id for f in lexical), tuple(f.fact_id for f in ranked)))
     by_id = {f.fact_id: f for f in facts}
     ordered = [by_id[i] for i in fused if i in by_id]
-    return tuple((await _apply_boost(semantic, facts, query, ordered))[:limit])
+    return tuple((await _apply_boost(semantic, facts, query, ordered, current))[:limit])
 
 
 IncludedFact = tuple[int, str, str]

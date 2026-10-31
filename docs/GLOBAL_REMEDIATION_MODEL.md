@@ -62,7 +62,7 @@ percept
 | `RRF_K` | 60 | `mind/retrieval_fusion.py` | 两路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
 | `max_hops` | 2 | `domain/relation.py::RELATION_MAX_HOPS` | 两跳可达 | ❌ 无来源；已由一处常量统一，fit_pending |
 | `RELATION_CONFIDENCE` | 0.8 | `mind/relation_extractor.py` | 抽取置信度 | ❌ 未参与排序；值无来源 |
-| 关系 validity | 字段存在 | `memory_relations` | `valid_from/to` 未过滤 | ❌ 孤岛 |
+| 关系 validity | 字段存在 | `memory_relations` | 已按 `valid_from/to` 过滤 | ✅ 已接入 |
 | 真人感长度 | 40 字 | `personality.REALISM_MAX_CHARS` | 已收常量/账本，prompt 软约束 | 🟡 来自 50 条人工标签，但样本小 |
 
 ### 人工标签对“40 字”的实际支撑
@@ -97,9 +97,9 @@ percept
 | 参数 | 应该影响 | 现在影响 | 缺口 |
 |---|---|---|---|
 | `event_time` | recency、关系 validity、时间顺序 | 只影响 recency | 关系边不按时间过滤 |
-| `valid_from/to` | 关系是否 active、多跳路径 | 无 | 关系边永远 active |
-| relation confidence | 关系特征强度 | 无 | 0.8 只是存着 |
-| `max_hops` | 多跳范围/成本 | 固定 2 | 无图直径/成本约束 |
+| `valid_from/to` | 关系是否 active、多跳路径 | 已过滤过期边 | ✅ |
+| relation confidence | 关系特征强度 | 已进入路径分数（连乘） | ✅ 已接入；0.8 本身仍待校准 |
+| `max_hops` | 多跳范围/成本 | 固定 2 | ❌ 无图直径/成本约束 |
 | lexical recency/order | 关键词排序 | 已加，权重独立 | 与语义权重不一致 |
 | semantic recency/order | 语义排序 | 已加，内联 0.25/0.5 | 不在账本、不可联动 |
 | lexical/dense | RRF 融合 | RRF(k=60) | 没有权重/校准 |
@@ -141,7 +141,7 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 
 | 阶段 | 改动 | 不改什么 |
 |---|---|---|
-| P0 | ✅ 参数登记（0.25/0.5/2/40 已收常量/账本）；⬜ 关系 validity/confidence 接入 | 本轮未改排序行为 |
+| P0 | ✅ 参数登记；✅ 关系 validity/confidence 接入 | 只改关系边合法性与权重，评测集未退化 |
 | P1 | 统一 recency/order，去掉双路重复计分；关系进统一分数；RRF 降为 fallback | 不改硬门、不改隐私 |
 | P2 | 用 70 场景 + 50 标签拟合权重；重跑 60/70 关键词、70/70 语义、role/temporal/multihop | 不新增无依据参数 |
 | P3 | PPR/树/HyDE 作为独立实验，先 shadow | 不直接改生产 |
@@ -187,7 +187,10 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 - 0.25/0.5（语义权重）、2（关系跳数）、40（风格长度）已从内联字面量收成显式常量；
 - 全部登记到 `docs/params/ledger.json`，状态为 `fit_pending/quarantined`；
 - `param_gate` 通过（60 constants compliant）；
-- **没有改线上排序行为**，只是把“孤立参数”变成可审计、可联动的债务项。
+- 关系 `valid_from/to` 已过滤过期边；`confidence` 已连乘进两跳路径分数；
+- 关系命中排序改为按 confidence 从高到低，而不是所有命中一律前置；
+- 评测集未退化（关键词 60/70、语义 70/70、multihop 10/10）；
+- 30 天/4/6/0.25/0.5/2/0.8 仍登记为 `fit_pending`，没有冒充已校准。
 
 ## 8. 不建议做的事
 
