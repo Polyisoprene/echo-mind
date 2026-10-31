@@ -322,3 +322,32 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 - 其余 ranker 都可被其他 ranker 补偿，说明 70 条 probe 仍然饱和；
 - **不能宣称 7 ranker 等权已被数据证明**；它只是无证据时的保守选择；
 - 下一步必须构造 hard negatives（同词反向、同主题不同时间、同语义不同关系），否则权重/等权都只是自嗨。
+
+
+---
+
+## 13. 第 10 轮：hard negatives 证明“每个 ranker 都有独立信号”
+
+为每个 ranker 造一组“只有它能区分”的成对事实：
+
+| ranker | hard negative |
+|---|---|
+| recency | 同文本、不同事件时间，只有新事实对 |
+| order | A→B / B→A 同词反向 |
+| dense | 同文本、只有 dense 分数区分 |
+| relations | 只有关系可达的目标 |
+| confidence | 同文本、不同 confidence |
+| lock | 同文本、只有 locked 区分 |
+| bm25 | 同主题、只有目标含查询词 |
+
+测试结果（`tests/unit/test_ranker_isolation.py`）：
+
+- **只开该 ranker 时，目标都能赢**；
+- 关掉全部 ranker 时，目标输给插入顺序；
+- 但在 7 个 ranker 全开、信号冲突时，单个 ranker 可能被其他 ranker 的“平票”稀释（例如 role 反向 probe）。
+
+这证明两件事：
+
+1. 7 个 ranker 不是装饰，每个都有独立可判别的信号；
+2. **等权融合在信号冲突时会稀释强信号**，因此“等权”仍未被证明，下一步需要校准/优先级规则，而不是继续加 ranker。
+
