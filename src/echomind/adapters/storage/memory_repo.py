@@ -9,7 +9,7 @@ from typing import Any, Literal, cast
 import aiosqlite
 
 from echomind.adapters.storage.claim_repo import mirror_fact
-from echomind.adapters.storage.claim_views import facts_v2_enabled, load_claim_facts
+from echomind.adapters.storage.claim_views import facts_v2_enabled
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_rows import row_to_episodic, row_to_fact, row_to_rule
 from echomind.domain.models import (
@@ -64,6 +64,11 @@ class SqliteMemoryRepository:
     """Repository satisfying both IMemoryReader and IMemoryWriter protocols."""
 
     def __init__(self, db: SqliteDatabase) -> None:
+        if facts_v2_enabled():
+            raise RuntimeError(
+                "FACTS_V2 read path is disabled: claim rows lack provenance; "
+                "unset FACTS_V2 (legacy facts carry scope/owner/sensitivity)."
+            )
         self._db = db
 
     async def get_episodic_cards(self, chat_key: str) -> tuple[EpisodicCard, ...]:
@@ -85,8 +90,6 @@ class SqliteMemoryRepository:
         min_confidence: float = 0.0,
         person_ids: tuple[str, ...] = (),
     ) -> tuple[SemanticFact, ...]:
-        if facts_v2_enabled():
-            return await load_claim_facts(self._db, chat_key)
         clauses = ["chat_key IN (?, 'global')"]
         params: list[Any] = [chat_key]
         if chat_key.startswith("private:"):

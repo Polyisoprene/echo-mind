@@ -124,7 +124,7 @@ async def test_m7_1_config_identities_remote_auth_and_sqlite_pragmas(tmp_path: P
     container = await EchoMindContainer.create(db_path=tmp_path / "m71.db")
     app = create_web_app(container, config_path=cfg_path, auth_key="sec-token-99")
     remote_transport = httpx.ASGITransport(app=app, client=("192.168.3.50", 54321))
-    async with httpx.AsyncClient(transport=remote_transport, base_url="http://test") as client:
+    async with httpx.AsyncClient(transport=remote_transport, base_url="http://127.0.0.1") as client:
         r_unauth = await client.get("/api/mind/runtime")
         assert r_unauth.status_code == 401
         r_bearer = await client.get(

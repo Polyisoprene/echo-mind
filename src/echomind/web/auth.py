@@ -2,10 +2,34 @@
 
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 from fastapi import Request
 
 LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
+_HOST_NAMES = LOOPBACK_HOSTS | {"testserver"}
 WRITE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+
+def _host_is_loopback(request: Request) -> bool:
+    host = request.headers.get("host", "")
+    name = host.split(":")[0].strip("[]").lower()
+    return not name or name in _HOST_NAMES
+
+
+def is_loopback_request(request: Request) -> bool:
+    """True only when client, Host and (if present) Origin are all loopback."""
+    client = request.client.host if request.client else ""
+    if client not in LOOPBACK_HOSTS:
+        return False
+    if not _host_is_loopback(request):
+        return False
+    origin = request.headers.get("origin", "")
+    if origin:
+        name = (urlparse(origin).hostname or "").lower()
+        if name not in LOOPBACK_HOSTS:
+            return False
+    return True
 
 
 def _extract_request_token(request: Request) -> str:
@@ -29,7 +53,7 @@ def is_request_authorized(
     if not request.url.path.startswith("/api/"):
         return True
     host = client_host or (request.client.host if request.client else "127.0.0.1")
-    loopback = host in LOOPBACK_HOSTS
+    loopback = host in LOOPBACK_HOSTS and _host_is_loopback(request)
     if not auth_key:
         return loopback
     token_ok = _extract_request_token(request) == auth_key

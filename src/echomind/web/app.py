@@ -13,7 +13,11 @@ from pydantic import BaseModel
 
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.web.audit import write_audit
-from echomind.web.auth import LOOPBACK_HOSTS, WRITE_METHODS, is_request_authorized
+from echomind.web.auth import (
+    WRITE_METHODS,
+    is_loopback_request,
+    is_request_authorized,
+)
 from echomind.web.chat_service import ChatStreamService
 from echomind.web.ext_routers import (
     build_llm_and_voice_router,
@@ -253,8 +257,9 @@ def create_web_app(
     @app.get("/api/session/token")
     async def _session_token(request: Request) -> dict[str, str]:
         """Hand the console its token, but only to loopback clients."""
-        host = request.client.host if request.client else "127.0.0.1"
-        return {"token": auth_key if auth_key and host in LOOPBACK_HOSTS else ""}
+        if not auth_key or not is_loopback_request(request):
+            return {"token": ""}
+        return {"token": auth_key}
 
     app.include_router(_page_router())
     app.include_router(_mind_router(inspector, chat))

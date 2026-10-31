@@ -331,7 +331,7 @@ async def test_ext_routers_endpoints(tmp_path: Path) -> None:
     container = await EchoMindContainer.create(db_path=tmp_path / "ext.db")
     app = create_web_app(container, config_path=tmp_path / "cfg.json")
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+    async with httpx.AsyncClient(transport=transport, base_url="http://127.0.0.1") as client:
         assert (await client.get("/api/mind/persona-card")).status_code == 200
         assert (
             await client.put(
