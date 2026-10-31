@@ -234,9 +234,9 @@
         "scripts/replay_eval.py"
       ],
       "status": "partial",
-      "gap": "离线三套件可跑：稳定性（365 天 +3.991，无饱和）、情绪方向（5/5）、记忆召回（直接 100%、改写 50%，与随机基线持平）。live 敏感性 runner 已实现（`scripts/persona_sensitivity.py`，dry-run 可核对成本 336 生成 + 168 盲评），尚未实际运行",
+      "gap": "离线三套件（稳定/情绪/召回）+ live 敏感性审计已跑通：6/7 维在盲评中显著优于随机；guile 0.625 未确立；尚无人工盲评与中等幅度敏感性",
       "acceptance_test": "tests/integration/test_persona_eval_harness.py::test_offline_eval_harness_reports_expected_metrics",
-      "evidence_report": "scripts/eval_persona.py",
+      "evidence_report": "docs/PERSONA_SENSITIVITY_REPORT.md",
       "target_release": "P6e"
     },
     {
@@ -317,6 +317,22 @@
       "acceptance_test": "tests/unit/test_web_write_auth.py::test_writes_require_the_token_even_on_loopback",
       "evidence_report": "",
       "target_release": "E2"
+    },
+    {
+      "id": "CAP-PERSONA-EFFECTIVE",
+      "claim": "7 维人格在生成输出上可被盲评识别",
+      "docs": [
+        "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md",
+        "README.md"
+      ],
+      "code": [
+        "scripts/persona_sensitivity.py"
+      ],
+      "status": "partial",
+      "gap": "6/7 维显著（warmth/tsundere/playfulness/confidence/defiance n=24；possessiveness 专属情境 n=12 达 0.833）；guile 0.625 未确立；自评、仅测极端档（p10/p90）、无人工盲评",
+      "acceptance_test": null,
+      "evidence_report": "docs/PERSONA_SENSITIVITY_REPORT.md",
+      "target_release": "P6e"
     }
   ]
 }

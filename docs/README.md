@@ -27,6 +27,7 @@
 | [`plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md`](plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md) | 缺陷影响建模、修复后评估判据、A/B 双线 |
 | [`plans/STAGE_31_BOT_AWARENESS_AND_SOCIAL_SATIATION_PLAN.md`](plans/STAGE_31_BOT_AWARENESS_AND_SOCIAL_SATIATION_PLAN.md) | 机器人互刷抑制：社交习惯化 + 印象模型（含文献与参数依据） |
 | [`plans/STAGE_39_CLAIM_EVIDENCE_BITEMPORAL_FACTS_PLAN.md`](plans/STAGE_39_CLAIM_EVIDENCE_BITEMPORAL_FACTS_PLAN.md) | 事实层重构：主张/证据/双时态（替代“锁定事实 + 时间补丁”） |
+| [`PERSONA_SENSITIVITY_REPORT.md`](PERSONA_SENSITIVITY_REPORT.md) | 人格敏感性审计：7 维是否影响输出、条件性特质的测法、guile 未确立的证据 |
 
 ## 二·五、 证据台账（E0）
 

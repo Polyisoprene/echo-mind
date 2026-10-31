@@ -5,7 +5,7 @@
 | 状态 | 数量 |
 |---|---|
 | ✅ implemented | 5 |
-| ⚠️ partial | 7 |
+| ⚠️ partial | 8 |
 | ❌ absent | 5 |
 | ⛔ contradicted | 3 |
 
@@ -25,9 +25,10 @@
 | CAP-INTENTION-STACK | 短期挂念栈（BDI 意图，≤3 槽） | ❌ absent | IntentionItem 在全库从未被构造；filter_unfulfilled_intentions 永远作用于空元组 |
 | CAP-FIVE-SLOTS | 微内核五大扩展槽全部可用 | ⚠️ partial | sensor/tool 已用；facet/proposer/panel 三个槽位零注册实现 |
 | CAP-SEVEN-GATES | 7 道自动化质量门禁 | ⚠️ partial | 脚本实际 5 步；hypothesis 未独立成门禁；迁移对账与故障注入缺失（E0 新增了参数/能力两道） |
-| CAP-SEMANTIC-EVAL | 对人格一致性/记忆准确率/情绪合理性有语义评测 | ⚠️ partial | 离线三套件可跑：稳定性（365 天 +3.991，无饱和）、情绪方向（5/5）、记忆召回（直接 100%、改写 50%，与随机基线持平）。live 敏感性 runner 已实现（`scripts/persona_sensitivity.py`，dry-run 可核对成本 336 生成 + 168 盲评），尚未实际运行 |
+| CAP-SEMANTIC-EVAL | 对人格一致性/记忆准确率/情绪合理性有语义评测 | ⚠️ partial | 离线三套件（稳定/情绪/召回）+ live 敏感性审计已跑通：6/7 维在盲评中显著优于随机；guile 0.625 未确立；尚无人工盲评与中等幅度敏感性 |
 | CAP-HEXACO | 7 维人格对应 HEXACO 六轴 | ⛔ contradicted | 7 维为 warmth/tsundere/playfulness/possessiveness/confidence/guile/defiance，与 HEXACO 无映射矩阵，缺 C/O 轴 |
 | CAP-ZERO-LEXICON | 全链路零硬编码词表（Stage 26） | ⛔ contradicted | mind/ 下仍有 40+ 处中文词表与正则（角色冒充词、停用词、机器人关键词） |
 | CAP-OPERATOR-NO-PRIVILEGE | operator 只有纠错权限，无情感特权 | ⛔ contradicted | update_sender_bond 对 is_owner 直接置 trust=1.0；且 _check_reactance 对 w_care>=0.85 免除逆反 |
 | CAP-MEMORY-EVIDENCE | 事实带来源与时效，冲突可复核 | ⚠️ partial | claims/evidence 表已建但读路径默认关闭（FACTS_V2=off），且转换时 chat_key 被置空 |
 | CAP-AUTH-WRITE | 控制台写操作强制 token 并留审计 | ⚠️ partial | auth_key 为空时全放行；/api/session/token 把 token 发给 loopback（隧道下等同公开） |
+| CAP-PERSONA-EFFECTIVE | 7 维人格在生成输出上可被盲评识别 | ⚠️ partial | 6/7 维显著（warmth/tsundere/playfulness/confidence/defiance n=24；possessiveness 专属情境 n=12 达 0.833）；guile 0.625 未确立；自评、仅测极端档（p10/p90）、无人工盲评 |

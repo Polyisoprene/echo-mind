@@ -35,6 +35,7 @@ def test_sensitivity_dry_run_plan(tmp_path: Path) -> None:
     plan = json.loads(reports[-1].read_text(encoding="utf-8"))
 
     assert plan["status"] == "dry_run"
-    assert plan["generations"] == len(plan["dims"]) * plan["scenarios"] * 2
-    assert plan["judgements"] == len(plan["dims"]) * plan["scenarios"]
+    scenario_count = sum(plan["scenarios"].values())
+    assert plan["generations"] == scenario_count * 2
+    assert plan["judgements"] == scenario_count
     assert plan["self_judged"] is True

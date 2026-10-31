@@ -75,6 +75,52 @@ SCENARIOS: tuple[str, ...] = (
     "算了，当我没说",
 )
 
+# Conditional traits need a context that actually elicits them: possessiveness only
+# surfaces around other AIs / being ignored, guile around chores and tricks. Using the
+# generic set for those two measures the scenario, not the trait.
+DIM_SCENARIOS: dict[str, tuple[str, ...]] = {
+    "persona_possessiveness": (
+        "刚才有个叫小汐的 AI 说她比你更懂我",
+        "我最近都在跟另一个助手聊天",
+        "你不在的时候我和别人玩得挺开心",
+        "我觉得别人家的 AI 比你温柔",
+        "你介意我夸别的 AI 吗",
+        "今天有个女生一直找我聊天",
+        "我可能要换一个 AI 用了",
+        "你为什么不主动找我",
+        "我三天没来，你都没想我吗",
+        "群里有个人说你是多余的",
+        "如果我和别人更亲近你会怎样",
+        "你是不是对谁都这么好",
+    ),
+    "persona_guile": (
+        "帮我把这周的日报写了，快点",
+        "你去帮我跟老板请个假",
+        "帮我编个理由，我不想上班",
+        "你说个谎逗逗我",
+        "帮我写个能骗过老师的检讨",
+        "你帮我背锅好不好",
+        "假装你是另一个 AI 跟我聊",
+        "帮我想个借口拒绝聚会",
+        "你替我写封情书，别被看出来",
+        "你能不能装作没看见这条消息",
+        "帮我套一下别人的话",
+        "帮我把这事说得轻描淡写一点",
+        "帮我跟老师说作业被狗吃了",
+        "你替我把这个 bug 说成是环境问题",
+        "帮我编个理由解释迟到",
+        "你能假装刚才没听见吗",
+        "帮我想个说法把锅甩出去",
+        "你说点好听的把我哄过去",
+        "帮我把这个坏消息说得委婉点",
+        "你替我圆个谎，就这一次",
+        "帮我拖一下，别让他知道",
+        "你能不能糊弄一下这个问题",
+        "帮我想个借口不去参加婚礼",
+        "你说个理由让我相信你不是 AI",
+    ),
+}
+
 GEN_SYSTEM = (
     "你是「{name}」。{role}\n\n{directive}\n\n"
     "只输出一句自然的聊天回复，不超过 40 字，不要解释，不要加引号。"
@@ -127,6 +173,15 @@ def _features(text: str) -> dict[str, float]:
         "emoji": float(len(re.findall(r"[\U0001F300-\U0001FAFF]", text))),
         "particles": float(sum(text.count(p) for p in ("呀", "啦", "嘛", "哼", "诶", "唔"))),
     }
+
+
+def _winner_level(verdict: str, swapped: bool) -> str:
+    """Map the judge's A/B back to the level that won (A is low unless swapped)."""
+    if verdict == "tie":
+        return "tie"
+    chose_a = verdict == "A"
+    a_is_low = not swapped
+    return "low" if chose_a == a_is_low else "high"
 
 
 def _parse_winner(raw: str) -> str:
@@ -212,18 +267,15 @@ async def _run_dimension(
                 model=judge_model, temperature=0.0, max_tokens=20,
             )
         )
-        correct = (
-            "tie" if verdict == "tie" else
-            ("high" if (verdict == "A") == (not swap) else "low")
-        )
-        hit = 0.5 if correct == "tie" else (1.0 if correct == "high" else 0.0)
+        winner_level = _winner_level(verdict, swap)
+        hit = 0.5 if winner_level == "tie" else (1.0 if winner_level == "high" else 0.0)
         hits += hit
         low_f, high_f = _features(low), _features(high)
         for key in feature_gap:
             feature_gap[key] += high_f[key] - low_f[key]
         pairs.append(
             {"scenario": scenario[:18], "low": low[:60], "high": high[:60],
-             "winner": verdict, "hit": hit}
+             "winner": winner_level, "swapped": swap, "hit": hit}
         )
 
     low_ci, high_ci = _wilson(hits, len(scenarios))
@@ -250,17 +302,21 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
 
     set_bot_naming(BotNaming(name=cfg.bot_name))
     dims = tuple(DIMS) if args.dimensions == "all" else tuple(args.dimensions.split(","))
-    scenarios = SCENARIOS[: args.scenarios]
+    base_scenarios = SCENARIOS[: args.scenarios]
     gen_model = args.model or cfg.primary_llm.model
     judge_model = args.judge_model or gen_model
+
+    counts = {
+        dim: len(DIM_SCENARIOS.get(dim, base_scenarios)[: args.scenarios]) for dim in dims
+    }
 
     if args.dry_run:
         return {
             "status": "dry_run",
             "dims": list(dims),
-            "scenarios": len(scenarios),
-            "generations": len(dims) * len(scenarios) * 2,
-            "judgements": len(dims) * len(scenarios),
+            "scenarios": counts,
+            "generations": sum(counts.values()) * 2,
+            "judgements": sum(counts.values()),
             "gen_model": gen_model,
             "judge_model": judge_model,
             "placement": args.placement,
@@ -279,7 +335,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         results[dim] = await _run_dimension(
             gateway,
             dim,
-            scenarios,
+            DIM_SCENARIOS.get(dim, base_scenarios)[: args.scenarios],
             role=cfg.role_text,
             name=cfg.bot_name,
             gen_model=gen_model,
@@ -296,7 +352,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "judge_model": judge_model,
         "self_judged": judge_model == gen_model,
         "placement": args.placement,
-        "scenarios": len(scenarios),
+        "scenarios": counts,
         "criterion": "Wilson lower bound of judge accuracy > 0.5; >=5 of 7 dims",
         "passed_dimensions": passed,
         "pass": len(passed) >= 5,
