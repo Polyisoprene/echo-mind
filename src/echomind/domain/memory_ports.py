@@ -22,6 +22,8 @@ class IRelationStore(Protocol):
 
     async def reachable(self, starts: tuple[str, ...], max_hops: int = 2) -> set[str]: ...
 
+    async def entities(self) -> tuple[str, ...]: ...
+
 
 class IEmbeddingGateway(Protocol):
     """OpenAI-compatible text embedding gateway."""

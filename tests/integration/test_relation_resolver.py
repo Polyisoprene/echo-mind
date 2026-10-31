@@ -28,3 +28,7 @@ async def test_two_hop_reachable_and_boost(tmp_path: Path) -> None:
     )
     boosted = await RelationResolver(store).boost_ids(facts, "a 的朋友在哪工作")
     assert boosted == {1}
+
+    await store.upsert(MemoryRelation(subject_id="菲菲", predicate="lives_in", object_id="阿斋"))
+    zh_fact = SemanticFact(fact_id=3, chat_key="g", subject="菲菲", fact_text="菲菲住在阿斋家")
+    assert await RelationResolver(store).boost_ids((zh_fact,), "菲菲在哪") == {3}

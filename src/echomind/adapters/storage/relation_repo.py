@@ -42,6 +42,14 @@ class SqliteRelationStore:
             for r in rows
         )
 
+    async def entities(self) -> tuple[str, ...]:
+        async with self._db.connect() as conn:
+            rows = await (await conn.execute(
+                "SELECT subject_id FROM memory_relations UNION "
+                "SELECT object_id FROM memory_relations"
+            )).fetchall()
+        return tuple(str(r[0]) for r in rows if str(r[0]))
+
     async def _objects(self, subject: str) -> set[str]:
         return {relation.object_id for relation in await self.neighbors(subject)}
 

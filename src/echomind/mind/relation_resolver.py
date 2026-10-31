@@ -12,13 +12,20 @@ class RelationResolver:
         self._store = store
         self._max_hops = max_hops
 
+    async def _query_entities(self, query: str) -> set[str]:
+        starts = set(entities(query))
+        known = await self._store.entities()
+        lower = query.lower()
+        starts |= {name for name in known if name and name.lower() in lower}
+        return starts
+
     async def boost_ids(
         self, facts: tuple[SemanticFact, ...], query: str
     ) -> set[int]:
-        starts = entities(query)
+        starts = await self._query_entities(query)
         if not starts:
             return set()
-        reached = await self._store.reachable(starts, self._max_hops)
+        reached = await self._store.reachable(tuple(starts), self._max_hops)
         boosted: set[int] = set()
         for fact in facts:
             fact_entities = set(entities(f"{fact.subject} {fact.fact_text}"))

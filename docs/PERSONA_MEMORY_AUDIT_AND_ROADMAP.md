@@ -99,7 +99,7 @@ percept → 硬门（private/secret）
 
 | 编号 | 缺陷 | 证据 | 对应你提到的风险 |
 |---|---|---|---|
-| M1 | 无类型化关系/角色 | **部分解决**：顺序守卫 + `memory_relations` + 多跳 resolver；线上仅抽到 5 条 alias，friend/works 仍需 LLM/事件抽取 | 结构性失明 |
+| M1 | 无类型化关系/角色 | **部分解决**：顺序守卫 + `memory_relations` + 多跳 resolver；线上 LLM 抽到 25 条 alias + 2 条 sibling；friend/works 仍缺 | 结构性失明 |
 | M2 | 事实没有事件时间，检索不看时间 | **部分解决**：`event_time_ms` + recency 已进关键词/语义排序；因果链仍未建 | 时间/因果缺失 |
 | M3 | 无融合打分 | **已做 RRF**：lexical + dense 融合（relation 通道待接）；recency/order 仍作为特征 | 向量迷雾 |
 | M4 | 无层级/树 | 只有 scope（venue/person/global），没有 parent/child、层级摘要 | 情景断裂 |
