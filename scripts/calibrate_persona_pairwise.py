@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import random
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -91,6 +92,25 @@ def _summarize(rows: list[dict[str, str]], key: dict[str, Any], header: str) -> 
     }
 
 
+def _bootstrap(
+    rows: list[dict[str, str]], key: dict[str, Any], header: str, rounds: int = 1000
+) -> dict[str, list[float]]:
+    rng = random.Random(42)  # noqa: S311 - bootstrap resampling
+    samples: dict[str, list[float]] = defaultdict(list)
+    for _ in range(rounds):
+        picked = [rows[rng.randrange(len(rows))] for _ in rows]
+        summary = _summarize(picked, key, header)
+        for model, values in summary["models"].items():
+            if values["wins"] + values["losses"] > 0:
+                samples[model].append(float(values["decisive_win_rate"]))
+    result: dict[str, list[float]] = {}
+    for model, values in samples.items():
+        values.sort()
+        result[model] = [round(values[int(0.025 * len(values))], 3),
+                         round(values[int(0.975 * len(values)) - 1], 3)]
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--csv", type=Path, default=BASE / "pairs.csv")
@@ -98,12 +118,16 @@ def main() -> int:
     parser.add_argument(
         "--out", type=Path, default=ROOT / "reports" / "persona_pairwise_human.json"
     )
+    parser.add_argument("--bootstrap", type=int, default=1000)
     args = parser.parse_args()
 
     key = {item["pair_id"]: item for item in json.loads(
         args.key.read_text(encoding="utf-8"))["pairs"]}
     rows = list(csv.DictReader(args.csv.open(encoding="utf-8-sig", newline="")))
     result = {name: _summarize(rows, key, header) for header, name in DIMS.items()}
+    if args.bootstrap:
+        for header, name in DIMS.items():
+            result[name]["decisive_ci95"] = _bootstrap(rows, key, header, args.bootstrap)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -72,7 +72,7 @@ judge 与人工的总体 QWK 仅 **0.097**，旧 rubric 0.034；judge 系统性�
 | MiniMax-M3.1-Flash | 0.400 | 0.250 |
 | Mimo-V2.6-Pro | 0.167 | 0.200 |
 
-人工成对排序与 LLM judge 相反：judge 认为 Kimi 最好，人工认为 DeepSeek-V4.1-Flash 最好。11/14 组“都差”，说明整体还没过“像真人”的线。
+人工成对点估计 DeepSeek-V4.1-Flash 最好，但 bootstrap 95% CI 很宽，无模型统计显著；11/14 组“都差”，说明整体还没过“像真人”的线。
 
 ## 使用建议
 
