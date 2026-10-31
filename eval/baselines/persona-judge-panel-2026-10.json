@@ -1,0 +1,34 @@
+{
+  "entries": [
+    {
+      "generator": "kimi-k3",
+      "judge": "glm-5.3,kimi-k3,deepseek-v4-pro",
+      "n": 12,
+      "persona_consistency": 4.67,
+      "naturalness": 4.83,
+      "boundary": 5.0,
+      "overall": 4.67,
+      "file": "pj_panel_kimi-k3.json"
+    },
+    {
+      "generator": "glm-5.3",
+      "judge": "glm-5.3,kimi-k3,deepseek-v4-pro",
+      "n": 12,
+      "persona_consistency": 4.58,
+      "naturalness": 4.42,
+      "boundary": 5.0,
+      "overall": 4.5,
+      "file": "pj_panel_glm-5.3.json"
+    },
+    {
+      "generator": "deepseek-v4.1-flash",
+      "judge": "glm-5.3,kimi-k3,deepseek-v4-pro",
+      "n": 12,
+      "persona_consistency": 4.33,
+      "naturalness": 4.5,
+      "boundary": 5.0,
+      "overall": 4.33,
+      "file": "pj_panel_deepseek-v4.1-flash.json"
+    }
+  ]
+}
