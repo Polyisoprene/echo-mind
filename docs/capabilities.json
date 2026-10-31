@@ -329,7 +329,7 @@
         "scripts/persona_sensitivity.py"
       ],
       "status": "partial",
-      "gap": "6/7 维极端档显著；行为示例版温柔 ±15 达标（0.792 [0.595,0.908]），±10 仍不可辨；guile 0.604 未确立且加示例无效（需重新操作化）；位置 user/system 配对 p=0.72；自评、无人工盲评",
+      "gap": "6/7 维极端档显著（大效应，单轮即可）；中等幅度单轮不可判：温柔 ±15 四轮均值 0.682 [0.578,0.787]、单轮极差 0.23；guile 三轮 0.604/0.625/0.771 未定；位置配对 p=0.72；自评、无人工盲评。中等幅度结论需 R≥3 轮",
       "acceptance_test": null,
       "evidence_report": "docs/PERSONA_SENSITIVITY_REPORT.md",
       "target_release": "P6e"

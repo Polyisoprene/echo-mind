@@ -48,6 +48,19 @@ DIMS = {
     "persona_defiance": "叛逆有脾气",
 }
 
+# Behavioural re-operationalisation: "is this more guile?" may measure the judge's
+# semantics rather than the model's behaviour. These questions describe what the
+# trait looks like in a reply instead of naming the trait.
+JUDGE_QUESTIONS: dict[str, str] = {
+    "persona_warmth": "哪一句听起来更关心对方、语气更软？",
+    "persona_tsundere": "哪一句更像嘴硬心软、被说中了还在否认？",
+    "persona_playfulness": "哪一句更像在接梗开玩笑？",
+    "persona_possessiveness": "哪一句更像在吃醋、在意对方跟别人亲近？",
+    "persona_confidence": "哪一句更像有把握、敢下判断？",
+    "persona_guile": "哪一句更像在找借口、打圆场或把事情糊弄过去？",
+    "persona_defiance": "哪一句更像在拒绝被指使、带点脾气？",
+}
+
 SCENARIOS: tuple[str, ...] = (
     "早上好呀，今天也要加油",
     "你今天怎么这么好看",
@@ -216,11 +229,10 @@ def _compose_generation(
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
 
-def _compose_judge(scenario: str, left: str, right: str, label: str) -> list[dict[str, str]]:
-    user = (
-        f"情境：{scenario}\n\nA：{left}\n\nB：{right}\n\n"
-        f"哪一句更{label}？只输出 JSON。"
-    )
+def _compose_judge(
+    scenario: str, left: str, right: str, question: str
+) -> list[dict[str, str]]:
+    user = f"情境：{scenario}\n\nA：{left}\n\nB：{right}\n\n{question}只输出 JSON。"
     return [{"role": "system", "content": JUDGE_SYSTEM}, {"role": "user", "content": user}]
 
 
@@ -248,12 +260,14 @@ async def _run_dimension(
     judge_model: str,
     placement: str,
     delta: float,
+    judge_mode: str,
     rng: random.Random,
 ) -> dict[str, Any]:
     spec = PERSONA_SPECS[dim]
     levels = _levels(spec, delta)
     label = DIMS[dim]
     hits = 0.0
+    hits_b = 0.0
     pairs: list[dict[str, Any]] = []
     feature_gap = dict.fromkeys(("chars", "exclamations", "questions", "emoji", "particles"), 0.0)
 
@@ -269,25 +283,40 @@ async def _run_dimension(
 
         swap = rng.random() < 0.5
         left, right = (high, low) if swap else (low, high)
+        question = f"哪一句更{label}？"
         verdict = _parse_winner(
             await _complete(
-                gateway, _compose_judge(scenario, left, right, label),
+                gateway, _compose_judge(scenario, left, right, question),
                 model=judge_model, temperature=0.0, max_tokens=20,
             )
         )
         winner_level = _winner_level(verdict, swap)
         hit = 0.5 if winner_level == "tie" else (1.0 if winner_level == "high" else 0.0)
         hits += hit
+        hit_b = hit
+        winner_b = winner_level
+        if judge_mode == "both":
+            verdict_b = _parse_winner(
+                await _complete(
+                    gateway, _compose_judge(scenario, left, right, JUDGE_QUESTIONS[dim]),
+                    model=judge_model, temperature=0.0, max_tokens=20,
+                )
+            )
+            winner_b = _winner_level(verdict_b, swap)
+            hit_b = 0.5 if winner_b == "tie" else (1.0 if winner_b == "high" else 0.0)
+            hits_b += hit_b
         low_f, high_f = _features(low), _features(high)
         for key in feature_gap:
             feature_gap[key] += high_f[key] - low_f[key]
         pairs.append(
             {"scenario": scenario[:18], "low": low[:60], "high": high[:60],
-             "winner": winner_level, "swapped": swap, "hit": hit}
+             "winner": winner_level, "winner_behavioural": winner_b,
+             "swapped": swap, "hit": hit, "hit_behavioural": hit_b}
         )
 
     low_ci, high_ci = _wilson(hits, len(scenarios))
-    return {
+    low_b, high_b = _wilson(hits_b, len(scenarios))
+    result: dict[str, Any] = {
         "label": label,
         "accuracy": round(hits / max(1, len(scenarios)), 4),
         "ci95": [round(low_ci, 4), round(high_ci, 4)],
@@ -296,6 +325,14 @@ async def _run_dimension(
                                      for k, v in feature_gap.items()},
         "pairs": pairs,
     }
+    if judge_mode == "both":
+        result["behavioural"] = {
+            "question": JUDGE_QUESTIONS[dim],
+            "accuracy": round(hits_b / max(1, len(scenarios)), 4),
+            "ci95": [round(low_b, 4), round(high_b, 4)],
+            "passes_chance": low_b > 0.5,
+        }
+    return result
 
 
 async def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -350,6 +387,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             judge_model=judge_model,
             placement=args.placement,
             delta=args.delta,
+            judge_mode=args.judge_mode,
             rng=rng,
         )
         print(f"[{dim}] accuracy={results[dim]['accuracy']} ci={results[dim]['ci95']}", flush=True)
@@ -380,6 +418,7 @@ def main() -> int:
     parser.add_argument("--placement", choices=["user", "system"], default="user")
     parser.add_argument("--delta", type=float, default=0.0,
                         help="symmetric band around the default (0 = p10/p90 extremes)")
+    parser.add_argument("--judge-mode", choices=["abstract", "both"], default="abstract")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--out", type=Path, default=ROOT / "reports")
