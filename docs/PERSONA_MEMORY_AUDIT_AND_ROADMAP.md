@@ -4,6 +4,29 @@
 > 结论先行：**我们不是“embedding 唯一记忆”，也不是“纯向量 RAG”。** 人格与记忆都已有结构化骨架；真正的缺口集中在四件事：**事件时间/ACT-R 激活、关系结构、检索融合、层级组织**。其中前两项最值得先做，第三项决定“语义召回是否真的比关键词更懂情境”，第四项是规模化后的收益。
 > 评测标准：见 [EVALUATION_STANDARD.md](EVALUATION_STANDARD.md)。没有冻结集、没有 baseline、没有显著提升的改动，不进入实现。
 
+## 0. 完成度审计（2026-10-31）
+
+**结论：没有全部完成。** P0 完成一半，P1 基本未做，P2 只有关系表/多跳骨架。
+
+| 文档项 | 状态 | 实际 |
+|---|---|---|
+| P0 `event_time_ms` | 🟡 部分 | 事实/情景已有 `event_time_ms`；`valid_from_ms/valid_to_ms/parent_id` 未加 |
+| P0 ACT-R 激活 | ❌ 未做 | 只有指数 recency，不是 base-level + spreading + partial matching |
+| P0 融合打分 | 🟡 部分 | lexical + dense 已做 RRF；权重未拟合，importance/relation/source 未进融合 |
+| P1 预测回答检索（HyDE） | ❌ 未做 | 仍只用原始 query |
+| P1 父子链接/层级摘要 | ❌ 未做 | 只有 scope，无 parent/child、无层级摘要 |
+| P2 类型化关系图 | 🟡 部分 | `memory_relations` + 2-hop resolver + LLM 抽取；`valid_from/to` 未用于过滤，无 PPR，`claims` 未接，works_at 仍缺 |
+| P2 人格-记忆耦合 | ❌ 未做 | 无 `trait_evidence`，`min_evidence` 仍 0，无 24×3 漂移评测 |
+| 外部 benchmark | ❌ 未做 | LoCoMo/LongMemEval/GroupMemBench 均未接入 |
+| M6/M7 披露归因/告知传播 | ❌ 未做 | 仍以 frame 级 `say` 为主，未传播“谁听到了” |
+| M8 ANN | ❌ 未做 | 当前 195 事实精确 cosine，不紧急 |
+| M9 评测集 | 🟡 部分 | 70 条内部场景（含角色/时间/多跳），无外部集 |
+| M10 claims 读路径 | ❌ 未做 | `FACTS_V2` 仍关闭 |
+| P5 人格评测 | 🟡 部分 | 12 场景矩阵 + 50 条人工 + 真人感 prompt；judge 不可信，无长期漂移 benchmark |
+| P6 人格→记忆 | ❌ 未做 | trait 不参与检索 |
+
+**已做**：事件时间 + recency、RRF、角色顺序守卫、`memory_relations` + 2-hop、LLM/整合器关系写入、70 条内部评测、50 条人工校准、真人感 prompt；当前 **314 tests / 92%**。
+
 ---
 
 ## 1. 现有人格模型
@@ -82,7 +105,7 @@ percept → 硬门（private/secret）
 | 向量 | 195 × 512，model 隔离 |
 | 披露 | 825 条 frame 级 `say` / 1 条 `said` |
 | 告知史 | 29 |
-| 测试 | 302 passed / 92% |
+| 测试 | 314 passed / 92% |
 | 语义 recall@5 | 9/10（关键词/bigram 5/10） |
 | 单条 embedding | 10–85ms；显存 +632MB |
 
@@ -107,7 +130,7 @@ percept → 硬门（private/secret）
 | M6 | 披露多数是 frame 级 | 825 `say` vs 1 `said`；归因是词面重叠启发式 | 审计不精确 |
 | M7 | 告知史只覆盖 source/owner | `memory_knowledge` 29，未在披露后传播“谁听到了” | 谁知道不完整 |
 | M8 | ANN 未做 | 195 条精确 cosine，当前无损；规模上来才需要 | 当前不是问题 |
-| M9 | 评测集小 | 10 条同义查询，无角色互换/时间/多跳 | 不能证明复杂场景 |
+| M9 | 评测集小 | 70 条内部场景（同义/隐私/场合/角色/时间/多跳），无外部集 | 内部可回归，外部不可比 |
 | M10 | `claims` 的时间字段未用 | `valid_from_ms/valid_to_ms` 在表里，但读路径关闭 | 事件时间缺失 |
 
 ---
@@ -126,7 +149,7 @@ percept → 硬门（private/secret）
 | A-MEM | Zettelkasten 式动态索引/链接 | 无 | 记忆间显式链接 |
 | HippoRAG | 图索引 + Personalized PageRank 多跳 | 无 | 多跳关系检索 |
 | PersonaLLM / 指令稳定性 | 人格表达与漂移评测 | 无长期漂移评测 | 人格一致性 benchmark |
-| RRF | 多路召回融合 | 语义覆盖关键词，不是融合 | RRF/加权融合 |
+| RRF | 多路召回融合 | lexical + dense 已做 RRF；权重未拟合 | 加权融合/调参 |
 
 ---
 
@@ -217,7 +240,7 @@ memory_relations(
 | 人格 | 多轮 trait 漂移 | 有基线，逐版不退化 |
 | 隐私 | private/secret 越权 | 0 |
 | 成本 | p95 延迟 / 每轮 embedding 调用 | 不超过 +20ms / ≤1 次 |
-| 回归 | QA gate | 保持 302+ |
+| 回归 | QA gate | 保持 314+ |
 
 **不要**用单一 recall 证明“记忆变好”；必须同时看角色、时间、多跳、隐私、人格一致性。
 
