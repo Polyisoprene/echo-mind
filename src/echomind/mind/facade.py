@@ -63,6 +63,7 @@ from echomind.mind.subconscious_probe import (
     SubconsciousChordProbe,
     SubconsciousChordResult,
 )
+from echomind.mind.trait_shadow_service import TraitShadowService
 from echomind.mind.turn_mutations import satiate_snapshot, with_irritation_delta
 from echomind.mind.working_update import mutate_working_state
 
@@ -82,6 +83,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         person_level: PersonLevelService | None = None,
         disclosure_log: IDisclosureLog | None = None,
         trait_evidence_store: ITraitEvidenceStore | None = None,
+        trait_shadow: TraitShadowService | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
         self._default_group = default_group_key
@@ -92,6 +94,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         self._layers = persona_layers
         self._person_level = person_level
         self._disclosure_log = disclosure_log
+        self._trait_shadow = trait_shadow
         self._included: dict[str, tuple[tuple[int, str, str], ...]] = {}
         self._plasticity = NeuroplasticityEngine(
             working_store, persona_layers, evidence_store=trait_evidence_store,
@@ -267,6 +270,8 @@ class CognitiveCoreFacade(FacadeAccessors):
             self._reader, self._writer, o, now_ms, chord=chord
         )
         await self._plasticity.adapt_from_outcome(o)
+        if self._trait_shadow is not None:
+            await self._trait_shadow.record(o)
 
     async def run_autonomous_tick(self, now_ms: int) -> ProactiveProposal | None:
         proposal, self._last_active_ms = await run_autonomous_tick(

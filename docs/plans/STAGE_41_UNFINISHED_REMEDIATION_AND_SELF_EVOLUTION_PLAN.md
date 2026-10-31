@@ -818,3 +818,33 @@ TurnOutcome(day2) ─┴→ trait evidence（2 独立 context）
 
 - `tests/unit/test_trait_action_eligibility.py`：taboo、tool、空集；
 - 全门禁：**343 passed / 92%**，fusion 70/70。
+
+### 14.9 P4b shadow 决策日志（2026-11-01 已落地）
+
+**代码**
+
+- `trait_action_shadow` 表；
+- `TraitShadowRecord` / `ITraitShadowStore` / `IActiveTraitReader`；
+- `SqliteTraitShadowStore`；
+- `TraitShadowService`；
+- `CognitiveCoreFacade.on_turn_completed` 在塑性回流后记录；
+- bootstrap 注入。
+
+**规则**
+
+- 每轮记录：active trait ids、allowed tools、allow_refusal、actual tools、sent_count；
+- 只记录，不改行为、不阻断回合；
+- 记录失败只写 warning，不影响回复；
+- 没有 active trait 时仍记空行，便于对比“本可以允许什么”。
+
+**验证**
+
+- `tests/integration/test_trait_shadow_log.py`：active taboo + tool evidence → allowed/actual 都落库；
+- 全门禁：**344 passed / 92%**，fusion 70/70；
+- 两个服务重启后 200。
+
+**当前状态**
+
+- 线上 9 条 legacy trait 仍非 active，所以 shadow 行会是空 trait_ids；
+- 还没有用真实流量做统计；
+- 还没有把 eligibility 接进行为仲裁。

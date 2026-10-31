@@ -22,6 +22,7 @@ from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
 from echomind.adapters.storage.skill_config_repo import SqliteSkillConfigStore
 from echomind.adapters.storage.trace_repo import SqliteTurnTraceStore
 from echomind.adapters.storage.trait_evidence_repo import SqliteTraitEvidenceStore
+from echomind.adapters.storage.trait_shadow_repo import SqliteTraitShadowStore
 from echomind.adapters.storage.working_repo import SqliteWorkingStateStore
 from echomind.core.events import AsyncEventBus
 from echomind.domain.models import TurnOutcome
@@ -30,6 +31,7 @@ from echomind.extensions.registry import ExtensionRegistry
 from echomind.mind.facade import CognitiveCoreFacade
 from echomind.mind.naming import BotNaming, set_bot_naming
 from echomind.mind.person_level_service import PersonLevelService
+from echomind.mind.trait_shadow_service import TraitShadowService
 from echomind.runtime.prompt_composer import PromptComposer
 from echomind.tools.cnmeme_wiki import CnMemeWikiClient, CnMemeWikiTool
 from echomind.tools.explore_and_voice import CompositeSearchBackend, HolyWebSearchTool
@@ -45,6 +47,17 @@ def _build_registry(db: SqliteDatabase) -> ExtensionRegistry:
     reg.register_tool(CnMemeWikiTool(meme_client))
     reg.register_tool(HolyWebSearchTool(CompositeSearchBackend((meme_client,))))
     return reg
+
+
+async def _open_db(path: Path) -> SqliteDatabase:
+    db = SqliteDatabase(path)
+    await db.initialize()
+    return db
+
+
+def _build_trait_shadow(db: SqliteDatabase) -> TraitShadowService:
+    store = SqliteTraitShadowStore(db)
+    return TraitShadowService(store, SqliteTraitEvidenceStore(db), store)
 
 
 async def _run_backfill(bond_store: SqliteBondDepthStore) -> None:
@@ -105,12 +118,10 @@ class EchoMindContainer:
         operator_ids: tuple[str, ...] = (),
     ) -> EchoMindContainer:
         """Initialize SQLite WAL schema, default 7D plastic params, and core extensions."""
-        db = SqliteDatabase(db_path)
-        await db.initialize()
+        db = await _open_db(db_path)
         mem_repo = SqliteMemoryRepository(db)
         work_store = SqliteWorkingStateStore(db)
-        trace_store = SqliteTurnTraceStore(db)
-        skill_store = SqliteSkillConfigStore(db)
+        trace_store, skill_store = SqliteTurnTraceStore(db), SqliteSkillConfigStore(db)
         await work_store.ensure_default_params()
         set_bot_naming(BotNaming())
         bond_store = SqliteBondDepthStore(db)
@@ -125,6 +136,7 @@ class EchoMindContainer:
             operator_ids=operator_ids, persona_layers=layers,
             person_level=person_level, disclosure_log=disclosure_log,
             trait_evidence_store=SqliteTraitEvidenceStore(db),
+            trait_shadow=_build_trait_shadow(db),
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,

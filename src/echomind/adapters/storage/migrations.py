@@ -142,10 +142,32 @@ async def ensure_trait_memory_table(conn: Any) -> None:
     await conn.executescript(_TRAIT_MEMORY_DDL)
 
 
+_TRAIT_SHADOW_DDL = """
+CREATE TABLE IF NOT EXISTS trait_action_shadow (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chat_key TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  trait_ids_json TEXT NOT NULL DEFAULT '[]',
+  allowed_tools_json TEXT NOT NULL DEFAULT '[]',
+  allow_refusal INTEGER NOT NULL DEFAULT 0,
+  actual_tools_json TEXT NOT NULL DEFAULT '[]',
+  sent_count INTEGER NOT NULL DEFAULT 0,
+  created_ms INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_trait_shadow_chat
+  ON trait_action_shadow(chat_key, created_ms);
+"""
+
+
+async def ensure_trait_shadow_table(conn: Any) -> None:
+    await conn.executescript(_TRAIT_SHADOW_DDL)
+
+
 async def ensure_migrations(conn: Any) -> None:
     """Run every idempotent migration in one call."""
     await ensure_trait_columns(conn)
     await ensure_trait_evidence_table(conn)
     await ensure_trait_candidate_table(conn)
     await ensure_trait_memory_table(conn)
+    await ensure_trait_shadow_table(conn)
     await ensure_claim_tables(conn)
