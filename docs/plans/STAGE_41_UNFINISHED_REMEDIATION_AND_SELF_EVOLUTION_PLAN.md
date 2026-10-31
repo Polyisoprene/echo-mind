@@ -785,3 +785,36 @@ TurnOutcome(day2) ─┴→ trait evidence（2 独立 context）
 - 接 live 的 trait ranker；
 - 隐私/边界回归；
 - 30 天结果目前是“结构一致性”，不是“人格更像真人”。
+
+### 14.8 P4 行为资格（2026-11-01 已落地，shadow）
+
+**代码**
+
+- `src/echomind/mind/trait_action_eligibility.py`；
+- `scripts/audit_trait_eligibility.py`。
+
+**规则**
+
+- 资格是集合，不是分数；
+- active `taboo` → 只开放 `refusal`；
+- active trait 的证据里 `quote_kind='tool'` 且 quote 是工具名 → 开放该工具；
+- 没有证据/没有 trait → 不开放；
+- 不读 `count/strength` 做权重。
+
+**示例**
+
+- 看到图 → 证据里 `look_at_image` → 允许 `look_at_image`；
+- 被命令 → taboo → 允许拒绝；
+- 不会因为“温柔 65”就凭空开放关心动作。
+
+**当前状态**
+
+- 纯函数 + 审计脚本；
+- 没接 `explorer` / 主动行为仲裁；
+- 没接 live；
+- 现有 9 条 legacy trait 没有 active，所以输出为空。
+
+**验证**
+
+- `tests/unit/test_trait_action_eligibility.py`：taboo、tool、空集；
+- 全门禁：**343 passed / 92%**，fusion 70/70。
