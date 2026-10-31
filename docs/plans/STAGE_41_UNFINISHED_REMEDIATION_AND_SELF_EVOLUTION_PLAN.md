@@ -1039,3 +1039,34 @@ synthetic 结果：
 
 - 单测覆盖“只替换目标 trait”；
 - 全门禁：**353 passed / 92%**，fusion 70/70。
+
+### 14.16 完整离线链路（2026-11-01）
+
+新增 `scripts/replay_full_trait_chain.py`：
+
+```
+30 天 replay → active trait → 真实 LLM 候选 → quote 校验
+→ 结构审查 → 显式 --approve-promotion → shadow prompt diff
+```
+
+产物：`eval/baselines/persona-full-chain-2026-11-01.json`
+
+| 流 | 候选 | review | promote | prompt delta |
+|---|---|---|---|---:|
+| warm | 在查看图片时，她倾向于确认并说出自己看到了图中的小槽点。 | eligible | true | **-2** |
+| offense | 当别人用命令语气使唤她时，她会直接拒绝并明确要求对方不要这样。 | eligible | true | **+7** |
+
+- 两条都通过 quote 校验、结构审查、显式晋升；
+- 候选只替换目标 trait 行；
+- 旧指令中不含候选，新指令中含候选；
+- 单次全链路约 **4.4s**；
+- 全程临时库，**不写线上 persona_traits / prompt / 检索**。
+
+**重要边界**
+
+这条链路证明“可以走通”，不证明“候选更好”。  
+目前仍缺：真实经历分布、真人感评估、live A/B。
+
+**验证**
+
+- 全门禁：**353 passed / 92%**，fusion 70/70。

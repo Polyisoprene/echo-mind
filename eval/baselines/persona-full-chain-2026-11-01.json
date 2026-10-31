@@ -1,0 +1,84 @@
+{
+  "date": "2026-11-01",
+  "benchmark": "full-offline-trait-chain",
+  "streams": {
+    "warm": {
+      "stream": "warm",
+      "days": 30,
+      "replay": {
+        "active_traits": [
+          {
+            "id": 1,
+            "category": "habit",
+            "text": "看到群友发图或视频会凑上去仔细看细节，顺着画面里的小槽点接话"
+          }
+        ],
+        "shadow_rows": 30,
+        "allowed_tools": [
+          "look_at_image"
+        ],
+        "actual_tools": [
+          "look_at_image"
+        ],
+        "allow_refusal_rows": 0,
+        "max_param_drift": 0.39,
+        "edge": 12.0
+      },
+      "candidate": {
+        "status": "candidate",
+        "text": "在查看图片时，她倾向于确认并说出自己看到了图中的小槽点。",
+        "review_eligible": true,
+        "review_reasons": []
+      },
+      "promotion": {
+        "requested": true,
+        "promoted": true,
+        "reason": "offline replay benchmark"
+      },
+      "prompt_shadow": {
+        "old_len": 1174,
+        "new_len": 1172,
+        "delta": -2,
+        "candidate_in_old": false,
+        "candidate_in_new": true
+      }
+    },
+    "offense": {
+      "stream": "offense",
+      "days": 30,
+      "replay": {
+        "active_traits": [
+          {
+            "id": 1,
+            "category": "taboo",
+            "text": "极度讨厌别人用命令语气拿我当没有感情的工具人使唤"
+          }
+        ],
+        "shadow_rows": 30,
+        "allowed_tools": [],
+        "actual_tools": [],
+        "allow_refusal_rows": 29,
+        "max_param_drift": 0.39,
+        "edge": 12.0
+      },
+      "candidate": {
+        "status": "candidate",
+        "text": "当别人用命令语气使唤她时，她会直接拒绝并明确要求对方不要这样。",
+        "review_eligible": true,
+        "review_reasons": []
+      },
+      "promotion": {
+        "requested": true,
+        "promoted": true,
+        "reason": "offline replay benchmark"
+      },
+      "prompt_shadow": {
+        "old_len": 1169,
+        "new_len": 1176,
+        "delta": 7,
+        "candidate_in_old": false,
+        "candidate_in_new": true
+      }
+    }
+  }
+}
