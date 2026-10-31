@@ -16,6 +16,7 @@ the Stage 29 fitting report before any behaviour is changed.
 from __future__ import annotations
 
 import math
+import os
 
 # RCI triad is scored as a unit-weighted composite in the source instrument.
 W_FREQ = 1.00  # param: convention:rci-unit-weight
@@ -38,9 +39,18 @@ BETRAYAL_HALF_LIFE = 3.0  # param: fit:pending-bond-depth
 DEPTH_CEILING = 0.97  # param: convention:soft-cap
 # Care-weight blend between affinity/trust base and earned depth.
 DEPTH_BONUS = 0.35  # param: fit:pending-bond-depth
-# Legacy mapping inherited from the pre-Stage-29 w_care formula.
+# Default mapping inherited from the pre-Stage-29 w_care formula; override with
+# ECHOMIND_AFFINITY_OFFSET/SPAN after fitting (scripts/fit_affinity_care.py).
 AFFINITY_OFFSET = 38.0  # param: convention:legacy-w-care
 AFFINITY_SPAN = 70.0  # param: convention:legacy-w-care
+
+
+def _affinity_params() -> tuple[float, float]:
+    """Allow post-fit overrides without changing the ledgered defaults."""
+    return (
+        float(os.getenv("ECHOMIND_AFFINITY_OFFSET", str(AFFINITY_OFFSET))),
+        float(os.getenv("ECHOMIND_AFFINITY_SPAN", str(AFFINITY_SPAN))),
+    )
 # Beta reputation conventionally starts from a uniform prior (alpha = beta = 1).
 BETA_PRIOR = 2.0  # param: convention:beta-uniform-prior-pending
 
@@ -73,7 +83,8 @@ def compute_bond_depth(
 
 def care_weight(affinity: float, trust: float, depth: float) -> float:
     """Continuous care weight w_care(u) in [0, 0.97] with no hardcoded owner privilege."""
-    base = _clamp01((affinity - AFFINITY_OFFSET) / AFFINITY_SPAN) * _clamp01(trust)
+    offset, span = _affinity_params()
+    base = _clamp01((affinity - offset) / span) * _clamp01(trust)
     bonus = 1.0 + DEPTH_BONUS * _clamp01(depth / 100.0)
     return round(min(DEPTH_CEILING, max(0.0, base * bonus)), 3)
 

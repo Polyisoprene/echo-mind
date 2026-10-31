@@ -32,13 +32,13 @@ percept
 | D8 | P1 表只写不读 | 检索仍实时计算 | 控制台/工具读表得到快照，可能与实时不一致 | person / 3 / 2 | ✅ 读表 |
 | D9 | 披露日志不是“实际说了” | 只在 frame 记 include/keep | 168 行全是 `say/persona`，无法审计真正说出的内容 | all / 5 / 3 | ✅ 归因 |
 | D10 | 人格特质按场合分裂 | `persona_traits` 6 条 global + 3 条 group | 读路径本就全局（无 chat 过滤），`chat_key` 只是来源 | person / 4 / 4 | ✅ 非缺陷 |
-| D11 | 好感常数未重标定 | `AFFINITY_OFFSET/SPAN` 仍是 legacy | 人级 care 排序可能偏 | person / 3 / 3 | ⏳ |
+| D11 | 好感常数未重标定 | `AFFINITY_OFFSET/SPAN` 仍是 legacy | 人级 care 排序可能偏 | person / 3 / 3 | ✅ 可配置+报告 |
 | D12 | FACTS_V2 未接新字段 | 读路径默认 off，新 provenance 只在 legacy | 一旦开启，来源/敏感度全丢 | all / 2 / 4 | ✅ 禁启 |
 | D13 | token 端点仅靠 loopback | `/api/session/token` 对本机任意进程发 token | 同机反代/恶意进程可拿 token | host / 2 / 4 | ✅ Host/Origin |
 | D14 | 人格块在 user 消息 | A3 placement 实验撤回后未再动 | 指令权威性/近因偏置 | one / 3 / 2 | ⏳ |
 | D15 | 特质模型与命名 | HEXACO 命名、5 条固定涌现特质、无语义检索 | 人格解释力/自适应不足 | persona / 5 / 3 | ⏳ |
-| D16 | 工作状态多写入点 | 9 处 `save_working_state`，scheduler 与 turn 可并发 | 后写覆盖，情绪/驱动漂移 | all / 3 / 3 | ⏳ 评估完 |
-| D17 | 扩展好感阈值旧标尺 | 配置仍是 50/200/500/1000 | 扩展侧等级与核心分位不一致 | one / 5 / 2 | ⏳ |
+| D16 | 工作状态多写入点 | 9 处 `save_working_state`，scheduler 与 turn 可并发 | 后写覆盖，情绪/驱动漂移 | all / 3 / 3 | ⏳ 方案回滚 |
+| D17 | 扩展好感阈值旧标尺 | 配置仍是 50/200/500/1000 | 无代码读取，死配置 | one / 5 / 2 | ✅ 非缺陷 |
 | D18 | 披露日志无保留策略 | 只增不删 | 168 行已在短时间累积 | all / 5 / 2 | ✅ 清理 |
 | D19 | 缺外部评测 | 只有单测/集成 | 无法证明跨会话一致性与授权边界 | all / 5 / 3 | ⏳ |
 | D20 | 本地领先 origin 24 提交 | 多轮提交未 push | 远端缺 P0-P5/P1 | ops / 5 / 3 | ⏳ |
@@ -102,6 +102,23 @@ percept
 - `/api/session/token` 只在三者都通过时返回 token，否则返回空串；
 - 中间件的 loopback 判定也加 Host 检查；
 - 反代若保留公网 Host/Origin，不再被当成 loopback。
+
+### D11 标定（可配置）
+
+- `AFFINITY_OFFSET/SPAN` 支持 `ECHOMIND_AFFINITY_OFFSET/SPAN` 覆盖；
+- `scripts/fit_affinity_care.py` 输出分位与 care 影响；
+- 默认 38/70 **保留**：改常数会整体抬高照顾权重，需要产品目标，不擅自改人格；
+- 详见 `docs/D11_AFFINITY_CALIBRATION.md`。
+
+### D17 复核结论：非缺陷
+
+- `levelThresholds` 只在 config，仓库内无读取者；扩展等级用 `compute_affinity_level`。
+
+### D16 尝试与回滚
+
+- 试过“turn 构建期间禁止自主 tick”的标志位；
+- 会误伤 `dry_run` 探针和只建 frame 不完成 turn 的调用（测试/控制台），导致自主 tick 永久被挡；
+- 已回滚，不把半成品留在主线；下一步用快照版本号/单写者队列，生命周期由 runner 驱动。
 
 ### D16 评估（未修）
 
