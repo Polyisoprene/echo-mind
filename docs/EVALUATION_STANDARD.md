@@ -200,7 +200,7 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 - Runner：`scripts/eval_suite.py`（临时 DB，不调 LLM）；
 - 基线：`eval/baselines/2026-10.json`；
 - 关键词基线：paraphrase 0/10（零字面重叠）、privacy 10/10（0 泄露）、venue 10/10、role 0/10、temporal 0/10、persona 10/10，overall 30/60；
-- 语义/融合基线：全类 10/10，overall 70/70（`--ranker-fusion`）；关 relations 后 multihop 0/10、overall 60/70；live 数值参数均有论文/数据来源；
+- 语义/融合基线：全类 10/10，overall 70/70（`--ranker-fusion`）；关 relations 后 multihop 0/10、overall 60/70；live 数值参数均有论文/数据来源；fact_shadow 也已切到统一 ranker；
 - 消融：fusion 留一里只有 relations 唯一必需；hard negatives 证明每个 ranker 都有独立信号，但等权会在冲突时稀释；已加显式时间/方向约束，70 条上 0 误触发；等权仍未证明；详见 `docs/GLOBAL_REMEDIATION_MODEL.md`。
 - 关系抽取：线上 LLM 抽到 35 条 alias + 1 条 friend + 2 条 sibling；整合器现在也会在写入时输出 relations。works_at 仍为 0，multihop 评测目前用 seed 关系。
 - 基线：`eval/baselines/2026-10.json`（关键词）、`eval/baselines/2026-10-semantic.json`（语义）；

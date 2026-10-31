@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import Any
 
 from echomind.domain.models import SemanticFact
-from echomind.mind.ebbinghaus import _fact_relevance_score, tokenize_query
-
-MS_PER_DAY = 86_400_000.0
+from echomind.mind.ranker_fusion import unified_rank
 
 
 @dataclass(frozen=True)
@@ -29,26 +26,32 @@ def _key(subject: str, value: str) -> str:
 
 
 def claim_rank(views: list[ClaimView], query: str, limit: int, now_ms: int) -> list[str]:
-    """Rank claims by relevance + posterior + recency, one line per subject/predicate."""
-    tokens = tokenize_query(query)
-    low = query.lower()
-    scored: dict[str, tuple[float, str]] = {}
-    for view in views:
-        fact_like = SemanticFact(
-            chat_key="", subject=view.subject, fact_text=view.value,
+    """Rank claims by the same ranker fusion as facts; one line per slot."""
+    facts = tuple(
+        SemanticFact(
+            fact_id=index, chat_key="", subject=view.subject, fact_text=view.value,
             confidence=min(1.0, view.belief), is_locked=view.locked,
+            event_time_ms=view.recorded_at_ms,
         )
-        base = _fact_relevance_score(fact_like, tokens, low, query)
-        age_days = 0.0
-        if view.recorded_at_ms:
-            age_days = max(0.0, (now_ms - view.recorded_at_ms) / MS_PER_DAY)
-        score = base + 2.0 * view.belief + 1.5 * math.exp(-age_days / 7.0)
+        for index, view in enumerate(views, 1)
+    )
+    by_id = dict(enumerate(views, 1))
+    ranked = unified_rank(
+        facts, query, {}, {}, now_ms,
+        disabled=frozenset({"order", "relations", "lock"}),
+    )
+    seen: set[str] = set()
+    lines: list[str] = []
+    for fact in ranked:
+        view = by_id[fact.fact_id]
         slot = f"{view.subject}::{view.predicate}"
-        line = _key(view.subject, view.value)
-        if slot not in scored or score > scored[slot][0]:
-            scored[slot] = (score, line)
-    ranked = sorted(scored.values(), key=lambda item: -item[0])
-    return [line for _, line in ranked[:limit]]
+        if slot in seen:
+            continue
+        seen.add(slot)
+        lines.append(_key(view.subject, view.value))
+        if len(lines) >= limit:
+            break
+    return lines
 
 
 def compare(

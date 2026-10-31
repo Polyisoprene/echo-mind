@@ -565,19 +565,6 @@
       }
     },
     {
-      "id": "mind/fact_shadow.py::MS_PER_DAY",
-      "module": "mind/fact_shadow.py",
-      "symbol": "MS_PER_DAY",
-      "line": 12,
-      "value": "86400000.0",
-      "class": "convention",
-      "status": "active",
-      "claim": "",
-      "evidence": {
-        "rationale": "单位换算（24*3600*1000），无自由度"
-      }
-    },
-    {
       "id": "mind/memory_budget.py::DEFAULT_CONSOLIDATION_BUDGET",
       "module": "mind/memory_budget.py",
       "symbol": "DEFAULT_CONSOLIDATION_BUDGET",

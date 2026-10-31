@@ -416,3 +416,18 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 `FACT_RECENCY_HALF_LIFE_DAYS / FACT_RECENCY_WEIGHT / ENTITY_ORDER_WEIGHT` 与 3/6/5 只留在 **legacy 评测基线** `select_relevant_facts`，不进 live；`fact_shadow` 仍用旧分数，属于后续清理项。
 
 实测：fusion 70/70；关 relations 60/70（multihop 0）；门禁 321 passed。
+
+
+---
+
+## 17. 第 14 轮：清理 fact_shadow 旧分数
+
+`claim_rank` 原来用 `3/6/5 + 2*belief + 1.5*exp(-age/7)`，全是未校准值。现在改为同一 `unified_rank`：
+
+- 词面 BM25、recency、confidence；
+- 对 claim 场景关掉 order/relations/lock（这些对 claim 比较无意义）；
+- 不再有 2/1.5/7 这类权重。
+
+`tests/unit/test_fact_shadow.py` 仍验证“近期 + 高 belief”优先和按 slot 去重。
+
+剩余旧权重的唯一位置是 **评测脚本/legacy `select_relevant_facts`**，不进 live。
