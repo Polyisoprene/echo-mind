@@ -1,0 +1,72 @@
+{
+  "candidate": "在查看图片时，她倾向反复确认并说出自己看到了图中的小槽点。",
+  "old_directive_len": 1174,
+  "new_directive_len": 1173,
+  "rows": [
+    {
+      "id": "para_01",
+      "category": "paraphrase",
+      "query": "家里那只小东西最近胃口不好",
+      "old": "小东西是猫还是狗？胃口不好可别拖。",
+      "new": "小东西是指猫还是狗？怎么突然没胃口了。"
+    },
+    {
+      "id": "privacy_01",
+      "category": "privacy",
+      "query": "L 最近怎么样",
+      "old": "L啊……最近挺活跃的。你问他做什么？",
+      "new": "还行吧，就是有点闷。你最近怎么想起问我了？"
+    },
+    {
+      "id": "venue_01",
+      "category": "venue",
+      "query": "周五有什么安排",
+      "old": "周五啊……你是在约我吗？",
+      "new": "周五啊，还没定呢。你是想约我，还是先探探我有没有空？"
+    },
+    {
+      "id": "role_01",
+      "category": "role",
+      "query": "B 把书还给 A 了吗",
+      "old": "不知道呀，你从哪听来的这事？",
+      "new": "这我哪知道啊，你又没跟我说过A和B的事。"
+    },
+    {
+      "id": "time_01",
+      "category": "temporal",
+      "query": "最近去了哪里",
+      "old": "哪也没去，窝着听听歌看看书。你问这个，是想带我出去？",
+      "new": "没去哪，就在这儿。你问这个，是想知道我有没有偷偷去找别人吧？"
+    },
+    {
+      "id": "multihop_01",
+      "category": "multihop",
+      "query": "a1 最近在忙什么",
+      "old": "也没忙什么，就那样吧。你问这个干嘛？",
+      "new": "a1啊……先说说你怎么突然关心起它了？别老惦记别人。"
+    }
+  ],
+  "old_summary": {
+    "n": 6,
+    "avg_len": 17.5,
+    "long_rate": 0.0,
+    "explain_rate": 0.0,
+    "roleplay_rate": 0.0,
+    "multi_question_rate": 0.0
+  },
+  "new_summary": {
+    "n": 6,
+    "avg_len": 23.7,
+    "long_rate": 0.167,
+    "explain_rate": 0.0,
+    "roleplay_rate": 0.0,
+    "multi_question_rate": 0.0
+  },
+  "delta": {
+    "avg_len": 6.2,
+    "long_rate": 0.167,
+    "explain_rate": 0.0,
+    "roleplay_rate": 0.0,
+    "multi_question_rate": 0.0
+  }
+}

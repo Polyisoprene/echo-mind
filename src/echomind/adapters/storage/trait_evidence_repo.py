@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Iterable
 from typing import Any, cast
 
 import aiosqlite
@@ -19,6 +20,24 @@ def _row(row: aiosqlite.Row) -> TraitEvidence:
         polarity=cast(Any, int(row[6])), context_hash=str(row[7]),
         created_ms=int(row[8]),
     )
+
+
+def _stats(rows: Iterable[aiosqlite.Row]) -> TraitEvidenceStats:
+    supports = {str(r[1]) for r in rows if int(r[0]) > 0}
+    contradictions = {str(r[1]) for r in rows if int(r[0]) < 0}
+    return TraitEvidenceStats(
+        frozenset(supports), frozenset(contradictions),
+        max((int(r[2]) for r in rows if int(r[0]) > 0), default=0),
+        max((int(r[2]) for r in rows if int(r[0]) < 0), default=0),
+    )
+
+
+async def _previous_active(conn: aiosqlite.Connection, trait_id: int) -> int:
+    cursor = await conn.execute(
+        "SELECT active_since_ms FROM persona_traits WHERE id=?", (trait_id,)
+    )
+    row = await cursor.fetchone()
+    return int(row[0]) if row else 0
 
 
 class SqliteTraitEvidenceStore:
@@ -58,29 +77,16 @@ class SqliteTraitEvidenceStore:
                 "SELECT polarity, context_hash, created_ms FROM trait_evidence "
                 "WHERE trait_id = ?", (trait_id,),
             )
-            rows = await cursor.fetchall()
-            supports = {str(r[1]) for r in rows if int(r[0]) > 0}
-            contradictions = {str(r[1]) for r in rows if int(r[0]) < 0}
-            last_support = max((int(r[2]) for r in rows if int(r[0]) > 0), default=0)
-            last_contra = max((int(r[2]) for r in rows if int(r[0]) < 0), default=0)
-            stats = TraitEvidenceStats(
-                frozenset(supports), frozenset(contradictions),
-                last_support, last_contra,
-            )
+            stats = _stats(await cursor.fetchall())
             lifecycle = assess_lifecycle(stats)
-            cursor = await conn.execute(
-                "SELECT active_since_ms FROM persona_traits WHERE id=?", (trait_id,)
-            )
-            current = await cursor.fetchone()
-            previous_active = int(current[0]) if current else 0
+            previous = await _previous_active(conn, trait_id)
             now_ms = int(time.time() * 1000)
-            active_since = (
-                previous_active or now_ms
-            ) if lifecycle.status == "active" else 0
+            active_since = (previous or now_ms) if lifecycle.status == "active" else 0
             await conn.execute(
                 "UPDATE persona_traits SET status=?, active_since_ms=?, "
                 "last_support_ms=?, last_contradiction_ms=? WHERE id=?",
-                (lifecycle.status, active_since, last_support, last_contra, trait_id),
+                (lifecycle.status, active_since, stats.last_support_ms,
+                 stats.last_contradiction_ms, trait_id),
             )
             await conn.commit()
             return lifecycle.status
