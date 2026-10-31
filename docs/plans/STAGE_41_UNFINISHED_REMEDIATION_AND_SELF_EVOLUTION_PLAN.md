@@ -848,3 +848,34 @@ TurnOutcome(day2) ─┴→ trait evidence（2 独立 context）
 - 线上 9 条 legacy trait 仍非 active，所以 shadow 行会是空 trait_ids；
 - 还没有用真实流量做统计；
 - 还没有把 eligibility 接进行为仲裁。
+
+### 14.10 30 天 shadow benchmark（2026-11-01）
+
+新增 `scripts/persona_replay.py`，输出 `eval/baselines/persona-replay-30d-2026-11-01.json`。
+
+| 流 | active trait | shadow 行 | allowed tools | actual tools | 允许拒绝行 | max drift |
+|---|---|---:|---|---|---:|---:|
+| warm | habit | 30 | `look_at_image` | `look_at_image` | 0 | 0.39 |
+| offense | taboo | 30 | 空 | 空 | 29 | 0.39 |
+| mixed | taboo + habit | 30 | `look_at_image` | `look_at_image` | 28 | 0.195 |
+
+解读：
+
+- warm 的工具资格和实际使用一致；
+- offense 从第 2 天起允许拒绝（29/30），第 1 天仍是 candidate；
+- mixed 两条 trait 并存；
+- 三条流 7 维偏离都远低于 12 点边界；
+- 30 天 replay 约 13.5s。
+
+同时修了证据优先级：
+
+```
+assistant text > tool > user trigger
+```
+
+否则“有工具但无助手文本”的回合会把工具证据记成用户触发词，P4 资格永远看不到工具。
+
+**验证**
+
+- `tests/unit/test_trait_evidence_writer.py`；
+- 全门禁：**347 passed / 92%**，fusion 70/70。

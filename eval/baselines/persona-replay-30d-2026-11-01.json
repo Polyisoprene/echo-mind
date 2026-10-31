@@ -1,0 +1,60 @@
+{
+  "warm": {
+    "active_traits": [
+      {
+        "id": 1,
+        "category": "habit",
+        "text": "看到群友发图或视频会凑上去仔细看细节，顺着画面里的小槽点接话"
+      }
+    ],
+    "shadow_rows": 30,
+    "allowed_tools": [
+      "look_at_image"
+    ],
+    "actual_tools": [
+      "look_at_image"
+    ],
+    "allow_refusal_rows": 0,
+    "max_param_drift": 0.39,
+    "edge": 12.0
+  },
+  "offense": {
+    "active_traits": [
+      {
+        "id": 1,
+        "category": "taboo",
+        "text": "极度讨厌别人用命令语气拿我当没有感情的工具人使唤"
+      }
+    ],
+    "shadow_rows": 30,
+    "allowed_tools": [],
+    "actual_tools": [],
+    "allow_refusal_rows": 29,
+    "max_param_drift": 0.39,
+    "edge": 12.0
+  },
+  "mixed": {
+    "active_traits": [
+      {
+        "id": 1,
+        "category": "taboo",
+        "text": "极度讨厌别人用命令语气拿我当没有感情的工具人使唤"
+      },
+      {
+        "id": 2,
+        "category": "habit",
+        "text": "看到群友发图或视频会凑上去仔细看细节，顺着画面里的小槽点接话"
+      }
+    ],
+    "shadow_rows": 30,
+    "allowed_tools": [
+      "look_at_image"
+    ],
+    "actual_tools": [
+      "look_at_image"
+    ],
+    "allow_refusal_rows": 28,
+    "max_param_drift": 0.195,
+    "edge": 12.0
+  }
+}

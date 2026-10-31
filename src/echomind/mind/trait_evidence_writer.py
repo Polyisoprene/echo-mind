@@ -14,11 +14,11 @@ def trait_quote(
     for text in reversed(outcome.sent_texts):
         if text.strip():
             return "assistant", text.strip()
+    if outcome.tools_used:
+        return "tool", outcome.tools_used[-1]
     for percept in reversed(outcome.triggers):
         if percept.text.strip():
             return "user", percept.text.strip()
-    if outcome.tools_used:
-        return "tool", outcome.tools_used[-1]
     return None
 
 
