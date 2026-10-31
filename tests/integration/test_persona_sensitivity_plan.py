@@ -20,6 +20,8 @@ def test_sensitivity_dry_run_plan(tmp_path: Path) -> None:
             "--dry-run",
             "--scenarios",
             "4",
+            "--repeats",
+            "2",
             "--out",
             str(tmp_path),
         ],
@@ -36,6 +38,8 @@ def test_sensitivity_dry_run_plan(tmp_path: Path) -> None:
 
     assert plan["status"] == "dry_run"
     scenario_count = sum(plan["scenarios"].values())
-    assert plan["generations"] == scenario_count * 2
-    assert plan["judgements"] == scenario_count
+    repeats = plan["repeats"]
+    assert repeats == 2
+    assert plan["generations"] == scenario_count * 2 * repeats
+    assert plan["judgements"] == scenario_count * repeats
     assert plan["self_judged"] is True

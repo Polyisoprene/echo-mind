@@ -22,6 +22,7 @@ import json
 import math
 import random
 import re
+import statistics
 import sys
 import tempfile
 from pathlib import Path
@@ -142,6 +143,39 @@ JUDGE_SYSTEM = (
     "你是盲评员，只比较两句话在某一性格维度上的强弱，不判断其他任何方面。"
     '只输出 JSON，格式：{"winner":"A"} 或 {"winner":"B"} 或 {"winner":"tie"}。'
 )
+
+
+# Two-sided 97.5% critical values for df=1..10; beyond that the normal 1.96 is fine.
+_T_CRIT = {
+    1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571,
+    6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
+}
+
+
+def _t_critical(df: int) -> float:
+    return _T_CRIT.get(df, 1.96)
+
+
+def _aggregate(runs: list[dict[str, Any]], repeats: int) -> dict[str, Any]:
+    """Merge repeats: mean, between-run SD and a t-interval over run means."""
+    base = dict(runs[0])
+    if repeats == 1:
+        return base
+    accuracies = [float(run["accuracy"]) for run in runs]
+    mean = statistics.mean(accuracies)
+    sd = statistics.stdev(accuracies)
+    se = sd / math.sqrt(repeats)
+    margin = _t_critical(repeats - 1) * se
+    base.update(
+        {
+            "accuracy": round(mean, 4),
+            "accuracy_runs": [round(a, 4) for a in accuracies],
+            "accuracy_sd": round(sd, 4),
+            "ci95": [round(max(0.0, mean - margin), 4), round(min(1.0, mean + margin), 4)],
+            "passes_chance": (mean - margin) > 0.5,
+        }
+    )
+    return base
 
 
 def _wilson(hits: float, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -360,8 +394,9 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             "status": "dry_run",
             "dims": list(dims),
             "scenarios": counts,
-            "generations": sum(counts.values()) * 2,
-            "judgements": sum(counts.values()),
+            "generations": sum(counts.values()) * 2 * args.repeats,
+            "judgements": sum(counts.values()) * args.repeats,
+            "repeats": args.repeats,
             "gen_model": gen_model,
             "judge_model": judge_model,
             "placement": args.placement,
@@ -375,22 +410,29 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         cfg.primary_llm, cfg.fallback_llm, db, extra_fallbacks=cfg.fallback_chain
     )
     rng = random.Random(args.seed)  # noqa: S311 - deterministic labelling, not crypto
-    results: dict[str, Any] = {}
-    for dim in dims:
-        results[dim] = await _run_dimension(
-            gateway,
-            dim,
-            DIM_SCENARIOS.get(dim, base_scenarios)[: args.scenarios],
-            role=cfg.role_text,
-            name=cfg.bot_name,
-            gen_model=gen_model,
-            judge_model=judge_model,
-            placement=args.placement,
-            delta=args.delta,
-            judge_mode=args.judge_mode,
-            rng=rng,
-        )
-        print(f"[{dim}] accuracy={results[dim]['accuracy']} ci={results[dim]['ci95']}", flush=True)
+    per_dim: dict[str, list[dict[str, Any]]] = {dim: [] for dim in dims}
+    for repeat in range(args.repeats):
+        rng = random.Random(args.seed + repeat)  # noqa: S311 - label swapping
+        for dim in dims:
+            result = await _run_dimension(
+                gateway,
+                dim,
+                DIM_SCENARIOS.get(dim, base_scenarios)[: args.scenarios],
+                role=cfg.role_text,
+                name=cfg.bot_name,
+                gen_model=gen_model,
+                judge_model=judge_model,
+                placement=args.placement,
+                delta=args.delta,
+                judge_mode=args.judge_mode,
+                rng=rng,
+            )
+            per_dim[dim].append(result)
+            print(
+                f"[{dim} run {repeat + 1}/{args.repeats}] accuracy={result['accuracy']}",
+                flush=True,
+            )
+    results = {dim: _aggregate(runs, args.repeats) for dim, runs in per_dim.items()}
 
     passed = [name for name, data in results.items() if data["passes_chance"]]
     return {
@@ -401,6 +443,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "placement": args.placement,
         "delta": args.delta,
         "scenarios": counts,
+        "repeats": args.repeats,
         "criterion": "Wilson lower bound of judge accuracy > 0.5; >=5 of 7 dims",
         "passed_dimensions": passed,
         "pass": len(passed) >= 5,
@@ -419,6 +462,8 @@ def main() -> int:
     parser.add_argument("--delta", type=float, default=0.0,
                         help="symmetric band around the default (0 = p10/p90 extremes)")
     parser.add_argument("--judge-mode", choices=["abstract", "both"], default="abstract")
+    parser.add_argument("--repeats", type=int, default=1,
+                        help="independent runs per cell; >=3 for moderate effects")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--out", type=Path, default=ROOT / "reports")
