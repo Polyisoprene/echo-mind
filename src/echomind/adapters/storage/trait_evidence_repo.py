@@ -87,9 +87,13 @@ class SqliteTraitEvidenceStore:
             active_since = (previous or now_ms) if lifecycle.status == "active" else 0
             await conn.execute(
                 "UPDATE persona_traits SET status=?, active_since_ms=?, "
-                "last_support_ms=?, last_contradiction_ms=? WHERE id=?",
+                "last_support_ms=?, last_contradiction_ms=?, "
+                "evidence_count=(SELECT COUNT(*) FROM trait_evidence "
+                " WHERE trait_id=? AND polarity=1), "
+                "contradiction_count=(SELECT COUNT(*) FROM trait_evidence "
+                " WHERE trait_id=? AND polarity=-1) WHERE id=?",
                 (lifecycle.status, active_since, stats.last_support_ms,
-                 stats.last_contradiction_ms, trait_id),
+                 stats.last_contradiction_ms, trait_id, trait_id, trait_id),
             )
             await conn.commit()
             return lifecycle.status

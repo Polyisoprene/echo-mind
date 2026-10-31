@@ -82,9 +82,10 @@ async def test_lifecycle_refresh_is_shadow_only(tmp_path: Path) -> None:
     assert await evidence_store.refresh_lifecycle(trait.trait_id) == "retired"
     con = sqlite3.connect(tmp_path / "trait_lifecycle.db")
     assert con.execute(
-        "select status, last_support_ms, last_contradiction_ms from persona_traits where id=?",
+        "select status, last_support_ms, last_contradiction_ms, evidence_count, "
+        "contradiction_count from persona_traits where id=?",
         (trait.trait_id,),
-    ).fetchone() == ("retired", 2, 4)
+    ).fetchone() == ("retired", 2, 4, 2, 2)
 
 
 async def test_candidate_store_dedupes_prompt_hash(tmp_path: Path) -> None:

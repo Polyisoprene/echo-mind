@@ -1514,3 +1514,22 @@ distinct_contexts=3
 
 - `tests/integration/test_trait_evidence_ledger.py`：included memory_id → causal link，重复不重复建；
 - 全门禁：**364 passed / 92%**，fusion 70/70。
+
+### 14.31 evidence 计数漂移修复（2026-11-01）
+
+真实审计发现：
+
+- trait 45 缓存 `evidence_count=4`；
+- ledger 实际 3 条。
+
+原因：`sync_persona_traits` 双写计数，回填/账本写入不会同步缓存。
+
+修复：
+
+- `refresh_lifecycle` 更新 `evidence_count / contradiction_count` 时，直接从 `trait_evidence` 聚合；
+- 真实 trait 45 刷新后：`active, evidence_count=3, contradiction_count=0`；
+- 测试断言状态/时间/计数一起正确。
+
+**验证**
+
+- 全门禁：**364 passed / 92%**，fusion 70/70。
