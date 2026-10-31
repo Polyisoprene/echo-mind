@@ -17,6 +17,7 @@ from echomind.domain.models import (
 )
 from echomind.domain.ports import (
     IBondDepthStore,
+    IDisclosureLog,
     ILlmGateway,
     IMemoryReader,
     IMemoryWriter,
@@ -33,16 +34,20 @@ from echomind.mind.chord_gateway import apply_probe_if_allowed, chord_for
 from echomind.mind.circadian import record_gate_decision
 from echomind.mind.cybernetics import (
     compute_cybernetic_core,
-    consume_proposal_snapshot,
     render_cybernetic_core_directive,
 )
 from echomind.mind.dialogue_context import DialogueContext
 from echomind.mind.drives import apply_turn_affect_and_drives
-from echomind.mind.drives_temporal import apply_temporal_decay_and_circadian
-from echomind.mind.ebbinghaus import extract_mentioned_uids, select_relevant_facts
+from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.epistemic import EpistemicCalibrator
-from echomind.mind.explorer import arbitrate_autonomous_action
-from echomind.mind.facade_memory import consolidate_dialogue, recall_and_reinforce
+from echomind.mind.facade_autonomy import run_autonomous_tick
+from echomind.mind.facade_memory import (
+    audience_of,
+    consolidate_dialogue,
+    gate_frame,
+    load_facts,
+    recall_and_reinforce,
+)
 from echomind.mind.frame_renderer import (
     build_curiosity_prompts,
     match_active_rules,
@@ -82,6 +87,7 @@ class CognitiveCoreFacade:
         operator_ids: tuple[str, ...] = (),
         persona_layers: IPersonaLayerStore | None = None,
         person_level: PersonLevelService | None = None,
+        disclosure_log: IDisclosureLog | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
         self._default_group = default_group_key
@@ -91,6 +97,7 @@ class CognitiveCoreFacade:
         self._operator_ids = tuple(operator_ids)
         self._layers = persona_layers
         self._person_level = person_level
+        self._disclosure_log = disclosure_log
         self._plasticity = NeuroplasticityEngine(working_store, persona_layers)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
@@ -213,10 +220,8 @@ class CognitiveCoreFacade:
     ) -> CognitiveFrame:
         now_ms, tr = int(time.time() * 1000), triggers
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
-        facts = await self._reader.get_semantic_facts(chat_key)
+        facts, uids = await load_facts(self._reader, chat_key, tr)
         set_beliefs(rebuild_beliefs(tuple((f.subject, f.fact_text, f.confidence) for f in facts)))
-        uids = extract_mentioned_uids(tr, facts)
-        facts = await self._reader.get_semantic_facts(chat_key, person_ids=uids)
         pairs = [(u, await self._reader.get_social_bond(chat_key, u)) for u in uids]
         bm = await attach(self._bond_store, {u: b for u, b in pairs if b is not None})
         chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
@@ -228,6 +233,9 @@ class CognitiveCoreFacade:
         warns, _ = self._calibrator.calibrate(tr, facts, bm, skepticism=skep)
         rules = await self._reader.get_procedural_rules(chat_key)
         recalled = await self._recall_and_reinforce(chat_key, tr, uids, now_ms, dry_run)
+        facts, recalled = await gate_frame(
+            facts, recalled, audience_of(uids, tr), chat_key, self._disclosure_log
+        )
         cur_p = build_curiosity_prompts(tr, last_dec, snap.affect)
         unk = last_dec.detected_unknown_terms if last_dec else ()
         cyber = compute_cybernetic_core(
@@ -269,24 +277,11 @@ class CognitiveCoreFacade:
         await self._plasticity.adapt_from_outcome(o)
 
     async def run_autonomous_tick(self, now_ms: int) -> ProactiveProposal | None:
-        await self._plasticity.settle_baseline(now_ms)
-        raw_snap = await self._working.load_working_state("global")
-        params = await self._working.get_plastic_params()
-        idle_target = params["proactive_idle_min"].value if "proactive_idle_min" in params else 10.0
-        idle_min = max(0.0, (now_ms - self._last_active_ms) / 60_000.0)
-        priv_key = f"private:{self._operator_ids[0]}" if self._operator_ids else ""
-        proposal = arbitrate_autonomous_action(
-            raw_snap, self._default_group, priv_key, idle_min,
-            proactive_idle_min=idle_target, now_ms=now_ms,
+        proposal, self._last_active_ms = await run_autonomous_tick(
+            self._working, self._plasticity, self._last_active_ms,
+            self._operator_ids, self._default_group, now_ms=now_ms,
         )
-        if proposal is not None:
-            self._last_active_ms = max(self._last_active_ms, now_ms)
-            await self._working.save_working_state(consume_proposal_snapshot(raw_snap, proposal))
-            return proposal
-        drifted = apply_temporal_decay_and_circadian(raw_snap, min(idle_min, 30.0), now_ms)
-        if drifted != raw_snap:
-            await self._working.save_working_state(drifted)
-        return None
+        return proposal
 
     async def consolidate_dialogue_batch(
         self, chat_key: str, transcript_lines: tuple[str, ...],

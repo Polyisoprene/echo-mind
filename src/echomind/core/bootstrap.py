@@ -14,6 +14,7 @@ from echomind.adapters.onebot.enrichers import (
 )
 from echomind.adapters.storage.bond_depth_repo import SqliteBondDepthStore
 from echomind.adapters.storage.database import SqliteDatabase
+from echomind.adapters.storage.disclosure_repo import SqliteDisclosureLog
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
 from echomind.adapters.storage.person_level_repo import load_bonds, load_stats
 from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
@@ -49,8 +50,9 @@ async def _run_backfill(bond_store: SqliteBondDepthStore) -> None:
         await bond_store.backfill_from_history()
 
 
-def _build_person_level(db: SqliteDatabase) -> PersonLevelService:
-    return PersonLevelService(bonds=lambda: load_bonds(db), stats=lambda: load_stats(db))
+def _build_person_services(db: SqliteDatabase) -> tuple[PersonLevelService, SqliteDisclosureLog]:
+    service = PersonLevelService(bonds=lambda: load_bonds(db), stats=lambda: load_stats(db))
+    return service, SqliteDisclosureLog(db)
 
 
 class EchoMindContainer:
@@ -109,12 +111,13 @@ class EchoMindContainer:
         await bond_store.ensure_schema()
         layers = await SqlitePersonaLayerStore.open(db)
         await _run_backfill(bond_store)
-        person_level = _build_person_level(db)
+        person_level, disclosure_log = _build_person_services(db)
         facade = CognitiveCoreFacade(
             mem_reader=mem_repo, mem_writer=mem_repo, working_store=work_store,
             default_group_key=default_chat_key,
             constraint_store=work_store, trace_store=trace_store, bond_store=bond_store,
-            operator_ids=operator_ids, persona_layers=layers, person_level=person_level,
+            operator_ids=operator_ids, persona_layers=layers,
+            person_level=person_level, disclosure_log=disclosure_log,
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,
@@ -124,7 +127,6 @@ class EchoMindContainer:
         )
         instance.bond_depth_store = bond_store
         instance.persona_layers = layers
-        instance.person_level = person_level
         async def _on_turn_completed(_outcome: TurnOutcome) -> None:
             instance.published_turns += 1
 
