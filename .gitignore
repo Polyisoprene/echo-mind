@@ -33,3 +33,7 @@ data/config.json.bak*
 
 # 第二实例的数据（含真实聊天记录与密钥）
 data-*/
+data/*.db.bak-*
+data/*.db.backup-*
+data-xiaomo/*.db.bak-*
+data-xiaomo/*.db.backup-*
