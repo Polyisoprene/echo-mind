@@ -36,6 +36,31 @@ CREATE TABLE IF NOT EXISTS memory_knowledge (
   updated_ms INTEGER NOT NULL,
   PRIMARY KEY(memory_kind, memory_id, person_id)
 );
+CREATE TABLE IF NOT EXISTS persons (
+  person_id TEXT PRIMARY KEY,
+  display_name TEXT NOT NULL DEFAULT '',
+  aliases_json TEXT NOT NULL DEFAULT '[]',
+  first_seen_ms INTEGER NOT NULL DEFAULT 0,
+  last_seen_ms INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS person_bonds (
+  person_id TEXT PRIMARY KEY,
+  trust REAL NOT NULL DEFAULT 0,
+  affinity REAL NOT NULL DEFAULT 0,
+  depth_raw REAL NOT NULL DEFAULT 0,
+  depth_percentile REAL NOT NULL DEFAULT 0,
+  updated_ms INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS bond_venues (
+  person_id TEXT NOT NULL,
+  venue_id TEXT NOT NULL,
+  affinity REAL NOT NULL DEFAULT 0,
+  msg_count INTEGER NOT NULL DEFAULT 0,
+  role TEXT NOT NULL DEFAULT 'member',
+  is_rival INTEGER NOT NULL DEFAULT 0,
+  updated_ms INTEGER NOT NULL,
+  PRIMARY KEY(person_id, venue_id)
+);
 CREATE TABLE IF NOT EXISTS disclosure_grants (
   memory_kind TEXT NOT NULL,
   memory_id INTEGER NOT NULL,

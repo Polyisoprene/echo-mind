@@ -17,6 +17,7 @@ from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.disclosure_repo import SqliteDisclosureLog
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
 from echomind.adapters.storage.person_level_repo import load_bonds, load_stats
+from echomind.adapters.storage.person_store import SqlitePersonStore
 from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
 from echomind.adapters.storage.skill_config_repo import SqliteSkillConfigStore
 from echomind.adapters.storage.trace_repo import SqliteTurnTraceStore
@@ -51,7 +52,10 @@ async def _run_backfill(bond_store: SqliteBondDepthStore) -> None:
 
 
 def _build_person_services(db: SqliteDatabase) -> tuple[PersonLevelService, SqliteDisclosureLog]:
-    service = PersonLevelService(bonds=lambda: load_bonds(db), stats=lambda: load_stats(db))
+    store = SqlitePersonStore(db)
+    service = PersonLevelService(
+        bonds=lambda: load_bonds(db), stats=lambda: load_stats(db), persist=store.save,
+    )
     return service, SqliteDisclosureLog(db)
 
 

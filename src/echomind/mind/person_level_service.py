@@ -10,23 +10,34 @@ from echomind.mind.person_level import PersonProfile, build_profiles
 
 BondsLoader = Callable[[], Awaitable[tuple[SocialBondProfile, ...]]]
 StatsLoader = Callable[[], Awaitable[tuple[BondDepthStats, ...]]]
+Persist = Callable[[dict[str, PersonProfile], tuple[SocialBondProfile, ...]], Awaitable[None]]
 
 
 class PersonLevelService:
     """Loads all venue rows, collapses them per person, and caches for a short TTL."""
 
-    def __init__(self, bonds: BondsLoader, stats: StatsLoader, ttl_ms: int = 60_000) -> None:
+    def __init__(
+        self,
+        bonds: BondsLoader,
+        stats: StatsLoader,
+        ttl_ms: int = 60_000,
+        persist: Persist | None = None,
+    ) -> None:
         self._bonds = bonds
         self._stats = stats
         self._ttl_ms = ttl_ms
+        self._persist = persist
         self._cache: dict[str, PersonProfile] = {}
         self._loaded_ms = -1
 
     async def profiles(self, now_ms: int) -> dict[str, PersonProfile]:
         if self._cache and now_ms - self._loaded_ms < self._ttl_ms:
             return self._cache
-        self._cache = build_profiles(await self._bonds(), await self._stats())
+        bonds = await self._bonds()
+        self._cache = build_profiles(bonds, await self._stats())
         self._loaded_ms = now_ms
+        if self._persist is not None:
+            await self._persist(self._cache, bonds)
         return self._cache
 
     def invalidate(self) -> None:
