@@ -19,12 +19,14 @@
         "id": 66,
         "category": "habit",
         "text": "情绪上来或被哄开心时会直接发语音亲口说给对方听",
-        "status": "legacy_unverified",
-        "cached_evidence": 2,
-        "ledger_rows": 0,
-        "distinct_contexts": 0,
-        "quote_kinds": [],
-        "last_evidence_ms": 0
+        "status": "active",
+        "cached_evidence": 4,
+        "ledger_rows": 4,
+        "distinct_contexts": 4,
+        "quote_kinds": [
+          "assistant"
+        ],
+        "last_evidence_ms": 1793468234686
       },
       {
         "id": 120,

@@ -21,6 +21,7 @@ async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, default=ROOT / "data" / "echomind.db")
     parser.add_argument("--trait-id", type=int, required=True)
+    parser.add_argument("--tool", default="look_at_image")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
@@ -40,8 +41,8 @@ async def main() -> int:
     existing_days = {item.created_ms // 86_400_000 for item in existing}
     rows = list(con.execute(
         "SELECT turn_id, chat_key, ts, steps_json FROM turn_traces "
-        "WHERE chat_key=? AND steps_json LIKE '%look_at_image%' ORDER BY ts",
-        (str(trait["chat_key"]),),
+        "WHERE chat_key=? AND steps_json LIKE ? ORDER BY ts",
+        (str(trait["chat_key"]), f"%{args.tool}%"),
     ))
     candidates = candidates_from_rows(rows, existing_days)
     payload = {

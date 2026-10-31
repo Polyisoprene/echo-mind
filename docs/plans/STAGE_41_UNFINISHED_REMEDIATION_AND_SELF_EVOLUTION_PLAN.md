@@ -1623,3 +1623,45 @@ causal_links=0
 **验证**
 
 - 全门禁：**369 passed / 92%**，fusion 70/70。
+
+### 14.35 legacy trait 迁移审计（2026-11-01）
+
+8 条 legacy trait 中，有真实 trace 支持的只有：
+
+| id | trait | 真实来源 |
+|---|---|---|
+| 45 | 看到群友发图会看细节 | `look_at_image`，已 active |
+| 66 | 情绪上来会直接发语音 | `feiyu_say`，187 条 trace，已 active |
+
+trait 66 dry-run 找到 4 个独立日 context，真实发送文本例如：
+
+- “主人别生气嘛……这条语音送你……”
+- “那我睡啦，你也早睡，别又熬到天亮”
+
+执行后：
+
+```text
+trait 66: active, evidence=4, contexts=4
+health: active_traits=2, waiting_turn
+```
+
+其余 6 条：
+
+- 无 `source` 或无可结构化工具；
+- 不做关键词硬套、不伪造 quote；
+- 保持 `legacy_unverified`，prompt 继续显示。
+
+active-only prompt 影响：
+
+| 项 | 值 |
+|---|---:|
+| 当前 prompt | 1367 字 |
+| active-only | 1222 字 |
+| delta | -145 |
+| 仍会移除 | 7 条 legacy（含 taboo） |
+
+所以 active-only 仍不能开。
+
+**验证**
+
+- 全门禁沿用：**369 passed / 92%**，fusion 70/70。
