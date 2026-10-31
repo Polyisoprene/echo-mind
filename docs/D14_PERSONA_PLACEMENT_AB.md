@@ -60,3 +60,20 @@ b = PromptComposer(role, bot, persona_in_system=True).compose(frame, read, unrea
 - 正式实验仍按上面 24 条场景 × 3 seed 扩展；判定规则不变。
 
 实际 A/B 需要同一模型、同一采样参数、同一场景集；本轮不调用线上模型。
+
+## Pilot 结果（2026-10-31，单 seed）
+
+6 场景 × A/B，共 12 次生成；自动计分：
+
+| 变体 | 必须回复命中 | 只输出 `<tool_call>` | 空回复 |
+|---|---|---|---|
+| A（user） | **5/5** | 0 | 0 |
+| B（system） | **3/5** | **2** | 0 |
+
+- `group_called`：A 输出 `<send_message>`；B 只输出 `<tool_call>recall_memory`，没有回复；
+- `memory_disclosure`：A 用含糊措辞回应；B 只输出 `<tool_call>`；
+- 边界/私聊场景两者都能拒绝或接话，差异主要在“是否真正回复”。
+
+**结论（pilot）**：保留 A（user 轮），不切 system。
+
+**限制**：单 seed、6 条、未传 tools schema、未做人工人格评分、裁判为自动规则；这是探索性证据，不是确认性实验。正式 24×3 + tools + 人工/裁判评分仍可做，但当前没有“B 更好”的信号。
