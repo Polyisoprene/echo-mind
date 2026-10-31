@@ -1,0 +1,37 @@
+"""Cache one person-level profile set, rebuilt from the venue bonds and depth stats."""
+
+from __future__ import annotations
+
+from collections.abc import Awaitable, Callable
+
+from echomind.domain.bond_stats import BondDepthStats
+from echomind.domain.models import SocialBondProfile
+from echomind.mind.person_level import PersonProfile, build_profiles
+
+BondsLoader = Callable[[], Awaitable[tuple[SocialBondProfile, ...]]]
+StatsLoader = Callable[[], Awaitable[tuple[BondDepthStats, ...]]]
+
+
+class PersonLevelService:
+    """Loads all venue rows, collapses them per person, and caches for a short TTL."""
+
+    def __init__(self, bonds: BondsLoader, stats: StatsLoader, ttl_ms: int = 60_000) -> None:
+        self._bonds = bonds
+        self._stats = stats
+        self._ttl_ms = ttl_ms
+        self._cache: dict[str, PersonProfile] = {}
+        self._loaded_ms = -1
+
+    async def profiles(self, now_ms: int) -> dict[str, PersonProfile]:
+        if self._cache and now_ms - self._loaded_ms < self._ttl_ms:
+            return self._cache
+        self._cache = build_profiles(await self._bonds(), await self._stats())
+        self._loaded_ms = now_ms
+        return self._cache
+
+    def invalidate(self) -> None:
+        self._cache = {}
+        self._loaded_ms = -1
+
+
+__all__ = ["PersonLevelService"]

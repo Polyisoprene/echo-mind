@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from echomind.domain.models import (
@@ -15,6 +16,7 @@ from echomind.domain.models import (
 )
 from echomind.mind.bond_depth import care_weight
 from echomind.mind.circadian import resolve_circadian_phase
+from echomind.mind.person_level import PersonProfile
 
 if TYPE_CHECKING:
     from echomind.mind.subconscious_probe import SubconsciousChordResult
@@ -35,10 +37,16 @@ def _pull(current: float, target: float, rate: float = 0.08) -> float:
     return round((target - current) * rate, 2)
 
 
-def compute_care_weight(sender_id: str, bond: SocialBondProfile | None = None) -> float:
-    """Compute continuous care/importance weight w_care(u) in [0.0, 1.0] for any person."""
+def compute_care_weight(
+    sender_id: str,
+    bond: SocialBondProfile | None = None,
+    profile: PersonProfile | None = None,
+) -> float:
+    """Continuous care weight; person-level affinity/trust/depth when available."""
     if bond is None or bond.is_rival:
         return 0.0
+    if profile is not None:
+        return care_weight(profile.affinity, profile.trust, profile.depth_percentile)
     return care_weight(bond.affinity_score, bond.trust_score, bond.bond_depth)
 
 
@@ -186,11 +194,14 @@ def _format_spillover(
 def _max_batch_jealousy(
     triggers: tuple[Percept, ...], rivals: tuple[str, ...],
     bonds_map: dict[str, SocialBondProfile] | None, chord: SubconsciousChordResult | None,
+    profiles: Mapping[str, PersonProfile] | None = None,
 ) -> tuple[float, str]:
     best_j, best_t = 0.0, ""
     for p in triggers:
         p_care = compute_care_weight(
-            p.sender_id, bonds_map.get(p.sender_id) if bonds_map else None
+            p.sender_id,
+            bonds_map.get(p.sender_id) if bonds_map else None,
+            (profiles or {}).get(p.sender_id),
         )
         jd, jt = evaluate_triadic_jealousy(p, p_care, rivals, chord=chord)
         if abs(jd) > abs(best_j):
@@ -199,11 +210,12 @@ def _max_batch_jealousy(
 
 
 def _appraisal_context(
-    bond: SocialBondProfile | None, last: Percept | None
+    bond: SocialBondProfile | None, last: Percept | None,
+    profile: PersonProfile | None = None,
 ) -> tuple[float, float, float, bool]:
     """Care weight, aversion susceptibility, speaker affinity and reunion flag."""
     uid = bond.user_id if bond is not None else ""
-    w_care = compute_care_weight(uid, bond)
+    w_care = compute_care_weight(uid, bond, profile)
     w_aver = compute_aversion_susceptibility(uid, bond)
     s_aff = 9999.0 if w_care >= 0.99 else (bond.affinity_score if bond else 35.0)
     last_seen = bond.last_seen_ms if bond is not None else 0
@@ -218,6 +230,7 @@ def apply_turn_affect_and_drives(
     bonds_map: dict[str, SocialBondProfile] | None = None,
     params: dict[str, PlasticParamSpec] | None = None,
     chord: SubconsciousChordResult | None = None,
+    profiles: Mapping[str, PersonProfile] | None = None,
 ) -> WorkingSnapshot:
     """Update 5D affect and 4D drives via HRRL Homeostasis, Free-Energy RPE & 6D Chord."""
     _ = params
@@ -225,8 +238,9 @@ def apply_turn_affect_and_drives(
     last = triggers[-1] if triggers else None
     last_uid = last.sender_id if last else ""
     bond = bonds_map.get(last_uid) if bonds_map else None
-    w_care, w_aver, s_aff, is_reunion = _appraisal_context(bond, last)
-    j_raw, j_thought = _max_batch_jealousy(triggers, rivals, bonds_map, chord)
+    profile = (profiles or {}).get(last_uid)
+    w_care, w_aver, s_aff, is_reunion = _appraisal_context(bond, last, profile)
+    j_raw, j_thought = _max_batch_jealousy(triggers, rivals, bonds_map, chord, profiles)
     j_delta = round(j_raw * (jealousy_sens if j_raw > 0 else 1.0), 2)
     v_rpe, att_delta, shy_boost, irr_delta = _chord_rpe_and_soothing(
         w_care, w_aver, j_delta, drv.attachment, speaker_aff=s_aff, curr_irr=aff.irritation,

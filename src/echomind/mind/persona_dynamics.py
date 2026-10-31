@@ -9,6 +9,9 @@ from __future__ import annotations
 
 import math
 import time
+from collections.abc import Mapping
+
+from echomind.domain.models import PlasticParamSpec
 
 DELTA_CLIP = 2.0
 DAILY_CAP = 6.0
@@ -74,3 +77,9 @@ async def capped_manual_delta(
     used = await usage(key, now_ms - 86_400_000) if callable(usage) else 0.0
     applied = budgeted_delta(delta, used)
     return applied, round(max(0.0, DAILY_CAP - used - abs(applied)), 2)
+
+
+def param_value(params: Mapping[str, PlasticParamSpec], key: str, default: float) -> float:
+    """Read a plastic parameter with a fallback (None-safe)."""
+    spec = params.get(key)
+    return spec.value if spec is not None else default

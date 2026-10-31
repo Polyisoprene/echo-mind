@@ -15,6 +15,7 @@ from echomind.adapters.onebot.enrichers import (
 from echomind.adapters.storage.bond_depth_repo import SqliteBondDepthStore
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
+from echomind.adapters.storage.person_level_repo import load_bonds, load_stats
 from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
 from echomind.adapters.storage.skill_config_repo import SqliteSkillConfigStore
 from echomind.adapters.storage.trace_repo import SqliteTurnTraceStore
@@ -25,6 +26,7 @@ from echomind.domain.ports import IOneBotApiCaller
 from echomind.extensions.registry import ExtensionRegistry
 from echomind.mind.facade import CognitiveCoreFacade
 from echomind.mind.naming import BotNaming, set_bot_naming
+from echomind.mind.person_level_service import PersonLevelService
 from echomind.runtime.prompt_composer import PromptComposer
 from echomind.tools.cnmeme_wiki import CnMemeWikiClient, CnMemeWikiTool
 from echomind.tools.explore_and_voice import CompositeSearchBackend, HolyWebSearchTool
@@ -40,6 +42,15 @@ def _build_registry(db: SqliteDatabase) -> ExtensionRegistry:
     reg.register_tool(CnMemeWikiTool(meme_client))
     reg.register_tool(HolyWebSearchTool(CompositeSearchBackend((meme_client,))))
     return reg
+
+
+async def _run_backfill(bond_store: SqliteBondDepthStore) -> None:
+    if await bond_store.needs_backfill():
+        await bond_store.backfill_from_history()
+
+
+def _build_person_level(db: SqliteDatabase) -> PersonLevelService:
+    return PersonLevelService(bonds=lambda: load_bonds(db), stats=lambda: load_stats(db))
 
 
 class EchoMindContainer:
@@ -75,6 +86,7 @@ class EchoMindContainer:
         self.skill_config_store: SqliteSkillConfigStore | None = skill_config_store
         self.bond_depth_store: SqliteBondDepthStore | None = None
         self.persona_layers: SqlitePersonaLayerStore | None = None
+        self.person_level: Any = None
         self.onebot_runtime: Any = None
 
     @classmethod
@@ -96,13 +108,13 @@ class EchoMindContainer:
         bond_store = SqliteBondDepthStore(db)
         await bond_store.ensure_schema()
         layers = await SqlitePersonaLayerStore.open(db)
-        if await bond_store.needs_backfill():
-            await bond_store.backfill_from_history()
+        await _run_backfill(bond_store)
+        person_level = _build_person_level(db)
         facade = CognitiveCoreFacade(
             mem_reader=mem_repo, mem_writer=mem_repo, working_store=work_store,
             default_group_key=default_chat_key,
             constraint_store=work_store, trace_store=trace_store, bond_store=bond_store,
-            operator_ids=operator_ids, persona_layers=layers,
+            operator_ids=operator_ids, persona_layers=layers, person_level=person_level,
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,
@@ -112,7 +124,7 @@ class EchoMindContainer:
         )
         instance.bond_depth_store = bond_store
         instance.persona_layers = layers
-
+        instance.person_level = person_level
         async def _on_turn_completed(_outcome: TurnOutcome) -> None:
             instance.published_turns += 1
 

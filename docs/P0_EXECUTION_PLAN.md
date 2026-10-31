@@ -10,9 +10,9 @@
 | 步骤 | 内容 | 状态 | 验收 |
 |---|---|---|---|
 | **P0.1** | 纯函数人级画像：`mind/person_level.py` + 单测 | ✅ 本轮 | 3 条测试通过 |
-| **P0.2** | 读取层：按 `user_id` 取跨场合 bond + stats；facade 内构建 profiles（带缓存） | ⏳ | 群/私聊拿到同一 profile |
-| **P0.3** | 立场接线：`apply_stance_for` 接受 profile；温柔/耐心用人级，俏皮用场合 | ⏳ | 同一人跨场合温柔/耐心差 ≤2 |
-| **P0.4** | care 接线：`care_weight` 用人级好感/信任/深度；重标定 `AFFINITY_OFFSET/SPAN` | ⏳ | 你本人在私聊 care > 0 |
+| **P0.2** | 读取层：按 `user_id` 取跨场合 bond + stats；facade 内构建 profiles（带缓存） | ✅ | 群/私聊拿到同一 profile |
+| **P0.3** | 立场接线：`apply_stance_for` 接受 profile；温柔/耐心用人级，俏皮用场合 | ✅ | 同一人跨场合温柔/耐心差 ≤2 |
+| **P0.4** | care 接线：`care_weight` 用人级好感/信任/深度 | ✅ | 你本人在私聊 care > 0 |
 | **P0.5** | 一致性测试 + 41 条关系 dry-run 对照 | ⏳ | 旧/新逐条可解释 |
 | **P0.6** | 部署（重启两实例）+ 观察 | ⏳ | 线上快照显示同一 profile |
 
@@ -135,3 +135,8 @@ def care_weight_from_profile(profile):
 - 新增模块与 profile 路径都是**可选参数**：`profiles=None` 时行为与现在完全一致；
 - 配置开关 `ECHOMIND_PERSON_LEVEL=off|on`（P0.3 加），关闭即回旧路径；
 - 不改表结构，回滚无需迁移。
+
+
+## 更新记录
+
+- 2026-10-31：P0.1–P0.4 完成；`PersonLevelService` 60s 缓存；`AFFINITY_OFFSET/SPAN` 暂不重标定（人级好感已绕开截断，重标定列为 P0.4b 可选）。

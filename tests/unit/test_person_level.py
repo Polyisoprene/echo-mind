@@ -7,6 +7,7 @@ import pytest
 from echomind.domain.bond_stats import BondDepthStats
 from echomind.domain.models import SocialBondProfile
 from echomind.mind.person_level import (
+    PersonProfile,
     aggregate_stats,
     build_profiles,
     care_weight_from_profile,
@@ -69,3 +70,18 @@ def test_aggregate_stats_sums_venues() -> None:
     assert merged.msgs == 120
     assert merged.sessions == 12
     assert merged.impact_n == 5
+
+
+def test_person_level_care_survives_low_venue_affinity() -> None:
+    """The private bond's affinity is below the legacy offset; the profile must rescue care."""
+    from echomind.mind.drives import compute_care_weight
+
+    private = SocialBondProfile(
+        chat_key="private:u", user_id="u", user_name="u",
+        affinity_score=32.1, trust_score=0.78, bond_depth=50.7, msg_count=312,
+    )
+    profile = PersonProfile(
+        "u", trust=0.663, affinity=47.45, depth_raw=92.5, depth_percentile=100.0
+    )
+    assert compute_care_weight("u", private) == 0.0
+    assert compute_care_weight("u", private, profile) > 0.1

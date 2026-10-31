@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from echomind.domain.models import (
@@ -16,6 +17,7 @@ from echomind.domain.models import (
 )
 from echomind.mind.drives import compute_aversion_susceptibility, compute_care_weight
 from echomind.mind.ebbinghaus import compute_retention
+from echomind.mind.person_level import PersonProfile
 
 if TYPE_CHECKING:
     from echomind.mind.subconscious_probe import SubconsciousChordResult
@@ -150,6 +152,7 @@ def evaluate_shadow_appraisal(
     bonds_map: dict[str, SocialBondProfile],
     *,
     chord: SubconsciousChordResult | None = None,
+    profiles: Mapping[str, PersonProfile] | None = None,
 ) -> ShadowAppraisalResult:
     """Run full OCC/CPM aversion, Brehm reactance, and DePaulo deception appraisal."""
     if not triggers:
@@ -159,7 +162,7 @@ def evaluate_shadow_appraisal(
 
     aversion_line = _check_aversion(joined, chord)
     bond = bonds_map.get(last_uid)
-    w_care = compute_care_weight(last_uid, bond)
+    w_care = compute_care_weight(last_uid, bond, (profiles or {}).get(last_uid))
     w_aver = compute_aversion_susceptibility(last_uid, bond)
     irr_delta, reactance_hit, react_line = _check_reactance_and_satiation(
         triggers, w_care, w_aver, affect, chord

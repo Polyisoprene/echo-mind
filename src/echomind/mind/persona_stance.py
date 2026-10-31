@@ -14,6 +14,7 @@ from __future__ import annotations
 import math
 
 from echomind.domain.models import PlasticParamSpec, SocialBondProfile
+from echomind.mind.person_level import PersonProfile, stance_from_profile
 
 STANCE_MAX_POINTS = 8.0
 # key -> (warmth_bias, patience_bias, play_bias)
@@ -63,6 +64,12 @@ def apply_stance_for(
     params: dict[str, PlasticParamSpec],
     bonds_map: dict[str, SocialBondProfile] | None,
     sender_id: str,
+    profiles: dict[str, PersonProfile] | None = None,
 ) -> dict[str, PlasticParamSpec]:
-    """Convenience wrapper used by the cognitive facade."""
-    return apply_stance(params, stance_for(bonds_map, sender_id))
+    """Warmth/patience from the person profile; play from the venue bond."""
+    bond = (bonds_map or {}).get(sender_id)
+    if bond is None:
+        return params
+    profile = (profiles or {}).get(sender_id)
+    sigma = stance_from_profile(bond, profile) if profile is not None else stance_vector(bond)
+    return apply_stance(params, sigma)

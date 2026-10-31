@@ -40,24 +40,19 @@ from echomind.mind.cybernetics import (
 from echomind.mind.dialogue_context import DialogueContext
 from echomind.mind.drives import apply_turn_affect_and_drives
 from echomind.mind.drives_temporal import apply_temporal_decay_and_circadian
-from echomind.mind.ebbinghaus import (
-    extract_mentioned_uids,
-    recall_episodic_memories,
-    select_relevant_facts,
-)
+from echomind.mind.ebbinghaus import extract_mentioned_uids, select_relevant_facts
 from echomind.mind.epistemic import EpistemicCalibrator
 from echomind.mind.explorer import arbitrate_autonomous_action
+from echomind.mind.facade_memory import consolidate_dialogue, recall_and_reinforce
 from echomind.mind.frame_renderer import (
     build_curiosity_prompts,
     match_active_rules,
     render_mind_block,
 )
-from echomind.mind.memory_consolidator import (
-    build_turn_record,
-    consolidate_turn_memory,
-    run_hippocampal_batch_consolidation,
-)
+from echomind.mind.memory_consolidator import build_turn_record, consolidate_turn_memory
 from echomind.mind.perceptual_gate import PerceptualGate
+from echomind.mind.person_level_service import PersonLevelService
+from echomind.mind.persona_dynamics import param_value
 from echomind.mind.persona_stance import apply_stance_for
 from echomind.mind.persona_state import effective_params_of
 from echomind.mind.personality import synthesize_live_persona_directive
@@ -86,6 +81,7 @@ class CognitiveCoreFacade:
         bond_store: IBondDepthStore | None = None,
         operator_ids: tuple[str, ...] = (),
         persona_layers: IPersonaLayerStore | None = None,
+        person_level: PersonLevelService | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
         self._default_group = default_group_key
@@ -94,6 +90,7 @@ class CognitiveCoreFacade:
         self._bond_store = bond_store
         self._operator_ids = tuple(operator_ids)
         self._layers = persona_layers
+        self._person_level = person_level
         self._plasticity = NeuroplasticityEngine(working_store, persona_layers)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
@@ -148,27 +145,26 @@ class CognitiveCoreFacade:
         self, chat_key: str, triggers: tuple[Percept, ...], uids: tuple[str, ...],
         now_ms: int, dry_run: bool = False,
     ) -> tuple[RecalledMemoryItem, ...]:
-        cards = await self._reader.get_episodic_cards(chat_key)
-        recalled = recall_episodic_memories(
-            cards, " ".join(p.text for p in triggers), uids, now_ms, top_k=8
+        return await recall_and_reinforce(
+            self._reader, self._writer, chat_key=chat_key, triggers=triggers,
+            uids=uids, now_ms=now_ms, dry_run=dry_run,
         )
-        if not dry_run:
-            for r_item in recalled:
-                await self._writer.reinforce_episodic_card(r_item.card.card_id, now_ms)
-        return recalled
 
     async def _apply_shadow_and_save(
         self, chat_key: str, base_snap: WorkingSnapshot, triggers: tuple[Percept, ...],
         bonds_map: dict[str, SocialBondProfile], *, dry_run: bool = False,
         chord: SubconsciousChordResult | None = None,
     ) -> tuple[WorkingSnapshot, ShadowAppraisalResult, str]:
-        params = await effective_params_of(
-            self._working, self._layers, int(time.time() * 1000)
+        now_ms = int(time.time() * 1000)
+        params = await effective_params_of(self._working, self._layers, now_ms)
+        profiles = await self._person_level.profiles(now_ms) if self._person_level else {}
+        params = apply_stance_for(
+            params, bonds_map, triggers[-1].sender_id if triggers else "", profiles
         )
-        params = apply_stance_for(params, bonds_map, triggers[-1].sender_id if triggers else "")
         traits = await self._working.sync_persona_traits()
         shadow = evaluate_shadow_appraisal(
-            triggers, base_snap.affect, params, traits, bonds_map, chord=chord,
+            triggers, base_snap.affect, params, traits, bonds_map,
+            chord=chord, profiles=profiles,
         )
         raw_irr = base_snap.affect.irritation + shadow.irritation_delta
         new_irr = max(0.0, min(100.0, round(raw_irr, 2)))
@@ -189,10 +185,13 @@ class CognitiveCoreFacade:
         snap = await self._working.load_working_state("global")
         now_ms = int(time.time() * 1000)
         params = await effective_params_of(self._working, self._layers, now_ms)
-        params = apply_stance_for(params, bonds_map, triggers[-1].sender_id if triggers else "")
-        skep = params["skepticism"].value if "skepticism" in params else 55.0
-        talk = params["talkativeness"].value if "talkativeness" in params else 58.0
-        cur_rate = params["curiosity_rate"].value if "curiosity_rate" in params else 65.0
+        profiles = await self._person_level.profiles(now_ms) if self._person_level else {}
+        params = apply_stance_for(
+            params, bonds_map, triggers[-1].sender_id if triggers else "", profiles
+        )
+        skep = param_value(params, "skepticism", 55.0)
+        talk = param_value(params, "talkativeness", 58.0)
+        cur_rate = param_value(params, "curiosity_rate", 65.0)
         rivals = await self._reader.get_rival_names(chat_key)
         vocab = frozenset(f.subject.lower() for f in facts)
         s_bond = bonds_map.get(triggers[-1].sender_id) if (bonds_map and triggers) else None
@@ -204,8 +203,8 @@ class CognitiveCoreFacade:
         )
         unknowns = last_dec.detected_unknown_terms if last_dec else ()
         updated = apply_turn_affect_and_drives(
-            snap, triggers, rivals, unknowns,
-            curiosity_rate=cur_rate, bonds_map=bonds_map, params=params, chord=chord,
+            snap, triggers, rivals, unknowns, curiosity_rate=cur_rate,
+            bonds_map=bonds_map, params=params, chord=chord, profiles=profiles,
         )
         return updated, last_dec, skep
 
@@ -292,8 +291,7 @@ class CognitiveCoreFacade:
         self, chat_key: str, transcript_lines: tuple[str, ...],
         llm: ILlmGateway, *, role_text: str = "",
     ) -> int:
-        now_ms = int(time.time() * 1000)
-        return await run_hippocampal_batch_consolidation(
-            chat_key, self._reader, self._writer, llm,
-            transcript_lines, now_ms=now_ms, working_store=self._working, role_text=role_text,
+        return await consolidate_dialogue(
+            self._reader, self._writer, llm, self._working,
+            chat_key=chat_key, transcript_lines=transcript_lines, role_text=role_text,
         )
