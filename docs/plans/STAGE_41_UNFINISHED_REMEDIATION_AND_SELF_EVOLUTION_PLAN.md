@@ -1775,3 +1775,33 @@ GET /api/mind/trait-health
 - Web 测试断言 status/evidence 字段；
 - `mind_inspector_service.py` 保持 300 行；
 - 全门禁：**371 passed / 92%**，fusion 70/70。
+
+### 14.40 trait evidence 控制台 API（2026-11-01）
+
+新增只读：
+
+```text
+GET /api/mind/traits/{trait_id}/evidence
+```
+
+返回：
+
+- quote
+- quote_kind
+- polarity
+- context_hash
+- memory_ids
+- created_ms
+
+可直接审计 active trait 的真实证据。当前：
+
+- trait 45：3 条；
+- trait 66：4 条；
+- 全部来自真实发送文本；
+- 旧证据 memory_ids 为空，所以 link 仍为 0。
+
+**验证**
+
+- Web 测试断言新 endpoint；
+- `create_web_app` 保持 ≤40 行；
+- 全门禁：**371 passed / 92%**，fusion 70/70。

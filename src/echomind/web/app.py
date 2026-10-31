@@ -31,6 +31,7 @@ from echomind.web.mind_inspector_service import MindInspectorService
 from echomind.web.probe_service import CognitiveProbeService
 from echomind.web.skill_config_service import SkillConfigService
 from echomind.web.social_router import build_social_router
+from echomind.web.trait_evidence_service import trait_evidence as trait_evidence_view
 from echomind.web.trait_health_service import trait_health as trait_health_view
 from echomind.web.voice_health_service import VoiceHealthService
 
@@ -102,6 +103,17 @@ def _mind_router(inspector: MindInspectorService, chat: ChatStreamService) -> AP
     return router
 
 
+def _trait_evidence_router(inspector: MindInspectorService) -> APIRouter:
+    router = APIRouter()
+
+    @router.get("/api/mind/traits/{trait_id}/evidence")
+    async def trait_evidence(trait_id: int, limit: int = 20) -> dict[str, Any]:
+        rows = await trait_evidence_view(inspector._c.db, trait_id, limit)
+        return {"ok": True, "trait_id": trait_id, "evidence": rows}
+
+    return router
+
+
 def _asset_router(chat: ChatStreamService) -> APIRouter:
     router = APIRouter()
 
@@ -136,6 +148,7 @@ def _persona_router(
     @router.get("/api/mind/trait-health")
     async def trait_health() -> dict[str, Any]:
         return {"ok": True, **await trait_health_view(inspector._c.db)}
+
 
     @router.get("/api/mind/skills")
     async def skills() -> dict[str, Any]:
@@ -258,7 +271,6 @@ def create_web_app(
     llm = LlmConfigService(container, config_path or Path("data/config.json"))
     voice = VoiceHealthService(container)
     skill_cfg = SkillConfigService(container)
-
     @app.get("/api/session/token")
     async def _session_token(request: Request) -> dict[str, str]:
         """Hand the console its token, but only to loopback clients."""
@@ -270,6 +282,7 @@ def create_web_app(
     app.include_router(_mind_router(inspector, chat))
     app.include_router(_asset_router(chat))
     app.include_router(_persona_router(inspector, skill_cfg))
+    app.include_router(_trait_evidence_router(inspector))
     app.include_router(build_persona_card_router(llm, inspector))
     app.include_router(build_social_router(container))
     identity = IdentityConfigService(config_path or Path("data/config.json"), container)
