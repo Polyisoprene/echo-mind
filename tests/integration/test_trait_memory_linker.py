@@ -53,3 +53,32 @@ async def test_exact_quote_links_semantic_and_episodic(tmp_path: Path) -> None:
     assert result.semantic == 1 and result.episodic == 1
     assert len(await links.list_links(trait.trait_id)) == 2
     assert len(await links.ranker_scores((trait.trait_id,))) == 1
+
+
+async def test_linker_does_not_cross_venue(tmp_path: Path) -> None:
+    db = SqliteDatabase(tmp_path / "cross_venue.db")
+    await db.initialize()
+    traits = await SqliteWorkingStateStore(db).sync_persona_traits(
+        new_trait=PersonaTrait(trait_text="猫粮习惯", strength=6),
+        chat_key="g", source="turn:t1",
+    )
+    trait = traits[0]
+    repo = SqliteMemoryRepository(db)
+    for chat_key in ("g", "h"):
+        await repo.upsert_semantic_fact(SemanticFact(
+            chat_key=chat_key, subject="猫", fact_text="猫粮",
+            source_quote="喜欢猫粮",
+        ))
+    lookup = SqliteMemoryQuoteLookup(db)
+    links = SqliteTraitMemoryLinkStore(db)
+    owner_id = (await lookup.semantic_ids("g", "喜欢猫粮"))[0]
+    other_id = (await lookup.semantic_ids("h", "喜欢猫粮"))[0]
+    result = await link_exact_quotes(
+        trait.trait_id, "g",
+        (_evidence("喜欢猫粮", "c1", 1), _evidence("喜欢猫粮", "c2", 2)),
+        lookup, links,
+    )
+    assert result.semantic == 1
+    rows = await links.list_links(trait.trait_id)
+    assert [row.memory_id for row in rows] == [owner_id]
+    assert other_id not in {row.memory_id for row in rows}

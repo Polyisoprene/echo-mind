@@ -1387,3 +1387,28 @@ signature.result: 形成反复确认小槽点的行为模式
 - 没测跨 venue 的链接隔离；链接本身没有 venue 字段；
 - 没测 grant 后的 secret 传播；
 - 这些仍属于披露模型/GroupMemBench 工作流。
+
+### 14.27 跨 venue 链接隔离（2026-11-01）
+
+`trait_memory_links` 没有 `venue_id`，先验证是否真的需要：
+
+- 语义事实/情节记忆的 `id` 是**全局 AUTOINCREMENT**；
+- 链接器按 `chat_key + source_quote` 精确查记忆；
+- 检索时只拿当前 venue 的 facts，`unified_rank` 会按现成 facts 过滤 ranker 分数。
+
+新增测试 `test_linker_does_not_cross_venue`：
+
+- group g 和 group h 有相同 `source_quote` 的两条事实；
+- trait 属于 g；
+- 链接器只生成 g 的 1 条链接；
+- h 的 memory_id 不出现。
+
+**结论**
+
+- 当前不需要给 link 加 `venue_id`；
+- 跨 venue 由“事实 ID 全局唯一 + 链接器 chat_key 过滤 + 检索只传当前 facts”共同保证；
+- 若未来 ID 复用或跨库合并，再补 venue 字段。
+
+**验证**
+
+- 全门禁：**360 passed / 92%**，fusion 70/70。
