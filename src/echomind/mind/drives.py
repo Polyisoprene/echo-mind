@@ -21,6 +21,11 @@ if TYPE_CHECKING:
 
 CST = datetime.timezone(datetime.timedelta(hours=8))
 
+# param: convention:persona-reunion-gap - 30 min sits beyond the observed p99 message
+# gap (1,144 s over 5,850 gaps in data/echomind.db), so soothing fires on a genuine
+# reunion rather than on every ordinary turn.
+REUNION_GAP_MIN = 30.0
+
 
 def _clamp(val: float, lo: float = 0.0, hi: float = 100.0) -> float:
     return max(lo, min(hi, round(val, 2)))
@@ -119,7 +124,8 @@ def _extract_chord_components(
 
 def _chord_rpe_and_soothing(
     w_care: float, w_aver: float, j_delta: float, att_val: float,
-    *, speaker_aff: float, curr_irr: float, chord: SubconsciousChordResult | None, is_poke: bool,
+    *, speaker_aff: float, curr_irr: float, chord: SubconsciousChordResult | None,
+    is_poke: bool, is_reunion: bool,
 ) -> tuple[float, float, float, float]:
     c_joy, c_hurt, c_shy, c_ann = _extract_chord_components(chord, is_poke, speaker_aff, curr_irr)
     neutral_base = 0.12 if (c_joy == 0 and c_hurt == 0 and c_ann == 0) else 0.0
@@ -127,7 +133,7 @@ def _chord_rpe_and_soothing(
     rpe_v = round((r_actual - 0.16 * w_care) * (0.65 + 0.85 * w_care) * 14.0, 2)
     irr_d = round(6.5 * c_ann * w_aver - 2.0 * c_joy * (0.4 + 0.6 * w_care), 2)
     shy_b = round(5.5 * c_shy * (0.35 + 0.65 * w_care), 2)
-    if w_care >= 0.20 and r_actual >= 0.0 and j_delta <= 0.0:
+    if is_reunion and w_care >= 0.20 and r_actual >= 0.0 and j_delta <= 0.0:
         soothe = round(min(18.0, max(2.5, att_val * 0.22 * w_care * (1.0 + 0.25 * c_joy))), 2)
         return rpe_v + round(soothe * 0.35, 2), -soothe, shy_b, irr_d
     att_d = round(0.25 * max(0.0, j_delta) + (1.2 if w_care >= 0.20 else 0.2), 2)
@@ -192,6 +198,19 @@ def _max_batch_jealousy(
     return best_j, best_t
 
 
+def _appraisal_context(
+    bond: SocialBondProfile | None, last: Percept | None
+) -> tuple[float, float, float, bool]:
+    """Care weight, aversion susceptibility, speaker affinity and reunion flag."""
+    uid = bond.user_id if bond is not None else ""
+    w_care = compute_care_weight(uid, bond)
+    w_aver = compute_aversion_susceptibility(uid, bond)
+    s_aff = 9999.0 if w_care >= 0.99 else (bond.affinity_score if bond else 35.0)
+    last_seen = bond.last_seen_ms if bond is not None else 0
+    gap_min = 0.0 if last is None or last_seen <= 0 else (last.timestamp_ms - last_seen) / 60_000.0
+    return w_care, w_aver, s_aff, gap_min >= REUNION_GAP_MIN
+
+
 def apply_turn_affect_and_drives(
     snapshot: WorkingSnapshot, triggers: tuple[Percept, ...],
     rivals: tuple[str, ...], unknown_terms: tuple[str, ...] = (), *,
@@ -206,14 +225,12 @@ def apply_turn_affect_and_drives(
     last = triggers[-1] if triggers else None
     last_uid = last.sender_id if last else ""
     bond = bonds_map.get(last_uid) if bonds_map else None
-    w_care = compute_care_weight(last_uid, bond)
-    w_aver = compute_aversion_susceptibility(last_uid, bond)
-    s_aff = 9999.0 if w_care >= 0.99 else (bond.affinity_score if bond else 35.0)
+    w_care, w_aver, s_aff, is_reunion = _appraisal_context(bond, last)
     j_raw, j_thought = _max_batch_jealousy(triggers, rivals, bonds_map, chord)
     j_delta = round(j_raw * (jealousy_sens if j_raw > 0 else 1.0), 2)
     v_rpe, att_delta, shy_boost, irr_delta = _chord_rpe_and_soothing(
         w_care, w_aver, j_delta, drv.attachment, speaker_aff=s_aff, curr_irr=aff.irritation,
-        chord=chord, is_poke=any(p.is_poke_me for p in triggers),
+        chord=chord, is_poke=any(p.is_poke_me for p in triggers), is_reunion=is_reunion,
     )
     cur_d = _curiosity_impulse(
         drv.curiosity, triggers, unknown_terms, curiosity_rate,
@@ -232,61 +249,3 @@ def apply_turn_affect_and_drives(
             "curiosity_queue": merged_q, "inner_thought": spill,
         }
     )
-
-
-def apply_temporal_decay_and_circadian(
-    snapshot: WorkingSnapshot, elapsed_minutes: float, now_ms: int | None = None
-) -> WorkingSnapshot:
-    """Evolve affect and drives across real elapsed time (half-life decay & circadian rhythm)."""
-    if elapsed_minutes <= 1.0:
-        return snapshot
-    aff, drv = snapshot.affect, snapshot.drives
-    dt_cap = min(elapsed_minutes, 180.0)
-    decay = 0.5 ** (dt_cap / 30.0)
-    phase = resolve_circadian_phase(now_ms)
-    v_pull = _pull(aff.valence, 60.0, min(0.4, dt_cap * 0.012))
-    new_aff = AffectiveVector(
-        valence=_clamp(aff.valence + v_pull, -100.0, 100.0),
-        energy=_clamp(aff.energy + _pull(aff.energy, phase.energy_target, min(0.5, dt_cap * 0.02))),
-        jealousy=_clamp(aff.jealousy * decay), shyness=_clamp(18.0 + (aff.shyness - 18.0) * decay),
-        irritation=_clamp(aff.irritation * decay),
-    )
-    att_target = 78.0 + phase.attachment_bias
-    att_step = max(0.0, (att_target - drv.attachment) * min(0.35, dt_cap * 0.008))
-    new_att = _clamp(drv.attachment + att_step, 18.0, 92.0)
-    new_j_drv = _clamp(new_aff.jealousy * (0.55 + 0.45 * (new_att / 100.0)))
-    new_drv = DriveState(
-        curiosity=_clamp(drv.curiosity + min(10.0, dt_cap * 0.3) + phase.curiosity_bias * 0.25),
-        attachment=new_att, jealousy_drive=new_j_drv,
-        social_expression=_clamp(
-            drv.social_expression + min(6.0, dt_cap * 0.15) + phase.social_bias * 0.25
-        ),
-    )
-    use_p = phase.is_asleep or dt_cap >= 25.0
-    act = phase.default_activity if use_p else snapshot.current_activity
-    upd = {"affect": new_aff, "drives": new_drv, "current_activity": act}
-    return snapshot.model_copy(update=upd)
-
-
-def apply_exogenous_surf_affect(
-    snapshot: WorkingSnapshot, unseen_line: str, *, shared_to_chat: bool = False
-) -> WorkingSnapshot:
-    """Update mood, satiate curiosity/expression drives, and refresh activity from surfing."""
-    aff, drv = snapshot.affect, snapshot.drives
-    new_aff = AffectiveVector(
-        valence=_clamp(aff.valence + 7.5, -100.0, 100.0), energy=_clamp(aff.energy - 1.0),
-        jealousy=_clamp(aff.jealousy - 4.0), shyness=aff.shyness,
-        irritation=_clamp(aff.irritation - 10.0),
-    )
-    new_drv = DriveState(
-        curiosity=_clamp(drv.curiosity - 26.0), attachment=drv.attachment,
-        jealousy_drive=_clamp(new_aff.jealousy * (0.55 + 0.45 * (drv.attachment / 100.0))),
-        social_expression=_clamp(drv.social_expression - (28.0 if shared_to_chat else 8.0)),
-    )
-    act = (
-        "刚跟大家分享完新鲜事，正戴着耳机听歌休息"
-        if (shared_to_chat or not unseen_line)
-        else f"刚在B站刷到：{unseen_line[:110]}"
-    )
-    upd = {"affect": new_aff, "drives": new_drv, "current_activity": act}
-    return snapshot.model_copy(update=upd)

@@ -1,4 +1,10 @@
-"""M3.4/M26.2 Neuroplasticity & Dynamic Personality Self-Learning Engine (Zero Lexicons)."""
+"""M3.4/M26.2 Neuroplasticity & Dynamic Personality Self-Learning Engine (Zero Lexicons).
+
+Personality is two layers:
+  * trait baseline (`plastic_params`) — settled once per day by at most TRAIT_DAILY_PUSH;
+  * fast state (`persona_state`) — reacts to every turn, bounded and decaying.
+A turn therefore never rewrites the baseline; it only records state + evidence.
+"""
 
 from __future__ import annotations
 
@@ -7,13 +13,16 @@ from typing import TYPE_CHECKING
 
 from echomind.domain.models import PlasticParamSpec, TurnOutcome
 from echomind.domain.persona_specs import PERSONA_SPECS
-from echomind.domain.ports import IWorkingStateStore
-from echomind.mind.persona_dynamics import budgeted_delta, slow_regression
+from echomind.domain.ports import IPersonaLayerStore, IWorkingStateStore
+from echomind.mind.persona_dynamics import TRAIT_DAILY_PUSH, slow_regression
+from echomind.mind.persona_state import step_state
 from echomind.mind.personality import compute_personality_deltas, derive_emergent_trait
 from echomind.mind.subconscious_probe import compute_chord_social_reward
 
 if TYPE_CHECKING:
     from echomind.mind.subconscious_probe import SubconsciousChordResult
+
+DAY_MS = 86_400_000.0
 
 PARAM_BASELINES: dict[str, float] = {
     "talkativeness": 58.0,
@@ -48,7 +57,7 @@ def trait_strength_shift(reward: float) -> tuple[int, tuple[str, ...]]:
 
 
 def homeostatic_pull(key: str, current: float) -> float:
-    """Pull a drifted parameter gently back toward its evolutionary baseline."""
+    """Pull a drifted behavioral parameter gently back toward its baseline."""
     baseline = PARAM_BASELINES.get(key)
     if baseline is None:
         return 0.0
@@ -56,18 +65,16 @@ def homeostatic_pull(key: str, current: float) -> float:
 
 
 def compute_param_deltas(outcome: TurnOutcome) -> list[tuple[str, float, str]]:
-    """Compute bounded behavioral & 5D personality deltas from turn outcome."""
+    """Compute bounded behavioral & 7D personality observations from one turn."""
     adjustments: list[tuple[str, float, str]] = []
     reward = outcome.social_reward
 
-    # 1. Epistemic prediction error (was fooled or spoofed by a group member)
     if outcome.epistemic_conflict_detected:
         adjustments.append(("skepticism", 5.0, "检测到群友身份忽悠/事实冲突，自主上调防忽悠警觉度"))
         adjustments.append(
             ("verify_impulse", 4.0, "吃一堑长一智，上调遇到可疑说法主动调工具核验冲动")
         )
 
-    # 2. Social reinforcement signal (positive engagement vs cold silence/criticism)
     if reward >= 0.45:
         adjustments.append(
             (
@@ -76,7 +83,9 @@ def compute_param_deltas(outcome: TurnOutcome) -> list[tuple[str, float, str]]:
                 "发言获得群友积极接茬互动，上调群聊插话积极度",
             )
         )
-        adjustments.append(("proactive_idle_min", -0.5, "互动气氛热烈，略微缩短冷场主动等待时间"))
+        adjustments.append(
+            ("proactive_idle_min", -0.5, "互动气氛热烈，略微缩短冷场主动等待时间")
+        )
     elif reward <= -0.3:
         adjustments.append(
             ("talkativeness", round(reward * 4.0, 2), "发言后冷场或受挫，自主收敛群聊插话积极度")
@@ -85,66 +94,71 @@ def compute_param_deltas(outcome: TurnOutcome) -> list[tuple[str, float, str]]:
             ("proactive_idle_min", 1.0, "避免刷屏打扰，自主延长冷场主动开口等待时间")
         )
 
-    # 3. Curiosity reinforcement when search/meme/video exploration tools were actively used
     if any(t in ("web_search", "meme_wiki", "web_fetch", "read_video") for t in outcome.tools_used):
         adjustments.append(("curiosity_rate", 2.0, "主动使用搜索/梗百科工具探索未知，强化求知欲"))
 
-    # 4. Dynamic 5D Personality Temperament evolution
     adjustments.extend(compute_personality_deltas(outcome))
     return adjustments
 
 
-async def _persona_bounded_delta(
-    store: object, key: str, snap: PlasticParamSpec, raw: float
-) -> float:
-    """Apply per-turn clip, slow daily regression and the per-dimension daily cap."""
-    now_ms = int(time.time() * 1000)
-    usage = getattr(store, "persona_day_usage", None)
-    last = getattr(store, "persona_last_update_ms", None)
-    used_today = await usage(key, now_ms - 86_400_000) if callable(usage) else 0.0
-    last_ms = await last(key) if callable(last) else now_ms
-    days = (now_ms - last_ms) / 86_400_000 if last_ms else 0.0
-    baseline = PARAM_BASELINES.get(key, snap.value)
-    return round(budgeted_delta(raw, used_today, slow_regression(snap.value, baseline, days)), 3)
+def _bounded(value: float, limit: float) -> float:
+    return max(-limit, min(limit, value))
 
 
 class NeuroplasticityEngine:
-    """Apply behavioral & personality reinforcement adjustments via IWorkingStateStore."""
+    """Apply behavioral reinforcement and two-layer persona learning."""
 
-    def __init__(self, store: IWorkingStateStore) -> None:
+    def __init__(
+        self, store: IWorkingStateStore, layers: IPersonaLayerStore | None = None
+    ) -> None:
         self._store = store
+        self._layers = layers
+
+    async def _observe_persona(self, key: str, delta: float, now_ms: int) -> None:
+        """Move the fast state and buffer the observation for tomorrow's settlement."""
+        if self._layers is None:
+            return
+        offset, _ = step_state(await self._layers.load_state(), key, delta, now_ms)
+        await self._layers.save_state(key, offset, now_ms)
+        await self._layers.record_observation(key, delta, now_ms)
 
     async def adapt_from_outcome(self, outcome: TurnOutcome) -> tuple[PlasticParamSpec, ...]:
         deltas = compute_param_deltas(outcome)
         if not deltas:
             return ()
+        now_ms = int(time.time() * 1000)
         current = await self._store.get_plastic_params()
         updated: list[PlasticParamSpec] = []
         for key, delta, reason in deltas:
+            if key.startswith("persona_"):
+                await self._observe_persona(key, delta, now_ms)
+                continue
             applied = await self._apply_one(key, delta, reason, current, outcome.social_reward)
             if applied is not None:
                 updated.append(applied)
+        await self._learn_traits(outcome)
+        return tuple(updated)
+
+    async def _learn_traits(self, outcome: TurnOutcome) -> None:
         emergent = derive_emergent_trait(outcome)
         shift, decay_cats = trait_strength_shift(outcome.social_reward)
-        if emergent is not None or shift != 0:
-            await self._store.sync_persona_traits(
-                new_trait=emergent, strength_delta=shift, chat_key=outcome.chat_key,
-                source=f"turn:{outcome.session_id}", decay_categories=decay_cats,
-            )
-        return tuple(updated)
+        if emergent is None and shift == 0:
+            return
+        await self._store.sync_persona_traits(
+            new_trait=emergent, strength_delta=shift, chat_key=outcome.chat_key,
+            source=f"turn:{outcome.session_id}", decay_categories=decay_cats,
+        )
 
     async def _apply_one(
         self, key: str, delta: float, reason: str,
         current: dict[str, PlasticParamSpec], reward: float,
     ) -> PlasticParamSpec | None:
-        """Damp, homeostatically pull and (for persona dims) bound one delta."""
+        """Damp, homeostatically pull and persist one behavioral parameter."""
         snap = current.get(key)
         if snap is None:
             return None
         damped = boundary_damping(snap.value, delta, snap.min_bound, snap.max_bound)
         total = round(damped + homeostatic_pull(key, snap.value), 3)
-        if key.startswith("persona_"):
-            total = await _persona_bounded_delta(self._store, key, snap, total)
         clamped = max(snap.min_bound, min(snap.max_bound, round(snap.value + total, 3)))
         if abs(clamped - snap.value) < 0.005:
             return None
@@ -152,35 +166,62 @@ class NeuroplasticityEngine:
             key=key, delta=total, reason=reason, reward=reward
         )
 
+    async def settle_baseline(self, now_ms: int) -> tuple[PlasticParamSpec, ...]:
+        """Apply one day of buffered evidence to the slow baseline, bounded and slow."""
+        if self._layers is None:
+            return ()
+        buckets = await self._layers.pop_observations(now_ms)
+        if not buckets:
+            return ()
+        params = await self._store.get_plastic_params()
+        updated: list[PlasticParamSpec] = []
+        for key, (total, last_ms) in buckets.items():
+            applied = await self._settle_one(key, total, last_ms, params, now_ms)
+            if applied is not None:
+                updated.append(applied)
+        return tuple(updated)
+
+    async def _settle_one(
+        self,
+        key: str,
+        total: float,
+        last_ms: int,
+        params: dict[str, PlasticParamSpec],
+        now_ms: int,
+    ) -> PlasticParamSpec | None:
+        snap = params.get(key)
+        if snap is None or not key.startswith("persona_"):
+            return None
+        days = max(0.0, (now_ms - last_ms) / DAY_MS) if last_ms else 1.0
+        baseline = PARAM_BASELINES.get(key, snap.value)
+        regression = slow_regression(snap.value, baseline, days)
+        wanted = _bounded(_bounded(total, TRAIT_DAILY_PUSH) + regression, TRAIT_DAILY_PUSH)
+        target = max(snap.min_bound, min(snap.max_bound, snap.value + wanted))
+        delta = round(target - snap.value, 4)
+        if abs(delta) < 1e-4:
+            return None
+        return await self._store.update_plastic_param(
+            key=key, delta=delta, reason="日结算：特质基线缓慢漂移", reward=0.0
+        )
+
     async def adapt_from_exogenous_info(
         self, kind: str, topic: str
     ) -> tuple[PlasticParamSpec, ...]:
-        """Reshape personality and curiosity parameters from autonomous web/Bilibili surfing."""
+        """Surfing may raise curiosity, but must not move the slow personality baseline."""
         current = await self._store.get_plastic_params()
         label = topic[:18] or kind
-        deltas = [
-            ("persona_playfulness", 0.8, f"自主冲浪吸收新内容({label})，玩梗灵动度提升"),
-            ("curiosity_rate", 0.6, f"自主冲浪探索({label})，对外部世界求知欲强化"),
-        ]
-        if kind == "bili_surf":
-            deltas.append(
-                ("persona_confidence", 0.5, f"浏览B站新鲜话题({label})，聊天谈资更丰富自信")
-            )
-        updated: list[PlasticParamSpec] = []
-        for key, delta, reason in deltas:
-            snap = current.get(key)
-            if snap is None:
-                continue
-            damped = boundary_damping(snap.value, delta, snap.min_bound, snap.max_bound)
-            total = round(damped + homeostatic_pull(key, snap.value), 3)
-            if abs(total) < 0.005:
-                continue
-            updated.append(
-                await self._store.update_plastic_param(
-                    key=key, delta=total, reason=reason, reward=0.35
-                )
-            )
-        return tuple(updated)
+        snap = current.get("curiosity_rate")
+        if snap is None:
+            return ()
+        damped = boundary_damping(snap.value, 0.6, snap.min_bound, snap.max_bound)
+        total = round(damped + homeostatic_pull("curiosity_rate", snap.value), 3)
+        if abs(total) < 0.005:
+            return ()
+        applied = await self._store.update_plastic_param(
+            key="curiosity_rate", delta=total,
+            reason=f"自主冲浪探索({label})，对外部世界求知欲强化", reward=0.35,
+        )
+        return (applied,)
 
 
 def apply_chord_reward(

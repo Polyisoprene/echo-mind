@@ -932,7 +932,7 @@ async def test_stage13_temporal_perception_novelty_dedup_and_exogenous_affect(
     tmp_path: Path,
 ) -> None:
     from echomind.domain.models import CognitiveFrame
-    from echomind.mind.drives import (
+    from echomind.mind.drives_temporal import (
         apply_exogenous_surf_affect,
         apply_temporal_decay_and_circadian,
     )
@@ -1754,14 +1754,14 @@ def test_stage24_generalized_care_weight_hrrl_attachment_soothing_and_5x5_coupli
         chat_key="group:10002002",
         scene="group",
         message_id="w1",
-        timestamp_ms=20_000,
+        timestamp_ms=1_700_000_000_000,
         sender_id="10001001",
         sender_name="L",
         text="尾尾真乖，摸摸头",
     )
     warm_bond = friend_bond.model_copy(
         update={"user_id": "10001001", "affinity_score": 92.0, "trust_score": 0.95,
-                "bond_depth": 75.0}
+                "bond_depth": 75.0, "last_seen_ms": p_warm.timestamp_ms - 7_200_000}
     )
     soothed = apply_turn_affect_and_drives(
         lonely_snap,

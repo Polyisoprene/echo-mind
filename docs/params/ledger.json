@@ -1,0 +1,995 @@
+{
+  "version": 1,
+  "generated_by": "scripts/param_audit.py",
+  "entries": [
+    {
+      "id": "mind/bond_adapt.py::DEFAULT_TAU",
+      "module": "mind/bond_adapt.py",
+      "symbol": "DEFAULT_TAU",
+      "line": 19,
+      "value": "0.35",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-006",
+      "experiment": "LOGO 留一群交叉验证选 τ",
+      "conservative_value": "0.35",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/bond_adapt.py::MIN_OBS_FOR_CALIBRATION",
+      "module": "mind/bond_adapt.py",
+      "symbol": "MIN_OBS_FOR_CALIBRATION",
+      "line": 16,
+      "value": "20",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-006",
+      "experiment": "小样本收缩：模拟确定最小观测数",
+      "conservative_value": "20",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/bond_adapt.py::SLOPE_BOUNDS",
+      "module": "mind/bond_adapt.py",
+      "symbol": "SLOPE_BOUNDS",
+      "line": 17,
+      "value": "(0.5, 2.0)",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-006",
+      "experiment": "校准斜率边界；用校准曲线斜率分布确定",
+      "conservative_value": "(0.5, 2.0)",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/bond_depth.py::AFFINITY_OFFSET",
+      "module": "mind/bond_depth.py",
+      "symbol": "AFFINITY_OFFSET",
+      "line": 42,
+      "value": "38.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "38.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/bond_depth.py::AFFINITY_SPAN",
+      "module": "mind/bond_depth.py",
+      "symbol": "AFFINITY_SPAN",
+      "line": 43,
+      "value": "70.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "70.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/bond_depth.py::BETA_PRIOR",
+      "module": "mind/bond_depth.py",
+      "symbol": "BETA_PRIOR",
+      "line": 45,
+      "value": "2.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "Beta 先验强度；取 2 使早期更新不过度自信；敏感性扫描待 E1"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::BETRAYAL_HALF_LIFE",
+      "module": "mind/bond_depth.py",
+      "symbol": "BETRAYAL_HALF_LIFE",
+      "line": 37,
+      "value": "3.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "3.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.0,
+        "status": "unexercised",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::BIAS",
+      "module": "mind/bond_depth.py",
+      "symbol": "BIAS",
+      "line": 31,
+      "value": "2.6",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "2.6",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 20.51,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::DEPTH_BONUS",
+      "module": "mind/bond_depth.py",
+      "symbol": "DEPTH_BONUS",
+      "line": 40,
+      "value": "0.35",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "0.35",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/bond_depth.py::DEPTH_CEILING",
+      "module": "mind/bond_depth.py",
+      "symbol": "DEPTH_CEILING",
+      "line": 38,
+      "value": "0.97",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "策略上限：w_care 封顶 0.97，避免单点关系无限接近 1；无自由参数"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::DIVERSITY_SATURATION",
+      "module": "mind/bond_depth.py",
+      "symbol": "DIVERSITY_SATURATION",
+      "line": 35,
+      "value": "42.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "42.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 0.9981,
+        "max_depth_delta": 5.78,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::FREQ_SATURATION",
+      "module": "mind/bond_depth.py",
+      "symbol": "FREQ_SATURATION",
+      "line": 34,
+      "value": "452.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "452.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 1.24,
+        "status": "medium",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::GAIN",
+      "module": "mind/bond_depth.py",
+      "symbol": "GAIN",
+      "line": 32,
+      "value": "1.6",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "1.6",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 4.91,
+        "status": "medium",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::IMPACT_SATURATION",
+      "module": "mind/bond_depth.py",
+      "symbol": "IMPACT_SATURATION",
+      "line": 36,
+      "value": "45.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "45.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.03,
+        "status": "low",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::W_BETRAY",
+      "module": "mind/bond_depth.py",
+      "symbol": "W_BETRAY",
+      "line": 29,
+      "value": "1.6",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-PARAM-BOND",
+      "experiment": "用跨群同一人配对一致性 + 极端锚点弱监督拟合（MASTER_BACKLOG §4.4）",
+      "conservative_value": "1.6",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.0,
+        "status": "unexercised",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::W_DIV",
+      "module": "mind/bond_depth.py",
+      "symbol": "W_DIV",
+      "line": 22,
+      "value": "1.2",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "权重相对量级由 S29 设计固定，用于排序而非绝对值；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 0.9973,
+        "max_depth_delta": 5.29,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::W_FREQ",
+      "module": "mind/bond_depth.py",
+      "symbol": "W_FREQ",
+      "line": 21,
+      "value": "1.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "同上；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 0.9973,
+        "max_depth_delta": 6.81,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::W_IMPACT",
+      "module": "mind/bond_depth.py",
+      "symbol": "W_IMPACT",
+      "line": 23,
+      "value": "1.1",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "同上；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 0.03,
+        "status": "low",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::W_RECIP",
+      "module": "mind/bond_depth.py",
+      "symbol": "W_RECIP",
+      "line": 25,
+      "value": "1.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "同上；敏感性扫描待 E1"
+      },
+      "e1_sensitivity": {
+        "min_rank": 0.996,
+        "max_depth_delta": 7.09,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_depth.py::W_RESP",
+      "module": "mind/bond_depth.py",
+      "symbol": "W_RESP",
+      "line": 27,
+      "value": "1.4",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "src"
+      },
+      "issue": "ECHOMIND-PARAM-BOND-SRC",
+      "experiment": "确认该权重是否真出自文献；若不是，改为弱监督拟合",
+      "conservative_value": "1.4",
+      "contradiction": "原 param: src 标签只指向依恋模型 DOI，未给出 1.4 这个数值的页码/公式",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-A 关系模型",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值",
+      "e1_sensitivity": {
+        "min_rank": 1.0,
+        "max_depth_delta": 11.14,
+        "status": "high",
+        "protocol": "scripts/bond_param_sensitivity.py"
+      }
+    },
+    {
+      "id": "mind/bond_scoring.py::SHRINK_TAU",
+      "module": "mind/bond_scoring.py",
+      "symbol": "SHRINK_TAU",
+      "line": 26,
+      "value": "2.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-007",
+      "experiment": "经验贝叶斯收缩强度；用群规模与深度方差比值确定",
+      "conservative_value": "2.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-B 校准",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/chord_cache.py::CACHE_LIMIT",
+      "module": "mind/chord_cache.py",
+      "symbol": "CACHE_LIMIT",
+      "line": 10,
+      "value": "256",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "内存保护上限；回放 cache_peak 未触发淘汰时可下调"
+      }
+    },
+    {
+      "id": "mind/chord_gateway.py::STRONG_SIGNAL_SCORE",
+      "module": "mind/chord_gateway.py",
+      "symbol": "STRONG_SIGNAL_SCORE",
+      "line": 22,
+      "value": "0.55",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-009",
+      "experiment": "用回放中强信号事件的唤醒命中率确定阈值",
+      "conservative_value": "0.55",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/dialogue_context.py::MAX_CHARS",
+      "module": "mind/dialogue_context.py",
+      "symbol": "MAX_CHARS",
+      "line": 12,
+      "value": "80",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "单行截断，控制 prompt 体积"
+      }
+    },
+    {
+      "id": "mind/dialogue_context.py::MAX_LINES",
+      "module": "mind/dialogue_context.py",
+      "symbol": "MAX_LINES",
+      "line": 11,
+      "value": "8",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "探针只读最后 6 行，8 行留余量"
+      }
+    },
+    {
+      "id": "mind/drives.py::REUNION_GAP_MIN",
+      "module": "mind/drives.py",
+      "symbol": "REUNION_GAP_MIN",
+      "line": 27,
+      "value": "30.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "重聚安抚阈值 30 分钟，位于实测消息间隔 p99（1,144 秒，5,850 个间隔）之外；使安抚只在真正久别后触发，而不是每次普通对话"
+      }
+    },
+    {
+      "id": "mind/ebbinghaus.py::CLEAR_THRESHOLD",
+      "module": "mind/ebbinghaus.py",
+      "symbol": "CLEAR_THRESHOLD",
+      "line": 12,
+      "value": "0.55",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-010",
+      "experiment": "召回质量评测后定清晰/模糊分界",
+      "conservative_value": "0.55",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/ebbinghaus.py::FUZZY_THRESHOLD",
+      "module": "mind/ebbinghaus.py",
+      "symbol": "FUZZY_THRESHOLD",
+      "line": 13,
+      "value": "0.22",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-010",
+      "experiment": "同上：低于此值不召回",
+      "conservative_value": "0.22",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-D 门控与召回",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/ebbinghaus.py::MS_PER_HOUR",
+      "module": "mind/ebbinghaus.py",
+      "symbol": "MS_PER_HOUR",
+      "line": 14,
+      "value": "3600000.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "单位换算（60*60*1000），无自由度"
+      }
+    },
+    {
+      "id": "mind/fact_shadow.py::MS_PER_DAY",
+      "module": "mind/fact_shadow.py",
+      "symbol": "MS_PER_DAY",
+      "line": 12,
+      "value": "86400000.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "单位换算（24*3600*1000），无自由度"
+      }
+    },
+    {
+      "id": "mind/memory_budget.py::DEFAULT_CONSOLIDATION_BUDGET",
+      "module": "mind/memory_budget.py",
+      "symbol": "DEFAULT_CONSOLIDATION_BUDGET",
+      "line": 5,
+      "value": "900",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "默认值，控制台可配；不影响正确性"
+      }
+    },
+    {
+      "id": "mind/memory_consolidator.py::AFFINITY_THRESHOLDS",
+      "module": "mind/memory_consolidator.py",
+      "symbol": "AFFINITY_THRESHOLDS",
+      "line": 28,
+      "value": "(50.0, 100.0, 200.0, 500.0)",
+      "class": "data",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "dataset_sha256": "89d93a500788b87066b8beed4aad98616161a29e2dc6be0eb991e8e486fd11d9",
+        "n": 26,
+        "estimate": [
+          31.77,
+          40.75,
+          48.2,
+          56.79
+        ],
+        "ci95": {
+          "0.25": [
+            31.06,
+            40.39
+          ],
+          "0.5": [
+            34.12,
+            45.41
+          ],
+          "0.75": [
+            42.35,
+            56.52
+          ],
+          "0.9": [
+            48.12,
+            88.2
+          ]
+        },
+        "script": "scripts/fit_affinity_thresholds.py",
+        "note": "41 total bonds, 16 dormant at the default 30; quantiles fitted on the 26 active"
+      },
+      "issue": "ECHOMIND-E1-008",
+      "experiment": "用好友互动频次的分位点替代绝对阈值",
+      "conservative_value": "(50.0, 100.0, 200.0, 500.0)",
+      "e1_proposed_class": "data",
+      "e1_group": "E1-F 关系等级",
+      "e1_dataset": "social_bonds.affinity_score 分位（n=41；p25=30、p50=31.1、p75=42.8、p90=53.2）；现阈值 50/100/200/500 导致 90% 停在 Lv.1",
+      "e1_action": "已完成（2026-10-31）"
+    },
+    {
+      "id": "mind/memory_consolidator.py::DUNBAR_ACQUAINTANCE_CAP",
+      "module": "mind/memory_consolidator.py",
+      "symbol": "DUNBAR_ACQUAINTANCE_CAP",
+      "line": 29,
+      "value": "85.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "产品策略：熟人区上限 85 分。Dunbar 层数只提供“分层”概念，不提供 85 这个数"
+      }
+    },
+    {
+      "id": "mind/memory_consolidator.py::RIVAL_EQUILIBRIUM",
+      "module": "mind/memory_consolidator.py",
+      "symbol": "RIVAL_EQUILIBRIUM",
+      "line": 30,
+      "value": "45.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-008",
+      "experiment": "情敌均衡点；用对手关系样本拟合",
+      "conservative_value": "45.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-E 情敌均衡",
+      "e1_blocked": true,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/persona_dynamics.py::DAILY_CAP",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "DAILY_CAP",
+      "line": 14,
+      "value": "6.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "仅约束控制台手动调参的单次/日上限；自动学习已改用 TRAIT_DAILY_PUSH（0.01333/天），此值不再影响人格演化"
+      }
+    },
+    {
+      "id": "mind/persona_dynamics.py::DELTA_CLIP",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "DELTA_CLIP",
+      "line": 13,
+      "value": "2.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-001",
+      "experiment": "敏感性扫描 clip∈[1,4]：回放终态、唤醒率、盲评区分度的变化",
+      "conservative_value": "2.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/persona_dynamics.py::MAX_CATCHUP_DAYS",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "MAX_CATCHUP_DAYS",
+      "line": 15,
+      "value": "30.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "结构性上限：只影响长停机后单次补回的回归量，无自由参数"
+      }
+    },
+    {
+      "id": "mind/persona_dynamics.py::STATE_HALF_LIFE_MIN",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "STATE_HALF_LIFE_MIN",
+      "line": 38,
+      "value": "45.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-E1-014",
+      "experiment": "状态半衰期 20/45/90 分钟，测对话内连贯性与跨会话复位速度",
+      "conservative_value": "45.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "动力学包络：45min 减半、3h 剩 6%；半衰期属设计选择，暂不改",
+      "e1_dynamics": {
+        "turns_to_cap_step4": 3,
+        "turns_to_cap_step2": 5,
+        "decay_45min": 0.5,
+        "decay_90min": 0.25,
+        "decay_180min": 0.0625,
+        "share_at_cap_mixed": 0.096,
+        "share_at_cap_consistent": 0.774,
+        "script": "scripts/persona_state_envelope.py"
+      }
+    },
+    {
+      "id": "mind/persona_dynamics.py::STATE_MAX_ABS",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "STATE_MAX_ABS",
+      "line": 36,
+      "value": "10.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-E1-013",
+      "experiment": "敏感性审计：状态幅度 ±5/±10/±15 三档，测盲评可辨性与跨会话一致性",
+      "conservative_value": "10.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "已验证 ±10 可辨（R=4）；上限属设计选择，暂不改",
+      "e1_dynamics": {
+        "turns_to_cap_step4": 3,
+        "turns_to_cap_step2": 5,
+        "decay_45min": 0.5,
+        "decay_90min": 0.25,
+        "decay_180min": 0.0625,
+        "share_at_cap_mixed": 0.096,
+        "share_at_cap_consistent": 0.774,
+        "script": "scripts/persona_state_envelope.py"
+      },
+      "e1_perceptibility": {
+        "delta": 10,
+        "runs": [
+          0.6458,
+          0.75,
+          0.75,
+          0.7292
+        ],
+        "mean": 0.7188,
+        "ci95": [
+          0.6398,
+          0.7977
+        ],
+        "pass": true,
+        "protocol": "scripts/persona_sensitivity.py --delta 10 --repeats 3"
+      }
+    },
+    {
+      "id": "mind/persona_dynamics.py::STATE_MAX_STEP",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "STATE_MAX_STEP",
+      "line": 37,
+      "value": "4.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-E1-013",
+      "experiment": "同上：单步上限 2/4/6，测单轮反应强度与人格稳定感",
+      "conservative_value": "4.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "动力学包络：+4 三轮到顶；步长属设计选择，暂不改",
+      "e1_dynamics": {
+        "turns_to_cap_step4": 3,
+        "turns_to_cap_step2": 5,
+        "decay_45min": 0.5,
+        "decay_90min": 0.25,
+        "decay_180min": 0.0625,
+        "share_at_cap_mixed": 0.096,
+        "share_at_cap_consistent": 0.774,
+        "script": "scripts/persona_state_envelope.py"
+      }
+    },
+    {
+      "id": "mind/persona_dynamics.py::TRAIT_ANNUAL_BUDGET",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "TRAIT_ANNUAL_BUDGET",
+      "line": 22,
+      "value": "4.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "产品决定(2026-10-31)：第一年净变化 ≤4 分，带 3–6；量级受 Roberts et al. 2006 约束（成人 0.3–0.9 分/年），本产品取 5–15 倍加速，属明示约定而非人类速率"
+      }
+    },
+    {
+      "id": "mind/persona_dynamics.py::TRAIT_MAX_DEVIATION",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "TRAIT_MAX_DEVIATION",
+      "line": 25,
+      "value": "12.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "渐近偏离上限取量程(约85分)的 1/7；与年度预算共同解出日推与回归率，保证不饱和"
+      }
+    },
+    {
+      "id": "mind/persona_stance.py::STANCE_MAX_POINTS",
+      "module": "mind/persona_stance.py",
+      "symbol": "STANCE_MAX_POINTS",
+      "line": 18,
+      "value": "8.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-011",
+      "experiment": "姿态偏移幅度；用盲评区分『对熟人更暖』与『人设漂移』的临界值",
+      "conservative_value": "8.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/personality.py::ATTACHMENT_BETA",
+      "module": "mind/personality.py",
+      "symbol": "ATTACHMENT_BETA",
+      "line": 20,
+      "value": "6.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "convention"
+      },
+      "issue": "ECHOMIND-E1-005",
+      "experiment": "β∈[3,12] 扫描：只改变混合比例不改变 top-2 排序，用盲评区分度选点",
+      "conservative_value": "6.0",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/plasticity.py::DAY_MS",
+      "module": "mind/plasticity.py",
+      "symbol": "DAY_MS",
+      "line": 25,
+      "value": "86400000.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "单位换算（24*3600*1000），无自由度"
+      }
+    },
+    {
+      "id": "mind/plasticity.py::HOMEOSTATIC_PULL_RATE",
+      "module": "mind/plasticity.py",
+      "symbol": "HOMEOSTATIC_PULL_RATE",
+      "line": 35,
+      "value": "0.02",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {},
+      "issue": "ECHOMIND-E1-004",
+      "experiment": "回放中关闭稳态回拉，比较 7 维漂移幅度与饱和率",
+      "conservative_value": "0.02",
+      "e1_proposed_class": "experiment",
+      "e1_group": "E1-C 人格动力学",
+      "e1_blocked": false,
+      "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/probe_runtime.py::PROBE_MAX_TOKENS",
+      "module": "mind/probe_runtime.py",
+      "symbol": "PROBE_MAX_TOKENS",
+      "line": 13,
+      "value": "256",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "探针输出为单行 JSON，256 token 足够；超限截断不影响解析"
+      }
+    },
+    {
+      "id": "mind/social_satiation.py::ALPHA",
+      "module": "mind/social_satiation.py",
+      "symbol": "ALPHA",
+      "line": 26,
+      "value": "0.4",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "由产品目标「8 次往返后意愿 ≤0.4」反解，公式在模块注释中；属约定不是拟合"
+      }
+    },
+    {
+      "id": "mind/social_satiation.py::FLOOR",
+      "module": "mind/social_satiation.py",
+      "symbol": "FLOOR",
+      "line": 27,
+      "value": "0.08",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "由产品目标「日回合 ≤18」反解，公式在模块注释中；属约定不是拟合"
+      }
+    },
+    {
+      "id": "mind/social_satiation.py::GAMMA",
+      "module": "mind/social_satiation.py",
+      "symbol": "GAMMA",
+      "line": 28,
+      "value": "0.5",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "习惯化混合系数；取 0.5 为对称混合，无自由度争议"
+      }
+    },
+    {
+      "id": "mind/social_satiation.py::TAU_S",
+      "module": "mind/social_satiation.py",
+      "symbol": "TAU_S",
+      "line": 25,
+      "value": "1800.0",
+      "class": "data",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "dataset_sha256": "92406142d74977c14e069cf0952a405b278d83946cbd9eb75d47452be8d1dec4",
+        "n": 1835,
+        "estimate": 247.0,
+        "ci95": [
+          223.0,
+          271.0
+        ],
+        "script": "scripts/fit_satiation_tau.py",
+        "note": "median inter-burst gap; burst>60s, gaps<=6h; shadow suppression 34.6%->17.2%"
+      },
+      "contradiction": "注释称 1800s 来自突发结构，但实测消息间隔 p95 仅 181s，需复核口径",
+      "e1_proposed_class": "data",
+      "e1_group": "E1-G 社交饱和",
+      "e1_dataset": "chat_messages 的突发间隔分布（n=5,850；p50=7s、p95=181s、p99=1,144s）；拟合习惯化恢复时间",
+      "e1_action": "已采用 247s（决策 A）；shadow 抑制率 34.6%→17.2%"
+    }
+  ]
+}

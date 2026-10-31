@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from starlette.requests import Request
 
-from echomind.web.app import is_request_authorized
+from echomind.web.auth import is_request_authorized
 
 TOKEN = "secret-token"  # noqa: S105 - test fixture, not a credential
 
@@ -38,3 +38,13 @@ def test_remote_writes_need_the_token() -> None:
 
 def test_non_api_paths_are_never_blocked() -> None:
     assert is_request_authorized(_request("POST", "/static/app.js", host="10.0.0.9"), TOKEN)
+
+
+def test_empty_token_never_exposes_the_api_beyond_loopback() -> None:
+    """An unset secret must fail closed for remote clients, not open the API."""
+    assert not is_request_authorized(_request("GET", "/api/snapshot", host="10.0.0.9"), "")
+    assert not is_request_authorized(
+        _request("POST", "/api/snapshot", host="10.0.0.9"), ""
+    )
+    assert is_request_authorized(_request("GET", "/api/snapshot", host="127.0.0.1"), "")
+    assert is_request_authorized(_request("POST", "/api/snapshot", host="127.0.0.1"), "")

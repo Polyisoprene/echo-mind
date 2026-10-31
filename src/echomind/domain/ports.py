@@ -246,6 +246,21 @@ class ISkillConfigStore(Protocol):
 
 
 @runtime_checkable
+class IPersonaLayerStore(Protocol):
+    """Fast persona state offsets and the daily observation buffer (<=5 methods)."""
+
+    async def load_state(self) -> dict[str, tuple[float, int]]: ...
+
+    async def save_state(self, key: str, offset: float, now_ms: int) -> None: ...
+
+    async def record_observation(self, key: str, delta: float, now_ms: int) -> None: ...
+
+    async def pop_observations(self, now_ms: int) -> dict[str, tuple[float, int]]:
+        """Return {key: (total, last_settled_ms)} and mark these keys as settled."""
+        ...
+
+
+@runtime_checkable
 class IAsyncSqlStore(Protocol):
     """Narrow port for async SQLite connection context management (DIP for runtime)."""
 

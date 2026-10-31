@@ -1,19 +1,41 @@
-"""Stage 30 S30-3: bounded, slowly regressing personality dynamics.
+"""E2: two-layer persona dynamics — a slow trait baseline and a fast state layer.
 
-param: convention:s30-dynamics - all three constants are engineering conventions chosen to
-match the empirical claim that personality is stable and changes slowly (Roberts &
-DelVecchio 2000, doi:10.1037//0033-2909.126.1.3). They are marked fit:pending and must be
-calibrated against replay + operator anchors before being treated as final.
+The slow layer may move TRAIT_DAILY_PUSH per day (derived from a 4-point annual budget
+and a 12-point maximum deviation) and regresses at TRAIT_REGRESSION_PER_DAY. The fast
+layer lives in `mind/persona_state.py` and is bounded separately.
 """
 
 from __future__ import annotations
 
+import math
 import time
 
 DELTA_CLIP = 2.0
 DAILY_CAP = 6.0
-REGRESSION_PER_DAY = 0.01
 MAX_CATCHUP_DAYS = 30.0
+
+# param: convention:persona-annual-budget - product decision (2026-10-31): the slow
+# trait layer may move at most 4 points in year one, band 3-6. Literature order of
+# magnitude for adult mean-level change is 0.3-0.9 points/year (Roberts, Walton &
+# Viechtbauer 2006, Psychological Bulletin 132(1):1-25), so this is a deliberate
+# 5-15x acceleration for a young virtual character; it is NOT a human-like rate.
+TRAIT_ANNUAL_BUDGET = 4.0
+# param: convention:persona-max-deviation - asymptotic distance from the set point
+# (about 1/7 of the 85-point usable range). Regression balances the daily push here.
+TRAIT_MAX_DEVIATION = 12.0
+
+# Derived, so the pair can never drift apart: solve X = M*(1-exp(-365*D/M)) for D.
+TRAIT_DAILY_PUSH = (
+    -math.log(1.0 - TRAIT_ANNUAL_BUDGET / TRAIT_MAX_DEVIATION) * TRAIT_MAX_DEVIATION / 365.0
+)
+TRAIT_REGRESSION_PER_DAY = TRAIT_DAILY_PUSH / TRAIT_MAX_DEVIATION
+# Slow trait regression is the derived rate, not the old 1%/day state-level decay.
+REGRESSION_PER_DAY = TRAIT_REGRESSION_PER_DAY
+
+# param: fit:pending - fast state layer, calibrated by the sensitivity audit (E1-013).
+STATE_MAX_ABS = 10.0
+STATE_MAX_STEP = 4.0
+STATE_HALF_LIFE_MIN = 45.0
 
 
 def clip_delta(delta: float) -> float:
@@ -24,8 +46,8 @@ def clip_delta(delta: float) -> float:
 def slow_regression(value: float, baseline: float, days: float) -> float:
     """Return the regression delta for `days` elapsed (0 before a full day).
 
-    1% per day toward the baseline → half-life ≈ 69 days, i.e. a trait that stopped being
-    reinforced fades over months rather than within a session.
+    TRAIT_REGRESSION_PER_DAY (~0.11%/day) toward the baseline → half-life ≈ 624 days,
+    i.e. a trait that stopped being reinforced fades over years rather than weeks.
     """
     if days < 1.0:
         return 0.0
