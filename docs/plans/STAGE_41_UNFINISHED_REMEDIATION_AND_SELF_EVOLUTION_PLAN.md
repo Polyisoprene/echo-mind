@@ -1005,3 +1005,37 @@ quote 校验/结构审查只能证明“不是编的”，不能证明“像真�
 - `tests/unit/test_trait_promotion.py`：eligible / tool-only / one context / promoted；
 - 集成测试：晋升审计、重复晋升拒绝；
 - 全门禁：**352 passed / 92%**，fusion 70/70。
+
+### 14.15 晋升后的 shadow prompt 对比（2026-11-01）
+
+新增：
+
+- `src/echomind/mind/trait_prompt_shadow.py`；
+- `scripts/compare_promoted_candidate_prompt.py`；
+- `tests/unit/test_trait_prompt_shadow.py`；
+- `eval/baselines/persona-prompt-shadow-2026-11-01.json`。
+
+规则：
+
+- 只接受 `status='promoted'` 的候选；
+- 用同一组 7 维参数和 traits，仅把目标 trait 文本替换成候选；
+- 渲染两份完整人格指令；
+- 不写 `persona_traits`、不改 prompt、不进检索。
+
+synthetic 结果：
+
+| 项 | 值 |
+|---|---:|
+| old directive | 1170 字 |
+| new directive | 1164 字 |
+| delta | -6 |
+| candidate in old | False |
+| candidate in new | True |
+
+说明候选确实只替换了 trait 行，长度变化可量化。  
+仍需用真实 candidate 做 shadow，不是直接上线。
+
+**验证**
+
+- 单测覆盖“只替换目标 trait”；
+- 全门禁：**353 passed / 92%**，fusion 70/70。
