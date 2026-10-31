@@ -26,9 +26,10 @@ from echomind.mind import ebbinghaus
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.person_level import PersonProfile
 from echomind.mind.persona_stance import apply_stance_for
+from echomind.mind.ranker_fusion import unified_rank
 from echomind.mind.relation_resolver import RelationResolver
 from echomind.mind.retrieval_fusion import rrf_fuse
-from echomind.mind.semantic_retrieval import rerank_facts
+from echomind.mind.semantic_retrieval import cosine, rerank_facts
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "eval" / "datasets" / "persona_memory_v1" / "scenarios.json"
@@ -68,7 +69,7 @@ async def _seed(repo: Any, scenario: dict[str, Any], now_ms: int,
 
 async def _retrieval(
     repo: Any, scenario: dict[str, Any], gateway: Any = None, now_ms: int = EVAL_NOW,
-    resolver: RelationResolver | None = None,
+    resolver: RelationResolver | None = None, *, fusion: bool = False,
 ) -> dict[str, Any]:
     picked = await repo.get_semantic_facts(
         str(scenario["venue"]), person_ids=tuple(scenario.get("audience", ()))
@@ -77,17 +78,26 @@ async def _retrieval(
         query = str(scenario["query"])
         embeddings = await gateway.embed(tuple(f.fact_text for f in picked))
         vectors = {f.fact_id: v for f, v in zip(picked, embeddings, strict=True)}
-        lexical = select_relevant_facts(picked, query, len(picked), now_ms=now_ms)
-        semantic = await rerank_facts(picked, query, gateway, vectors, len(picked))
-        fused = rrf_fuse((tuple(f.fact_id for f in lexical),
-                          tuple(f.fact_id for f in semantic)))
-        by_id = {f.fact_id: f for f in picked}
-        ranked = tuple(by_id[i] for i in fused if i in by_id)
+        if fusion:
+            query_vec = (await gateway.embed((query,)))[0]
+            dense = {f.fact_id: cosine(query_vec, vectors[f.fact_id]) for f in picked}
+            relations = (
+                await resolver.boost_ids(tuple(picked), query, now_ms)
+                if resolver is not None else {}
+            )
+            ranked = unified_rank(picked, query, dense, relations, now_ms)
+        else:
+            lexical = select_relevant_facts(picked, query, len(picked), now_ms=now_ms)
+            semantic = await rerank_facts(picked, query, gateway, vectors, len(picked))
+            fused = rrf_fuse((tuple(f.fact_id for f in lexical),
+                              tuple(f.fact_id for f in semantic)))
+            by_id = {f.fact_id: f for f in picked}
+            ranked = tuple(by_id[i] for i in fused if i in by_id)
     else:
         ranked = select_relevant_facts(
             picked, str(scenario["query"]), limit=len(picked), now_ms=now_ms
         )
-    if resolver is not None:
+    if resolver is not None and not fusion:
         boosted = await resolver.boost_ids(
             tuple(ranked), str(scenario["query"]), now_ms
         )
@@ -134,7 +144,8 @@ def _persona(scenario: dict[str, Any]) -> dict[str, Any]:
 
 
 async def _evaluate(
-    data: dict[str, Any], gateway: Any = None, use_relations: bool = True
+    data: dict[str, Any], gateway: Any = None, use_relations: bool = True,
+    fusion: bool = False,
 ) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as tmp:
         container = await EchoMindContainer.create(db_path=Path(tmp) / "eval.db")
@@ -148,7 +159,7 @@ async def _evaluate(
             else:
                 await _seed(repo, scenario, EVAL_NOW, relation_store)
                 result = await _retrieval(
-                    repo, scenario, gateway, EVAL_NOW, resolver
+                    repo, scenario, gateway, EVAL_NOW, resolver, fusion=fusion
                 )
             results.append({"id": scenario["id"], "category": scenario["category"], **result})
 
@@ -224,6 +235,7 @@ async def main() -> int:
     parser.add_argument("--save-baseline", type=Path)
     parser.add_argument("--check", type=Path)
     parser.add_argument("--semantic", action="store_true")
+    parser.add_argument("--ranker-fusion", action="store_true")
     parser.add_argument(
         "--ablate",
         choices=("none", "recency", "order", "recency_order", "relations",
@@ -231,6 +243,9 @@ async def main() -> int:
         default="none",
     )
     args = parser.parse_args()
+    if args.ranker_fusion and not args.semantic:
+        print("--ranker-fusion requires --semantic")
+        return 2
     _apply_ablation(args.ablate)
     data = json.loads(args.data.read_text(encoding="utf-8"))
     gateway = _gateway(args.semantic)
@@ -239,12 +254,15 @@ async def main() -> int:
         return 2
     try:
         report = await _evaluate(
-            data, gateway, use_relations=args.ablate != "relations"
+            data, gateway, use_relations=args.ablate != "relations",
+            fusion=args.ranker_fusion
         )
     finally:
         if gateway is not None:
             await gateway.aclose()
-    report["mode"] = "semantic" if args.semantic else "lexical"
+    report["mode"] = "fusion" if args.ranker_fusion else (
+        "semantic" if args.semantic else "lexical"
+    )
     report["ablation"] = args.ablate
     report["version"] = data.get("version", "unknown")
     report["date"] = datetime.now().strftime("%Y-%m-%d")

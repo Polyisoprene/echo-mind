@@ -24,7 +24,6 @@ from echomind.mind.ebbinghaus import (
 )
 from echomind.mind.memory_consolidator import run_hippocampal_batch_consolidation
 from echomind.mind.recall_types import RecalledMemoryItem
-from echomind.mind.retrieval_fusion import rrf_fuse
 from echomind.mind.semantic_memory import SemanticMemoryRetriever
 
 
@@ -216,25 +215,6 @@ async def load_bonds_for(
     return await attach(bond_store, {u: b for u, b in pairs if b is not None})
 
 
-async def _apply_boost(
-    semantic: SemanticMemoryRetriever | None,
-    facts: tuple[SemanticFact, ...],
-    query: str,
-    ordered: list[SemanticFact],
-    now_ms: int,
-) -> list[SemanticFact]:
-    if semantic is None:
-        return ordered
-    boosted = await semantic.boost_ids(facts, query, now_ms)
-    if not boosted:
-        return ordered
-    head = sorted(
-        (f for f in ordered if f.fact_id in boosted),
-        key=lambda f: -boosted[f.fact_id],
-    )
-    return head + [f for f in ordered if f.fact_id not in boosted]
-
-
 async def select_facts(
     semantic: SemanticMemoryRetriever | None,
     facts: tuple[SemanticFact, ...], query: str, limit: int,
@@ -244,13 +224,10 @@ async def select_facts(
     lexical = select_relevant_facts(facts, query, len(facts), now_ms=current)
     if semantic is None:
         return tuple(lexical[:limit])
-    ranked = await semantic.rerank(facts, query, len(facts))
+    ranked = await semantic.rank_fused(facts, query, current)
     if ranked is None:
         return tuple(lexical[:limit])
-    fused = rrf_fuse((tuple(f.fact_id for f in lexical), tuple(f.fact_id for f in ranked)))
-    by_id = {f.fact_id: f for f in facts}
-    ordered = [by_id[i] for i in fused if i in by_id]
-    return tuple((await _apply_boost(semantic, facts, query, ordered, current))[:limit])
+    return tuple(ranked[:limit])
 
 
 IncludedFact = tuple[int, str, str]

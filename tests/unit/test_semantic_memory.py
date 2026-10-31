@@ -56,3 +56,14 @@ async def test_low_coverage_falls_back() -> None:
 async def test_frame_falls_back_to_lexical_without_semantic() -> None:
     picked = await select_facts(None, _facts(), "猫", 1)
     assert len(picked) == 1
+
+
+@pytest.mark.asyncio
+async def test_fused_ranking_and_live_selector() -> None:
+    service = SemanticMemoryRetriever(
+        _Embedder(), _Store({1: (1.0, 0.0), 2: (0.0, 1.0)}), "m"
+    )
+    fused = await service.rank_fused(_facts(), "宠物", 1_000)
+    assert fused is not None and fused[0].fact_text == "猫粮"
+    picked = await select_facts(service, _facts(), "宠物", 1)
+    assert picked[0].fact_text == "猫粮"

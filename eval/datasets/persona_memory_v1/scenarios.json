@@ -1912,14 +1912,8 @@
         "a1",
         "b1"
       ],
-      "query": "a1 的朋友现在怎么样",
+      "query": "a1 最近在忙什么",
       "facts": [
-        {
-          "subject": "b1",
-          "text": "b1 在 x1 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b1_noise",
           "text": "今天天气不错",
@@ -2021,6 +2015,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b1",
+          "text": "b1 在 x1 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -2048,14 +2048,8 @@
         "a2",
         "b2"
       ],
-      "query": "a2 的朋友现在怎么样",
+      "query": "a2 最近在忙什么",
       "facts": [
-        {
-          "subject": "b2",
-          "text": "b2 在 x2 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b2_noise",
           "text": "今天天气不错",
@@ -2157,6 +2151,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b2",
+          "text": "b2 在 x2 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -2184,14 +2184,8 @@
         "a3",
         "b3"
       ],
-      "query": "a3 的朋友现在怎么样",
+      "query": "a3 最近在忙什么",
       "facts": [
-        {
-          "subject": "b3",
-          "text": "b3 在 x3 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b3_noise",
           "text": "今天天气不错",
@@ -2293,6 +2287,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b3",
+          "text": "b3 在 x3 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -2320,14 +2320,8 @@
         "a4",
         "b4"
       ],
-      "query": "a4 的朋友现在怎么样",
+      "query": "a4 最近在忙什么",
       "facts": [
-        {
-          "subject": "b4",
-          "text": "b4 在 x4 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b4_noise",
           "text": "今天天气不错",
@@ -2429,6 +2423,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b4",
+          "text": "b4 在 x4 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -2456,14 +2456,8 @@
         "a5",
         "b5"
       ],
-      "query": "a5 的朋友现在怎么样",
+      "query": "a5 最近在忙什么",
       "facts": [
-        {
-          "subject": "b5",
-          "text": "b5 在 x5 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b5_noise",
           "text": "今天天气不错",
@@ -2565,6 +2559,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b5",
+          "text": "b5 在 x5 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -2592,14 +2592,8 @@
         "a6",
         "b6"
       ],
-      "query": "a6 的朋友现在怎么样",
+      "query": "a6 最近在忙什么",
       "facts": [
-        {
-          "subject": "b6",
-          "text": "b6 在 x6 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b6_noise",
           "text": "今天天气不错",
@@ -2701,6 +2695,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b6",
+          "text": "b6 在 x6 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -2728,14 +2728,8 @@
         "a7",
         "b7"
       ],
-      "query": "a7 的朋友现在怎么样",
+      "query": "a7 最近在忙什么",
       "facts": [
-        {
-          "subject": "b7",
-          "text": "b7 在 x7 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b7_noise",
           "text": "今天天气不错",
@@ -2837,6 +2831,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b7",
+          "text": "b7 在 x7 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -2864,14 +2864,8 @@
         "a8",
         "b8"
       ],
-      "query": "a8 的朋友现在怎么样",
+      "query": "a8 最近在忙什么",
       "facts": [
-        {
-          "subject": "b8",
-          "text": "b8 在 x8 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b8_noise",
           "text": "今天天气不错",
@@ -2973,6 +2967,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b8",
+          "text": "b8 在 x8 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -3000,14 +3000,8 @@
         "a9",
         "b9"
       ],
-      "query": "a9 的朋友现在怎么样",
+      "query": "a9 最近在忙什么",
       "facts": [
-        {
-          "subject": "b9",
-          "text": "b9 在 x9 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b9_noise",
           "text": "今天天气不错",
@@ -3109,6 +3103,12 @@
           "text": "小禾的朋友在考试",
           "scope": "venue",
           "sensitivity": "group"
+        },
+        {
+          "subject": "b9",
+          "text": "b9 在 x9 工作",
+          "scope": "venue",
+          "sensitivity": "group"
         }
       ],
       "relations": [
@@ -3136,14 +3136,8 @@
         "a10",
         "b10"
       ],
-      "query": "a10 的朋友现在怎么样",
+      "query": "a10 最近在忙什么",
       "facts": [
-        {
-          "subject": "b10",
-          "text": "b10 在 x10 工作",
-          "scope": "venue",
-          "sensitivity": "group"
-        },
         {
           "subject": "b10_noise",
           "text": "今天天气不错",
@@ -3243,6 +3237,12 @@
         {
           "subject": "mh_other_10",
           "text": "小禾的朋友在考试",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10",
+          "text": "b10 在 x10 工作",
           "scope": "venue",
           "sensitivity": "group"
         }

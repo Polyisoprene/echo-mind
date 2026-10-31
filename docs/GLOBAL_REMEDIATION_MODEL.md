@@ -55,14 +55,15 @@ percept
 | 参数 | 当前值 | 位置 | 现状 | 证据状态 |
 |---|---:|---|---|---|
 | `FACT_RECENCY_HALF_LIFE_DAYS` | 30 | `mind/ebbinghaus.py` | 时间衰减半衰期 | ❌ 无直接来源；fit_pending |
-| `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 关键词时间加分 | ❌ 无来源；convention |
-| `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 关键词方向加分 | ❌ 无来源；convention |
+| `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 仅关键词回退路径；fused 路径用 recency ranker | ❌ 无来源；convention |
+| `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 仅关键词回退路径；fused 路径用 order ranker | ❌ 无来源；convention |
 | 语义 recency 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | 语义 order 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
-| `RRF_K` | 60 | `mind/retrieval_fusion.py` | 两路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
+| `RRF_K` | 60 | `mind/retrieval_fusion.py` | 7 路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
 | `max_hops` | 2 | `domain/relation.py::RELATION_MAX_HOPS` | 两跳可达 | ❌ 无来源；已由一处常量统一，fit_pending |
 | `RELATION_CONFIDENCE` | 0.8 | `mind/relation_extractor.py` | 抽取置信度 | ❌ 未参与排序；值无来源 |
 | 关系 validity | 字段存在 | `memory_relations` | 已按 `valid_from/to` 过滤 | ✅ 已接入 |
+| BM25 K1/B | 1.2 / 0.75 | `mind/ranker_fusion.py` | 词面 ranker 参数 | ✅ Robertson & Zaragoza 2009 默认值 |
 | 真人感长度 | 40 字 | `personality.REALISM_MAX_CHARS` | 已收常量/账本，prompt 软约束 | 🟡 来自 50 条人工标签，但样本小 |
 
 ### 人工标签对“40 字”的实际支撑
@@ -235,3 +236,43 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 - Rasmussen et al., *Zep*, 2025. [arXiv:2501.13956](https://arxiv.org/abs/2501.13956)
 - BAAI, *bge-small-zh-v1.5*. [Hugging Face](https://huggingface.co/BAAI/bge-small-zh-v1.5)
 - Edge et al., *GraphRAG*, 2024. [arXiv:2404.16130](https://arxiv.org/abs/2404.16130)
+
+
+---
+
+## 10. 第 5 轮落地：live 已切到 ranker fusion
+
+`select_facts` 现在优先调用 `SemanticMemoryRetriever.rank_fused`，内部是：
+
+```
+BM25 rank ─┐
+dense rank ─┤
+recency rank ─┤
+order rank ─┼─ RRF(k=60) → facts
+relation rank ─┤
+confidence rank ─┤
+lock rank ─┘
+```
+
+- 不再使用关键词公式里的 3/6/5/4/6（仅**无 embedding 的关键词回退**仍保留）；
+- 语义侧 0.25/0.5 已删除；
+- 所有 ranker 等权，没有手调特征权重；
+- 只有 RRF k=60（Cormack）与 BM25 k1/b（Robertson）是数值参数，均有来源；
+- 关系 validity/confidence 在 relation ranker 内。
+
+### 实测
+
+| 模式 | role | temporal | multihop | overall |
+|---|---:|---:|---:|---:|
+| fusion 基线 | 10/10 | 10/10 | 10/10 | **70/70** |
+| fusion + 关 relations | 10/10 | 10/10 | **0/10** | 60/70 |
+| 关键词基线 | 10/10 | 10/10 | 10/10 | 60/70 |
+
+multihop 现在需要 relation ranker，不再靠字面泄漏通过。
+
+### 仍然存在的债务
+
+- 关键词回退路径仍含 3/6/5/4/6；
+- `RELATION_MAX_HOPS=2`、`REALISM_MAX_CHARS=40` 仍未校准；
+- 7 个 ranker 等权是“无证据时的保守选择”，不是拟合结果；
+- 还没做权重拟合/外部 benchmark。

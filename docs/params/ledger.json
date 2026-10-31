@@ -1096,6 +1096,36 @@
       "e1_group": "E1-D 门控与召回",
       "e1_blocked": true,
       "e1_action": "按组内实验协议取值；未完成前保留现值"
+    },
+    {
+      "id": "mind/ranker_fusion.py::BM25_K1",
+      "module": "mind/ranker_fusion.py",
+      "symbol": "BM25_K1",
+      "line": 1,
+      "value": "1.2",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "paper": "Robertson & Zaragoza, The Probabilistic Relevance Framework: BM25 and Beyond, 2009",
+        "doi": "10.1561/1500000019",
+        "rationale": "BM25 词频饱和参数；采用 BM25 文献常用默认值，未在本地重拟合"
+      }
+    },
+    {
+      "id": "mind/ranker_fusion.py::BM25_B",
+      "module": "mind/ranker_fusion.py",
+      "symbol": "BM25_B",
+      "line": 1,
+      "value": "0.75",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "paper": "Robertson & Zaragoza, The Probabilistic Relevance Framework: BM25 and Beyond, 2009",
+        "doi": "10.1561/1500000019",
+        "rationale": "BM25 文档长度归一化参数；采用 BM25 文献常用默认值，未在本地重拟合"
+      }
     }
   ]
 }

@@ -1,0 +1,530 @@
+{
+  "metrics": {
+    "paraphrase": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "privacy": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "venue": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "role": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "temporal": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "persona": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "multihop": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "privacy_leaks": 0,
+    "mrr": 0.875,
+    "overall_passed": 70,
+    "overall_total": 70
+  },
+  "results": [
+    {
+      "id": "para_01",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_02",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_03",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_04",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_05",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_06",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_07",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_08",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_09",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "para_10",
+      "category": "paraphrase",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "privacy_01",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_02",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_03",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_04",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_05",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_06",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_07",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_08",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_09",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_10",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_01",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_02",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_03",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_04",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_05",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_06",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_07",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_08",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_09",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_10",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "role_01",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_02",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_03",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_04",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_05",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_06",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_07",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_08",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_09",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "role_10",
+      "category": "role",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_01",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_02",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_03",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_04",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_05",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_06",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_07",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_08",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_09",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "time_10",
+      "category": "temporal",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "persona_01",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_02",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_03",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_04",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_05",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_06",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_07",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_08",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_09",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_10",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "multihop_01",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_02",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_03",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_04",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_05",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_06",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_07",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_08",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_09",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    },
+    {
+      "id": "multihop_10",
+      "category": "multihop",
+      "passed": true,
+      "rank": 2,
+      "visible": true
+    }
+  ],
+  "dataset_sha256": "9f1bc6654b810038fd672077448695a24d2a0b753145e47c46761cf5d9f88a0d",
+  "mode": "fusion",
+  "ablation": "none",
+  "version": "v1",
+  "date": "2026-10-31"
+}
