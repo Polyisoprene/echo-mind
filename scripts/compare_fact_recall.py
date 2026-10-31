@@ -8,11 +8,11 @@ import os
 import sqlite3
 from pathlib import Path
 
+from echomind.adapters.storage.claim_views import load_claim_views
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
-from echomind.mind.ebbinghaus import select_relevant_facts
-from echomind.adapters.storage.claim_views import load_claim_views
 from echomind.mind.fact_shadow import claim_rank, compare
+from echomind.mind.ranker_fusion import unified_rank
 
 LIMIT = 28
 
@@ -34,7 +34,7 @@ async def main() -> None:
     results = []
     locked_keep = {"legacy": 0, "claims": 0}
     for query in queries:
-        legacy = [_key(f) for f in select_relevant_facts(tuple(facts), query, LIMIT)]
+        legacy = [_key(f) for f in unified_rank(tuple(facts), query, {}, {}, now)[:LIMIT]]
         claims = claim_rank(views, query, LIMIT, now)
         results.append({"query": query[:40], **compare(legacy, claims)})
         locked_keep["legacy"] += len(locked_keys & set(legacy))

@@ -36,7 +36,7 @@
       "rate": 1.0
     },
     "privacy_leaks": 0,
-    "mrr": 0.829,
+    "mrr": 1.0,
     "overall_passed": 70,
     "overall_total": 70
   },
@@ -45,70 +45,70 @@
       "id": "para_01",
       "category": "paraphrase",
       "passed": true,
-      "rank": 3,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_02",
       "category": "paraphrase",
       "passed": true,
-      "rank": 3,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_03",
       "category": "paraphrase",
       "passed": true,
-      "rank": 4,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_04",
       "category": "paraphrase",
       "passed": true,
-      "rank": 4,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_05",
       "category": "paraphrase",
       "passed": true,
-      "rank": 3,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_06",
       "category": "paraphrase",
       "passed": true,
-      "rank": 3,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_07",
       "category": "paraphrase",
       "passed": true,
-      "rank": 4,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_08",
       "category": "paraphrase",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_09",
       "category": "paraphrase",
       "passed": true,
-      "rank": 4,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "para_10",
       "category": "paraphrase",
       "passed": true,
-      "rank": 3,
+      "rank": 1,
       "visible": true
     },
     {
@@ -522,8 +522,8 @@
       "visible": true
     }
   ],
-  "dataset_sha256": "9f1bc6654b810038fd672077448695a24d2a0b753145e47c46761cf5d9f88a0d",
-  "mode": "semantic",
+  "dataset_sha256": "e227c3595639029a6aae93ccd1e8c762d6e57296f4739a28f5acc4628cc246bb",
+  "mode": "fusion",
   "ablation": "none",
   "version": "v1",
   "date": "2026-10-31"

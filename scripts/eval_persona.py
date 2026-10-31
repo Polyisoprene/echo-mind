@@ -37,9 +37,9 @@ from echomind.domain.models import (  # noqa: E402
     WorkingSnapshot,
 )
 from echomind.mind.drives import apply_turn_affect_and_drives  # noqa: E402
-from echomind.mind.ebbinghaus import select_relevant_facts  # noqa: E402
 from echomind.mind.persona_dynamics import TRAIT_ANNUAL_BUDGET  # noqa: E402
 from echomind.mind.plasticity import NeuroplasticityEngine  # noqa: E402
+from echomind.mind.ranker_fusion import unified_rank  # noqa: E402
 from echomind.mind.subconscious_probe import SubconsciousChordResult  # noqa: E402
 
 DAY_MS = 86_400_000
@@ -183,7 +183,10 @@ async def suite_recall() -> dict[str, Any]:
     facts = await repo.get_semantic_facts("g")
 
     def hits(query: str, keyword: str) -> bool:
-        picked = select_relevant_facts(facts, query, RECALL_K)
+        picked = unified_rank(
+            facts, query, {}, {}, 0,
+            disabled=frozenset({"dense", "recency", "order", "relations", "confidence", "lock"}),
+        )[:RECALL_K]
         return any(keyword in f.fact_text for f in picked)
 
     direct = [hits(_direct, text) for _subject, text, _direct, _para in FACTS]

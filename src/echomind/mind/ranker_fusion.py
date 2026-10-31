@@ -19,6 +19,16 @@ BM25_K1 = 1.2
 BM25_B = 0.75
 
 
+def _terms(text: str) -> list[str]:
+    terms: list[str] = []
+    for chunk in TOKEN_RE.findall(text):
+        if chunk.isascii() or len(chunk) <= 2:
+            terms.append(chunk)
+        else:
+            terms.extend(chunk[index:index + 2] for index in range(len(chunk) - 1))
+    return terms
+
+
 def _bm25_one(
     counts: Counter[str], doc_len: int, *,
     query_terms: set[str], df: Counter[str], n: int, avgdl: float,
@@ -35,8 +45,8 @@ def _bm25_one(
 
 
 def bm25_scores(facts: tuple[SemanticFact, ...], query: str) -> dict[int, float]:
-    tokens = [TOKEN_RE.findall(f"{fact.subject} {fact.fact_text}") for fact in facts]
-    query_terms = set(TOKEN_RE.findall(query))
+    tokens = [_terms(f"{fact.subject} {fact.fact_text}") for fact in facts]
+    query_terms = set(_terms(query))
     n = len(facts)
     avgdl = sum(len(doc) for doc in tokens) / max(1, n)
     df: Counter[str] = Counter()

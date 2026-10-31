@@ -1328,7 +1328,7 @@ async def test_stage19_circadian_phases_relevant_fact_flotation_scratchpad_and_r
         next_biological_heartbeat_sec,
         resolve_circadian_phase,
     )
-    from echomind.mind.ebbinghaus import select_relevant_facts
+    from echomind.mind.ranker_fusion import unified_rank
     from echomind.runtime.working_scratchpad import WorkingScratchpad
     from echomind.tools.member_memory import RecallMemoryTool
 
@@ -1354,7 +1354,7 @@ async def test_stage19_circadian_phases_relevant_fact_flotation_scratchpad_and_r
             fact_text="夏饺子是群里的老朋友",
         ),
     )
-    floated = select_relevant_facts(many_facts, "你认识夏饺子吗", limit=28)
+    floated = unified_rank(many_facts, "你认识夏饺子吗", {}, {}, 0)[:28]
     assert any("夏饺子" in f.subject for f in floated)
 
     # 3. M19.3: Cross-Turn WorkingScratchpad Continuity

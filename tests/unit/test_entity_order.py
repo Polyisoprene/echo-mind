@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from echomind.domain.models import SemanticFact
-from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.entity_order import order_score
+from echomind.mind.ranker_fusion import unified_rank
 
 
 def test_order_score_detects_reversal() -> None:
@@ -18,5 +18,5 @@ def test_selector_prefers_the_matching_direction() -> None:
         SemanticFact(fact_id=1, chat_key="g", subject="f1", fact_text="A 把书还给了 B"),
         SemanticFact(fact_id=2, chat_key="g", subject="f2", fact_text="B 把书还给了 A"),
     )
-    picked = select_relevant_facts(facts, "B 把书还给 A 了吗", limit=1, now_ms=1_000)
+    picked = unified_rank(facts, "B 把书还给 A 了吗", {}, {}, 1_000)[:1]
     assert picked[0].subject == "f2"

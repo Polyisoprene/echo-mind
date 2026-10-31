@@ -55,8 +55,8 @@ percept
 | 参数 | 当前值 | 位置 | 现状 | 证据状态 |
 |---|---:|---|---|---|
 | `FACT_RECENCY_HALF_LIFE_DAYS` | 30 | `mind/ebbinghaus.py` | 时间衰减半衰期 | ❌ 无直接来源；fit_pending |
-| `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 仅评测基线 `select_relevant_facts`；live 全部用 recency ranker | ❌ 无来源；convention |
-| `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 仅评测基线 `select_relevant_facts`；live 全部用 order ranker | ❌ 无来源；convention |
+| `FACT_RECENCY_WEIGHT` | 已删除 | `mind/ebbinghaus.py` | 统一 ranker 不需要 | ✅ 已清理 |
+| `ENTITY_ORDER_WEIGHT` | 已删除 | `mind/ebbinghaus.py` | 统一 ranker 不需要 | ✅ 已清理 |
 | 语义 recency 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | 语义 order 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | `RRF_K` | 60 | `mind/retrieval_fusion.py` | 7 路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
@@ -273,7 +273,7 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 
 ### 仍然存在的债务
 
-- live 已无 3/6/5/4/6；这些只留在评测基线 `select_relevant_facts`；
+- 3/6/5/4/6 已全部删除；
 - 关系跳数已由 PPR 替代；`REALISM_MAX_CHARS=26` 已按人工数据校准；
 - 7 个 ranker 等权是“无证据时的保守选择”，不是拟合结果；
 - 还没做权重拟合/外部 benchmark。
@@ -413,7 +413,7 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 | 风格长度 26 | 50 条人工高分组 max |
 | relation confidence 1.0 | 精确规则无不确定性 |
 
-`FACT_RECENCY_HALF_LIFE_DAYS / FACT_RECENCY_WEIGHT / ENTITY_ORDER_WEIGHT` 与 3/6/5 只留在 **legacy 评测基线** `select_relevant_facts`，不进 live；`fact_shadow` 仍用旧分数，属于后续清理项。
+`FACT_RECENCY_HALF_LIFE_DAYS / FACT_RECENCY_WEIGHT / ENTITY_ORDER_WEIGHT` 与 3/6/5 已删除；`fact_shadow` 已切到统一 ranker。
 
 实测：fusion 70/70；关 relations 60/70（multihop 0）；门禁 321 passed。
 
@@ -430,4 +430,25 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 
 `tests/unit/test_fact_shadow.py` 仍验证“近期 + 高 belief”优先和按 slot 去重。
 
-剩余旧权重的唯一位置是 **评测脚本/legacy `select_relevant_facts`**，不进 live。
+旧权重已无代码路径；所有检索/claim 调用统一走 `unified_rank`。
+
+
+---
+
+## 18. 第 15 轮：删除 legacy `select_relevant_facts`
+
+最后一条旧权重路径已删除：
+
+- `ebbinghaus.select_relevant_facts` / `_fact_relevance_score`；
+- `FACT_RECENCY_HALF_LIFE_DAYS / FACT_RECENCY_WEIGHT / ENTITY_ORDER_WEIGHT`；
+- 对应 ledger 条目；
+- 所有调用方（eval_suite、eval_memory_retrieval、eval_persona、compare_fact_recall、stage7 测试）改为 `unified_rank`。
+
+同时把 BM25 的中文 token 改为**字符 bigram**（连续中文串先切 bigram），解决原来整句被当成一个 token、直接查询召回为 0 的问题：
+
+- persona recall：direct 1.0 / paraphrase 0.562；
+- 检索 fusion：70/70；
+- 门禁：321 passed；
+- ledger：58 compliant。
+
+现在代码里没有“live 一套权重、评测另一套权重”的分叉。

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from echomind.domain.models import SemanticFact
-from echomind.mind.ebbinghaus import select_relevant_facts
+from echomind.mind.ranker_fusion import unified_rank
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -88,7 +88,7 @@ def main() -> int:
     hits = 0
     details: list[dict[str, object]] = []
     for query, target in PAIRS:
-        picked = select_relevant_facts(facts, query, limit=5)
+        picked = unified_rank(facts, query, {}, {}, 0)[:5]
         texts = [f.fact_text for f in picked]
         found = target in texts
         hits += int(found)
