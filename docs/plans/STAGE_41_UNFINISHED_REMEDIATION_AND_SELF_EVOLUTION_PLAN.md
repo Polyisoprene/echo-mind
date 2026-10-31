@@ -698,3 +698,36 @@ D1/D2/D3（独立 backlog）
 - 自动 evidence→memory 链接生产器；
 - active trait 的 live 注入与 A/B；
 - 隐私/边界回归。
+
+### 14.5 P3b 精确链接生产器（2026-11-01 已落地，离线）
+
+**代码**
+
+- `src/echomind/domain/memory_quote_ports.py`；
+- `src/echomind/adapters/storage/memory_quote_lookup.py`；
+- `src/echomind/mind/trait_memory_linker.py`；
+- `scripts/link_trait_memory.py`。
+
+**规则**
+
+- 只做 **`evidence.quote == memory.source_quote` 精确相等**；
+- 不相似匹配、不按时间/主题猜、不设相似度阈值；
+- semantic / episodic 各自建链；
+- 支持 `--dry-run`，先审计再加链；
+- 无匹配就跳过，不自作聪明。
+
+**为什么这样保守**
+
+现有 evidence 没有可靠的 `memory_id` 映射；  
+P3a 的 `trait_memory_links` 需要可审计来源。精确 quote 是唯一不需要新阈值的关联。
+
+**当前状态**
+
+- 两个库 `trait_memory_links` 仍为 0；
+- 链接器还没接 live；
+- 没有用模糊匹配跑生产数据。
+
+**验证**
+
+- `tests/integration/test_trait_memory_linker.py`：精确命中 semantic + episodic，无关 quote 跳过，dry-run 不落库；
+- 全门禁：**337 passed / 92%**，fusion 70/70。
