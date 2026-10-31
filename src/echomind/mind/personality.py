@@ -10,6 +10,12 @@ from echomind.mind.naming import bot_naming
 from echomind.mind.persona_render import render_lookup, render_store, set_summary
 from echomind.mind.persona_rubrics import DIMENSION_RUBRICS, DimensionRubricSpec
 
+REALISM_CONTRACT = (
+    "【真人感硬约束】默认 1–2 句、尽量不超过 40 字；先接话/接情绪，"
+    "不解释人设和规则；拒绝或边界只回一句；不要客服腔、语C、括号动作；"
+    "只有对方明确需要详细说明时才展开。"
+)
+
 
 def _val(params: dict[str, PlasticParamSpec], key: str) -> float:
     spec = params.get(key)
@@ -160,6 +166,7 @@ def synthesize_live_persona_directive(
         "（0~100可塑空间，50为中性基准；按当前档位拿捏语气，示例只参考语气，不要照抄）：",
         *rubric_lines,
         f"- 当前主导性格腔调：{core_tone}；{sub_tone}",
+        REALISM_CONTRACT,
     ]
     lines.extend(_trait_lines(visible))
     return render_store(cache_key, "\n".join(lines))
