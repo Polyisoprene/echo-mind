@@ -13,6 +13,7 @@ driven by recovery rather than by the person's own schedule. Read-only.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import random
 import sqlite3
@@ -35,7 +36,7 @@ def inter_burst_gaps(rows: list[tuple[str, str, int]]) -> list[float]:
     gaps: list[float] = []
     for timestamps in by_key.values():
         timestamps.sort()
-        for previous, current in zip(timestamps, timestamps[1:], strict=True):
+        for previous, current in zip(timestamps[:-1], timestamps[1:], strict=True):
             gap = (current - previous) / 1000.0
             if BURST_GAP_S < gap <= MAX_GAP_S:
                 gaps.append(gap)
@@ -67,7 +68,11 @@ def fit(db: Path) -> dict[str, object]:
     if not gaps:
         raise SystemExit("no inter-burst gaps found")
     gaps.sort()
+    fingerprint = hashlib.sha256(
+        json.dumps([round(g, 1) for g in gaps], separators=(",", ":")).encode()
+    ).hexdigest()
     return {
+        "dataset_sha256": fingerprint,
         "messages": len(rows),
         "inter_burst_gaps": len(gaps),
         "median_s": round(statistics.median(gaps), 1),

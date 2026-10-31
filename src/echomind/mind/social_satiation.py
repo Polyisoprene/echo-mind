@@ -22,7 +22,9 @@ from echomind.domain.models import AttentionDecision, Percept
 
 logger = logging.getLogger(__name__)
 
-TAU_S = 1800.0
+# param: data:satiation-tau - median inter-burst gap 247 s (95% CI 223-271, n=1,835);
+# refit with scripts/fit_satiation_tau.py. Shadow: suppression 34.6% -> 17.2%.
+TAU_S = 247.0
 ALPHA = 0.40
 FLOOR = 0.08
 GAMMA = 0.5

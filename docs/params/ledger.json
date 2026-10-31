@@ -853,31 +853,25 @@
       "symbol": "TAU_S",
       "line": 25,
       "value": "1800.0",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "class": "data",
+      "status": "active",
       "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-012",
-      "experiment": "用 chat_messages 的突发/静默间隔分布重估恢复时间",
-      "conservative_value": "1800.0",
+      "evidence": {
+        "dataset_sha256": "92406142d74977c14e069cf0952a405b278d83946cbd9eb75d47452be8d1dec4",
+        "n": 1835,
+        "estimate": 247.0,
+        "ci95": [
+          223.0,
+          271.0
+        ],
+        "script": "scripts/fit_satiation_tau.py",
+        "note": "median inter-burst gap; burst>60s, gaps<=6h; shadow suppression 34.6%->17.2%"
+      },
       "contradiction": "注释称 1800s 来自突发结构，但实测消息间隔 p95 仅 181s，需复核口径",
       "e1_proposed_class": "data",
       "e1_group": "E1-G 社交饱和",
       "e1_dataset": "chat_messages 的突发间隔分布（n=5,850；p50=7s、p95=181s、p99=1,144s）；拟合习惯化恢复时间",
-      "e1_action": "拟合完成；取值是产品语义决策：246=按中位回归时间（疲劳在下次突发前基本归零），1176=指数 MLE（疲劳跨突发保留）；常数 1800 与注释自述的 280s 不一致",
-      "e1_fit": {
-        "n_messages": 4567,
-        "n_gaps": 1822,
-        "median_s": 246.5,
-        "median_ci95": [
-          222.5,
-          271.0
-        ],
-        "mean_s": 1176.2,
-        "p75_s": 835.0,
-        "p90_s": 3106.0,
-        "script": "scripts/fit_satiation_tau.py"
-      }
+      "e1_action": "已采用 247s（决策 A）；shadow 抑制率 34.6%→17.2%"
     }
   ]
 }
