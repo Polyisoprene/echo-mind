@@ -1533,3 +1533,36 @@ distinct_contexts=3
 **验证**
 
 - 全门禁：**364 passed / 92%**，fusion 70/70。
+
+### 14.32 trait 健康监控（2026-11-01）
+
+新增 `scripts/trait_evolution_health.py` + `mind/trait_health.py`。
+
+状态：
+
+- `no_active`：没有 active trait；
+- `waiting_turn`：active 存在，但 active 后没有新回合；
+- `shadow_missing_trait`：有 shadow 行但 trait_ids 为空（代码问题）；
+- `no_causal_links`：已有非空 shadow，但没有 causal link；
+- `ok`：全链路有数据。
+
+当前真实状态：
+
+```text
+status=waiting_turn
+active_traits=1
+shadow_since_activation=0
+nonempty_shadow=0
+causal_links=0
+```
+
+**特点**
+
+- 不引入“多久算异常”的时间阈值；
+- `--check` 只在 `shadow_missing_trait` 时返回非零；
+- 等待真实流量时不会误报故障。
+
+**验证**
+
+- `tests/unit/test_trait_health.py` 5 个状态；
+- 全门禁：**369 passed / 92%**，fusion 70/70。
