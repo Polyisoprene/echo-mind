@@ -479,3 +479,22 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 - 代价：显存约 +1.3GB；batch=32 会 OOM，外部评测用 batch=4。
 
 单会话检索仍是最弱项（0.294–0.312），语言不是唯一原因。
+
+
+---
+
+## 21. 人格自演化：论文依据与模型
+
+已把“自演化”从工程口号整理为带文献依据的模型：
+
+- **Whole Trait Theory / Fleeson 2001**：trait 是状态密度分布，不是单点；
+- **CAPS / Mischel & Shoda 1995**：人格是 if-situation-then-behavior，证据必须带 context；
+- **CLS / McClelland et al. 1995；Kumaran et al. 2016**：快事件/慢知识分离，靠离线 replay 巩固；
+- **Diekelmann & Born 2010**：日结算应视为离线巩固，不是简单求和；
+- **Nader et al. 2000**：提取后再巩固，反证可以改写 trait；
+- **Roberts et al. 2006**：成人特质变化很慢，支持慢基线预算；
+- **Baker et al. 2017 / Tenenbaum et al. 2011**：trait 证据用贝叶斯后验，不手调分数；
+- **Bower 1981**：trait/affect 应影响记忆提取；
+- **Cepeda et al. 2006**：跨独立情境才算证据，同一场景刷次数不算。
+
+形式化模型、数据表、分阶段实现和评测见 `docs/PERSONA_SELF_EVOLUTION_MODEL.md`。

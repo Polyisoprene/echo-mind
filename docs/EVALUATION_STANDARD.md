@@ -280,3 +280,11 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 - Li et al., *Measuring and Controlling Instruction (In)Stability in Language Model Dialogs*, 2024. [arXiv:2402.10962](https://arxiv.org/abs/2402.10962)
 - *Evaluating Memory in LLM Agents via Incremental Multi-Turn Interactions*, 2025. [arXiv:2507.05257](https://arxiv.org/abs/2507.05257)
 - *AI Persona: Life-long Personalization*, 2024. [arXiv:2412.13103](https://arxiv.org/abs/2412.13103)
+
+
+### 人格自演化评测（设计）
+
+- 合成经历流：温柔/冒犯/混合，各 30 天；
+- 测 trait 激活 precision/recall、反证后 false activation、检索偏移、边界不变性、7 维漂移界；
+- 对照：固定 5 条模板 / 证据账本不 gate / 证据+生命周期 / 全闭环；
+- 不用 LLM judge 当门禁；人工标签冻结。
