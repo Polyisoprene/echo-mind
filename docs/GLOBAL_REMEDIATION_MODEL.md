@@ -57,8 +57,8 @@ percept
 | `FACT_RECENCY_HALF_LIFE_DAYS` | 30 | `mind/ebbinghaus.py` | 时间衰减半衰期 | ❌ 无直接来源；fit_pending |
 | `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 关键词时间加分 | ❌ 无来源；convention |
 | `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 关键词方向加分 | ❌ 无来源；convention |
-| 语义 recency 权重 | 0.25 | `mind/semantic_retrieval.py::SEMANTIC_RECENCY_WEIGHT` | 已收常量/账本，fit_pending | ❌ 无来源 |
-| 语义 order 权重 | 0.5 | `mind/semantic_retrieval.py::SEMANTIC_ORDER_WEIGHT` | 已收常量/账本，fit_pending | ❌ 无来源 |
+| 语义 recency 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
+| 语义 order 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | `RRF_K` | 60 | `mind/retrieval_fusion.py` | 两路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
 | `max_hops` | 2 | `domain/relation.py::RELATION_MAX_HOPS` | 两跳可达 | ❌ 无来源；已由一处常量统一，fit_pending |
 | `RELATION_CONFIDENCE` | 0.8 | `mind/relation_extractor.py` | 抽取置信度 | ❌ 未参与排序；值无来源 |
@@ -166,6 +166,8 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 - order 唯一负责 role；
 - relations 唯一负责 multihop；
 - 三个信号不是可有可无的装饰，但**数值大小仍未被证明**；
+- **只关关键词侧或只关语义侧的 recency/order，仍然 70/70**：两侧互为备份，证明存在重复计分；两侧同时关才掉到 50/70；
+- 因此语义侧 0.25/0.5 已删除，recency/order 只保留在关键词侧；语义排序改为纯 cosine。
 - 这也暴露了旧 probe 的缺陷：原 multihop 题面含“工作”，关键词就能命中，关系通道是假通过；已改成无字面重叠并加语义相近干扰项，关系关闭后 multihop 才真的掉到 0/10。
 
 ### 6.1 检索
@@ -204,9 +206,11 @@ s = w_l*z(lexical) + w_d*z(dense) + w_r*z(r)
 
 ## 7. 本轮已经落地的部分
 
-- 0.25/0.5（语义权重）、2（关系跳数）、40（风格长度）已从内联字面量收成显式常量；
+- 语义侧 0.25/0.5 已删除：消融证明只留关键词侧仍 70/70；
+- 2（关系跳数）、40（风格长度）已收成显式常量；
 - 全部登记到 `docs/params/ledger.json`，状态为 `fit_pending/quarantined`；
-- `param_gate` 通过（60 constants compliant）；
+- `param_gate` 通过（58 constants compliant）；
+- 语义排序改为纯 cosine，关键词侧独占 recency/order，消除双路重复计分；
 - 关系 `valid_from/to` 已过滤过期边；`confidence` 已连乘进两跳路径分数；
 - 关系命中排序改为按 confidence 从高到低，而不是所有命中一律前置；
 - 评测集未退化（关键词 60/70、语义 70/70、multihop 10/10）；

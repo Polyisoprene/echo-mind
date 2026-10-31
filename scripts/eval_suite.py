@@ -22,7 +22,7 @@ from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import load_config_from_json
 from echomind.domain.models import PlasticParamSpec, SemanticFact, SocialBondProfile
 from echomind.domain.relation import MemoryRelation
-from echomind.mind import ebbinghaus, semantic_retrieval
+from echomind.mind import ebbinghaus
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.person_level import PersonProfile
 from echomind.mind.persona_stance import apply_stance_for
@@ -78,9 +78,7 @@ async def _retrieval(
         embeddings = await gateway.embed(tuple(f.fact_text for f in picked))
         vectors = {f.fact_id: v for f, v in zip(picked, embeddings, strict=True)}
         lexical = select_relevant_facts(picked, query, len(picked), now_ms=now_ms)
-        semantic = await rerank_facts(
-            picked, query, gateway, vectors, len(picked), now_ms=now_ms
-        )
+        semantic = await rerank_facts(picked, query, gateway, vectors, len(picked))
         fused = rrf_fuse((tuple(f.fact_id for f in lexical),
                           tuple(f.fact_id for f in semantic)))
         by_id = {f.fact_id: f for f in picked}
@@ -212,6 +210,13 @@ def _check(report: dict[str, Any], baseline: Path | None) -> int:
     return 0
 
 
+def _apply_ablation(name: str) -> None:
+    if name in ("recency", "recency_order", "recency_lex"):
+        ebbinghaus.FACT_RECENCY_WEIGHT = 0.0
+    if name in ("order", "recency_order", "order_lex"):
+        ebbinghaus.ENTITY_ORDER_WEIGHT = 0.0
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA)
@@ -220,17 +225,13 @@ async def main() -> int:
     parser.add_argument("--check", type=Path)
     parser.add_argument("--semantic", action="store_true")
     parser.add_argument(
-        "--ablate", choices=("none", "recency", "order", "recency_order", "relations"),
+        "--ablate",
+        choices=("none", "recency", "order", "recency_order", "relations",
+                 "recency_lex", "order_lex"),
         default="none",
     )
     args = parser.parse_args()
-    if args.ablate in ("recency", "recency_order"):
-        ebbinghaus.FACT_RECENCY_WEIGHT = 0.0
-        semantic_retrieval.SEMANTIC_RECENCY_WEIGHT = 0.0
-    if args.ablate in ("order", "recency_order"):
-        ebbinghaus.ENTITY_ORDER_WEIGHT = 0.0
-        semantic_retrieval.SEMANTIC_ORDER_WEIGHT = 0.0
-
+    _apply_ablation(args.ablate)
     data = json.loads(args.data.read_text(encoding="utf-8"))
     gateway = _gateway(args.semantic)
     if args.semantic and gateway is None:

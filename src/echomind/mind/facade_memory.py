@@ -244,7 +244,7 @@ async def select_facts(
     lexical = select_relevant_facts(facts, query, len(facts), now_ms=current)
     if semantic is None:
         return tuple(lexical[:limit])
-    ranked = await semantic.rerank(facts, query, len(facts), current)
+    ranked = await semantic.rerank(facts, query, len(facts))
     if ranked is None:
         return tuple(lexical[:limit])
     fused = rrf_fuse((tuple(f.fact_id for f in lexical), tuple(f.fact_id for f in ranked)))
