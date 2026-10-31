@@ -1047,6 +1047,19 @@
       "evidence": {
         "rationale": "Cormack et al. 2009 常用的 RRF 常数 60；抑制单路排名尖峰，先采用标准值，融合权重评测后再调"
       }
+    },
+    {
+      "id": "mind/relation_extractor.py::RELATION_CONFIDENCE",
+      "module": "mind/relation_extractor.py",
+      "symbol": "RELATION_CONFIDENCE",
+      "line": 16,
+      "value": "0.8",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "与事实默认置信度一致；规则抽取只在高精度模式下使用，置信度不抬高来源可信度"
+      }
     }
   ]
 }

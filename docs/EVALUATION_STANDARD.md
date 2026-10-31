@@ -200,6 +200,7 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 - 基线：`eval/baselines/2026-10.json`；
 - 关键词基线：paraphrase 0/10（零字面重叠）、privacy 10/10（0 泄露）、venue 10/10、role 0/10、temporal 0/10、persona 10/10，overall 30/60；
 - 语义基线：全类 10/10，overall 70/70（本地 bge + RRF）；
+- 关系抽取：线上 5 条 alias（QQ→昵称）；friend/works_at 仍为 0，multihop 评测目前用 seed 关系。
 - 基线：`eval/baselines/2026-10.json`（关键词）、`eval/baselines/2026-10-semantic.json`（语义）；
 - 门禁已接进 `scripts/qa_gate.sh` 的 Gate 2D：`python scripts/eval_suite.py --check eval/baselines/2026-10.json`。
 
