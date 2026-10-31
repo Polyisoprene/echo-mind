@@ -71,6 +71,16 @@
 - `main.py` 仅在 `cfg.embedding.enabled` 时构造 retriever；
 - 默认关闭，当前线上行为不变。
 
+## 已部署（2026-10-31，192.168.3.2）
+
+- 服务：`screen embedding`，`bge-small-zh-v1.5`，`0.0.0.0:8010`，OpenAI `/v1/embeddings`；
+- 模型目录：`/home/polyisoprene/embedding-service/bge-small-zh-v1.5`；
+- 显存：启动前 8.96GB → 空闲 9.26GB（**+282MB**）→ 回填后 9.59GB（**+632MB**）；进程 RSS 约 1.45GB；
+- 回填：主库 195 条 / 小沫库 14 条，512 维，约 2.6 秒；
+- 配置：两份 config 的 `api.embedding*` 已指向 `http://192.168.3.2:8010/v1`；
+- 真实 recall@5：**9/10**（关键词/bigram 为 5/10）；BGE 查询前缀反而 8/10，因此不加前缀；
+- frame 已启用语义 rerank（失败/覆盖不足自动回退关键词）。
+
 ## Mock 端到端验证
 
 `tests/integration/test_semantic_pipeline_mock.py` 用 mock `/embeddings`：
