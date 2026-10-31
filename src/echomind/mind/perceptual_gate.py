@@ -290,7 +290,7 @@ class PerceptualGate:
         if record_state:
             self._last_group_ts[percept.chat_key] = percept.timestamp_ms
             self._last_peer[percept.chat_key] = (percept.sender_id, percept.timestamp_ms)
-        belief = apply_belief(percept.sender_id)
+        belief = apply_belief(percept.chat_key, percept.sender_id)
         if t2_dec is not None:
             return adjust_decision(t2_dec, percept, self._satiation, belief)
         ambient = self._evaluate_ambient_with_cooldown(

@@ -1123,7 +1123,7 @@ async def test_stage16_source_code_audit_remediation(tmp_path: Path) -> None:
     )
     sent_list = ["已经用文字回复过了"]
     eff_voice, block_reason = runner._prepare_outbound_args(
-        "feiyu_say", {"text": "再用语音重复念一遍"}, sent_list
+        "group:1", "feiyu_say", {"text": "再用语音重复念一遍"}, sent_list
     )
     assert eff_voice is None and "请勿重复" in block_reason
 

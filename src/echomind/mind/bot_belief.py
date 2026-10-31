@@ -17,7 +17,7 @@ _ASSERT_RE = re.compile(
 )
 _BUILD_RE = re.compile(r"搭建|做一个|自己弄|写一个|造一个|教程|部署|参考|想弄|开个")
 
-_BELIEFS: dict[str, float] = {}
+_BELIEFS: dict[str, dict[str, float]] = {}
 
 
 def extract_ids(*texts: str) -> tuple[str, ...]:
@@ -71,12 +71,13 @@ def rebuild(facts: tuple[tuple[str, str, float], ...]) -> dict[str, float]:
     return merged
 
 
-def set_beliefs(beliefs: dict[str, float]) -> None:
-    """Replace the current per-sender belief table."""
-    _BELIEFS.clear()
-    _BELIEFS.update({k: max(0.0, min(1.0, v)) for k, v in beliefs.items()})
+def set_beliefs(chat_key: str, beliefs: dict[str, float]) -> None:
+    """Replace the belief table for one chat; other chats keep their own."""
+    _BELIEFS[chat_key] = {
+        key: max(0.0, min(1.0, value)) for key, value in beliefs.items()
+    }
 
 
-def apply_belief(sender_id: str) -> float:
-    """Bot belief for one sender; 0.0 means "treated as human"."""
-    return _BELIEFS.get(sender_id, 0.0)
+def apply_belief(chat_key: str, sender_id: str) -> float:
+    """Bot belief for one sender inside one chat; 0.0 means "treated as human"."""
+    return _BELIEFS.get(chat_key, {}).get(sender_id, 0.0)

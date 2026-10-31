@@ -7,29 +7,37 @@ from echomind.mind.dialogue_context import DialogueContext
 
 def test_buffer_keeps_both_sides() -> None:
     ctx = DialogueContext()
-    ctx.add("L今晚早睡了吗", "你变聪明了吗")
-    ctx.add("我", "聪明不聪明，你自己试试不就知道了")
-    ctx.add("L今晚早睡了吗", "我该怎么测试呢")
-    lines = ctx.lines()
+    ctx.add("g", "L今晚早睡了吗", "你变聪明了吗")
+    ctx.add("g", "我", "聪明不聪明，你自己试试不就知道了")
+    ctx.add("g", "L今晚早睡了吗", "我该怎么测试呢")
+    lines = ctx.lines("g")
     assert lines[-2].startswith("我: 聪明不聪明")
     assert lines[-1] == "L今晚早睡了吗: 我该怎么测试呢"
 
 
 def test_note_returns_window_with_new_line() -> None:
     ctx = DialogueContext()
-    assert ctx.note("A", "hi") == ("A: hi",)
+    assert ctx.note("g", "A", "hi") == ("A: hi",)
 
 
 def test_window_is_bounded_and_truncated() -> None:
     ctx = DialogueContext(limit=3)
     for i in range(6):
-        ctx.add("A", f"m{i}")
-    assert len(ctx.lines()) == 3 and ctx.lines()[-1] == "A: m5"
-    ctx.add("B", "x" * 200)
-    assert len(ctx.lines()[-1]) <= 90
+        ctx.add("g", "A", f"m{i}")
+    assert len(ctx.lines("g")) == 3 and ctx.lines("g")[-1] == "A: m5"
+    ctx.add("g", "B", "x" * 200)
+    assert len(ctx.lines("g")[-1]) <= 90
 
 
 def test_blank_lines_are_ignored() -> None:
     ctx = DialogueContext()
-    ctx.add("A", "   ")
-    assert ctx.lines() == ()
+    ctx.add("g", "A", "   ")
+    assert ctx.lines("g") == ()
+
+
+def test_scopes_do_not_see_each_other() -> None:
+    ctx = DialogueContext()
+    ctx.add("group:1", "A", "群里的秘密")
+    ctx.add("private:L", "L", "私聊的话")
+    assert ctx.lines("group:1") == ("A: 群里的秘密",)
+    assert ctx.lines("private:L") == ("L: 私聊的话",)

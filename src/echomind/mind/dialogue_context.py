@@ -1,7 +1,6 @@
 """Stage 33: the probe needs the real dialogue, including what she just said.
 
-Feeding only inbound gate-log lines made follow-ups look like ambient chatter: the probe had
-no "上一句" to connect them to. This ring buffer keeps the last few turns of both sides.
+Per-scope ring buffers: a group and a private chat must not see each other's lines.
 """
 
 from __future__ import annotations
@@ -13,25 +12,34 @@ MAX_CHARS = 80
 
 
 class DialogueContext:
-    """Bounded, mixed-direction conversation buffer for probe context."""
+    """Bounded, mixed-direction conversation buffers keyed by chat scope."""
 
     def __init__(self, limit: int = MAX_LINES) -> None:
-        self._lines: deque[str] = deque(maxlen=limit)
+        self._limit = limit
+        self._lines: dict[str, deque[str]] = {}
 
-    def add(self, speaker: str, text: str) -> None:
-        """Append one line (speaker label kept short, text truncated)."""
+    def _buffer(self, scope: str) -> deque[str]:
+        if scope not in self._lines:
+            self._lines[scope] = deque(maxlen=self._limit)
+        return self._lines[scope]
+
+    def add(self, scope: str, speaker: str, text: str) -> None:
+        """Append one line to one scope (speaker label kept short, text truncated)."""
         body = " ".join((text or "").split())[:MAX_CHARS]
         if body:
-            self._lines.append(f"{speaker or '?'}: {body}")
+            self._buffer(scope).append(f"{speaker or '?'}: {body}")
 
-    def note(self, speaker: str, text: str) -> tuple[str, ...]:
+    def note(self, scope: str, speaker: str, text: str) -> tuple[str, ...]:
         """Append and return the current window in one call."""
-        self.add(speaker, text)
-        return self.lines()
+        self.add(scope, speaker, text)
+        return self.lines(scope)
 
-    def lines(self) -> tuple[str, ...]:
-        """Current context window, oldest first."""
-        return tuple(self._lines)
+    def lines(self, scope: str) -> tuple[str, ...]:
+        """Current context window for one scope, oldest first."""
+        return tuple(self._lines.get(scope, ()))
 
-    def clear(self) -> None:
-        self._lines.clear()
+    def clear(self, scope: str | None = None) -> None:
+        if scope is None:
+            self._lines.clear()
+        else:
+            self._lines.pop(scope, None)

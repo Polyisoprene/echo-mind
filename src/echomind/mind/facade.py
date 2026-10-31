@@ -74,6 +74,10 @@ from echomind.mind.subconscious_probe import (
 )
 
 
+def _belief_facts(facts: tuple[SemanticFact, ...]) -> tuple[tuple[str, str, float], ...]:
+    return tuple((f.subject, f.fact_text, f.confidence) for f in facts)
+
+
 class CognitiveCoreFacade:
     """Unified 12-Layer Cognitive Core Facade satisfying ICognitiveCoreFacade."""
 
@@ -129,13 +133,13 @@ class CognitiveCoreFacade:
         params = await effective_params_of(self._working, self._layers, percept.timestamp_ms)
         talk = params["talkativeness"].value if "talkativeness" in params else 58.0
         facts = await self._reader.get_semantic_facts(percept.chat_key)
-        set_beliefs(rebuild_beliefs(tuple((f.subject, f.fact_text, f.confidence) for f in facts)))
+        set_beliefs(percept.chat_key, rebuild_beliefs(_belief_facts(facts)))
         rivals = await self._reader.get_rival_names(percept.chat_key)
         s_bond = await self._reader.get_social_bond(percept.chat_key, percept.sender_id)
         vocab = frozenset(f.subject.lower() for f in facts)
         dec = self._gate.evaluate(percept, snap, vocab, rivals, talkativeness=talk,
                                   record_state=not dry_run, params=params, speaker_bond=s_bond)
-        recent = self._dialogue.note(percept.sender_name, percept.text)
+        recent = self._dialogue.note(percept.chat_key, percept.sender_name, percept.text)
         if not dry_run and self._sub_probe is not None:
             snap, dec = await apply_probe_if_allowed(
                 self._sub_probe, percept, snap, dec, s_bond, working=self._working,
@@ -221,7 +225,7 @@ class CognitiveCoreFacade:
         now_ms, tr = int(time.time() * 1000), triggers
         scene: Literal["group", "private"] = "private" if "private:" in chat_key else "group"
         facts, uids = await load_facts(self._reader, chat_key, tr)
-        set_beliefs(rebuild_beliefs(tuple((f.subject, f.fact_text, f.confidence) for f in facts)))
+        set_beliefs(chat_key, rebuild_beliefs(_belief_facts(facts)))
         pairs = [(u, await self._reader.get_social_bond(chat_key, u)) for u in uids]
         bm = await attach(self._bond_store, {u: b for u, b in pairs if b is not None})
         chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
@@ -258,7 +262,7 @@ class CognitiveCoreFacade:
 
     async def on_turn_completed(self, outcome: TurnOutcome) -> None:
         for sent in outcome.sent_texts:
-            self._dialogue.add("我", sent)
+            self._dialogue.add(outcome.chat_key, "我", sent)
         now_ms, o = int(time.time() * 1000), outcome
         if o.sent_texts:
             self._gate.mark_bot_spoke(o.chat_key, o.sent_texts, now_ms, o.triggers)

@@ -24,10 +24,17 @@ def test_conflicting_facts_take_the_strongest() -> None:
 
 
 def test_beliefs_are_bounded_and_applied() -> None:
-    set_beliefs({"10009009": 3.0})
-    assert apply_belief("10009009") == 1.0
-    assert apply_belief("999") == 0.0
-    set_beliefs({})
+    set_beliefs("group:1", {"10009009": 3.0})
+    assert apply_belief("group:1", "10009009") == 1.0
+    assert apply_belief("group:1", "999") == 0.0
+    set_beliefs("group:1", {})
+
+
+def test_beliefs_do_not_leak_across_chats() -> None:
+    set_beliefs("group:1", {"10009009": 1.0})
+    set_beliefs("group:2", {})
+    assert apply_belief("group:1", "10009009") == 1.0
+    assert apply_belief("group:2", "10009009") == 0.0
 
 
 def test_an_id_in_the_name_is_not_confused_with_another_nickname() -> None:

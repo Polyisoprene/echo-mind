@@ -99,7 +99,7 @@ class AgentSessionRunner:
         self._sender, self._composer, self._traces = sender, composer, trace_store
         self._bus = event_bus
         self._scratchpad = WorkingScratchpad()
-        self._active_bans: tuple[str, ...] = ()
+        self._bans: dict[str, tuple[str, ...]] = {}
         self._temperature = temperature
         self._turn_counts: dict[str, int] = {}
 
@@ -119,12 +119,12 @@ class AgentSessionRunner:
         await self._traces.save_turn(rec)
 
     def _prepare_voice_args(
-        self, name: str, args: dict[str, Any], sent_texts: list[str]
+        self, chat_key: str, name: str, args: dict[str, Any], sent_texts: list[str]
     ) -> tuple[dict[str, Any] | None, str]:
         if name == "feiyu_say":
             if sent_texts:
                 return None, "本轮已发送过文字或语音回复，请勿重复再用语音念一遍，直接结束即可。"
-            kept = purge_message_batch(str(args.get("text", "")), self._active_bans)
+            kept = purge_message_batch(str(args.get("text", "")), self._bans.get(chat_key, ()))
             if not kept:
                 return None, "已拦截：语音内容命中管理员禁用词，未发送"
             sent_texts.append(kept[0])
@@ -134,13 +134,13 @@ class AgentSessionRunner:
         return args, ""
 
     def _prepare_outbound_args(
-        self, name: str, args: dict[str, Any], sent_texts: list[str]
+        self, chat_key: str, name: str, args: dict[str, Any], sent_texts: list[str]
     ) -> tuple[dict[str, Any] | None, str]:
         if name != "send_message":
-            return self._prepare_voice_args(name, args, sent_texts)
+            return self._prepare_voice_args(chat_key, name, args, sent_texts)
         if sent_texts:
             return None, "本轮已发送过文字消息，请勿重复连发，直接结束即可。"
-        kept = purge_message_batch(args.get("messages", []), self._active_bans)
+        kept = purge_message_batch(args.get("messages", []), self._bans.get(chat_key, ()))
         if not kept:
             return None, "已拦截：全部内容命中管理员禁用词，未发送"
         sent_texts.extend(kept)
@@ -153,7 +153,7 @@ class AgentSessionRunner:
         fn = tc.get("function", {})
         name = str(fn.get("name", "")) if isinstance(fn, dict) else ""
         raw_args = _parse_tool_args(fn.get("arguments") if isinstance(fn, dict) else "{}")
-        eff_args, block_msg = self._prepare_outbound_args(name, raw_args, sent_texts)
+        eff_args, block_msg = self._prepare_outbound_args(chat_key, name, raw_args, sent_texts)
         if eff_args is None:
             return _tool_reply(tc, name, block_msg)
         tools_used.append(name)
@@ -215,7 +215,7 @@ class AgentSessionRunner:
         if sent_texts or spoke:
             return
         rescued = rescue_unsent_reply(last_content, must_reply=must_reply)
-        purged = purge_message_batch((rescued,), self._active_bans) if rescued else ()
+        purged = purge_message_batch((rescued,), self._bans.get(chat_key, ())) if rescued else ()
         if not purged:
             return
         await self._sender.send_text(chat_key, (purged[0],))
@@ -248,7 +248,7 @@ class AgentSessionRunner:
         t_turn, now_ms, sid = time.monotonic(), int(time.time() * 1000), uuid.uuid4().hex[:12]
         steps: list[TurnStep] = []
         frame = await self._cognitive.build_cognitive_frame(chat_key, unread_triggers)
-        self._active_bans = frame.banned_phrases
+        self._bans[chat_key] = frame.banned_phrases
         messages, sys_p, usr_p = await self._compose_with_facets(
             chat_key, frame, read_history, unread_triggers, stickers=stickers, now_ms=now_ms
         )
