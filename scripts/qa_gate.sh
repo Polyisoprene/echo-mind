@@ -46,5 +46,10 @@ uv run pytest --cov=src/echomind --cov-report=term-missing --cov-fail-under=90
 uv run coverage report --fail-under=90
 
 echo "================================================================"
+echo "🛡️  [Gate 2D] Persona/Memory Eval Baseline"
+echo "================================================================"
+uv run python scripts/eval_suite.py --check eval/baselines/2026-10.json
+
+echo "================================================================"
 echo "✅ ALL INDUSTRIAL QA & ANTI-NESTING GATES PASSED (via uv run)!"
 echo "================================================================"

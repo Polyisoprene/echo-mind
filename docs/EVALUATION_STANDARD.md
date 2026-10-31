@@ -198,8 +198,10 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 - 数据集：`eval/datasets/persona_memory_v1/scenarios.json`（60 条，SHA256 随报告）；
 - Runner：`scripts/eval_suite.py`（临时 DB，不调 LLM）；
 - 基线：`eval/baselines/2026-10.json`；
-- 当前：paraphrase 0/10（零字面重叠）、privacy 10/10（0 泄露）、venue 10/10、role 0/10、temporal 0/10、persona 10/10，overall 30/60；
-- 门禁：`python scripts/eval_suite.py --check eval/baselines/2026-10.json`。
+- 关键词基线：paraphrase 0/10（零字面重叠）、privacy 10/10（0 泄露）、venue 10/10、role 0/10、temporal 0/10、persona 10/10，overall 30/60；
+- 语义基线：paraphrase 10/10，overall 40/60（本地 bge）；
+- 基线：`eval/baselines/2026-10.json`（关键词）、`eval/baselines/2026-10-semantic.json`（语义）；
+- 门禁已接进 `scripts/qa_gate.sh` 的 Gate 2D：`python scripts/eval_suite.py --check eval/baselines/2026-10.json`。
 
 ### Phase 1 原计划
 

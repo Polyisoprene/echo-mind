@@ -16,11 +16,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from echomind.adapters.llm.embedding_client import OpenAiEmbeddingGateway
 from echomind.core.bootstrap import EchoMindContainer
+from echomind.core.config import load_config_from_json
 from echomind.domain.models import PlasticParamSpec, SemanticFact, SocialBondProfile
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.person_level import PersonProfile
 from echomind.mind.persona_stance import apply_stance_for
+from echomind.mind.semantic_retrieval import rerank_facts
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "eval" / "datasets" / "persona_memory_v1" / "scenarios.json"
@@ -48,11 +51,18 @@ async def _seed(repo: Any, scenario: dict[str, Any]) -> None:
         ))
 
 
-async def _retrieval(repo: Any, scenario: dict[str, Any]) -> dict[str, Any]:
+async def _retrieval(
+    repo: Any, scenario: dict[str, Any], gateway: Any = None
+) -> dict[str, Any]:
     picked = await repo.get_semantic_facts(
         str(scenario["venue"]), person_ids=tuple(scenario.get("audience", ()))
     )
-    ranked = select_relevant_facts(picked, str(scenario["query"]), limit=5)
+    if gateway is not None and picked:
+        embeddings = await gateway.embed(tuple(f.fact_text for f in picked))
+        vectors = {f.fact_id: v for f, v in zip(picked, embeddings, strict=True)}
+        ranked = await rerank_facts(picked, str(scenario["query"]), gateway, vectors, 5)
+    else:
+        ranked = select_relevant_facts(picked, str(scenario["query"]), limit=5)
     subjects = [fact.subject for fact in ranked]
     target = str(scenario["target"])
     rank = subjects.index(target) + 1 if target in subjects else None
@@ -94,7 +104,7 @@ def _persona(scenario: dict[str, Any]) -> dict[str, Any]:
     return {"passed": delta <= float(scenario["max_delta"]), "delta": round(delta, 3)}
 
 
-async def _evaluate(data: dict[str, Any]) -> dict[str, Any]:
+async def _evaluate(data: dict[str, Any], gateway: Any = None) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as tmp:
         container = await EchoMindContainer.create(db_path=Path(tmp) / "eval.db")
         repo = container.memory_repo
@@ -104,7 +114,7 @@ async def _evaluate(data: dict[str, Any]) -> dict[str, Any]:
                 result = _persona(scenario)
             else:
                 await _seed(repo, scenario)
-                result = await _retrieval(repo, scenario)
+                result = await _retrieval(repo, scenario, gateway)
             results.append({"id": scenario["id"], "category": scenario["category"], **result})
 
     by_cat: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -140,16 +150,51 @@ def _print(metrics: dict[str, Any]) -> None:
     print(f"overall      {metrics['overall_passed']}/{metrics['overall_total']}")
 
 
+def _gateway(semantic: bool) -> Any:
+    if not semantic:
+        return None
+    cfg = load_config_from_json(ROOT / "data" / "config.json")
+    if not cfg.embedding.enabled:
+        return None
+    return OpenAiEmbeddingGateway(cfg.embedding)
+
+
+def _check(report: dict[str, Any], baseline: Path | None) -> int:
+    if baseline is None or not baseline.exists():
+        return 0
+    base = json.loads(baseline.read_text(encoding="utf-8"))
+    if base.get("mode") and base["mode"] != report.get("mode"):
+        print(f"FAIL: baseline mode {base['mode']} != report mode {report.get('mode')}")
+        return 2
+    if report["metrics"]["privacy_leaks"] > 0:
+        print("FAIL: privacy leaks")
+        return 1
+    if report["metrics"]["paraphrase"]["rate"] < base["metrics"]["paraphrase"]["rate"] - 0.05:
+        print("FAIL: paraphrase recall dropped")
+        return 1
+    return 0
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--save-baseline", type=Path)
     parser.add_argument("--check", type=Path)
+    parser.add_argument("--semantic", action="store_true")
     args = parser.parse_args()
 
     data = json.loads(args.data.read_text(encoding="utf-8"))
-    report = await _evaluate(data)
+    gateway = _gateway(args.semantic)
+    if args.semantic and gateway is None:
+        print("embedding is not configured")
+        return 2
+    try:
+        report = await _evaluate(data, gateway)
+    finally:
+        if gateway is not None:
+            await gateway.aclose()
+    report["mode"] = "semantic" if args.semantic else "lexical"
     report["version"] = data.get("version", "unknown")
     report["date"] = datetime.now().strftime("%Y-%m-%d")
     _print(report["metrics"])
@@ -163,16 +208,7 @@ async def main() -> int:
         args.save_baseline.write_text(json.dumps(report, ensure_ascii=False, indent=2),
                                       encoding="utf-8")
         print("baseline:", args.save_baseline)
-    if args.check and args.check.exists():
-        baseline = json.loads(args.check.read_text(encoding="utf-8"))
-        if report["metrics"]["privacy_leaks"] > 0:
-            print("FAIL: privacy leaks")
-            return 1
-        base_recall = baseline["metrics"]["paraphrase"]["rate"]
-        if report["metrics"]["paraphrase"]["rate"] < base_recall - 0.05:
-            print("FAIL: paraphrase recall dropped")
-            return 1
-    return 0
+    return _check(report, args.check)
 
 
 if __name__ == "__main__":
