@@ -1437,7 +1437,11 @@ signature.result: 形成反复确认小槽点的行为模式
 - trait 45 只有 **1 个可审计 context**，不够 active；
 - 12 条 shadow 的 trait_ids 全空，actual tools 只有 `feiyu_say`；
 - 旧 `evidence_count=4` 是历史缓存，不能当 4 个独立证据；
-- 小沫库没有真实 trait/shadow/link。
+- 小沫库没有真实 trait/shadow/link；
+- **turn_traces 里有 156 条真实 `look_at_image` 回合**，trait 45 的旧 `evidence_count=4` 不是凭空来的；
+- 但这些旧回合没有进入 `trait_evidence`，因为 ledger 是后加的，不能直接当独立 context。
+
+**下一步不是等新数据**：从 turn_traces 回填真实 image 证据（quote 取 steps_json 的 LLM 输出，context 用事件日），先 dry-run 审计，再决定是否写入。禁止用合成 quote。
 
 **结论**
 
