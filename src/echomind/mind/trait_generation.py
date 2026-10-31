@@ -109,6 +109,8 @@ class TraitTextGenerator:
         contexts = {item.context_hash for item in evidence if item.polarity > 0}
         if len(contexts) < 2:
             return None
+        if not any(item.quote_kind != "tool" for item in evidence):
+            return None
         response = await self._llm.complete(
             [{"role": "user", "content": _prompt(evidence)}],
             temperature=0.0, json_mode=True,

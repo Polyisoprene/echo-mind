@@ -88,15 +88,15 @@
           "trait_id": 1,
           "category": "taboo",
           "status": "candidate",
-          "trait_text": "当别人用命令语气使唤她时，她会明确拒绝并强调不要这样对她。",
+          "trait_text": "当有人用命令语气使唤她时，她会直接表达拒绝并要求对方不要这样。",
           "reject_reason": ""
         },
         {
           "trait_id": 2,
           "category": "habit",
-          "status": "candidate",
-          "trait_text": "她在查看内容时倾向于多次打开或查看图片。",
-          "reject_reason": ""
+          "status": null,
+          "trait_text": null,
+          "reject_reason": null
         }
       ]
     }

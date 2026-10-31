@@ -65,3 +65,24 @@ async def test_one_context_does_not_call_llm() -> None:
     evidence = (_evidence("c1", "猫", 1),)
     assert await TraitTextGenerator(llm).generate(1, evidence) is None
     assert llm.calls == 0
+
+
+async def test_tool_only_evidence_cannot_generate_prose() -> None:
+    llm = FakeLlm({
+        "category": "habit", "trait_text": "查看图片",
+        "evidence_quotes": ["look_at_image"],
+    })
+    evidence = (
+        TraitEvidence(
+            evidence_id=1, trait_id=1, session_id="s1", turn_id="t1",
+            quote="look_at_image", quote_kind="tool", polarity=1,
+            context_hash="c1", created_ms=1,
+        ),
+        TraitEvidence(
+            evidence_id=2, trait_id=1, session_id="s2", turn_id="t2",
+            quote="look_at_image", quote_kind="tool", polarity=1,
+            context_hash="c2", created_ms=2,
+        ),
+    )
+    assert await TraitTextGenerator(llm).generate(1, evidence) is None
+    assert llm.calls == 0

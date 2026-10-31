@@ -940,3 +940,33 @@ assistant text > tool > user trigger
 **验证**
 
 - 全门禁：**347 passed / 92%**，fusion 70/70。
+
+### 14.13 候选质量评估与结构门槛（2026-11-01）
+
+新增 `scripts/evaluate_trait_candidates.py`，每条 active trait 重复生成 3 次：
+
+产物：`eval/baselines/persona-candidate-eval-2026-11-01.json`
+
+| 流/trait | 有效/次数 | exact match | 平均 Jaccard | 证据 bigram 覆盖 | 模板最大相似 |
+|---|---:|---:|---:|---:|---:|
+| warm/habit | 3/3 | 0.333 | 0.522 | 0.068 | 0.083 |
+| offense/taboo | 3/3 | 0.667 | 0.717 | 0.194 | 0.175 |
+| mixed/taboo | 3/3 | 0.333 | 0.502 | 0.194 | 0.163 |
+| mixed/habit | **0/3** | — | — | — | — |
+
+**关键发现**
+
+- mixed 的 habit 证据只有 `look_at_image` 工具名；LLM 只能生成“反复查看图片”这种空泛文本。
+- 因此新增结构门槛：**至少一条非 tool 的行为/话语证据才允许生成候选**。
+- 这不是分数阈值，而是证据类型要求：工具名只能证明“允许动作”，不能证明“人格怎么说话”。
+
+**晋升**
+
+- 仍然没有自动 promoted；
+- 候选必须人工/后续协议审核；
+- 质量指标只报告，不做加权总分。
+
+**验证**
+
+- `tests/unit/test_trait_generation.py`：tool-only 不调用 LLM；
+- 全门禁：**348 passed / 92%**，fusion 70/70。
