@@ -192,6 +192,7 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
+| 2026-10-31 | **P0 关系归人上线**：`PersonLevelService` 按人合并跨场合 bond/stats，温柔/耐心改用人级 trust+depth，俏皮保留场合 affinity；care 改用人级好感，修复私聊 care=0。两实例重启健康；owner 群/私聊温柔 0.922、耐心 0.315 一致，俏皮 0.280/−0.343，care 0→0.209。纳入记忆模块重构第一阶段（人级画像实时计算，P1 再落表）。 |
 | 2026-10-31 | **两层引擎统一**：此前只有 `persona_*` 走 state+结算，行为参数每轮被 `_apply_one` 直接改（这就是漂移 13 点的原因）。现在 layer store 存在时**所有塑性参数**都只写快状态、按日结算（≤4/天）；调度器的冲浪路径也接入 layer store，不再绕过。无 layer store 时保留旧路径（降级）。新增两条集成测试；两实例重启并再次重置到默认。 |
 | 2026-10-31 | **行为参数一并重置**：`talkativeness 71.3→58`、`curiosity_rate 79.5→65`、`proactive_idle_min 8.35→10`（skepticism/verify_impulse 本来就在默认）。两实例实时快照已确认。新增 `scripts/reset_behavior_baseline.py`；重置前备份在 `~/echomind-backups/`。跨会话泄漏按用户要求暂缓。 |
 | 2026-10-31 | **部署 + 基线重置（方案 A）**：lane 合入 main；3310/3312 重启并健康（NapCat 重连）；好感等级回填（主库 19 条，分布 22/6/6/4/3）；`TAU_S=247` 生效；空 token 改为仅回环。发现实时基线是 E2 前疯跑的残值（独占 93.4、叛逆 73.3），按 A 重置为默认（65/62/58/75/55/52/48），并清空 state/pending/settlement；两实例快照已确认。新增 `scripts/reset_persona_baseline.py`。备份在 `~/echomind-backups/`（仓库外）。 |
