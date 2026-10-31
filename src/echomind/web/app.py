@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ from pydantic import BaseModel
 
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.web.audit import write_audit
+from echomind.web.auth import LOOPBACK_HOSTS, WRITE_METHODS, is_request_authorized
 from echomind.web.chat_service import ChatStreamService
 from echomind.web.ext_routers import (
     build_llm_and_voice_router,
@@ -28,35 +30,7 @@ from echomind.web.social_router import build_social_router
 from echomind.web.voice_health_service import VoiceHealthService
 
 STATIC_DIR = Path(__file__).parent / "static"
-LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost", "testclient"})
-WRITE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
-
-
-def _extract_request_token(request: Request) -> str:
-    auth = request.headers.get("authorization", "").strip()
-    if auth.lower().startswith("bearer "):
-        return auth[7:].strip()
-    header_tok = request.headers.get("x-echomind-token", "").strip()
-    if header_tok:
-        return header_tok
-    return str(request.query_params.get("token", "")).strip()
-
-
-def is_request_authorized(
-    request: Request, auth_key: str, *, client_host: str | None = None
-) -> bool:
-    """Allow loopback/tunnel requests; require token for non-loopback /api/* calls."""
-    if not auth_key or not request.url.path.startswith("/api/"):
-        return True
-    token_ok = _extract_request_token(request) == auth_key
-    if request.method.upper() in WRITE_METHODS:
-        return token_ok
-    if token_ok:
-        return True
-    host = client_host or (request.client.host if request.client else "127.0.0.1")
-    return host in LOOPBACK_HOSTS
-
-
+logger = logging.getLogger(__name__)
 class FactUpsertPayload(BaseModel):
     """Request body for adding or locking an authoritative semantic fact."""
 
@@ -266,6 +240,8 @@ def create_web_app(
     auth_key: str = "",
 ) -> FastAPI:
     """Create and wire the FastAPI application around EchoMindContainer."""
+    if not auth_key:
+        logger.warning("server.token is empty: /api is restricted to loopback clients")
     app = FastAPI(title="EchoMind Console", version="2.0.0")
     inspector = MindInspectorService(container)
     chat = ChatStreamService(container, log_path or Path("data/console.log"))
