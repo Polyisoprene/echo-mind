@@ -85,3 +85,26 @@ async def test_lifecycle_refresh_is_shadow_only(tmp_path: Path) -> None:
         "select status, last_support_ms, last_contradiction_ms from persona_traits where id=?",
         (trait.trait_id,),
     ).fetchone() == ("retired", 2, 4)
+
+
+async def test_candidate_store_dedupes_prompt_hash(tmp_path: Path) -> None:
+    from echomind.adapters.storage.trait_candidate_repo import SqliteTraitCandidateStore
+    from echomind.domain.trait_candidate import TraitCandidate
+
+    db = SqliteDatabase(tmp_path / "trait_candidates.db")
+    await db.initialize()
+    store = SqliteWorkingStateStore(db)
+    traits = await store.sync_persona_traits(
+        new_trait=PersonaTrait(trait_text="候选测试", strength=5),
+        chat_key="g", source="turn:t1",
+    )
+    trait = next(item for item in traits if item.trait_text == "候选测试")
+    candidate = TraitCandidate(
+        trait_id=trait.trait_id, category="habit", trait_text="看到图会先看细节",
+        evidence_json="[]", prompt_hash="hash-1", generator_model="test",
+        created_ms=1,
+    )
+    candidates = SqliteTraitCandidateStore(db)
+    await candidates.save_candidate(candidate)
+    await candidates.save_candidate(candidate)
+    assert len(await candidates.list_candidates(trait.trait_id)) == 1

@@ -98,8 +98,33 @@ async def ensure_trait_evidence_table(conn: Any) -> None:
     await conn.executescript(_TRAIT_EVIDENCE_DDL)
 
 
+_TRAIT_CANDIDATE_DDL = """
+CREATE TABLE IF NOT EXISTS trait_candidates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  trait_id INTEGER NOT NULL REFERENCES persona_traits(id) ON DELETE CASCADE,
+  category TEXT NOT NULL CHECK(category IN ('habit','temperament','taste','taboo')),
+  trait_text TEXT NOT NULL,
+  evidence_json TEXT NOT NULL,
+  prompt_hash TEXT NOT NULL,
+  generator_model TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'candidate'
+    CHECK(status IN ('candidate','rejected','promoted')),
+  reject_reason TEXT NOT NULL DEFAULT '',
+  created_ms INTEGER NOT NULL,
+  UNIQUE(trait_id, prompt_hash)
+);
+CREATE INDEX IF NOT EXISTS idx_trait_candidates_trait
+  ON trait_candidates(trait_id, created_ms);
+"""
+
+
+async def ensure_trait_candidate_table(conn: Any) -> None:
+    await conn.executescript(_TRAIT_CANDIDATE_DDL)
+
+
 async def ensure_migrations(conn: Any) -> None:
     """Run every idempotent migration in one call."""
     await ensure_trait_columns(conn)
     await ensure_trait_evidence_table(conn)
+    await ensure_trait_candidate_table(conn)
     await ensure_claim_tables(conn)

@@ -635,3 +635,35 @@ D1/D2/D3（独立 backlog）
 - `tests/unit/test_trait_lifecycle.py`：无证据/单情境/双情境/反证；
 - `tests/integration/test_trait_evidence_ledger.py`：活跃→反证退休；
 - 全门禁：**329 passed / 92%**，fusion 70/70。
+
+### 14.3 P2 特质文本生成（2026-11-01 已落地，离线 shadow）
+
+**代码**
+
+- `src/echomind/domain/trait_candidate.py`；
+- `src/echomind/domain/trait_candidate_ports.py`；
+- `src/echomind/adapters/storage/trait_candidate_repo.py`；
+- `trait_candidates` 表（trait_id + prompt_hash 唯一）；
+- `src/echomind/mind/trait_generation.py`；
+- `scripts/generate_trait_candidates.py`。
+
+**规则**
+
+- 只有 ≥2 个独立支持情境才调用 LLM；
+- LLM 只输出 `category + trait_text + evidence_quotes`；
+- `evidence_quotes` 每条必须是证据原文子串，否则存为 `rejected` 并记录原因；
+- 候选只进 `trait_candidates`，**不进 prompt、不覆盖现有 5 条模板**；
+- prompt hash 去重，重复生成不会重复插入；
+- 脚本默认只处理 `status='active'` 的 trait。
+
+**当前状态**
+
+- 9 条旧 trait 仍是 `legacy_unverified`，没有候选；
+- 脚本 dry-run 会明确输出“no active traits”；
+- 还没有接 live；没有用假数据跑 LLM。
+
+**验证**
+
+- `tests/unit/test_trait_generation.py`：有效候选、伪造 quote 拒绝、单情境不调用 LLM；
+- `tests/integration/test_trait_evidence_ledger.py`：候选表去重；
+- 全门禁：**333 passed / 92%**，fusion 70/70。
