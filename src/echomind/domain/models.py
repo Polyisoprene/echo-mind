@@ -4,13 +4,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
-
-class FrozenValueObject(BaseModel):
-    """Base class for all immutable cross-layer value objects."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
+from echomind.domain.base import FrozenValueObject as FrozenValueObject
 
 
 class MediaAttachment(FrozenValueObject):
@@ -184,6 +180,8 @@ class PersonaTrait(FrozenValueObject):
     category: Literal["habit", "temperament", "taste", "taboo"] = "habit"
     trait_text: str
     strength: int = Field(default=5, ge=0, le=10)
+    evidence_count: int = Field(default=1, ge=0)
+    contradiction_count: int = Field(default=0, ge=0)
 
 
 class PlasticParamSpec(FrozenValueObject):

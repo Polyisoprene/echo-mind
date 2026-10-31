@@ -101,13 +101,42 @@ def _publish_summary(params: dict[str, PlasticParamSpec]) -> None:
     set_summary(f"{lead} · 独占{possess:.0f}/温柔{warmth:.0f}/傲娇{tsundere:.0f}")
 
 
+def _trait_lines(traits: tuple[PersonaTrait, ...]) -> list[str]:
+    if not traits:
+        return []
+    lines = [
+        "- 从过往互动中长出的专属习惯、喜好与讨厌雷点"
+        "（仅在不违背上方基础人设且贴合当前话题时自然参考，勿每轮机械复读）："
+    ]
+    for trait in traits:
+        tag = "雷点" if trait.category == "taboo" else "习惯"
+        lines.append(f"  · [{tag}·强度{trait.strength}/10] {trait.trait_text}")
+    return lines
+
+
+def _visible_traits(
+    traits: tuple[PersonaTrait, ...], min_evidence: int, max_traits: int
+) -> tuple[PersonaTrait, ...]:
+    picked = (
+        tuple(t for t in traits if t.evidence_count >= min_evidence)
+        if min_evidence > 0 else traits
+    )
+    return picked[:max_traits]
+
+
 def synthesize_live_persona_directive(
     params: dict[str, PlasticParamSpec],
     traits: tuple[PersonaTrait, ...],
+    *,
+    min_evidence: int = 0,
+    max_traits: int = 6,
 ) -> str:
     """Compile the 7D persona vector & grown traits into a live prompt directive."""
+    visible = _visible_traits(traits, min_evidence, max_traits)
     cache_key = repr((bot_naming().display(), sorted((k, v.value) for k, v in params.items()),
-                      tuple((t.category, t.trait_text, t.strength) for t in traits)))
+                      min_evidence, max_traits,
+                      tuple((t.category, t.trait_text, t.strength, t.evidence_count)
+                            for t in visible)))
     cached = render_lookup(cache_key)
     if cached is not None:
         return cached
@@ -132,14 +161,7 @@ def synthesize_live_persona_directive(
         *rubric_lines,
         f"- 当前主导性格腔调：{core_tone}；{sub_tone}",
     ]
-    if traits:
-        lines.append(
-            "- 从过往互动中长出的专属习惯、喜好与讨厌雷点"
-            "（仅在不违背上方基础人设且贴合当前话题时自然参考，勿每轮机械复读）："
-        )
-        for t in traits[:6]:
-            tag = "雷点" if t.category == "taboo" else "习惯"
-            lines.append(f"  · [{tag}·强度{t.strength}/10] {t.trait_text}")
+    lines.extend(_trait_lines(visible))
     return render_store(cache_key, "\n".join(lines))
 
 

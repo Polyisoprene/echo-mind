@@ -42,6 +42,12 @@
 - prompt 仍按原逻辑读取，未改变线上人格；
 - 测试：同一特质强化两次 → `evidence_count=2`。
 
+## 进展（2026-10-31）
+
+- **Step 1（存储）**：`persona_traits` 增加 `evidence_count`、`contradiction_count`、`last_evidence_ms`；每次强化 +1；测试通过。
+- **Step 2（prompt 筛选）**：`synthesize_live_persona_directive(..., min_evidence=0, max_traits=6)`，默认 0 保持现状；离线测试证明 `min_evidence=2` 只保留高证据特质。
+- **现网分布**：9 条特质全部 `evidence=1`，现在开 `min_evidence=2` 会把 9 条全过滤掉，所以**默认仍为 0**，等证据累积。
+
 ## 本轮不做
 
 - 不改线上人格；

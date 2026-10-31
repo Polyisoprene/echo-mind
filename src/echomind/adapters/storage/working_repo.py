@@ -117,6 +117,8 @@ def _row_to_trait(row: aiosqlite.Row) -> PersonaTrait:
         trait_id=int(row[0]),
         category=cat,
         trait_text=str(row[2]),
+        evidence_count=int(row[4]) if len(row) > 4 else 1,
+        contradiction_count=int(row[5]) if len(row) > 5 else 0,
         strength=max(0, min(10, int(row[3]))),
     )
 
@@ -238,7 +240,8 @@ class SqliteWorkingStateStore:
             await _cap_trait_categories(conn)
             await conn.commit()
             cursor = await conn.execute(
-                "SELECT id, category, trait_text, strength FROM persona_traits "
+                "SELECT id, category, trait_text, strength, evidence_count, contradiction_count "
+                "FROM persona_traits "
                 "ORDER BY strength DESC, id DESC LIMIT 12"
             )
             return tuple(_row_to_trait(r) for r in await cursor.fetchall())

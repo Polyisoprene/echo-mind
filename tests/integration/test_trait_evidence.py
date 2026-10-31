@@ -29,3 +29,15 @@ async def test_reinforcement_increments_evidence(tmp_path: Path) -> None:
     assert row[1] == 0
     assert row[2] > 0
     assert row[3] == "group:1"
+
+
+def test_prompt_can_filter_traits_by_evidence() -> None:
+    from echomind.mind.personality import synthesize_live_persona_directive
+
+    old = PersonaTrait(category="habit", trait_text="只出现一次的习惯", evidence_count=1)
+    stable = PersonaTrait(category="habit", trait_text="反复出现的习惯", evidence_count=3)
+    text = synthesize_live_persona_directive(
+        {}, (old, stable), min_evidence=2, max_traits=6
+    )
+    assert "反复出现的习惯" in text
+    assert "只出现一次的习惯" not in text
