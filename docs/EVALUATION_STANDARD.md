@@ -212,7 +212,15 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 3. 生成 `baseline.json`；
 4. PR 门禁：recall 不低于 baseline，隐私 0 越权。
 
-### Phase 2：人格 judge（少量花钱）
+### Phase 2：人格 judge（已落地，本地模型零边际成本）
+
+- 数据集：`eval/datasets/persona_judge_v1/scenarios.json`（12 条）；
+- Runner：`scripts/eval_persona_judge.py`，先生成回复，再用固定 rubric 评审；
+- 基线：`eval/baselines/persona-judge-2026-10.json`；
+- 当前：persona_consistency 4.25 / naturalness 4.50 / boundary 5.00 / overall 4.25（1–5）；
+- 注意：生成与评审是同一本地模型，尚未人工校准；只能做回归基线，不能当绝对质量。
+
+### Phase 2 原计划
 
 1. 24 条人格场景 × 群/私聊；
 2. 先人工标 50 条，校准 judge；

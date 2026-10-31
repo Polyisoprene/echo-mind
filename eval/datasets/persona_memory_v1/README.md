@@ -33,4 +33,8 @@ python scripts/eval_suite.py --semantic --check eval/baselines/2026-10-semantic.
 - paraphrase 关键词 0/10 是基线；同一套场景语义模式 10/10（宽松的 6 fact 场景）。更早的 30 fact 场景是 9/10，见 `docs/LOCAL_EMBEDDING_DEPLOYMENT.md`。
 - role 通过实体顺序守卫达到 10/10；temporal 通过 `event_time_ms` + recency 达到 10/10；类型化关系图仍待 P2。
 - 总体：关键词 60/70，语义 70/70。
-- multihop 使用显式 seeded relations；线上 backfill 目前抽到 5 条 alias（QQ→昵称），friend/works_at 仍为 0。
+- multihop 使用显式 seeded relations；线上 LLM 抽取到 35 条 alias + 1 条 friend + 2 条 sibling，works_at 仍为 0。
+
+## 人格 judge
+
+`eval/datasets/persona_judge_v1/scenarios.json` 与 `scripts/eval_persona_judge.py` 提供 12 条人格场景的生成+评审基线；结果见 `eval/baselines/persona-judge-2026-10.json`。
