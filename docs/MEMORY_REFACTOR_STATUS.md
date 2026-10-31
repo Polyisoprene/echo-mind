@@ -17,7 +17,7 @@
 | **P3.3a** | 敏感度线索分类（secret/private）+ 写入时升级 | ✅ 已部署 |
 | **P3.3b** | frame 级受众门 + 拒绝写入 `disclosures` | ✅ 已部署 |
 | **P4** | 人格分寸：public/group 的 say/hint/keep 接 7 维 | ⏳ |
-| **P5** | 评测：一致性 + 授权边界 + 多人记忆子集 | ⏳ |
+| **P5** | 授权接门 + frame 级 include/keep 日志 + 验收测试 | ✅ 已部署 |
 
 ---
 
@@ -112,7 +112,20 @@ get_global_facts(allow=True)                 # 显式
 - `SqliteDisclosureLog.grant/has_grant`：授权存储 + 过期（**尚未接入门**，P5 接）；
 - 现网默认 7 维（55/62/52/75/48）→ say，行为不变；keep 只在性格参数越线时触发。
 
-## P5 设计（最后一步）
+## P5 已落地（授权 + 纳入日志 + 验收）
+
+- `gate(granted=True)`：secret 在 owner 授权后可放行；
+- `_granted` 按在场受众逐个查 `disclosure_grants`（过期自动失效）；
+- `_gate_facts` 对 person 事实记录 `action=say|hint`（纳入）或 `keep`（保留），写 `disclosures`；
+- 验收测试：private 无 owner → 丢弃并记录 owner_absent；owner 在场 → 纳入并记录 say；secret 有/无授权两条路径；跨场合一致性；person/venue 分层。
+
+**限制（诚实记录）**：
+
+1. 披露日志记录的是 **frame 级**“纳入/保留”，不是生成后逐句引用归因；
+2. 未跑 GroupMemBench / 人工盲评；当前证据是 271 条自动化测试 + 线上部署；
+3. 敏感度分类是规则式，强短语命中才升级；存量 193 条仍全为 group。
+
+## 后续可做（不属于本次重构范围）
 
 - `knowledge_state(memory_id, person_id, state)`：told_by_me / told_to_me / overheard / inferred；
 - `disclosures`：她说给谁、在哪、说了什么、为什么；

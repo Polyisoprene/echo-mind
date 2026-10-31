@@ -16,6 +16,7 @@ class GateDecision:
 
 def gate(
     *, sensitivity: str, owner_id: str, audience: frozenset[str], venue: str,
+    granted: bool = False,
 ) -> GateDecision:
     """Admit a memory only to an audience that may receive it.
 
@@ -34,16 +35,23 @@ def gate(
             else GateDecision(False, "owner_absent")
         )
     if sensitivity == "secret":
-        return GateDecision(False, "secret_without_grant")
+        return (
+            GateDecision(True, "secret_granted")
+            if granted
+            else GateDecision(False, "secret_without_grant")
+        )
     return GateDecision(False, "unknown_sensitivity")
 
 
-def gate_fact(fact: object, audience: frozenset[str], venue: str) -> GateDecision:
+def gate_fact(
+    fact: object, audience: frozenset[str], venue: str, *, granted: bool = False
+) -> GateDecision:
     return gate(
         sensitivity=str(getattr(fact, "sensitivity", "")),
         owner_id=str(getattr(fact, "owner_id", "")),
         audience=audience,
         venue=venue,
+        granted=granted,
     )
 
 

@@ -73,6 +73,11 @@ class IDisclosureLog(Protocol):
         self, memory_kind: str, memory_id: int
     ) -> tuple[tuple[str, str], ...]: ...
 
+    async def has_grant(
+        self, *, memory_kind: str, memory_id: int, grantee_id: str,
+        now_ms: int | None = None,
+    ) -> bool: ...
+
 
 @runtime_checkable
 class IMemoryWriter(Protocol):

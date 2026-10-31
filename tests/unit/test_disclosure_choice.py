@@ -75,3 +75,39 @@ async def test_frame_gate_drops_a_possessive_keep_and_logs_it() -> None:
     )
     assert kept == ()
     assert log.calls[-1]["reason"] == "possessive_rival"
+
+
+class _GrantLog(_Log):
+    async def has_grant(self, **kwargs: Any) -> bool:
+        return True
+
+
+@pytest.mark.asyncio
+async def test_included_person_fact_is_logged_as_say() -> None:
+    fact = SemanticFact(
+        fact_id=4, chat_key="g", subject="L", fact_text="L 喜欢猫",
+        scope="person", owner_id="L", sensitivity="group",
+    )
+    log = _Log()
+    kept, _ = await gate_frame(
+        (fact,), (), frozenset({"L"}), "g", cast(IDisclosureLog, log),
+        working=cast(Any, _Work({})), bonds={},
+    )
+    assert len(kept) == 1
+    assert log.calls[-1]["action"] == "say"
+    assert log.calls[-1]["reason"] == "persona"
+
+
+@pytest.mark.asyncio
+async def test_granted_secret_passes_the_gate_and_the_choice() -> None:
+    fact = SemanticFact(
+        fact_id=5, chat_key="g", subject="秘密", fact_text="只有你知道",
+        scope="person", owner_id="L", sensitivity="secret",
+    )
+    log = _GrantLog()
+    kept, _ = await gate_frame(
+        (fact,), (), frozenset({"L"}), "g", cast(IDisclosureLog, log),
+        working=cast(Any, _Work({})), bonds={},
+    )
+    assert len(kept) == 1
+    assert log.calls[-1]["action"] == "say"

@@ -18,6 +18,9 @@ class _Log:
     async def log_disclosure(self, **kwargs: Any) -> None:
         self.calls.append(kwargs)
 
+    async def has_grant(self, **kwargs: Any) -> bool:
+        return False
+
 
 def _fact(
     sensitivity: Literal["public", "group", "private", "secret"],
@@ -44,7 +47,8 @@ async def test_private_fact_passes_with_the_owner_and_secret_never() -> None:
     log = _Log()
     kept, _ = await gate_frame((_fact("private"),), (), frozenset({"L"}), "group:1",
                                cast(IDisclosureLog, log))
-    assert len(kept) == 1 and not log.calls
+    assert len(kept) == 1
+    assert log.calls[-1]["action"] == "say", "the included person fact is logged"
 
     kept, _ = await gate_frame((_fact("secret"),), (), frozenset({"L"}), "group:1",
                                cast(IDisclosureLog, log))

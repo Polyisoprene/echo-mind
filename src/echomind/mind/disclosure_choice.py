@@ -21,13 +21,14 @@ def choose(
     has_owner: bool,
     rival_present: bool,
     traits: Mapping[str, float],
+    granted: bool = False,
 ) -> DisclosureChoice:
     """A transparent rule set over the 7D scale; thresholds are conventions on 0-100.
 
     defaults (55/62/52/75/48) -> say; high guile/tsundere -> hint;
     high possessiveness with a rival around -> keep; high defiance -> say.
     """
-    if sensitivity == "secret":
+    if sensitivity == "secret" and not granted:
         return DisclosureChoice("keep", "secret")
     if sensitivity == "private" and not has_owner:
         return DisclosureChoice("keep", "unknown_owner")

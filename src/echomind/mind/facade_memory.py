@@ -13,7 +13,7 @@ from echomind.domain.ports import (
     IWorkingStateStore,
 )
 from echomind.mind.disclosure import gate_episode, gate_fact
-from echomind.mind.disclosure_choice import choose
+from echomind.mind.disclosure_choice import DisclosureChoice, choose
 from echomind.mind.ebbinghaus import extract_mentioned_uids, recall_episodic_memories
 from echomind.mind.memory_consolidator import run_hippocampal_batch_consolidation
 from echomind.mind.recall_types import RecalledMemoryItem
@@ -67,27 +67,71 @@ def audience_of(uids: tuple[str, ...], triggers: tuple[Percept, ...]) -> frozens
     return frozenset((*uids, sender)) - {""}
 
 
-def _persona_keep(
-    fact: SemanticFact, traits: dict[str, float], rival_present: bool
-) -> str | None:
+def _persona_choice(
+    fact: SemanticFact, traits: dict[str, float], rival_present: bool, granted: bool
+) -> DisclosureChoice | None:
     if fact.scope != "person":
         return None
-    choice = choose(
+    return choose(
         sensitivity=fact.sensitivity, has_owner=bool(fact.owner_id),
-        rival_present=rival_present, traits=traits,
+        rival_present=rival_present, traits=traits, granted=granted,
     )
-    return choice.reason if choice.action == "keep" else None
 
 
-async def _log_keep(
+async def _log_disclosure(
     log: IDisclosureLog | None, *, kind: str, memory_id: int, venue: str,
-    audience: frozenset[str], reason: str,
+    audience: frozenset[str], action: str, reason: str,
 ) -> None:
-    if log is not None:
-        await log.log_disclosure(
-            memory_kind=kind, memory_id=memory_id, venue=venue,
-            audience=tuple(sorted(audience)), action="keep", reason=reason,
-        )
+    if log is None:
+        return
+    await log.log_disclosure(
+        memory_kind=kind, memory_id=memory_id, venue=venue,
+        audience=tuple(sorted(audience)), action=action, reason=reason,
+    )
+
+
+async def _granted(
+    fact: SemanticFact, audience: frozenset[str], log: IDisclosureLog | None
+) -> bool:
+    if fact.sensitivity != "secret" or log is None:
+        return False
+    for person in audience:
+        if await log.has_grant(
+            memory_kind="semantic", memory_id=fact.fact_id, grantee_id=person
+        ):
+            return True
+    return False
+
+
+async def _traits_and_rival(
+    working: IWorkingStateStore | None,
+    bonds: dict[str, SocialBondProfile] | None,
+    audience: frozenset[str],
+) -> tuple[dict[str, float], bool]:
+    if working is None:
+        return {}, False
+    traits = {key: spec.value for key, spec in (await working.get_plastic_params()).items()}
+    rival = any(b.is_rival and b.user_id in audience for b in (bonds or {}).values())
+    return traits, rival
+
+
+async def _handle_choice(
+    choice: DisclosureChoice | None,
+    fact: SemanticFact,
+    log: IDisclosureLog | None,
+    audience: frozenset[str],
+    venue: str,
+) -> bool:
+    """Return True when the persona keeps the fact (so the caller skips it)."""
+    if choice is None:
+        return False
+    if choice.action == "keep":
+        await _log_disclosure(log, kind="semantic", memory_id=fact.fact_id, venue=venue,
+                              audience=audience, action="keep", reason=choice.reason)
+        return True
+    await _log_disclosure(log, kind="semantic", memory_id=fact.fact_id, venue=venue,
+                          audience=audience, action=choice.action, reason="persona")
+    return False
 
 
 async def _gate_facts(
@@ -99,21 +143,17 @@ async def _gate_facts(
     working: IWorkingStateStore | None = None,
     bonds: dict[str, SocialBondProfile] | None = None,
 ) -> tuple[SemanticFact, ...]:
-    traits: dict[str, float] = {}
-    if working is not None:
-        traits = {key: spec.value for key, spec in (await working.get_plastic_params()).items()}
-    rival = any(b.is_rival and b.user_id in audience for b in (bonds or {}).values())
+    traits, rival = await _traits_and_rival(working, bonds, audience)
     kept: list[SemanticFact] = []
     for fact in facts:
-        decision = gate_fact(fact, audience, venue)
+        granted = await _granted(fact, audience, log)
+        decision = gate_fact(fact, audience, venue, granted=granted)
         if not decision.allowed:
-            await _log_keep(log, kind="semantic", memory_id=fact.fact_id, venue=venue,
-                            audience=audience, reason=decision.reason)
+            await _log_disclosure(log, kind="semantic", memory_id=fact.fact_id, venue=venue,
+                                  audience=audience, action="keep", reason=decision.reason)
             continue
-        reason = _persona_keep(fact, traits, rival)
-        if reason is not None:
-            await _log_keep(log, kind="semantic", memory_id=fact.fact_id, venue=venue,
-                            audience=audience, reason=reason)
+        choice = _persona_choice(fact, traits, rival, granted)
+        if await _handle_choice(choice, fact, log, audience, venue):
             continue
         kept.append(fact)
     return tuple(kept)
