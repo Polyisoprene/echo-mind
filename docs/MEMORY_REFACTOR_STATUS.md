@@ -10,6 +10,7 @@
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | **P0** | 关系归人：人级 trust/depth，温柔/耐心一致，俏皮归场合，care 修复 | ✅ 已部署 |
+| **P1** | 持久化：persons / person_bonds / bond_venues + 写穿 + 同步脚本 | ✅ 已部署 |
 | **P2.1** | 记忆来源字段：scope/source/owner/sensitivity/audience/quote + 迁移回填 | ✅ 已部署 |
 | **P2.2** | 检索分层：person_facts 全局、venue_events 本地、source-aware 召回 | ✅ 已部署 |
 | **P3.1** | 硬门（粗粒度）：private 仅源场合/owner 私聊，secret 默认拒绝 + 三张表 | ✅ 已部署 |
@@ -20,6 +21,14 @@
 | **P5** | 授权接门 + frame 级 include/keep 日志 + 验收测试 | ✅ 已部署 |
 
 ---
+
+## P1 已落地（关系持久化）
+
+- 三张表：`persons`、`person_bonds`、`bond_venues`；
+- `SqlitePersonStore.save`：一人一条关系 + 每场合一条脸（affinity/msg_count/role/is_rival）；
+- `PersonLevelService` 写穿：每次 60s 重算后持久化；
+- `scripts/sync_person_profiles.py`：部署时全量同步（`--apply`）；
+- 现网：主库 40 persons / 40 person_bonds / 41 bond_venues；owner `trust 0.663`、`depth 100 分位`，群/私聊两条 venue 记录。
 
 ## P0 已落地的事实
 
