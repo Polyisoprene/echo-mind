@@ -18,6 +18,7 @@ from echomind.domain.models import (
     SemanticFact,
     SocialBondProfile,
 )
+from echomind.mind.sensitivity import upgrade_episode, upgrade_fact
 
 RoleType = Literal["owner", "admin", "member"]
 
@@ -145,6 +146,7 @@ class SqliteMemoryRepository:
         return tuple(dict.fromkeys(candidates))
 
     async def save_episodic_card(self, card: EpisodicCard) -> int:
+        card = upgrade_episode(card)
         sql = (
             "INSERT INTO episodic_memories "
             "(chat_key, ts, msg_seq, summary, key_detail, participants_json, importance, pinned, "
@@ -197,6 +199,7 @@ class SqliteMemoryRepository:
         return (is_locked and not can_override), rev, prev_txt
 
     async def upsert_semantic_fact(self, fact: SemanticFact) -> tuple[bool, str]:
+        fact = upgrade_fact(fact)
         now_ms = int(time.time() * 1000)
         async with self._db.connect() as conn:
             blocked, prev_rev, prev_txt = await self._check_fact_lock(conn, fact)
@@ -231,10 +234,9 @@ class SqliteMemoryRepository:
                 ),
             )
             await conn.commit()
-        await mirror_fact(
-            self._db, chat_key=fact.chat_key, subject=fact.subject, value=eff_txt,
-            source=fact.source, is_locked=fact.is_locked, now_ms=now_ms,
-        )
+        await mirror_fact(self._db, chat_key=fact.chat_key, subject=fact.subject,
+                          value=eff_txt, source=fact.source, is_locked=fact.is_locked,
+                          now_ms=now_ms)
         return True, "ok"
 
     async def upsert_procedural_rule(self, rule: ProceduralRule) -> int:
