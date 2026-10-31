@@ -239,6 +239,14 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 - `scripts/calibrate_persona_judge.py`：回收后算二次加权 kappa + MAE；
 - 50 条已回收：旧 rubric overall QWK 0.034，新 rubric 0.097，4 条 few-shot 0.304；**仍远低于 0.6，judge 不能当门禁**；详见 `docs/PERSONA_HUMAN_CALIBRATION_RESULT.md`。
 
+### Phase 3 外部 benchmark（已接 LongMemEval-S）
+
+- 数据：LongMemEval-S cleaned，100 题分层抽样，session 粒度；
+- 适配器：`scripts/eval_longmemeval.py`；
+- 结果：session recall@5 **0.440**，MRR **0.276**；
+- 详见 `docs/EXTERNAL_BENCHMARK_LONGMEMEVAL.md`；
+- 注意：这是检索基线，不是端到端 QA。
+
 ### Phase 3 原计划：外部 benchmark
 
 1. 适配 LoCoMo / LongMemEval / GroupMemBench 子集；

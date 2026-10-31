@@ -452,3 +452,17 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 - ledger：58 compliant。
 
 现在代码里没有“live 一套权重、评测另一套权重”的分叉。
+
+
+---
+
+## 19. 第 16 轮：接入 LongMemEval-S
+
+- 100 题分层抽样，session 粒度；
+- session recall@5 = **0.440**，MRR = **0.276**；
+- 最高：knowledge-update 0.765、multi-session 0.647；
+- 最低：single-session-user 0.188、single-session-assistant 0.235；
+- 明显受 **英文题面 vs bge-small-zh 中文模型** 影响；
+- 只测检索，不测 answer generation；不能和论文端到端分数直接比较。
+
+详见 `docs/EXTERNAL_BENCHMARK_LONGMEMEVAL.md`。
