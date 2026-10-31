@@ -139,9 +139,30 @@ E[p] = (1+s) / (2+s+c)
 **实现**
 
 - 新增 `trait_evidence`：
-  - `trait_id`, `session_id`, `turn_id`, `quote`, `polarity`, `context_hash`, `created_ms`；
-  - 唯一约束 `(turn_id, trait_id, polarity)`，防重复计。
-- `evidence_count` / `contradiction_count` 改为从表派生。
+
+```sql
+CREATE TABLE IF NOT EXISTS trait_evidence (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  trait_id INTEGER NOT NULL REFERENCES persona_traits(id) ON DELETE CASCADE,
+  session_id TEXT NOT NULL,
+  turn_id TEXT NOT NULL,
+  quote TEXT NOT NULL,
+  quote_kind TEXT NOT NULL CHECK(quote_kind IN ('assistant','user','tool')),
+  polarity INTEGER NOT NULL CHECK(polarity IN (-1, 1)),
+  context_hash TEXT NOT NULL,
+  created_ms INTEGER NOT NULL,
+  UNIQUE(trait_id, turn_id, polarity)
+);
+CREATE INDEX IF NOT EXISTS idx_trait_evidence_trait
+  ON trait_evidence(trait_id, created_ms);
+```
+
+- `turn_id` 先使用 `TurnOutcome.session_id`；未来有真实 message_id 再迁移，不混用。
+- `quote` 必须取自 `sent_texts`/trigger 文本/tool 名之一；不能为空。
+- `context_hash = sha256(chat_key | sorted(audience_ids) | UTC day)`；
+  - 先不引入 topic 聚类，避免额外阈值；topic 后续作为可选字段。
+  - 同一天同场景重复只算一个独立情境。
+- `evidence_count` / `contradiction_count` 先双写，再从表派生；旧列保留只读兼容。
 - 现有 9 条 trait 回填：只回填能追溯到 `source` 和原文的；不能追溯的标 `legacy_unverified`，不得直接 active。
 - 先 shadow 写，不改 prompt。
 
@@ -155,7 +176,14 @@ E[p] = (1+s) / (2+s+c)
 
 **实现**
 
-- `persona_traits` 增加 `status`、`active_since_ms`、`last_support_ms`、`last_contradiction_ms`。
+- `persona_traits` 增加：
+  - `status TEXT NOT NULL DEFAULT 'legacy_unverified'`（candidate/active/dormant/retired/legacy_unverified）
+  - `active_since_ms INTEGER NOT NULL DEFAULT 0`
+  - `last_support_ms INTEGER NOT NULL DEFAULT 0`
+  - `last_contradiction_ms INTEGER NOT NULL DEFAULT 0`
+  - `state_n INTEGER NOT NULL DEFAULT 0`
+  - `state_mean REAL NOT NULL DEFAULT 0`
+  - `state_m2 REAL NOT NULL DEFAULT 0`（Welford）
 - 状态机：
   - candidate：有证据但独立情境 < 2；
   - active：≥2 独立情境且后验均值 > 0.5；
@@ -242,24 +270,63 @@ E[p] = (1+s) / (2+s+c)
 
 ### B1. ACT-R base-level activation
 
-- 建模：`B_i = ln(Σ_j t_j^-d)`，`d` 用 ACT-R 文献值并登记 ledger；
-- 作为 `actr` ranker 进 RRF；
-- 与 recency 做消融；无增益就不启用；
-- 不允许手调 `d`。
+**建模**
+
+```
+B_i = ln( Σ_j t_j^(-d) )
+```
+
+- `t_j` = 第 j 次使用/检索距今秒数；
+- `d` = ACT-R 衰减参数，**不是本项目拟合值**；用 ACT-R 默认/论文值，登记 ledger；
+- 若无法确认 `d` 的公开来源，则本项不实现，不用“差不多”的数值。
+
+**实现**
+
+- 作为 `actr` ranker 进 RRF；只输出排序，不引入权重；
+- 与 recency 做留一消融；
+- 无增益或与 recency 重复，不启用。
+
+**依据**
+
+- Anderson & Schooler (1991), *Reflections of the environment in memory*；
+- ACT-R 官方教程/实现（base-level activation）。
 
 ### B2. HyDE / query expansion
 
-- 生成假设答案/扩展 query，再检索；
-- 先 shadow，记录延迟/成本；
-- A/B 通过才启用；
-- 隐私硬门不变。
+**建模**
+
+- 用现有 LLM 生成一个“假设文档”（hypothetical document），再对其做 embedding；
+- 用假设文档向量检索真实记忆，而不是直接检索原 query；
+- 生成内容可能含假细节，靠真实语料向量邻域过滤。
+
+**实现**
+
+- 先 shadow：同时记录原 query 与 HyDE 的 top-k；
+- 记录延迟、token 成本、召回差异；
+- 隐私硬门在检索前不变；
+- A/B 通过才启用；不通过就删除，不保留死代码。
+
+**依据**
+
+- Gao et al. (2022), *Precise Zero-Shot Dense Retrieval without Relevance Labels*（HyDE），arXiv:2212.10496。
 
 ### B3. 父子链接 / 层级摘要
 
-- 事实/情节/摘要多级；
-- 检索可在多级返回，再融合；
-- 不做无依据的固定层级数；
-- 先做离线 A/B，再上线。
+**建模**
+
+- 参考 RAPTOR：递归 embedding → 聚类 → 摘要，构建自底向上的摘要树；
+- 检索可从叶子事实、情节、摘要多个层级同时取，再融合；
+- 不预设固定层级数；层数由数据规模/聚类结果决定，参数登记 ledger。
+
+**实现**
+
+- 先只对 episodic/session 建树，不动 semantic facts；
+- 根节点只做摘要，不替代原始证据；
+- 先离线 A/B，再 shadow，再启用。
+
+**依据**
+
+- Sarthi et al. (2024), *RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval*，arXiv:2401.18059。
 
 ### B4. claims `FACTS_V2`
 
@@ -306,15 +373,30 @@ E[p] = (1+s) / (2+s+c)
 
 ### C3. LoCoMo / GroupMemBench
 
-- 先确认数据许可和字段；
-- GroupMemBench 更贴近多人群聊，优先；
-- 无数据不写“已接”。
+**优先级：GroupMemBench > LongMemEval > LoCoMo。**
+
+- GroupMemBench 直接测多人群聊、说话人绑定、ToM/受众词汇差异，和 EchoMind 的群聊场景最贴近；
+  - 数据：HuggingFace `kimperyang/GroupMemBench`；
+  - 代码：`UCSB-NLP-Chang/GroupMemBench`；
+  - 指标：answer accuracy + cost + storage；六类问题；
+  - 论文报告最强系统平均 46.0%，BM25 可匹配多数系统，说明“结构化/说话人条件”是重点。
+- 先映射 `chat_key`、`speaker_id`、`audience`、`question_user`；
+- 无数据/许可不清就不写“已接”。
 
 ### C4. 外部中文人格集
 
-- CharacterEval 类；
-- 自动指标 + 人工冻结标签；
-- 不把 LLM judge 当门禁。
+**优先 CharacterEval**：
+
+- 1,785 段中文角色对话、77 个角色、13 个指标/4 维度；
+- 指标：知识一致性、人格行为/话语一致性、真人感、共情、表达多样性；
+- CharacterRM 是人工标注训练的奖励模型，可作辅助，不作唯一门禁；
+- 数据/代码：`morecry/CharacterEval`。
+
+**适配限制**
+
+- EchoMind 是原创角色，不是既有小说角色；只迁移指标和场景协议，不直接套角色知识；
+- 不新增真人测试；用自动指标 + 冻结人工标签；
+- LLM judge/CharacterRM 只做横向参考，不能替代边界/隐私硬门。
 
 ### C5. 确定性风格监控
 
@@ -414,6 +496,40 @@ D1/D2/D3（独立 backlog）
 
 ---
 
+## 9.1 调研补充与计划修正（2026-11-01）
+
+本轮把仍含糊的 8 个点查清并回填：
+
+| 模糊点 | 调研结论 | 对计划的影响 |
+|---|---|---|
+| ACT-R 激活公式 | `B_i = ln(Σ t_j^-d)`，`d` 取 ACT-R 默认/论文值，不自行拟合 | B1 改为“无来源不实现”，并加 ledger 门 |
+| HyDE 怎么用 | 生成假设文档 → embedding → 检索真实语料；假细节靠向量邻域过滤 | B2 明确 shadow/A-B，不先改默认路径 |
+| 层级摘要怎么做 | RAPTOR：递归 embed/cluster/summarize，多层级检索 | B3 先 episodic，不预设层数 |
+| 多人群聊外部集 | GroupMemBench：说话人绑定、受众词汇、六类问题 | C3 升为外部记忆首选 |
+| 中文人格外部集 | CharacterEval：77 角色、13 指标、CharacterRM | C4 用指标/协议，不直接套角色知识 |
+| 证据身份 | `turn_id` 先取 `TurnOutcome.session_id`；`context_hash` 用 chat+audience+UTC day | A1 schema 固定 |
+| 生命周期 | Beta 后验 + 2 独立情境；legacy 标 `legacy_unverified` | A2 可在 shadow 下安全上线 |
+| 行为资格 | trait 只做“允许/不允许动作”，不做分值 | A5 不做行为权重 |
+
+新增/修改的硬约束：
+
+- `trait_evidence.quote` 不允许为空；
+- 同一 `(trait_id, turn_id, polarity)` 只能一条；
+- `context_hash` 未引入 topic 聚类，避免额外阈值；
+- 任何新数值先登记 `docs/params/ledger.json`；
+- ACT-R 的 `d`、RAPTOR 的层数/聚类参数、HyDE 的触发策略都必须有来源或工程数据。
+
+### 9.1.1 参考链接
+
+- Anderson & Schooler (1991), *Reflections of the environment in memory*: https://doi.org/10.1111/j.1467-9280.1991.tb00174.x
+- ACT-R: https://act-r.psy.cmu.edu/
+- Gao et al. (2022), HyDE: https://arxiv.org/abs/2212.10496
+- Sarthi et al. (2024), RAPTOR: https://arxiv.org/abs/2401.18059
+- GroupMemBench: https://arxiv.org/abs/2605.14498 ；数据 https://huggingface.co/datasets/kimperyang/GroupMemBench
+- CharacterEval: https://arxiv.org/abs/2401.01275 ；代码 https://github.com/morecry/CharacterEval
+
+---
+
 ## 10. 参数与证据规则
 
 - 新增数值必须先登记 `docs/params/ledger.json`，否则不进代码；
@@ -454,3 +570,37 @@ D1/D2/D3（独立 backlog）
 4. 所有新参数有来源；
 5. 文档、账本、测试、回滚路径齐全；
 6. 不依赖新增真人标注。
+
+---
+
+## 14. 执行记录
+
+### 14.1 P0 证据账本（2026-11-01 已落地，shadow）
+
+**代码**
+
+- `src/echomind/domain/trait_evidence.py`：`TraitEvidence` 值对象；
+- `src/echomind/domain/trait_evidence_ports.py`：窄端口 `ITraitEvidenceStore`；
+- `src/echomind/adapters/storage/trait_evidence_repo.py`：append-only 仓储；
+- `src/echomind/adapters/storage/migrations.py`：`trait_evidence` 表 + 索引；
+- `src/echomind/mind/trait_evidence_writer.py`：quote / context_hash 提取；
+- `src/echomind/mind/plasticity.py`：每次涌现 trait 写入支持证据；
+- `src/echomind/mind/facade.py` / `core/bootstrap.py`：注入证据仓储。
+
+**行为**
+
+- 只写证据，不改 prompt、不改检索、不改 7 维；
+- `trait_evidence` 唯一键 `(trait_id, turn_id, polarity)`，同一轮重复写被忽略；
+- 现有 9 条 legacy trait 未回填（缺原文），保持原样，等 P1 标 `legacy_unverified`；
+- 当前线上证据表为空，只有新 turn 产生新证据。
+
+**验证**
+
+- `tests/integration/test_trait_evidence_ledger.py`：roundtrip + dedupe + 真实 turn 写入；
+- 架构门禁：`working_repo` 拆出证据仓储后回到 300 行内；`IWorkingStateStore` 保持 5 方法；
+- 全门禁：**323 passed / 92%**，fusion 70/70。
+
+**下一步**
+
+- P1：给 `persona_traits` 加 status/context/state 字段，先 shadow 计算；
+- 回填策略：无原文的 9 条一律 `legacy_unverified`，不伪造 quote。

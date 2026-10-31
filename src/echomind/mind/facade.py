@@ -26,6 +26,7 @@ from echomind.domain.ports import (
     ITurnTraceStore,
     IWorkingStateStore,
 )
+from echomind.domain.trait_evidence_ports import ITraitEvidenceStore
 from echomind.mind import facade_memory as mem
 from echomind.mind.ban_control import resolve_bans
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
@@ -80,6 +81,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         persona_layers: IPersonaLayerStore | None = None,
         person_level: PersonLevelService | None = None,
         disclosure_log: IDisclosureLog | None = None,
+        trait_evidence_store: ITraitEvidenceStore | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
         self._default_group = default_group_key
@@ -91,7 +93,9 @@ class CognitiveCoreFacade(FacadeAccessors):
         self._person_level = person_level
         self._disclosure_log = disclosure_log
         self._included: dict[str, tuple[tuple[int, str, str], ...]] = {}
-        self._plasticity = NeuroplasticityEngine(working_store, persona_layers)
+        self._plasticity = NeuroplasticityEngine(
+            working_store, persona_layers, evidence_store=trait_evidence_store,
+        )
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
         self._sub_probe: SubconsciousChordProbe | None = None

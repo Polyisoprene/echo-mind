@@ -118,7 +118,6 @@ class IWorkingStateStore(Protocol):
         decay_categories: tuple[str, ...] = (),
     ) -> tuple[PersonaTrait, ...]: ...
 
-
 @runtime_checkable
 class IGroupRosterReader(Protocol):
     """Segregated port for authoritative QQ group member & role lookup (<=5 methods)."""

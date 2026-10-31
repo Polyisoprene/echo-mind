@@ -68,7 +68,31 @@ async def ensure_claim_tables(conn: Any) -> None:
     await conn.executescript(_CLAIM_DDL)
 
 
+_TRAIT_EVIDENCE_DDL = """
+CREATE TABLE IF NOT EXISTS trait_evidence (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  trait_id INTEGER NOT NULL REFERENCES persona_traits(id) ON DELETE CASCADE,
+  session_id TEXT NOT NULL,
+  turn_id TEXT NOT NULL,
+  quote TEXT NOT NULL,
+  quote_kind TEXT NOT NULL CHECK(quote_kind IN ('assistant','user','tool')),
+  polarity INTEGER NOT NULL CHECK(polarity IN (-1, 1)),
+  context_hash TEXT NOT NULL,
+  created_ms INTEGER NOT NULL,
+  UNIQUE(trait_id, turn_id, polarity)
+);
+CREATE INDEX IF NOT EXISTS idx_trait_evidence_trait
+  ON trait_evidence(trait_id, created_ms);
+"""
+
+
+async def ensure_trait_evidence_table(conn: Any) -> None:
+    """Create the append-only trait evidence ledger."""
+    await conn.executescript(_TRAIT_EVIDENCE_DDL)
+
+
 async def ensure_migrations(conn: Any) -> None:
     """Run every idempotent migration in one call."""
     await ensure_trait_columns(conn)
+    await ensure_trait_evidence_table(conn)
     await ensure_claim_tables(conn)

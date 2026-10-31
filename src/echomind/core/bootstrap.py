@@ -21,6 +21,7 @@ from echomind.adapters.storage.person_store import SqlitePersonStore
 from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
 from echomind.adapters.storage.skill_config_repo import SqliteSkillConfigStore
 from echomind.adapters.storage.trace_repo import SqliteTurnTraceStore
+from echomind.adapters.storage.trait_evidence_repo import SqliteTraitEvidenceStore
 from echomind.adapters.storage.working_repo import SqliteWorkingStateStore
 from echomind.core.events import AsyncEventBus
 from echomind.domain.models import TurnOutcome
@@ -123,6 +124,7 @@ class EchoMindContainer:
             constraint_store=work_store, trace_store=trace_store, bond_store=bond_store,
             operator_ids=operator_ids, persona_layers=layers,
             person_level=person_level, disclosure_log=disclosure_log,
+            trait_evidence_store=SqliteTraitEvidenceStore(db),
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,
@@ -130,8 +132,7 @@ class EchoMindContainer:
             trace_store=trace_store, skill_config_store=skill_store,
             default_chat_key=default_chat_key,
         )
-        instance.bond_depth_store = bond_store
-        instance.persona_layers = layers
+        instance.bond_depth_store, instance.persona_layers = bond_store, layers
         async def _on_turn_completed(_outcome: TurnOutcome) -> None:
             instance.published_turns += 1
 
