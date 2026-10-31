@@ -40,19 +40,24 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, default=ROOT / "data" / "echomind.db")
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--out", type=Path)
     args = parser.parse_args()
     db = SqliteDatabase(args.db)
     # initialize is safe/idempotent and ensures schema exists on a fresh DB.
     import asyncio
     asyncio.run(db.initialize())
     health = status(args.db)
-    print(json.dumps({
+    payload = {
         "status": health.status, "active_traits": health.active_traits,
         "shadow_since_activation": health.shadow_since_activation,
         "nonempty_shadow": health.nonempty_shadow,
         "causal_links": health.causal_links,
         "latest_turn_ms": health.latest_turn_ms,
-    }, ensure_ascii=False, indent=2))
+    }
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
     if args.check and health.status == "shadow_missing_trait":
         return 1
     return 0

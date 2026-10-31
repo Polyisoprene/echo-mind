@@ -1566,3 +1566,26 @@ causal_links=0
 
 - `tests/unit/test_trait_health.py` 5 个状态；
 - 全门禁：**369 passed / 92%**，fusion 70/70。
+
+### 14.33 健康快照（2026-11-01 02:38）
+
+`trait_evolution_health.py` 新增 `--out`，把监控状态落盘：
+
+`eval/baselines/trait-health-2026-11-01.json`
+
+当前：
+
+```text
+status=waiting_turn
+active_traits=1
+shadow_since_activation=0
+nonempty_shadow=0
+causal_links=0
+```
+
+最近消息/轨迹停在 **02:24:45**，之后没有真实回合。  
+不伪造 shadow/link，不重复合成实验；等新回合后直接跑 `--check` 对比。
+
+**验证**
+
+- 全门禁沿用：**369 passed / 92%**，fusion 70/70。
