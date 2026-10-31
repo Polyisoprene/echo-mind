@@ -34,7 +34,7 @@
     },
     {
       "id": "CAP-DYNAMICS-BOUNDED",
-      "claim": "人格动力学有界：单回合 |Δ|≤2、日累计 ≤6、1%/日慢回归",
+      "claim": "人格分两层：慢层基线年净变化 ≤4 分、单日 ≤0.0133、最大偏离 12；快层状态单步 ≤4、幅度 ≤10、半衰期 45 分钟",
       "docs": [
         "docs/ARCHITECTURE_CONTRACTS.md",
         "docs/plans/STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md"
@@ -44,8 +44,8 @@
         "src/echomind/mind/plasticity.py"
       ],
       "status": "partial",
-      "gap": "上下限成立，但 (DAILY_CAP=6, REGRESSION=0.01) 的稳态偏移 D/r=600 远超量程，持续正向互动必然贴边饱和；见 ECHOMIND-E1-002",
-      "acceptance_test": "tests/unit/test_personality_invariants.py::test_i2_daily_change_is_capped",
+      "gap": "机制已实现并有测试；状态层幅度/单步/半衰期仍是未校准值（ECHOMIND-E1-013/014），年度预算 4 分为产品约定（带 3–6）",
+      "acceptance_test": "tests/integration/test_persona_two_layers.py::test_turn_does_not_move_persona_baseline",
       "evidence_report": "",
       "target_release": "E2"
     },
@@ -107,7 +107,7 @@
         "scripts/param_gate.py"
       ],
       "status": "partial",
-      "gap": "E0 已建立 45 条台账并门禁化；代码内联 param: 标签仍只有 17 处，且 45 条中多数为 fit_pending（实验未做）",
+      "gap": "E0 建立 50 条台账并门禁化；代码内联 param: 标签仍只有少量，多数条目为 fit_pending（实验未做）",
       "acceptance_test": "tests/architecture/test_evidence_ledger.py::test_param_ledger_is_consistent",
       "evidence_report": "",
       "target_release": "E1"

@@ -22,10 +22,11 @@ from echomind.domain.ports import (
     IMemoryReader,
     IMemoryWriter,
     IPersonaConstraintStore,
+    IPersonaLayerStore,
     ITurnTraceStore,
     IWorkingStateStore,
 )
-from echomind.mind.ban_control import extract_new_bans
+from echomind.mind.ban_control import resolve_bans
 from echomind.mind.bond_scoring import attach_bond_depth as attach
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
 from echomind.mind.chord_cache import remember_chord
@@ -57,6 +58,7 @@ from echomind.mind.memory_consolidator import (
 )
 from echomind.mind.perceptual_gate import PerceptualGate
 from echomind.mind.persona_stance import apply_stance_for
+from echomind.mind.persona_state import effective_params_of
 from echomind.mind.personality import synthesize_live_persona_directive
 from echomind.mind.plasticity import NeuroplasticityEngine, apply_chord_reward
 from echomind.mind.salience_hydraulics import apply_speaking_satiation
@@ -82,6 +84,7 @@ class CognitiveCoreFacade:
         trace_store: ITurnTraceStore | None = None,
         bond_store: IBondDepthStore | None = None,
         operator_ids: tuple[str, ...] = (),
+        persona_layers: IPersonaLayerStore | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
         self._default_group = default_group_key
@@ -89,7 +92,8 @@ class CognitiveCoreFacade:
         self._constraints, self._traces = constraint_store, trace_store
         self._bond_store = bond_store
         self._operator_ids = tuple(operator_ids)
-        self._plasticity = NeuroplasticityEngine(working_store)
+        self._layers = persona_layers
+        self._plasticity = NeuroplasticityEngine(working_store, persona_layers)
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
         self._sub_probe: SubconsciousChordProbe | None = None
@@ -117,7 +121,7 @@ class CognitiveCoreFacade:
         if not dry_run:
             self._last_active_ms = max(self._last_active_ms, percept.timestamp_ms)
         snap = await self._working.load_working_state("global")
-        params = await self._working.get_plastic_params()
+        params = await effective_params_of(self._working, self._layers, percept.timestamp_ms)
         talk = params["talkativeness"].value if "talkativeness" in params else 58.0
         facts = await self._reader.get_semantic_facts(percept.chat_key)
         set_beliefs(rebuild_beliefs(tuple((f.subject, f.fact_text, f.confidence) for f in facts)))
@@ -157,7 +161,9 @@ class CognitiveCoreFacade:
         bonds_map: dict[str, SocialBondProfile], *, dry_run: bool = False,
         chord: SubconsciousChordResult | None = None,
     ) -> tuple[WorkingSnapshot, ShadowAppraisalResult, str]:
-        params = await self._working.get_plastic_params()
+        params = await effective_params_of(
+            self._working, self._layers, int(time.time() * 1000)
+        )
         params = apply_stance_for(params, bonds_map, triggers[-1].sender_id if triggers else "")
         traits = await self._working.sync_persona_traits()
         shadow = evaluate_shadow_appraisal(
@@ -180,7 +186,8 @@ class CognitiveCoreFacade:
         chord: SubconsciousChordResult | None = None,
     ) -> tuple[WorkingSnapshot, AttentionDecision | None, float]:
         snap = await self._working.load_working_state("global")
-        params = await self._working.get_plastic_params()
+        now_ms = int(time.time() * 1000)
+        params = await effective_params_of(self._working, self._layers, now_ms)
         params = apply_stance_for(params, bonds_map, triggers[-1].sender_id if triggers else "")
         skep = params["skepticism"].value if "skepticism" in params else 55.0
         talk = params["talkativeness"].value if "talkativeness" in params else 58.0
@@ -201,16 +208,6 @@ class CognitiveCoreFacade:
         )
         return updated, last_dec, skep
 
-    async def _resolve_bans(self, tr: tuple[Percept, ...], dry: bool = False) -> tuple[str, ...]:
-        if self._constraints is None:
-            return ()
-        new_bans = extract_new_bans(tr, self._operator_ids)
-        if not dry:
-            for phrase in new_bans:
-                await self._constraints.add_banned_phrase(phrase, "管理员明令禁止的口癖")
-        existing = await self._constraints.get_banned_phrases()
-        return tuple(dict.fromkeys([*new_bans, *existing]))
-
     async def build_cognitive_frame(
         self, chat_key: str, triggers: tuple[Percept, ...], *, dry_run: bool = False
     ) -> CognitiveFrame:
@@ -223,7 +220,7 @@ class CognitiveCoreFacade:
         bm = await attach(self._bond_store, {u: b for u, b in pairs if b is not None})
         chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
         base_snap, last_dec, skep = await self._advance(chat_key, tr, facts, bm, chord)
-        bans = await self._resolve_bans(tr, dry_run)
+        bans = await resolve_bans(self._constraints, tr, self._operator_ids, dry=dry_run)
         snap, shadow, p_blk = await self._apply_shadow_and_save(
             chat_key, base_snap, tr, bm, dry_run=dry_run, chord=chord
         )
@@ -271,6 +268,7 @@ class CognitiveCoreFacade:
         await self._plasticity.adapt_from_outcome(o)
 
     async def run_autonomous_tick(self, now_ms: int) -> ProactiveProposal | None:
+        await self._plasticity.settle_baseline(now_ms)
         raw_snap = await self._working.load_working_state("global")
         params = await self._working.get_plastic_params()
         idle_target = params["proactive_idle_min"].value if "proactive_idle_min" in params else 10.0

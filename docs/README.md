@@ -32,7 +32,7 @@
 
 "不拍脑门"的执行基础设施：每个常数必须有来源，每个功能声明必须有验收。
 
-- 参数台账 [`params/ledger.json`](params/ledger.json)：45 条，`scripts/param_gate.py` 强制；
+- 参数台账 [`params/ledger.json`](params/ledger.json)：50 条，`scripts/param_gate.py` 强制；
 - 能力台账 [`capabilities.json`](capabilities.json)：20 条，`scripts/capability_gate.py` 强制；
 - 状态表 [`CAPABILITY_STATUS.md`](CAPABILITY_STATUS.md)：**自动生成，不要手改**；
 - 使用方式见 [`params/README.md`](params/README.md)。

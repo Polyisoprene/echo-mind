@@ -235,7 +235,7 @@
 |---|---|---|
 | **默认值单一源** | 7 维默认值与边界只能定义在 `domain/persona_specs.py`；禁止在消费者里写字面量 | `tests/architecture/test_persona_single_source.py`（含 AST 守卫） |
 | **叙事连续** | 依恋腔调 = 四象限原型（安全/痴迷/疏离/恐惧）softmax 加权 top-2；禁止硬阈值分支 | `test_personality_invariants.py::test_i3*` |
-| **动力学有界** | 单回合 `|Δ|≤2`；单维日累计 `≤6`；回归 `1%/天`（半衰期≈69 天，追赶上限 30 天） | `test_i2*`、`test_persona_dynamics_wiring.py` |
+| **动力学有界（E2 两层模型）** | 慢层（特质基线）：日推 ≤0.0133、年净变化 ≤4、最大偏离 12、回归 0.00111/天（半衰期≈624 天）；快层（状态）：单步 ≤4、幅度 ≤10、半衰期 45 分钟。跨层约束：`X = M(1−e^(−365D/M))`、`r = D/M` | `test_persona_two_layers.py`、`test_persona_dynamics_wiring.py` |
 | **关系姿态** | `θ_eff = clamp(θ + 8·W·σ_u)`，只影响渲染与显著性，**不得写回** `plastic_params` | `test_persona_stance.py` |
 | **词条作用域** | `chat_key`/`source` 溯源；类别上限 habit 8 / taste 4 / temperament 4 / taboo 3；负性只削弱 taboo/temperament | `test_trait_scope_and_caps.py` |
 | **探针一致** | 潜意识 prompt 必须携带一行人格摘要 | `test_probe_persona_summary.py` |

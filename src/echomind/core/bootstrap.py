@@ -15,6 +15,7 @@ from echomind.adapters.onebot.enrichers import (
 from echomind.adapters.storage.bond_depth_repo import SqliteBondDepthStore
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
+from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
 from echomind.adapters.storage.skill_config_repo import SqliteSkillConfigStore
 from echomind.adapters.storage.trace_repo import SqliteTurnTraceStore
 from echomind.adapters.storage.working_repo import SqliteWorkingStateStore
@@ -73,6 +74,7 @@ class EchoMindContainer:
         self.published_turns: int = 0
         self.skill_config_store: SqliteSkillConfigStore | None = skill_config_store
         self.bond_depth_store: SqliteBondDepthStore | None = None
+        self.persona_layers: SqlitePersonaLayerStore | None = None
         self.onebot_runtime: Any = None
 
     @classmethod
@@ -93,13 +95,14 @@ class EchoMindContainer:
         set_bot_naming(BotNaming())
         bond_store = SqliteBondDepthStore(db)
         await bond_store.ensure_schema()
+        layers = await SqlitePersonaLayerStore.open(db)
         if await bond_store.needs_backfill():
             await bond_store.backfill_from_history()
         facade = CognitiveCoreFacade(
             mem_reader=mem_repo, mem_writer=mem_repo, working_store=work_store,
             default_group_key=default_chat_key,
             constraint_store=work_store, trace_store=trace_store, bond_store=bond_store,
-            operator_ids=operator_ids,
+            operator_ids=operator_ids, persona_layers=layers,
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,
@@ -108,6 +111,7 @@ class EchoMindContainer:
             default_chat_key=default_chat_key,
         )
         instance.bond_depth_store = bond_store
+        instance.persona_layers = layers
 
         async def _on_turn_completed(_outcome: TurnOutcome) -> None:
             instance.published_turns += 1

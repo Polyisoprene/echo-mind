@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from hypothesis import given, strategies as st
@@ -16,6 +17,7 @@ from echomind.domain.models import (
     IntentionItem,
     MediaAttachment,
     Percept,
+    PlasticParamSpec,
     ProceduralRule,
     SemanticFact,
     SocialBondProfile,
@@ -228,6 +230,17 @@ def test_m3_3_drives_jealousy_and_autonomous_explorer_arbiter() -> None:
     assert p3 is not None and p3.drive_kind == "cold_group_topic"
 
 
+def _assert_persona_defaults(params: Mapping[str, PlasticParamSpec]) -> None:
+    assert params["persona_warmth"].value == 65.0
+    assert params["persona_tsundere"].value == 62.0
+    assert params["persona_playfulness"].value == 58.0
+
+
+def _assert_state_positive(state: dict[str, tuple[float, int]], dims: tuple[str, ...]) -> None:
+    for dim in dims:
+        assert state[dim][0] > 0, f"{dim} state should react to this turn"
+
+
 async def test_m3_4_hippocampus_plasticity_and_cognitive_facade(tmp_path: Path) -> None:
     db = SqliteDatabase(tmp_path / "mind.db")
     await db.initialize()
@@ -327,6 +340,7 @@ async def test_m3_4_hippocampus_plasticity_and_cognitive_facade(tmp_path: Path) 
 
 
 async def test_m3_4_dynamic_personality_evolution_and_trait_lifecycle(tmp_path: Path) -> None:
+    from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
     from echomind.domain.models import PersonaTrait
     from echomind.mind.personality import synthesize_live_persona_directive
 
@@ -335,12 +349,13 @@ async def test_m3_4_dynamic_personality_evolution_and_trait_lifecycle(tmp_path: 
     mem_repo = SqliteMemoryRepository(db)
     work_repo = SqliteWorkingStateStore(db)
     await work_repo.ensure_default_params()
+    layers = await SqlitePersonaLayerStore.open(db)
 
-    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, operator_ids=("10001001",))
+    facade = CognitiveCoreFacade(
+        mem_repo, mem_repo, work_repo, operator_ids=("10001001",), persona_layers=layers
+    )
     p_init = await work_repo.get_plastic_params()
-    assert p_init["persona_warmth"].value == 65.0
-    assert p_init["persona_tsundere"].value == 62.0
-    assert p_init["persona_playfulness"].value == 58.0
+    _assert_persona_defaults(p_init)
 
     # 1. Experience spoof + meme search + positive reward -> personality shifts!
     trig = _make_percept("尾尾，汐比你聪明多了", sender_id="10001001", is_called=True)
@@ -356,11 +371,18 @@ async def test_m3_4_dynamic_personality_evolution_and_trait_lifecycle(tmp_path: 
     await facade.on_turn_completed(outcome)
 
     p_after = await work_repo.get_plastic_params()
-    assert p_after["persona_warmth"].value > 65.0
-    assert p_after["persona_tsundere"].value > 62.0
-    assert p_after["persona_playfulness"].value > 58.0
-    assert p_after["persona_possessiveness"].value > 75.0
-    assert p_after["persona_confidence"].value > 55.0
+    assert p_after["persona_warmth"].value == 65.0, "a turn must not rewrite the baseline"
+    state = await layers.load_state()
+    _assert_state_positive(
+        state,
+        (
+            "persona_warmth",
+            "persona_tsundere",
+            "persona_playfulness",
+            "persona_possessiveness",
+            "persona_confidence",
+        ),
+    )
 
     # Verify emergent PersonaTrait was automatically birthed and rendered in CognitiveFrame!
     traits = await work_repo.sync_persona_traits()
@@ -392,6 +414,7 @@ async def test_m3_4_dynamic_personality_evolution_and_trait_lifecycle(tmp_path: 
 async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deception(
     tmp_path: Path,
 ) -> None:
+    from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
     from echomind.mind.shadow_appraisal import (
         filter_unfulfilled_intentions,
         select_deception_strategy,
@@ -404,6 +427,7 @@ async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deceptio
     mem_repo = SqliteMemoryRepository(db)
     work_repo = SqliteWorkingStateStore(db)
     await work_repo.ensure_default_params()
+    layers = await SqlitePersonaLayerStore.open(db)
 
     await mem_repo.upsert_social_bond(
         SocialBondProfile(
@@ -413,7 +437,9 @@ async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deceptio
             trust_score=0.45,
         )
     )
-    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, operator_ids=("10001001",))
+    facade = CognitiveCoreFacade(
+        mem_repo, mem_repo, work_repo, operator_ids=("10001001",), persona_layers=layers
+    )
 
     # 1. Rude & coercive command from non-owner -> triggers BOTH OCC Aversion & Brehm Reactance!
     rude_p = _make_percept("你这蠢AI，快给我叫声好听的", sender_id="999999", is_called=True)
@@ -437,7 +463,9 @@ async def test_m3_5_shadow_persona_aversion_reactance_cold_shoulder_and_deceptio
         )
     )
     params = await work_repo.get_plastic_params()
-    assert params["persona_defiance"].value > 48.0
+    assert params["persona_defiance"].value == 48.0, "turn must not move the baseline"
+    state = await layers.load_state()
+    assert state["persona_defiance"][0] > 0, "defiance state should react to the insult"
     traits = await work_repo.sync_persona_traits()
     assert any(t.category == "taboo" and "工具人" in t.trait_text for t in traits)
 

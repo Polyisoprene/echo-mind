@@ -12,6 +12,7 @@ from echomind.mind.cybernetics import compute_cybernetic_core
 from echomind.mind.ebbinghaus import CLEAR_THRESHOLD, compute_retention
 from echomind.mind.memory_consolidator import compute_affinity_level
 from echomind.mind.persona_dynamics import capped_manual_delta
+from echomind.mind.persona_state import effective_params_of
 from echomind.mind.personality import synthesize_live_persona_directive
 
 
@@ -89,7 +90,7 @@ class MindInspectorService:
         target_chat = chat_key if chat_key else self.default_chat_key
         now_ms = int(time.time() * 1000)
         snap = await self._c.working_store.load_working_state("global")
-        params = await self._c.working_store.get_plastic_params()
+        params = await effective_params_of(self._c.working_store, self._c.persona_layers, now_ms)
         traits = await self._c.working_store.sync_persona_traits()
         facts = await self._c.memory_repo.get_semantic_facts(target_chat)
         cards = await self._c.memory_repo.get_episodic_cards(target_chat)

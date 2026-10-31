@@ -47,8 +47,8 @@ python scripts/capability_gate.py --check   # CI 用，文件过期即失败
 4. `implemented` 的能力必须有可解析的 pytest node；测试被删 → 门禁失败。
 5. 文档中的完成度以 `CAPABILITY_STATUS.md` 为准，手写完成度视为无效。
 
-## 五、当前状态（E0 落地时）
+## 五、当前状态（E2 落地时）
 
-- 常驻参数：45 条，其中 `fit_pending` 约 30 条（实验待做），`convention` 若干。
+- 常驻参数：50 条，其中 `fit_pending` 32 条（实验待做）、`convention` 18 条。
 - 能力：20 条，`implemented` 5、`partial` 6、`absent` 6、`contradicted` 3。
 - 债务基线：`debt = 0`（所有条目至少完成了分类与字段填写；科学债务由 issue 跟踪）。

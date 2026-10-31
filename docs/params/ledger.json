@@ -482,22 +482,20 @@
       "id": "mind/persona_dynamics.py::DAILY_CAP",
       "module": "mind/persona_dynamics.py",
       "symbol": "DAILY_CAP",
-      "line": 14,
+      "line": 15,
       "value": "6.0",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "class": "convention",
+      "status": "active",
       "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-002",
-      "experiment": "模拟器扫 (D, r) 平面：要求稳态偏移 v*=D/r 不超过量程，且 500 回合不贴边",
-      "conservative_value": "6.0",
-      "contradiction": "稳态偏移 v*=b+D/r=b+600，远超 7 维量程（约 85 分），必然饱和"
+      "evidence": {
+        "rationale": "仅约束控制台手动调参的单次/日上限；自动学习已改用 TRAIT_DAILY_PUSH（0.01333/天），此值不再影响人格演化"
+      }
     },
     {
       "id": "mind/persona_dynamics.py::DELTA_CLIP",
       "module": "mind/persona_dynamics.py",
       "symbol": "DELTA_CLIP",
-      "line": 13,
+      "line": 14,
       "value": "2.0",
       "class": "fit_pending",
       "status": "quarantined",
@@ -521,19 +519,78 @@
       }
     },
     {
-      "id": "mind/persona_dynamics.py::REGRESSION_PER_DAY",
+      "id": "mind/persona_dynamics.py::STATE_HALF_LIFE_MIN",
       "module": "mind/persona_dynamics.py",
-      "symbol": "REGRESSION_PER_DAY",
-      "line": 15,
-      "value": "0.01",
+      "symbol": "STATE_HALF_LIFE_MIN",
+      "line": 39,
+      "value": "45.0",
       "class": "fit_pending",
       "status": "quarantined",
       "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-002",
-      "experiment": "同上：约束 r >= D/Δmax；Δmax 由产品定义为允许的最大漂移",
-      "conservative_value": "0.01",
-      "contradiction": "r=0.01 与 D=6 组合使不动点落在量程外；文献量级为 0.001-0.0025 分/天"
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-E1-014",
+      "experiment": "状态半衰期 20/45/90 分钟，测对话内连贯性与跨会话复位速度",
+      "conservative_value": "45.0"
+    },
+    {
+      "id": "mind/persona_dynamics.py::STATE_MAX_ABS",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "STATE_MAX_ABS",
+      "line": 37,
+      "value": "10.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-E1-013",
+      "experiment": "敏感性审计：状态幅度 ±5/±10/±15 三档，测盲评可辨性与跨会话一致性",
+      "conservative_value": "10.0"
+    },
+    {
+      "id": "mind/persona_dynamics.py::STATE_MAX_STEP",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "STATE_MAX_STEP",
+      "line": 38,
+      "value": "4.0",
+      "class": "fit_pending",
+      "status": "quarantined",
+      "claim": "",
+      "evidence": {
+        "raw_tag": "fit:pending"
+      },
+      "issue": "ECHOMIND-E1-013",
+      "experiment": "同上：单步上限 2/4/6，测单轮反应强度与人格稳定感",
+      "conservative_value": "4.0"
+    },
+    {
+      "id": "mind/persona_dynamics.py::TRAIT_ANNUAL_BUDGET",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "TRAIT_ANNUAL_BUDGET",
+      "line": 23,
+      "value": "4.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "产品决定(2026-10-31)：第一年净变化 ≤4 分，带 3–6；量级受 Roberts et al. 2006 约束（成人 0.3–0.9 分/年），本产品取 5–15 倍加速，属明示约定而非人类速率"
+      }
+    },
+    {
+      "id": "mind/persona_dynamics.py::TRAIT_MAX_DEVIATION",
+      "module": "mind/persona_dynamics.py",
+      "symbol": "TRAIT_MAX_DEVIATION",
+      "line": 26,
+      "value": "12.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "渐近偏离上限取量程(约85分)的 1/7；与年度预算共同解出日推与回归率，保证不饱和"
+      }
     },
     {
       "id": "mind/persona_stance.py::STANCE_MAX_POINTS",
@@ -566,10 +623,23 @@
       "conservative_value": "6.0"
     },
     {
+      "id": "mind/plasticity.py::DAY_MS",
+      "module": "mind/plasticity.py",
+      "symbol": "DAY_MS",
+      "line": 25,
+      "value": "86400000.0",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "单位换算（24*3600*1000），无自由度"
+      }
+    },
+    {
       "id": "mind/plasticity.py::HOMEOSTATIC_PULL_RATE",
       "module": "mind/plasticity.py",
       "symbol": "HOMEOSTATIC_PULL_RATE",
-      "line": 26,
+      "line": 35,
       "value": "0.02",
       "class": "fit_pending",
       "status": "quarantined",

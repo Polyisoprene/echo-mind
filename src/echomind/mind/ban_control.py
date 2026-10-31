@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from echomind.domain.models import Percept
+from echomind.domain.ports import IPersonaConstraintStore
 
 BAN_PATTERN = re.compile(
     r"(?:不许|不准|不要|别|禁止|不能|少)(?:再)?(?:说|用|带|发|喊|叫|打)(?:那个|这个)?\s*"
@@ -63,3 +64,21 @@ def purge_message_batch(
         if survivor:
             kept.append(survivor)
     return tuple(kept)
+
+
+async def resolve_bans(
+    constraints: IPersonaConstraintStore | None,
+    triggers: tuple[Percept, ...],
+    operator_ids: tuple[str, ...],
+    *,
+    dry: bool = False,
+) -> tuple[str, ...]:
+    """Extract operator bans, persist them (unless dry) and return the full list."""
+    if constraints is None:
+        return ()
+    new_bans = extract_new_bans(triggers, operator_ids)
+    if not dry:
+        for phrase in new_bans:
+            await constraints.add_banned_phrase(phrase, "管理员明令禁止的口癖")
+    existing = await constraints.get_banned_phrases()
+    return tuple(dict.fromkeys([*new_bans, *existing]))

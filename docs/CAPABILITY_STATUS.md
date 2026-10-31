@@ -13,11 +13,11 @@
 |---|---|---|---|
 | CAP-PERSONA-SINGLE-SOURCE | 7 维人格默认值与边界只有一处定义 | ✅ implemented | tests/architecture/test_persona_single_source.py::test_storage_defaults_come_from_the_shared_table |
 | CAP-ATTACHMENT-CONTINUOUS | 依恋腔调由四象限原型 softmax 连续加权，无硬阈值跳变 | ✅ implemented | tests/unit/test_personality_invariants.py::test_i3b_tone_is_continuous |
-| CAP-DYNAMICS-BOUNDED | 人格动力学有界：单回合 \|Δ\|≤2、日累计 ≤6、1%/日慢回归 | ⚠️ partial | 上下限成立，但 (DAILY_CAP=6, REGRESSION=0.01) 的稳态偏移 D/r=600 远超量程，持续正向互动必然贴边饱和；见 ECHOMIND-E1-002 |
+| CAP-DYNAMICS-BOUNDED | 人格分两层：慢层基线年净变化 ≤4 分、单日 ≤0.0133、最大偏离 12；快层状态单步 ≤4、幅度 ≤10、半衰期 45 分钟 | ⚠️ partial | 机制已实现并有测试；状态层幅度/单步/半衰期仍是未校准值（ECHOMIND-E1-013/014），年度预算 4 分为产品约定（带 3–6） |
 | CAP-STANCE | 关系姿态只影响渲染与显著性，≤8 分且不回写人格本体 | ✅ implemented | tests/unit/test_persona_stance.py::test_stored_personality_is_not_mutated |
 | CAP-TRAIT-SCOPE | 词条按类别上限（8/4/4/3）与作用域衰减 | ✅ implemented | tests/integration/test_trait_scope_and_caps.py::test_category_caps_are_enforced |
 | CAP-PROBE-DIGEST | 潜意识探针 prompt 携带一行人格摘要 | ✅ implemented | tests/unit/test_probe_persona_summary.py::test_probe_prompt_contains_persona_digest |
-| CAP-PARAM-PROVENANCE | 所有可调常数声明来源（src/data/convention/fit_pending） | ⚠️ partial | E0 已建立 45 条台账并门禁化；代码内联 param: 标签仍只有 17 处，且 45 条中多数为 fit_pending（实验未做） |
+| CAP-PARAM-PROVENANCE | 所有可调常数声明来源（src/data/convention/fit_pending） | ⚠️ partial | E0 建立 50 条台账并门禁化；代码内联 param: 标签仍只有少量，多数条目为 fit_pending（实验未做） |
 | CAP-TRAIT-GROWTH | 人格会从互动中长出新的习惯/喜好/雷点 | ❌ absent | derive_emergent_trait 只有 5 条固定文案；trait_text 精确去重；last_used_ms 列从未读写 |
 | CAP-CLOSED-LOOP | 人格由可观测反馈闭环驱动 | ❌ absent | reward 来自探针自评；探针失败时退化为常数 0.08；全库无延迟反馈/后续消息评估 |
 | CAP-SELF-NARRATIVE | 存在跨会话的自我叙事，并参与冲突判定 | ❌ absent | 只有 140 字情绪余波；role_text 静态；冲突优先级是 prompt 内的硬编码段落 |
