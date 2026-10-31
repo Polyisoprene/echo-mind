@@ -10,7 +10,6 @@ from echomind.domain.models import (
     AttentionDecision,
     Percept,
     ProceduralRule,
-    RecalledMemoryItem,
     SemanticFact,
     SocialBondProfile,
     WorkingSnapshot,
@@ -18,6 +17,7 @@ from echomind.domain.models import (
 from echomind.mind.circadian import resolve_circadian_phase
 from echomind.mind.ebbinghaus import format_recalled_item
 from echomind.mind.naming import bot_naming
+from echomind.mind.recall_types import RecalledMemoryItem
 
 
 def match_active_rules(

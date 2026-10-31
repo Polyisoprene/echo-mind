@@ -118,14 +118,13 @@ class EpisodicCard(FrozenValueObject):
     pinned: bool = False
     rehearsals: int = Field(default=0, ge=0)
     last_recalled_ms: int = 0
-
-
-class RecalledMemoryItem(FrozenValueObject):
-    """Episodic card decorated with real-time Ebbinghaus retention & clarity tier."""
-
-    card: EpisodicCard
-    retention: float = Field(ge=0.0, le=1.0)
-    clarity: Literal["clear", "fuzzy"]
+    scope: Literal["venue", "person", "global"] = "venue"
+    source_person_id: str = ""
+    source_venue_id: str = ""
+    owner_id: str = ""
+    sensitivity: Literal["public", "group", "private", "secret"] = "group"
+    audience: tuple[str, ...] = ()
+    source_quote: str = ""
 
 
 class SemanticFact(FrozenValueObject):
@@ -139,6 +138,13 @@ class SemanticFact(FrozenValueObject):
     is_locked: bool = False
     source: Literal["system", "owner", "explored", "peer"] = "peer"
     revision_count: int = 1
+    scope: Literal["venue", "person", "global"] = "venue"
+    source_person_id: str = ""
+    source_venue_id: str = ""
+    owner_id: str = ""
+    sensitivity: Literal["public", "group", "private", "secret"] = "group"
+    audience: tuple[str, ...] = ()
+    source_quote: str = ""
 
 
 class ProceduralRule(FrozenValueObject):

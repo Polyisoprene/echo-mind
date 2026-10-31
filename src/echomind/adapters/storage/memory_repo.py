@@ -11,6 +11,7 @@ import aiosqlite
 from echomind.adapters.storage.claim_repo import mirror_fact
 from echomind.adapters.storage.claim_views import facts_v2_enabled, load_claim_facts
 from echomind.adapters.storage.database import SqliteDatabase
+from echomind.adapters.storage.memory_rows import row_to_episodic, row_to_fact, row_to_rule
 from echomind.domain.models import (
     EpisodicCard,
     ProceduralRule,
@@ -18,53 +19,7 @@ from echomind.domain.models import (
     SocialBondProfile,
 )
 
-SourceType = Literal["system", "owner", "explored", "peer"]
 RoleType = Literal["owner", "admin", "member"]
-
-
-def _row_to_episodic(row: aiosqlite.Row) -> EpisodicCard:
-    parts = json.loads(str(row[6] or "[]"))
-    return EpisodicCard(
-        card_id=int(row[0]),
-        chat_key=str(row[1]),
-        timestamp_ms=int(row[2]),
-        msg_seq=int(row[3]),
-        summary=str(row[4]),
-        key_detail=str(row[5]),
-        participants=tuple(str(p) for p in parts if p),
-        importance=float(row[7]),
-        pinned=bool(row[8]),
-        rehearsals=int(row[9]),
-        last_recalled_ms=int(row[10]),
-    )
-
-
-def _row_to_fact(row: aiosqlite.Row) -> SemanticFact:
-    raw_src = str(row[6])
-    src: SourceType = (
-        cast(SourceType, raw_src) if raw_src in ("system", "owner", "explored", "peer") else "peer"
-    )
-    return SemanticFact(
-        fact_id=int(row[0]),
-        chat_key=str(row[1]),
-        subject=str(row[2]),
-        fact_text=str(row[3]),
-        confidence=float(row[4]),
-        is_locked=bool(row[5]),
-        source=src,
-        revision_count=int(row[7]),
-    )
-
-
-def _row_to_rule(row: aiosqlite.Row) -> ProceduralRule:
-    return ProceduralRule(
-        rule_id=int(row[0]),
-        chat_key=str(row[1]),
-        trigger_keyword=str(row[2]),
-        trigger_user_id=str(row[3]),
-        action_instruction=str(row[4]),
-        strength=int(row[5]),
-    )
 
 
 def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
@@ -108,13 +63,14 @@ class SqliteMemoryRepository:
     async def get_episodic_cards(self, chat_key: str) -> tuple[EpisodicCard, ...]:
         sql = (
             "SELECT id, chat_key, ts, msg_seq, summary, key_detail, participants_json, "
-            "importance, pinned, rehearsals, last_recalled_ms "
+            "importance, pinned, rehearsals, last_recalled_ms, scope, source_person_id, "
+            "source_venue_id, owner_id, sensitivity, audience_json, source_quote "
             "FROM episodic_memories WHERE chat_key = ? ORDER BY ts ASC"
         )
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, (chat_key,))
             rows = await cursor.fetchall()
-            return tuple(_row_to_episodic(r) for r in rows)
+            return tuple(row_to_episodic(r) for r in rows)
 
     async def get_semantic_facts(
         self, chat_key: str, min_confidence: float = 0.0
@@ -123,14 +79,15 @@ class SqliteMemoryRepository:
             return await load_claim_facts(self._db, chat_key)
         sql = (
             "SELECT id, chat_key, subject, fact_text, confidence, is_locked, "
-            "source, revision_count "
+            "source, revision_count, scope, source_person_id, source_venue_id, owner_id, "
+            "sensitivity, audience_json, source_quote "
             "FROM semantic_facts WHERE chat_key IN (?, 'global') AND confidence >= ? "
             "ORDER BY is_locked DESC, confidence DESC, id DESC"
         )
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, (chat_key, min_confidence))
             rows = await cursor.fetchall()
-            return tuple(_row_to_fact(r) for r in rows)
+            return tuple(row_to_fact(r) for r in rows)
 
     async def get_procedural_rules(self, chat_key: str) -> tuple[ProceduralRule, ...]:
         sql = (
@@ -140,7 +97,7 @@ class SqliteMemoryRepository:
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, (chat_key,))
             rows = await cursor.fetchall()
-            return tuple(_row_to_rule(r) for r in rows)
+            return tuple(row_to_rule(r) for r in rows)
 
     async def get_social_bond(self, chat_key: str, user_id: str) -> SocialBondProfile | None:
         sql = (
@@ -167,7 +124,9 @@ class SqliteMemoryRepository:
         sql = (
             "INSERT INTO episodic_memories "
             "(chat_key, ts, msg_seq, summary, key_detail, participants_json, importance, pinned, "
-            "rehearsals, last_recalled_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "rehearsals, last_recalled_ms, scope, source_person_id, source_venue_id, owner_id, "
+            "sensitivity, audience_json, source_quote) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         )
         params = (
             card.chat_key,
@@ -180,6 +139,9 @@ class SqliteMemoryRepository:
             int(card.pinned),
             card.rehearsals,
             card.last_recalled_ms or card.timestamp_ms,
+            card.scope, card.source_person_id, card.source_venue_id or card.chat_key,
+            card.owner_id, card.sensitivity, json.dumps(list(card.audience)),
+            card.source_quote,
         )
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, params)
@@ -211,7 +173,6 @@ class SqliteMemoryRepository:
         return (is_locked and not can_override), rev, prev_txt
 
     async def upsert_semantic_fact(self, fact: SemanticFact) -> tuple[bool, str]:
-        """Upsert a semantic fact with temporal change history & multi-evidence promotion."""
         now_ms = int(time.time() * 1000)
         async with self._db.connect() as conn:
             blocked, prev_rev, prev_txt = await self._check_fact_lock(conn, fact)
@@ -223,18 +184,26 @@ class SqliteMemoryRepository:
             sql = (
                 "INSERT INTO semantic_facts "
                 "(chat_key, subject, fact_text, confidence, is_locked, "
-                "source, revision_count, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+                "source, revision_count, updated_at, scope, source_person_id, "
+                "source_venue_id, owner_id, sensitivity, audience_json, source_quote) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
                 "ON CONFLICT(chat_key, subject) DO UPDATE SET "
                 "fact_text=excluded.fact_text, confidence=excluded.confidence, "
                 "is_locked=excluded.is_locked, source=excluded.source, "
-                "revision_count=excluded.revision_count, updated_at=excluded.updated_at"
+                "revision_count=excluded.revision_count, updated_at=excluded.updated_at, "
+                "scope=excluded.scope, source_person_id=excluded.source_person_id, "
+                "source_venue_id=excluded.source_venue_id, owner_id=excluded.owner_id, "
+                "sensitivity=excluded.sensitivity, audience_json=excluded.audience_json, "
+                "source_quote=excluded.source_quote"
             )
             await conn.execute(
                 sql,
                 (
                     fact.chat_key, fact.subject, eff_txt, eff_conf,
                     int(fact.is_locked), fact.source, new_rev, now_ms,
+                    fact.scope, fact.source_person_id, fact.source_venue_id or fact.chat_key,
+                    fact.owner_id, fact.sensitivity, json.dumps(list(fact.audience)),
+                    fact.source_quote,
                 ),
             )
             await conn.commit()

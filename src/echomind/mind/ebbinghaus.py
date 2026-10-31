@@ -6,8 +6,9 @@ import math
 import re
 from typing import Literal
 
-from echomind.domain.models import EpisodicCard, Percept, RecalledMemoryItem, SemanticFact
+from echomind.domain.models import EpisodicCard, Percept, SemanticFact
 from echomind.mind.cybernetics import compute_associative_flotation_boosts
+from echomind.mind.recall_types import RecalledMemoryItem
 
 CLEAR_THRESHOLD = 0.55
 FUZZY_THRESHOLD = 0.22

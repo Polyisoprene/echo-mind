@@ -7,6 +7,7 @@ from types import TracebackType
 
 import aiosqlite
 
+from echomind.adapters.storage.memory_migrations import ensure_columns
 from echomind.adapters.storage.migrations import ensure_migrations
 
 SCHEMA_DDL = """
@@ -237,14 +238,6 @@ CREATE TABLE IF NOT EXISTS llm_traces (
 """
 
 
-async def _ensure_column(conn: aiosqlite.Connection, table: str, column: str, decl: str) -> None:
-    """Add a column to an existing SQLite table when it is missing (idempotent)."""
-    cursor = await conn.execute(f"PRAGMA table_info({table})")
-    existing = {str(row[1]) for row in await cursor.fetchall()}
-    if column not in existing:
-        await conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
-
-
 class _PragmaConnection:
     """Async context manager applying per-connection SQLite pragmas."""
 
@@ -282,14 +275,8 @@ class SqliteDatabase:
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
         async with aiosqlite.connect(self._db_path) as conn:
             await conn.executescript(SCHEMA_DDL)
-            await _ensure_column(conn, "llm_traces", "chat_key", "TEXT NOT NULL DEFAULT ''")
-            await _ensure_column(conn, "stickers", "scene_tags", "TEXT NOT NULL DEFAULT ''")
-            await _ensure_column(conn, "turn_traces", "context_count", "INTEGER NOT NULL DEFAULT 0")
-            await _ensure_column(conn, "turn_traces", "trigger_count", "INTEGER NOT NULL DEFAULT 0")
-            await _ensure_column(conn, "turn_traces", "system_prompt", "TEXT NOT NULL DEFAULT ''")
-            await _ensure_column(conn, "social_bonds", "bond_depth", "REAL NOT NULL DEFAULT 0.0")
+            await ensure_columns(conn)
             await ensure_migrations(conn)
-            await _ensure_column(conn, "turn_traces", "user_prompt", "TEXT NOT NULL DEFAULT ''")
             await conn.commit()
             cursor = await conn.execute("PRAGMA journal_mode;")
             row = await cursor.fetchone()

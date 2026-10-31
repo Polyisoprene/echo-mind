@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import time
 
-from echomind.domain.models import Percept, RecalledMemoryItem
+from echomind.domain.models import Percept
 from echomind.domain.ports import ILlmGateway, IMemoryReader, IMemoryWriter, IWorkingStateStore
 from echomind.mind.ebbinghaus import recall_episodic_memories
 from echomind.mind.memory_consolidator import run_hippocampal_batch_consolidation
+from echomind.mind.recall_types import RecalledMemoryItem
 
 
 async def recall_and_reinforce(

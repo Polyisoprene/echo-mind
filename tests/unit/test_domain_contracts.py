@@ -18,12 +18,12 @@ from echomind.domain.models import (
     PlasticParamSpec,
     ProactiveProposal,
     ProceduralRule,
-    RecalledMemoryItem,
     SemanticFact,
     SocialBondProfile,
     TheoryOfMindFrame,
     TurnOutcome,
 )
+from echomind.mind.recall_types import RecalledMemoryItem
 
 
 def test_percept_is_strictly_immutable_and_forbids_extra_fields() -> None:

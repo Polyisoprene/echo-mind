@@ -10,7 +10,6 @@ from echomind.domain.models import (
     CognitiveFrame,
     Percept,
     ProactiveProposal,
-    RecalledMemoryItem,
     SemanticFact,
     SocialBondProfile,
     TurnOutcome,
@@ -57,6 +56,7 @@ from echomind.mind.persona_stance import apply_stance_for
 from echomind.mind.persona_state import effective_params_of
 from echomind.mind.personality import synthesize_live_persona_directive
 from echomind.mind.plasticity import NeuroplasticityEngine, apply_chord_reward
+from echomind.mind.recall_types import RecalledMemoryItem
 from echomind.mind.salience_hydraulics import apply_speaking_satiation
 from echomind.mind.shadow_appraisal import (
     ShadowAppraisalResult,
