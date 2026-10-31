@@ -15,7 +15,7 @@
 | **P3.1** | 硬门（粗粒度）：private 仅源场合/owner 私聊，secret 默认拒绝 + 三张表 | ✅ 已部署 |
 | **P3.2** | `disclosure_repo`：log_disclosure / mark_known / who_knows | ✅ 已部署 |
 | **P3.3a** | 敏感度线索分类（secret/private）+ 写入时升级 | ✅ 已部署 |
-| **P3.3b** | frame 级受众门 + 实际披露日志 | ⏳ 下一步 |
+| **P3.3b** | frame 级受众门 + 拒绝写入 `disclosures` | ✅ 已部署 |
 | **P4** | 人格分寸：public/group 的 say/hint/keep 接 7 维 | ⏳ |
 | **P5** | 评测：一致性 + 授权边界 + 多人记忆子集 | ⏳ |
 
@@ -97,7 +97,15 @@ get_global_facts(allow=True)                 # 显式
 - 现网存量 0 条命中——分类器只影响新写入，硬门继续休眠；
 - 误报风险：引用/角色扮演可能触发；已设计为“强短语+只升不降”，人工可改回。
 
-## P3.3b 设计（下一步）
+## P3.3b 已落地（frame 门 + 拒绝日志）
+
+- `facade_memory.gate_frame`：以「提及的人 + 发送者」为 audience，对 facts 与 recalled 过纯门；
+- 被拒条目不进入 prompt，写 `disclosures`（action=keep，reason=owner_absent/secret_without_grant）；
+- `SqliteDisclosureLog` 由 bootstrap 注入 facade；
+- `load_facts` / `audience_of` 移入 `facade_memory`，保持 frame 函数长度；
+- 现网仍是 193 条 group 事实，门默认全放行；拒绝路径由单测（private/secret）覆盖。
+
+## P4 设计（下一步）
 
 - `knowledge_state(memory_id, person_id, state)`：told_by_me / told_to_me / overheard / inferred；
 - `disclosures`：她说给谁、在哪、说了什么、为什么；
