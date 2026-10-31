@@ -20,9 +20,9 @@ from echomind.mind.disclosure_choice import DisclosureChoice, choose
 from echomind.mind.ebbinghaus import (
     extract_mentioned_uids,
     recall_episodic_memories,
-    select_relevant_facts,
 )
 from echomind.mind.memory_consolidator import run_hippocampal_batch_consolidation
+from echomind.mind.ranker_fusion import unified_rank
 from echomind.mind.recall_types import RecalledMemoryItem
 from echomind.mind.semantic_memory import SemanticMemoryRetriever
 
@@ -221,13 +221,13 @@ async def select_facts(
     now_ms: int | None = None,
 ) -> tuple[SemanticFact, ...]:
     current = int(time.time() * 1000) if now_ms is None else now_ms
-    lexical = select_relevant_facts(facts, query, len(facts), now_ms=current)
     if semantic is None:
-        return tuple(lexical[:limit])
+        return tuple(unified_rank(facts, query, {}, {}, current)[:limit])
     ranked = await semantic.rank_fused(facts, query, current)
-    if ranked is None:
-        return tuple(lexical[:limit])
-    return tuple(ranked[:limit])
+    if ranked is not None:
+        return tuple(ranked[:limit])
+    relations = await semantic.boost_ids(facts, query, current)
+    return tuple(unified_rank(facts, query, {}, relations, current)[:limit])
 
 
 IncludedFact = tuple[int, str, str]

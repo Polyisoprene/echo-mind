@@ -67,3 +67,16 @@ async def test_fused_ranking_and_live_selector() -> None:
     assert fused is not None and fused[0].fact_text == "猫粮"
     picked = await select_facts(service, _facts(), "宠物", 1)
     assert picked[0].fact_text == "猫粮"
+
+
+@pytest.mark.asyncio
+async def test_low_coverage_uses_lexical_ranker_fusion() -> None:
+    facts = _facts() + (
+        SemanticFact(fact_id=3, chat_key="g", subject="工作", fact_text="岗位"),
+        SemanticFact(fact_id=4, chat_key="g", subject="睡眠", fact_text="熬夜"),
+    )
+    service = SemanticMemoryRetriever(
+        _Embedder(), _Store({1: (1.0, 0.0)}), "m"
+    )
+    picked = await select_facts(service, facts, "猫", 1)
+    assert picked[0].fact_text == "猫粮"

@@ -55,8 +55,8 @@ percept
 | 参数 | 当前值 | 位置 | 现状 | 证据状态 |
 |---|---:|---|---|---|
 | `FACT_RECENCY_HALF_LIFE_DAYS` | 30 | `mind/ebbinghaus.py` | 时间衰减半衰期 | ❌ 无直接来源；fit_pending |
-| `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 仅关键词回退路径；fused 路径用 recency ranker | ❌ 无来源；convention |
-| `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 仅关键词回退路径；fused 路径用 order ranker | ❌ 无来源；convention |
+| `FACT_RECENCY_WEIGHT` | 4.0 | 同上 | 仅评测基线 `select_relevant_facts`；live 全部用 recency ranker | ❌ 无来源；convention |
+| `ENTITY_ORDER_WEIGHT` | 6.0 | 同上 | 仅评测基线 `select_relevant_facts`；live 全部用 order ranker | ❌ 无来源；convention |
 | 语义 recency 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | 语义 order 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | `RRF_K` | 60 | `mind/retrieval_fusion.py` | 7 路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
@@ -272,7 +272,7 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 
 ### 仍然存在的债务
 
-- 关键词回退路径仍含 3/6/5/4/6；
+- live 已无 3/6/5/4/6；这些只留在评测基线 `select_relevant_facts`；
 - `RELATION_MAX_HOPS=2`、`REALISM_MAX_CHARS=40` 仍未校准；
 - 7 个 ranker 等权是“无证据时的保守选择”，不是拟合结果；
 - 还没做权重拟合/外部 benchmark。
