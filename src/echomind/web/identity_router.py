@@ -21,6 +21,7 @@ class IdentityPayload(BaseModel):
     default_group: str = ""
     operators: list[str] = []
     probe_model: str = ""
+    memory_budget: int = 0
 
 
 def build_identity_router(service: IdentityConfigService) -> APIRouter:

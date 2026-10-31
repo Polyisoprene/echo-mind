@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from echomind.adapters.onebot.identity_hot_apply import apply_identity
+from echomind.mind.memory_budget import set_consolidation_budget
 from echomind.mind.naming import BotNaming, bot_naming, set_bot_naming
 from echomind.mind.probe_runtime import set_probe_model
 
@@ -24,6 +25,7 @@ class IdentityDraft:
     default_group: str
     operators: list[str]
     probe_model: str
+    memory_budget: int
 
 _IDENTITY_KEYS = ("botName", "keywords", "selfQq", "groups", "private", "defaultGroup")
 
@@ -93,6 +95,7 @@ class IdentityConfigService:
             "default_group": str(raw.get("defaultGroup") or ""),
             "operators": _operators(raw),
             "probe_model": str(raw.get("probeModel") or ""),
+            "memory_budget": int(raw.get("memoryBudget") or 900),
         }
 
     def save(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -105,19 +108,22 @@ class IdentityConfigService:
         default_group = str(payload.get("default_group") or "").strip()
         operators = _as_list(payload.get("operators"))
         probe_model = str(payload.get("probe_model") or "").strip()
+        memory_budget = int(payload.get("memory_budget") or 0)
         if "operators" in payload and not operators:
             raise ValueError("operators must not be empty")
 
         self._merge(
             raw,
             IdentityDraft(
-                bot_name, keywords, groups, private, self_qq, default_group, operators, probe_model
+                bot_name, keywords, groups, private, self_qq, default_group, operators,
+                probe_model, memory_budget,
             ),
         )
         text = json.dumps(raw, ensure_ascii=False, indent=2) + "\n"
         self._path.write_text(text, encoding="utf-8")
         self._apply_naming(bot_name, keywords)
         set_probe_model(probe_model)
+        set_consolidation_budget(memory_budget or 900)
         self._apply_runtime(bot_name, groups, private, self_qq, operators)
         return self.read()
 
@@ -129,16 +135,23 @@ class IdentityConfigService:
         _write_section(raw, "allow", {"groups": draft.groups} if draft.groups else {})
         if draft.private:
             _write_section(raw, "allow", {"private": draft.private})
-        if draft.probe_model is not None:
-            raw["probeModel"] = draft.probe_model
-        if draft.operators:
-            raw["operatorIds"] = list(draft.operators)
-            _dict_of(raw, "skills").setdefault("affinity", {}).pop("ownerQq", None)
+        IdentityConfigService._merge_extras(raw, draft)
         for key, value in (
             ("defaultGroup", draft.default_group), ("selfQq", draft.self_qq),
         ):
             if value:
                 raw[key] = value
+
+    @staticmethod
+    def _merge_extras(raw: dict[str, Any], draft: IdentityDraft) -> None:
+        """Merge budget/probe-model/operator fields into the raw config."""
+        if draft.memory_budget:
+            _write_section(raw, "memory", {"budget": draft.memory_budget})
+        if draft.probe_model is not None:
+            raw["probeModel"] = draft.probe_model
+        if draft.operators:
+            raw["operatorIds"] = list(draft.operators)
+            _dict_of(raw, "skills").setdefault("affinity", {}).pop("ownerQq", None)
 
     @staticmethod
     def _apply_naming(bot_name: str, keywords: list[str]) -> None:

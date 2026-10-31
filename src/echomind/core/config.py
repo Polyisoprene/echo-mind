@@ -42,6 +42,7 @@ class AppConfig(FrozenValueObject):
     operator_ids: tuple[str, ...] = ()
     role_text: str = ""
     probe_model: str = ""
+    memory_budget: int = 900
     server_host: str = "127.0.0.1"
     server_port: int = 3310
     auth_key: str = ""
@@ -232,6 +233,7 @@ def load_config_from_json(path: Path) -> AppConfig:
         operator_ids=_resolve_operators(raw, legacy_owner),
         role_text=_get_str(persona, "roleText", ""),
         probe_model=_get_str(raw, "probeModel", ""),
+        memory_budget=int(raw.get("memoryBudget") or 900),
         server_host=_get_str(server, "host", "127.0.0.1"),
         server_port=_get_int(server, "port", 3310),
         auth_key=_get_str(server, "token", ""),

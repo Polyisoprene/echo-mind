@@ -1373,6 +1373,7 @@ async function loadIdentity() {
     if ($('id-self-qq')) $('id-self-qq').value = d.self_qq || '';
     if ($('id-operators')) $('id-operators').value = (d.operators || []).join(',');
     if ($('id-probe-model')) $('id-probe-model').value = d.probe_model || '';
+    if ($('id-memory-budget')) $('id-memory-budget').value = d.memory_budget || 900;
     if ($('id-groups')) $('id-groups').value = (d.groups || []).join(',');
     if ($('id-private')) $('id-private').value = (d.private || []).join(',');
     if ($('id-default-group')) $('id-default-group').value = d.default_group || '';
@@ -1391,6 +1392,7 @@ async function saveIdentity() {
     self_qq: ($('id-self-qq') && $('id-self-qq').value.trim()) || '',
     operators: split('id-operators'),
     probe_model: ($('id-probe-model') && $('id-probe-model').value.trim()) || '',
+    memory_budget: parseInt(($('id-memory-budget') && $('id-memory-budget').value) || '900', 10) || 900,
     groups: split('id-groups'),
     private: split('id-private'),
     default_group: ($('id-default-group') && $('id-default-group').value.trim()) || ''
