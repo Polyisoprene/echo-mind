@@ -192,6 +192,7 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
+| 2026-10-31 | **行为参数一并重置**：`talkativeness 71.3→58`、`curiosity_rate 79.5→65`、`proactive_idle_min 8.35→10`（skepticism/verify_impulse 本来就在默认）。两实例实时快照已确认。新增 `scripts/reset_behavior_baseline.py`；重置前备份在 `~/echomind-backups/`。跨会话泄漏按用户要求暂缓。 |
 | 2026-10-31 | **部署 + 基线重置（方案 A）**：lane 合入 main；3310/3312 重启并健康（NapCat 重连）；好感等级回填（主库 19 条，分布 22/6/6/4/3）；`TAU_S=247` 生效；空 token 改为仅回环。发现实时基线是 E2 前疯跑的残值（独占 93.4、叛逆 73.3），按 A 重置为默认（65/62/58/75/55/52/48），并清空 state/pending/settlement；两实例快照已确认。新增 `scripts/reset_persona_baseline.py`。备份在 `~/echomind-backups/`（仓库外）。 |
 | 2026-10-31 | **E1-C 状态层验证**：温柔 ±10 R=4 **0.719 [0.640,0.798]** → 可辨；推翻此前“阈值 17–20”的单轮结论，**阈值 ≤10**。动力学包络：+2/轮 5 轮到顶、+4 三轮，45min 减半、3h 剩 6%，持续暖时 **77% 时间停在 ±10**（顶部失去分级）。三参数暂不改，记录为设计选择。新增 `scripts/persona_state_envelope.py`。 |
 | 2026-10-31 | **E1-A 关系模型敏感性**：31 条关系逐参数 ±20%。排序极稳（rank≥0.996，无单参数能改排序）；绝对深度对 **BIAS 20.5 / W_RESP 11.1 / W_RECIP 7.1 / W_FREQ 6.8** 敏感；`W_BETRAY` 与 `BETRAYAL_HALF_LIFE` 从未被触发（betrayals 全 0），标 `unexercised` 而非“不重要”。新增 `scripts/bond_param_sensitivity.py`。 |
