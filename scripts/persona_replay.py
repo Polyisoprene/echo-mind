@@ -43,45 +43,49 @@ def _outcome(day: int, *, warm: bool) -> TurnOutcome:
     )
 
 
+async def run_stream(name: str, days: int, db_path: Path) -> dict[str, Any]:
+    db = SqliteDatabase(db_path)
+    await db.initialize()
+    working = SqliteWorkingStateStore(db)
+    await working.ensure_default_params()
+    layers = SqlitePersonaLayerStore(db)
+    await layers.ensure_schema()
+    evidence = SqliteTraitEvidenceStore(db)
+    shadow_store = SqliteTraitShadowStore(db)
+    shadow = TraitShadowService(shadow_store, evidence, shadow_store)
+    engine = NeuroplasticityEngine(working, layers, evidence_store=evidence)
+    for day in range(1, days + 1):
+        warm = (day % 2 == 0) if name == "mixed" else (name == "warm")
+        event = _outcome(day, warm=warm)
+        await engine.adapt_from_outcome(event, now_ms=BASE + day * DAY)
+        await engine.settle_baseline(BASE + (day + 1) * DAY)
+        await shadow.record(event)
+    active = await shadow_store.active_traits()
+    params = await working.get_plastic_params()
+    drifts = [
+        abs(spec.value - PARAM_BASELINES[key])
+        for key, spec in params.items() if key in PARAM_BASELINES
+    ]
+    rows = await shadow_store.list_shadow("g", days + 1)
+    allowed = sorted({tool for row in rows for tool in row.allowed_tools})
+    actual = sorted({tool for row in rows for tool in row.actual_tools})
+    return {
+        "active_traits": [
+            {"id": trait.trait_id, "category": trait.category, "text": trait.trait_text}
+            for trait in active
+        ],
+        "shadow_rows": len(rows),
+        "allowed_tools": allowed,
+        "actual_tools": actual,
+        "allow_refusal_rows": sum(row.allow_refusal for row in rows),
+        "max_param_drift": round(max(drifts, default=0.0), 3),
+        "edge": round(TRAIT_MAX_DEVIATION, 3),
+    }
+
+
 async def _stream(name: str, days: int) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as tmp:
-        db = SqliteDatabase(Path(tmp) / "replay.db")
-        await db.initialize()
-        working = SqliteWorkingStateStore(db)
-        await working.ensure_default_params()
-        layers = SqlitePersonaLayerStore(db)
-        await layers.ensure_schema()
-        evidence = SqliteTraitEvidenceStore(db)
-        shadow_store = SqliteTraitShadowStore(db)
-        shadow = TraitShadowService(shadow_store, evidence, shadow_store)
-        engine = NeuroplasticityEngine(working, layers, evidence_store=evidence)
-        for day in range(1, days + 1):
-            warm = (day % 2 == 0) if name == "mixed" else (name == "warm")
-            event = _outcome(day, warm=warm)
-            await engine.adapt_from_outcome(event, now_ms=BASE + day * DAY)
-            await engine.settle_baseline(BASE + (day + 1) * DAY)
-            await shadow.record(event)
-        active = await shadow_store.active_traits()
-        params = await working.get_plastic_params()
-        drifts = [
-            abs(spec.value - PARAM_BASELINES[key])
-            for key, spec in params.items() if key in PARAM_BASELINES
-        ]
-        rows = await shadow_store.list_shadow("g", days + 1)
-        allowed = sorted({tool for row in rows for tool in row.allowed_tools})
-        actual = sorted({tool for row in rows for tool in row.actual_tools})
-        return {
-            "active_traits": [
-                {"id": trait.trait_id, "category": trait.category, "text": trait.trait_text}
-                for trait in active
-            ],
-            "shadow_rows": len(rows),
-            "allowed_tools": allowed,
-            "actual_tools": actual,
-            "allow_refusal_rows": sum(row.allow_refusal for row in rows),
-            "max_param_drift": round(max(drifts, default=0.0), 3),
-            "edge": round(TRAIT_MAX_DEVIATION, 3),
-        }
+        return await run_stream(name, days, Path(tmp) / "replay.db")
 
 
 async def main() -> int:

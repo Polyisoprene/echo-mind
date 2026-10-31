@@ -912,3 +912,31 @@ assistant text > tool > user trigger
 - 合成流，不是真实聊天；
 - 只验证结构一致性，不验证真人感；
 - 没有接 live 行为仲裁。
+
+### 14.12 真实 LLM 候选生成 benchmark（2026-11-01）
+
+`scripts/replay_trait_candidates.py` 先把 warm/offense/mixed replay 到 active trait，再调真实 LLM 生成候选。
+
+产物：`eval/baselines/persona-replay-candidates-2026-11-01.json`
+
+| 流 | trait | 生成候选 | 校验 |
+|---|---|---|---|
+| warm | habit | 她在查看图片时倾向于注意到并指出图中的小槽点。 | candidate |
+| offense | taboo | 当别人用命令语气使唤她时，她会直接表示拒绝。 | candidate |
+| mixed | taboo | 当别人用命令语气使唤她时，她会明确拒绝并强调不要这样对她。 | candidate |
+| mixed | habit | 她在查看内容时倾向于多次打开或查看图片。 | candidate |
+
+- 4/4 通过 quote 校验，0 rejected；
+- 单条生成耗时约 6–9s/流；
+- 候选只进 `trait_candidates`，未进 prompt；
+- 文本仍偏通用，需要后续做“去模板化/具体化”评估，不能因为校验通过就认为真人感提升。
+
+**新增**
+
+- `scripts/replay_trait_candidates.py`；
+- `scripts/__init__.py`（让 replay 可被候选脚本导入）；
+- `eval/baselines/persona-replay-candidates-2026-11-01.json`。
+
+**验证**
+
+- 全门禁：**347 passed / 92%**，fusion 70/70。
