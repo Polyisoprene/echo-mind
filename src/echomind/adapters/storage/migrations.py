@@ -21,6 +21,13 @@ async def ensure_trait_columns(conn: Any) -> None:
         ("evidence_count", "INTEGER NOT NULL DEFAULT 1"),
         ("contradiction_count", "INTEGER NOT NULL DEFAULT 0"),
         ("last_evidence_ms", "INTEGER NOT NULL DEFAULT 0"),
+        ("status", "TEXT NOT NULL DEFAULT 'legacy_unverified'"),
+        ("active_since_ms", "INTEGER NOT NULL DEFAULT 0"),
+        ("last_support_ms", "INTEGER NOT NULL DEFAULT 0"),
+        ("last_contradiction_ms", "INTEGER NOT NULL DEFAULT 0"),
+        ("state_n", "INTEGER NOT NULL DEFAULT 0"),
+        ("state_mean", "REAL NOT NULL DEFAULT 0"),
+        ("state_m2", "REAL NOT NULL DEFAULT 0"),
     ):
         await _ensure_column(conn, "persona_traits", column, ddl)
 

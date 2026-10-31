@@ -604,3 +604,34 @@ D1/D2/D3（独立 backlog）
 
 - P1：给 `persona_traits` 加 status/context/state 字段，先 shadow 计算；
 - 回填策略：无原文的 9 条一律 `legacy_unverified`，不伪造 quote。
+
+### 14.2 P1 生命周期（2026-11-01 已落地，shadow）
+
+**代码**
+
+- `src/echomind/mind/trait_lifecycle.py`：`TraitEvidenceStats`、`assess_lifecycle`；
+- `persona_traits` 新增：`status`、`active_since_ms`、`last_support_ms`、`last_contradiction_ms`、`state_n/state_mean/state_m2`；
+- `trait_evidence_repo.refresh_lifecycle()`：按 distinct context 计算 Beta 后验并写状态；
+- `plasticity._learn_traits()` 写证据后刷新生命周期。
+
+**规则**
+
+- `supports = distinct(context_hash, polarity=+1)`；
+- `contradictions = distinct(context_hash, polarity=-1)`；
+- 后验均值 `(1+s)/(2+s+c)`；
+- `active`：`s >= 2` 且后验 `> 0.5`；
+- `retired`：`c > 0` 且后验 `<= 0.5`；
+- `candidate`：其余；
+- `legacy_unverified`：无证据，或现有 9 条旧 trait。
+
+**明确未做**
+
+- `dormant` 暂不赋值：需要“多久算休眠”的来源/数据，不能拍 12h/7d；
+- 状态尚未影响 prompt/检索；这是 shadow；
+- 现有 9 条旧 trait 不回填、不伪造 quote。
+
+**验证**
+
+- `tests/unit/test_trait_lifecycle.py`：无证据/单情境/双情境/反证；
+- `tests/integration/test_trait_evidence_ledger.py`：活跃→反证退休；
+- 全门禁：**329 passed / 92%**，fusion 70/70。

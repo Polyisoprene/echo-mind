@@ -177,6 +177,7 @@ class NeuroplasticityEngine:
             polarity=1, context_hash=evidence_context(outcome, now_ms),
             created_ms=now_ms,
         ))
+        await self._evidence.refresh_lifecycle(match.trait_id)
 
     async def _apply_one(
         self, key: str, delta: float, reason: str,

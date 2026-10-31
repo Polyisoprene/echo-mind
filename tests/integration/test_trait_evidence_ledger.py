@@ -52,3 +52,36 @@ async def test_turn_outcome_writes_evidence(tmp_path: Path) -> None:
     rows = await evidence_store.list_trait_evidence(target.trait_id)
     assert rows and rows[0].quote_kind == "assistant"
     assert rows[0].turn_id == "turn-42"
+
+
+async def test_lifecycle_refresh_is_shadow_only(tmp_path: Path) -> None:
+    import sqlite3
+
+    db = SqliteDatabase(tmp_path / "trait_lifecycle.db")
+    await db.initialize()
+    store = SqliteWorkingStateStore(db)
+    evidence_store = SqliteTraitEvidenceStore(db)
+    traits = await store.sync_persona_traits(
+        new_trait=PersonaTrait(trait_text="会先看画面细节", strength=6),
+        chat_key="g", source="turn:t1",
+    )
+    trait = next(item for item in traits if item.trait_text == "会先看画面细节")
+    for index, context in enumerate(("c1", "c2"), 1):
+        await evidence_store.record_trait_evidence(TraitEvidence(
+            trait_id=trait.trait_id, session_id=f"s{index}", turn_id=f"t{index}",
+            quote="细节", quote_kind="assistant", polarity=1,
+            context_hash=context, created_ms=index,
+        ))
+    assert await evidence_store.refresh_lifecycle(trait.trait_id) == "active"
+    for index, context in enumerate(("c3", "c4"), 3):
+        await evidence_store.record_trait_evidence(TraitEvidence(
+            trait_id=trait.trait_id, session_id=f"s{index}", turn_id=f"t{index}",
+            quote="不是这样", quote_kind="user", polarity=-1,
+            context_hash=context, created_ms=index,
+        ))
+    assert await evidence_store.refresh_lifecycle(trait.trait_id) == "retired"
+    con = sqlite3.connect(tmp_path / "trait_lifecycle.db")
+    assert con.execute(
+        "select status, last_support_ms, last_contradiction_ms from persona_traits where id=?",
+        (trait.trait_id,),
+    ).fetchone() == ("retired", 2, 4)
