@@ -48,4 +48,15 @@ a = PromptComposer(role, bot).compose(frame, read, unread)
 b = PromptComposer(role, bot, persona_in_system=True).compose(frame, read, unread)
 ```
 
+## Pilot 骨架（已可跑）
+
+```bash
+.venv/bin/python scripts/ab_persona_placement.py
+# 输出 reports/persona_placement_prompts.json：6 个场景 × A/B 两套完整 messages
+```
+
+- 6 个 pilot 场景：群聊点名、群聊旁观、私聊撒娇、私聊吃醋、边界拒绝、private 披露；
+- 只生成 prompt，**不调用模型**，避免未经确认的 token 消耗；
+- 正式实验仍按上面 24 条场景 × 3 seed 扩展；判定规则不变。
+
 实际 A/B 需要同一模型、同一采样参数、同一场景集；本轮不调用线上模型。
