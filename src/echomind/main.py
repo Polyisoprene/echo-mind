@@ -21,11 +21,13 @@ from echomind.adapters.onebot.forward_expander import ReadForwardTool
 from echomind.adapters.onebot.live_client import OneBotHttpApiCaller, OneBotLiveRuntime
 from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
 from echomind.adapters.storage.memory_vector_repo import SqliteMemoryVectorStore
+from echomind.adapters.storage.relation_repo import SqliteRelationStore
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import AppConfig, load_config_from_json
 from echomind.mind.memory_budget import set_consolidation_budget, set_consolidation_thinking
 from echomind.mind.naming import BotNaming, set_bot_naming
 from echomind.mind.probe_runtime import set_probe_model
+from echomind.mind.relation_resolver import RelationResolver
 from echomind.mind.semantic_memory import SemanticMemoryRetriever
 from echomind.mind.subconscious_probe import SubconsciousChordProbe
 from echomind.runtime.agent_runner import AgentSessionRunner
@@ -146,6 +148,7 @@ def _wire_semantic(cfg: AppConfig, container: EchoMindContainer) -> None:
             OpenAiEmbeddingGateway(cfg.embedding),
             SqliteMemoryVectorStore(container.db),
             cfg.embedding.model,
+            RelationResolver(SqliteRelationStore(container.db)),
         )
     )
 

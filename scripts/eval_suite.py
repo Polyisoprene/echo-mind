@@ -17,12 +17,15 @@ from pathlib import Path
 from typing import Any
 
 from echomind.adapters.llm.embedding_client import OpenAiEmbeddingGateway
+from echomind.adapters.storage.relation_repo import SqliteRelationStore
 from echomind.core.bootstrap import EchoMindContainer
 from echomind.core.config import load_config_from_json
 from echomind.domain.models import PlasticParamSpec, SemanticFact, SocialBondProfile
+from echomind.domain.relation import MemoryRelation
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.person_level import PersonProfile
 from echomind.mind.persona_stance import apply_stance_for
+from echomind.mind.relation_resolver import RelationResolver
 from echomind.mind.retrieval_fusion import rrf_fuse
 from echomind.mind.semantic_retrieval import rerank_facts
 
@@ -42,7 +45,8 @@ def _params() -> dict[str, PlasticParamSpec]:
     }
 
 
-async def _seed(repo: Any, scenario: dict[str, Any], now_ms: int) -> None:
+async def _seed(repo: Any, scenario: dict[str, Any], now_ms: int,
+                relations: SqliteRelationStore) -> None:
     venue = str(scenario.get("seed_venue") or scenario["venue"])
     for fact in scenario.get("facts", []):
         days = fact.get("event_time_days_ago")
@@ -54,10 +58,16 @@ async def _seed(repo: Any, scenario: dict[str, Any], now_ms: int) -> None:
             sensitivity=fact.get("sensitivity", "group"),
             event_time_ms=event_time,
         ))
+    for relation in scenario.get("relations", []):
+        await relations.upsert(MemoryRelation(
+            subject_id=str(relation["subject"]), predicate=str(relation["predicate"]),
+            object_id=str(relation["object"]),
+        ))
 
 
 async def _retrieval(
-    repo: Any, scenario: dict[str, Any], gateway: Any = None, now_ms: int = EVAL_NOW
+    repo: Any, scenario: dict[str, Any], gateway: Any = None, now_ms: int = EVAL_NOW,
+    resolver: RelationResolver | None = None,
 ) -> dict[str, Any]:
     picked = await repo.get_semantic_facts(
         str(scenario["venue"]), person_ids=tuple(scenario.get("audience", ()))
@@ -77,6 +87,12 @@ async def _retrieval(
     else:
         ranked = select_relevant_facts(
             picked, str(scenario["query"]), limit=5, now_ms=now_ms
+        )
+    if resolver is not None:
+        boosted = await resolver.boost_ids(tuple(ranked), str(scenario["query"]))
+        ranked = tuple(
+            [f for f in ranked if f.fact_id in boosted]
+            + [f for f in ranked if f.fact_id not in boosted]
         )
     subjects = [fact.subject for fact in ranked]
     target = str(scenario["target"])
@@ -119,13 +135,17 @@ async def _evaluate(data: dict[str, Any], gateway: Any = None) -> dict[str, Any]
     with tempfile.TemporaryDirectory() as tmp:
         container = await EchoMindContainer.create(db_path=Path(tmp) / "eval.db")
         repo = container.memory_repo
+        relation_store = SqliteRelationStore(container.db)
+        resolver = RelationResolver(relation_store)
         results: list[dict[str, Any]] = []
         for scenario in data["scenarios"]:
             if scenario["kind"] == "persona":
                 result = _persona(scenario)
             else:
-                await _seed(repo, scenario, EVAL_NOW)
-                result = await _retrieval(repo, scenario, gateway, EVAL_NOW)
+                await _seed(repo, scenario, EVAL_NOW, relation_store)
+                result = await _retrieval(
+                    repo, scenario, gateway, EVAL_NOW, resolver
+                )
             results.append({"id": scenario["id"], "category": scenario["category"], **result})
 
     by_cat: dict[str, list[dict[str, Any]]] = defaultdict(list)

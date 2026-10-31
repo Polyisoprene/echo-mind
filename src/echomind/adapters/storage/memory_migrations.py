@@ -36,6 +36,18 @@ CREATE TABLE IF NOT EXISTS memory_knowledge (
   updated_ms INTEGER NOT NULL,
   PRIMARY KEY(memory_kind, memory_id, person_id)
 );
+CREATE TABLE IF NOT EXISTS memory_relations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  subject_id TEXT NOT NULL,
+  predicate TEXT NOT NULL,
+  object_id TEXT NOT NULL,
+  valid_from_ms INTEGER NOT NULL DEFAULT 0,
+  valid_to_ms INTEGER,
+  source_memory_id INTEGER NOT NULL DEFAULT 0,
+  confidence REAL NOT NULL DEFAULT 0.8,
+  UNIQUE(subject_id, predicate, object_id)
+);
+CREATE INDEX IF NOT EXISTS idx_relations_subject ON memory_relations(subject_id);
 CREATE TABLE IF NOT EXISTS memory_vectors (
   memory_kind TEXT NOT NULL,
   memory_id INTEGER NOT NULL,

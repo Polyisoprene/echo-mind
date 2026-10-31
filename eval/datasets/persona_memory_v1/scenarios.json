@@ -1902,6 +1902,466 @@
       "trust": 0.7,
       "depth": 90,
       "max_delta": 2.0
+    },
+    {
+      "id": "multihop_01",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh1",
+      "audience": [
+        "a1",
+        "b1"
+      ],
+      "query": "a1 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b1",
+          "text": "b1 在 x1 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b1_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b1_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a1",
+          "predicate": "friend",
+          "object": "b1"
+        },
+        {
+          "subject": "b1",
+          "predicate": "works_at",
+          "object": "x1"
+        }
+      ],
+      "target": "b1",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_02",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh2",
+      "audience": [
+        "a2",
+        "b2"
+      ],
+      "query": "a2 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b2",
+          "text": "b2 在 x2 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b2_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b2_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a2",
+          "predicate": "friend",
+          "object": "b2"
+        },
+        {
+          "subject": "b2",
+          "predicate": "works_at",
+          "object": "x2"
+        }
+      ],
+      "target": "b2",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_03",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh3",
+      "audience": [
+        "a3",
+        "b3"
+      ],
+      "query": "a3 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b3",
+          "text": "b3 在 x3 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b3_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b3_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a3",
+          "predicate": "friend",
+          "object": "b3"
+        },
+        {
+          "subject": "b3",
+          "predicate": "works_at",
+          "object": "x3"
+        }
+      ],
+      "target": "b3",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_04",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh4",
+      "audience": [
+        "a4",
+        "b4"
+      ],
+      "query": "a4 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b4",
+          "text": "b4 在 x4 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b4_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b4_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a4",
+          "predicate": "friend",
+          "object": "b4"
+        },
+        {
+          "subject": "b4",
+          "predicate": "works_at",
+          "object": "x4"
+        }
+      ],
+      "target": "b4",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_05",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh5",
+      "audience": [
+        "a5",
+        "b5"
+      ],
+      "query": "a5 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b5",
+          "text": "b5 在 x5 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b5_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b5_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a5",
+          "predicate": "friend",
+          "object": "b5"
+        },
+        {
+          "subject": "b5",
+          "predicate": "works_at",
+          "object": "x5"
+        }
+      ],
+      "target": "b5",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_06",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh6",
+      "audience": [
+        "a6",
+        "b6"
+      ],
+      "query": "a6 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b6",
+          "text": "b6 在 x6 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b6_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b6_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a6",
+          "predicate": "friend",
+          "object": "b6"
+        },
+        {
+          "subject": "b6",
+          "predicate": "works_at",
+          "object": "x6"
+        }
+      ],
+      "target": "b6",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_07",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh7",
+      "audience": [
+        "a7",
+        "b7"
+      ],
+      "query": "a7 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b7",
+          "text": "b7 在 x7 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b7_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b7_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a7",
+          "predicate": "friend",
+          "object": "b7"
+        },
+        {
+          "subject": "b7",
+          "predicate": "works_at",
+          "object": "x7"
+        }
+      ],
+      "target": "b7",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_08",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh8",
+      "audience": [
+        "a8",
+        "b8"
+      ],
+      "query": "a8 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b8",
+          "text": "b8 在 x8 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b8_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b8_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a8",
+          "predicate": "friend",
+          "object": "b8"
+        },
+        {
+          "subject": "b8",
+          "predicate": "works_at",
+          "object": "x8"
+        }
+      ],
+      "target": "b8",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_09",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh9",
+      "audience": [
+        "a9",
+        "b9"
+      ],
+      "query": "a9 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b9",
+          "text": "b9 在 x9 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b9_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b9_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a9",
+          "predicate": "friend",
+          "object": "b9"
+        },
+        {
+          "subject": "b9",
+          "predicate": "works_at",
+          "object": "x9"
+        }
+      ],
+      "target": "b9",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "multihop_10",
+      "kind": "retrieval",
+      "category": "multihop",
+      "venue": "group:mh10",
+      "audience": [
+        "a10",
+        "b10"
+      ],
+      "query": "a10 的朋友在哪工作",
+      "facts": [
+        {
+          "subject": "b10",
+          "text": "b10 在 x10 工作",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "b10_noise2",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "a10",
+          "predicate": "friend",
+          "object": "b10"
+        },
+        {
+          "subject": "b10",
+          "predicate": "works_at",
+          "object": "x10"
+        }
+      ],
+      "target": "b10",
+      "expect_visible": true,
+      "max_rank": 5
     }
   ]
 }

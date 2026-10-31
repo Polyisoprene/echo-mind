@@ -30,10 +30,15 @@
       "total": 10,
       "rate": 1.0
     },
+    "multihop": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
     "privacy_leaks": 0,
     "mrr": 1.0,
-    "overall_passed": 50,
-    "overall_total": 60
+    "overall_passed": 60,
+    "overall_total": 70
   },
   "results": [
     {
@@ -445,9 +450,79 @@
       "category": "persona",
       "passed": true,
       "delta": 0.0
+    },
+    {
+      "id": "multihop_01",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_02",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_03",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_04",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_05",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_06",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_07",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_08",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_09",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
+    },
+    {
+      "id": "multihop_10",
+      "category": "multihop",
+      "passed": true,
+      "rank": 1,
+      "visible": true
     }
   ],
-  "dataset_sha256": "b51d076ade95793e94d94a2d9f673e4edaec23e1c40ace805131e22d739dcb1d",
+  "dataset_sha256": "d770e7922b26f2f088b221212ea99fb490492ccc512cf7ceed6bc2b9bdd5a498",
   "mode": "lexical",
   "version": "v1",
   "date": "2026-10-31"

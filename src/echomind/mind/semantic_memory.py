@@ -6,6 +6,7 @@ import logging
 
 from echomind.domain.models import SemanticFact
 from echomind.domain.ports import IEmbeddingGateway, IMemoryVectorStore
+from echomind.mind.relation_resolver import RelationResolver
 from echomind.mind.semantic_retrieval import rerank_facts
 
 logger = logging.getLogger(__name__)
@@ -15,11 +16,20 @@ class SemanticMemoryRetriever:
     """Rerank facts with stored vectors; returns None when coverage is too low."""
 
     def __init__(
-        self, embedder: IEmbeddingGateway, store: IMemoryVectorStore, model: str
+        self, embedder: IEmbeddingGateway, store: IMemoryVectorStore, model: str,
+        relations: RelationResolver | None = None,
     ) -> None:
         self._embedder = embedder
         self._store = store
         self._model = model
+        self._relations = relations
+
+    async def boost_ids(
+        self, facts: tuple[SemanticFact, ...], query: str
+    ) -> set[int]:
+        if self._relations is None:
+            return set()
+        return await self._relations.boost_ids(facts, query)
 
     async def rerank(
         self, facts: tuple[SemanticFact, ...], query: str, limit: int,

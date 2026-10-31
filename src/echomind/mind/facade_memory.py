@@ -216,6 +216,21 @@ async def load_bonds_for(
     return await attach(bond_store, {u: b for u, b in pairs if b is not None})
 
 
+async def _apply_boost(
+    semantic: SemanticMemoryRetriever | None,
+    facts: tuple[SemanticFact, ...],
+    query: str,
+    ordered: list[SemanticFact],
+) -> list[SemanticFact]:
+    if semantic is None:
+        return ordered
+    boosted = await semantic.boost_ids(facts, query)
+    if not boosted:
+        return ordered
+    return ([f for f in ordered if f.fact_id in boosted]
+            + [f for f in ordered if f.fact_id not in boosted])
+
+
 async def select_facts(
     semantic: SemanticMemoryRetriever | None,
     facts: tuple[SemanticFact, ...], query: str, limit: int,
@@ -230,7 +245,8 @@ async def select_facts(
         return tuple(lexical[:limit])
     fused = rrf_fuse((tuple(f.fact_id for f in lexical), tuple(f.fact_id for f in ranked)))
     by_id = {f.fact_id: f for f in facts}
-    return tuple(by_id[i] for i in fused if i in by_id)[:limit]
+    ordered = [by_id[i] for i in fused if i in by_id]
+    return tuple((await _apply_boost(semantic, facts, query, ordered))[:limit])
 
 
 IncludedFact = tuple[int, str, str]
