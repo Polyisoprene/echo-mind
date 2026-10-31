@@ -38,7 +38,8 @@ from echomind.mind.cybernetics import (
     render_cybernetic_core_directive,
 )
 from echomind.mind.dialogue_context import DialogueContext
-from echomind.mind.drives import apply_temporal_decay_and_circadian, apply_turn_affect_and_drives
+from echomind.mind.drives import apply_turn_affect_and_drives
+from echomind.mind.drives_temporal import apply_temporal_decay_and_circadian
 from echomind.mind.ebbinghaus import (
     extract_mentioned_uids,
     recall_episodic_memories,

@@ -192,6 +192,7 @@ A 线未合并提交：`b1c7ec9`(A2a) · `5c04e03`(计划) · `a21fa53`(参数�
 
 | 日期 | 变更 |
 |---|---|
+| 2026-10-31 | **修复安抚棘轮（P6e 发现）**：`soothing` 原先对每次非负评价触发，中性聊天也会把效价抬高 +3.98；现改为仅当距上次接触 ≥30 分钟（`REUNION_GAP_MIN`，在实测间隔 p99 之外）才触发。情绪方向评测 4/5 → **5/5**。同时按职责拆分 `drives.py`（292→251 行）：时序演化移入 `mind/drives_temporal.py`，评价上下文收为 `_appraisal_context`。分支 `lane/a-stage46`。 |
 | 2026-10-31 | **P6e 评测骨架落地**：`scripts/eval_persona.py` 三套离线评测（稳定/情绪/召回）＋敏感性 live 占位。实测：365 天基线净变化 **+3.991**（预算 4，无饱和）；情绪方向 4/5；记忆召回直接 **100%**、改写 **50%**——与随机基线 50% 持平，量化了词面召回的上限。同时修掉一个实现缺陷：结算时间戳原先从 `plastic_logs` 推断，模拟/真实时钟错位会让回归反向；现改为 `persona_settlement` 显式记录。发现：中性互动仍抬高效价 +3.98（安抚分支对所有非负评价触发），已登记为能力缺口。分支 `lane/a-stage46`。 |
 | 2026-10-31 | **E2 两层人格落地（C 方案）**：慢层基线（年净变化 ≤4 分、日推 0.01333、最大偏离 12、回归 0.00111/天，半衰期 ≈624 天）+ 快层状态（单步 ≤4、幅度 ≤10、半衰期 45 分钟）。回合不再写基线，改为记录状态与观察、次日结算（`persona_state` / `persona_pending` 表 + `IPersonaLayerStore`）；控制台展示 `基线+状态` 的有效值。红测试 `test_persona_two_layers.py`（65→67）已转绿；注册 `ECHOMIND-E1-013/014`（状态层幅度/半衰期待校准）。分支 `lane/a-stage46`。 |
 | 2026-10-31 | **E0 证据基座落地**：参数台账 `docs/params/ledger.json`（45 条，四类溯源 + 债务棘轮，`scripts/param_gate.py`）与能力台账 `docs/capabilities.json`（20 条，状态/缺口/验收，`scripts/capability_gate.py`）；两道门禁接入 `qa_gate.sh`（5 步 → 7 步）；新增 `tests/architecture/test_evidence_ledger.py`（2 例）。登记首个可判定矛盾：人格动力学稳态偏移 `D/r=600` 远超量程，持续正向互动必然饱和（`ECHOMIND-E1-002`）。分支 `lane/a-stage46`，未合并 `main`。 |

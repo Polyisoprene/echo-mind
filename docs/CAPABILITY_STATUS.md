@@ -25,7 +25,7 @@
 | CAP-INTENTION-STACK | 短期挂念栈（BDI 意图，≤3 槽） | ❌ absent | IntentionItem 在全库从未被构造；filter_unfulfilled_intentions 永远作用于空元组 |
 | CAP-FIVE-SLOTS | 微内核五大扩展槽全部可用 | ⚠️ partial | sensor/tool 已用；facet/proposer/panel 三个槽位零注册实现 |
 | CAP-SEVEN-GATES | 7 道自动化质量门禁 | ⚠️ partial | 脚本实际 5 步；hypothesis 未独立成门禁；迁移对账与故障注入缺失（E0 新增了参数/能力两道） |
-| CAP-SEMANTIC-EVAL | 对人格一致性/记忆准确率/情绪合理性有语义评测 | ⚠️ partial | 离线三套件已可跑：稳定性（365 天净变化 +3.991，无饱和）、情绪方向（4/5）、记忆召回（直接 100%、改写 50%，与随机基线 50% 持平）。敏感性审计与盲评尚未实现；已发现中性互动仍抬高效价 +3.98（安抚分支对所有非负评价触发） |
+| CAP-SEMANTIC-EVAL | 对人格一致性/记忆准确率/情绪合理性有语义评测 | ⚠️ partial | 离线三套件可跑：稳定性（365 天净变化 +3.991，无饱和）、情绪方向（5/5）、记忆召回（直接 100%、改写 50%，与随机基线持平）。敏感性审计与盲评尚未实现 |
 | CAP-HEXACO | 7 维人格对应 HEXACO 六轴 | ⛔ contradicted | 7 维为 warmth/tsundere/playfulness/possessiveness/confidence/guile/defiance，与 HEXACO 无映射矩阵，缺 C/O 轴 |
 | CAP-ZERO-LEXICON | 全链路零硬编码词表（Stage 26） | ⛔ contradicted | mind/ 下仍有 40+ 处中文词表与正则（角色冒充词、停用词、机器人关键词） |
 | CAP-OPERATOR-NO-PRIVILEGE | operator 只有纠错权限，无情感特权 | ⛔ contradicted | update_sender_bond 对 is_owner 直接置 trust=1.0；且 _check_reactance 对 w_care>=0.85 免除逆反 |

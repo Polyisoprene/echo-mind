@@ -1,7 +1,7 @@
 {
-  "total": 50,
+  "total": 51,
   "debt": 0,
-  "compliant": 50,
+  "compliant": 51,
   "recorded_at": "2026-10-31",
   "note": "debt may only shrink; raise deliberately with --init-baseline"
 }

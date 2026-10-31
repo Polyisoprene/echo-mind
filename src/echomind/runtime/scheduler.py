@@ -26,7 +26,7 @@ from echomind.domain.ports import (
     IWorkingStateStore,
 )
 from echomind.extensions.registry import ExtensionRegistry
-from echomind.mind.drives import apply_exogenous_surf_affect
+from echomind.mind.drives_temporal import apply_exogenous_surf_affect
 from echomind.mind.naming import bot_naming
 from echomind.mind.plasticity import NeuroplasticityEngine
 from echomind.mind.shadow_appraisal import should_prune_card
