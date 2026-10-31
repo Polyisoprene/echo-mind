@@ -215,6 +215,8 @@ async def test_ac5_6_console_api_sessions_memory_persona_probe_and_logs(tmp_path
             await conn.commit()
         traits = (await client.get("/api/mind/traits")).json()
         assert traits["traits"][0]["text"] == "爱查梗"
+        assert "status" in traits["traits"][0]
+        assert "evidence_count" in traits["traits"][0]
         health = (await client.get("/api/mind/trait-health")).json()
         assert health["ok"] is True
         assert health["status"] in {

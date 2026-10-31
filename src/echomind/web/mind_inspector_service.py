@@ -210,13 +210,14 @@ class MindInspectorService:
         return {"ok": True, "banned_phrases": await self._c.working_store.get_banned_phrases()}
     async def list_traits(self) -> list[dict[str, Any]]:
         sql = (
-            "SELECT id, category, trait_text, strength "
-            "FROM persona_traits ORDER BY strength DESC, id DESC LIMIT 60"
+            "SELECT id, category, trait_text, strength, status, evidence_count, "
+            "contradiction_count FROM persona_traits ORDER BY strength DESC, id DESC LIMIT 60"
         )
         async with self._c.db.connect() as conn:
             rows = await (await conn.execute(sql)).fetchall()
         return [
-            {"id": int(r[0]), "category": str(r[1]), "text": str(r[2]), "strength": int(r[3])}
+            {"id": int(r[0]), "category": str(r[1]), "text": str(r[2]), "strength": int(r[3]),
+             "status": str(r[4]), "evidence_count": int(r[5]), "contradiction_count": int(r[6])}
             for r in rows
         ]
 

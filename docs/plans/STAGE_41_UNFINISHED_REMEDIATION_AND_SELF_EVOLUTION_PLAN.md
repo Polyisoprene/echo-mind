@@ -1752,3 +1752,26 @@ GET /api/mind/trait-health
 
 - 新增测试：active/legacy 可见，candidate/retired 不可见；
 - 全门禁：**371 passed / 92%**，fusion 70/70。
+
+### 14.39 trait 列表生命周期字段（2026-11-01）
+
+`GET /api/mind/traits` 现在返回：
+
+- `status`
+- `evidence_count`
+- `contradiction_count`
+
+不再只有 id/category/text/strength。  
+这样控制台能直接区分 active 与 legacy，看到证据数，不用猜。
+
+当前真实主库：
+
+- 2 active；
+- 7 legacy_unverified；
+- 0 candidate/retired。
+
+**验证**
+
+- Web 测试断言 status/evidence 字段；
+- `mind_inspector_service.py` 保持 300 行；
+- 全门禁：**371 passed / 92%**，fusion 70/70。
