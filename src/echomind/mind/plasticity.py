@@ -14,13 +14,13 @@ from typing import TYPE_CHECKING
 from echomind.domain.models import PlasticParamSpec, TurnOutcome
 from echomind.domain.persona_specs import PERSONA_SPECS
 from echomind.domain.ports import IPersonaLayerStore, IWorkingStateStore
-from echomind.domain.trait_evidence import TraitEvidence
 from echomind.domain.trait_evidence_ports import ITraitEvidenceStore
+from echomind.domain.trait_memory_ports import ITraitMemoryLinkStore
 from echomind.mind.persona_dynamics import TRAIT_DAILY_PUSH, slow_regression
 from echomind.mind.persona_state import step_state
 from echomind.mind.personality import compute_personality_deltas, derive_emergent_trait
 from echomind.mind.subconscious_probe import compute_chord_social_reward
-from echomind.mind.trait_evidence_writer import evidence_context, trait_quote
+from echomind.mind.trait_evidence_writer import record_evidence, trait_quote
 
 if TYPE_CHECKING:
     from echomind.mind.subconscious_probe import SubconsciousChordResult
@@ -114,10 +114,12 @@ class NeuroplasticityEngine:
     def __init__(
         self, store: IWorkingStateStore, layers: IPersonaLayerStore | None = None,
         *, evidence_store: ITraitEvidenceStore | None = None,
+        trait_links: ITraitMemoryLinkStore | None = None,
     ) -> None:
         self._store = store
         self._layers = layers
         self._evidence = evidence_store
+        self._trait_links = trait_links
 
     async def _observe_param(self, key: str, delta: float, now_ms: int) -> None:
         """Move the fast state and buffer the observation for the next settlement.
@@ -133,7 +135,8 @@ class NeuroplasticityEngine:
         await self._layers.record_observation(key, delta, now_ms)
 
     async def adapt_from_outcome(
-        self, outcome: TurnOutcome, *, now_ms: int | None = None
+        self, outcome: TurnOutcome, *, now_ms: int | None = None,
+        memory_ids: tuple[int, ...] = (),
     ) -> tuple[PlasticParamSpec, ...]:
         deltas = compute_param_deltas(outcome)
         if not deltas:
@@ -150,11 +153,12 @@ class NeuroplasticityEngine:
             applied = await self._apply_one(key, delta, reason, current, outcome.social_reward)
             if applied is not None:
                 updated.append(applied)
-        await self._learn_traits(outcome, now_ms=now_ms)
+        await self._learn_traits(outcome, now_ms=now_ms, memory_ids=memory_ids)
         return tuple(updated)
 
     async def _learn_traits(
-        self, outcome: TurnOutcome, *, now_ms: int | None = None
+        self, outcome: TurnOutcome, *, now_ms: int | None = None,
+        memory_ids: tuple[int, ...] = (),
     ) -> None:
         now_ms = now_ms or int(time.time() * 1000)
         emergent = derive_emergent_trait(outcome)
@@ -174,14 +178,10 @@ class NeuroplasticityEngine:
         )
         if quote is None or match is None or self._evidence is None:
             return
-        quote_kind, quote_text = quote
-        await self._evidence.record_trait_evidence(TraitEvidence(
-            trait_id=match.trait_id, session_id=outcome.session_id,
-            turn_id=outcome.session_id, quote=quote_text, quote_kind=quote_kind,
-            polarity=1, context_hash=evidence_context(outcome, now_ms),
-            created_ms=now_ms,
-        ))
-        await self._evidence.refresh_lifecycle(match.trait_id)
+        await record_evidence(
+            outcome, match, quote, self._evidence, self._trait_links,
+            memory_ids=memory_ids, now_ms=now_ms,
+        )
 
     async def _apply_one(
         self, key: str, delta: float, reason: str,

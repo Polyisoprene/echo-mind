@@ -1490,3 +1490,27 @@ distinct_contexts=3
 
 - 全门禁：**363 passed / 92%**，fusion 70/70；
 - 参数账本：**59 compliant**（新增 `DAY_MS` 单位换算）。
+
+### 14.30 因果链接：evidence 携带当轮 memory_ids（2026-11-01）
+
+真实数据验证：episodic `source_quote` 为空，exact quote 链接自然为 0。  
+不再用模糊阈值，改为**因果建链**：
+
+- `TraitEvidence` 新增 `memory_ids`；
+- `trait_evidence.memory_ids_json`；
+- `CognitiveCoreFacade.on_turn_completed` 把本轮 `included` 的 fact_id 传给塑性引擎；
+- `NeuroplasticityEngine._record_evidence` 在写 evidence 后，对每个 memory_id 建 `semantic/supports` link。
+
+这样链接代表“这条特质是在想起这些记忆的回合里形成的”，而不是事后相似匹配。
+
+**当前**
+
+- trait 45 已 active，但旧 evidence 没有 memory_ids；
+- 旧 exact-quote 链接仍为 0；
+- 新回合才会产生因果链接；
+- 未自动晋升/未改 prompt。
+
+**验证**
+
+- `tests/integration/test_trait_evidence_ledger.py`：included memory_id → causal link，重复不重复建；
+- 全门禁：**364 passed / 92%**，fusion 70/70。

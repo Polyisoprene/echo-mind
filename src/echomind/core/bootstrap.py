@@ -22,6 +22,7 @@ from echomind.adapters.storage.persona_layer_repo import SqlitePersonaLayerStore
 from echomind.adapters.storage.skill_config_repo import SqliteSkillConfigStore
 from echomind.adapters.storage.trace_repo import SqliteTurnTraceStore
 from echomind.adapters.storage.trait_evidence_repo import SqliteTraitEvidenceStore
+from echomind.adapters.storage.trait_memory_repo import SqliteTraitMemoryLinkStore
 from echomind.adapters.storage.trait_shadow_repo import SqliteTraitShadowStore
 from echomind.adapters.storage.working_repo import SqliteWorkingStateStore
 from echomind.core.events import AsyncEventBus
@@ -137,6 +138,7 @@ class EchoMindContainer:
             person_level=person_level, disclosure_log=disclosure_log,
             trait_evidence_store=SqliteTraitEvidenceStore(db),
             trait_shadow=_build_trait_shadow(db),
+            trait_links=SqliteTraitMemoryLinkStore(db),
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,

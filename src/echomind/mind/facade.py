@@ -27,6 +27,7 @@ from echomind.domain.ports import (
     IWorkingStateStore,
 )
 from echomind.domain.trait_evidence_ports import ITraitEvidenceStore
+from echomind.domain.trait_memory_ports import ITraitMemoryLinkStore
 from echomind.mind import facade_memory as mem
 from echomind.mind.ban_control import resolve_bans
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
@@ -83,6 +84,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         person_level: PersonLevelService | None = None,
         disclosure_log: IDisclosureLog | None = None,
         trait_evidence_store: ITraitEvidenceStore | None = None,
+        trait_links: ITraitMemoryLinkStore | None = None,
         trait_shadow: TraitShadowService | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
@@ -98,6 +100,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         self._included: dict[str, tuple[tuple[int, str, str], ...]] = {}
         self._plasticity = NeuroplasticityEngine(
             working_store, persona_layers, evidence_store=trait_evidence_store,
+            trait_links=trait_links,
         )
         self._last_active_ms: int = int(time.time() * 1000)
         self._gate_log: list[dict[str, Any]] = []
@@ -252,6 +255,7 @@ class CognitiveCoreFacade(FacadeAccessors):
     async def on_turn_completed(self, outcome: TurnOutcome) -> None:
         sender = outcome.triggers[-1].sender_id if outcome.triggers else ""
         included = self._included.pop(outcome.chat_key, ())
+        memory_ids = tuple(item[0] for item in included)
         for sent in outcome.sent_texts:
             self._dialogue.add(outcome.chat_key, "我", sent)
             await mem.attribute_reply(
@@ -269,7 +273,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         await consolidate_turn_memory(
             self._reader, self._writer, o, now_ms, chord=chord
         )
-        await self._plasticity.adapt_from_outcome(o)
+        await self._plasticity.adapt_from_outcome(o, memory_ids=memory_ids)
         if self._trait_shadow is not None:
             await self._trait_shadow.record(o)
 

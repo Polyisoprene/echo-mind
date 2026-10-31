@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Iterable
 from typing import Any, cast
@@ -18,7 +19,7 @@ def _row(row: aiosqlite.Row) -> TraitEvidence:
         evidence_id=int(row[0]), trait_id=int(row[1]), session_id=str(row[2]),
         turn_id=str(row[3]), quote=str(row[4]), quote_kind=cast(Any, str(row[5])),
         polarity=cast(Any, int(row[6])), context_hash=str(row[7]),
-        created_ms=int(row[8]),
+        memory_ids=tuple(json.loads(row[8])), created_ms=int(row[9]),
     )
 
 
@@ -51,10 +52,12 @@ class SqliteTraitEvidenceStore:
             await conn.execute(
                 "INSERT OR IGNORE INTO trait_evidence "
                 "(trait_id, session_id, turn_id, quote, quote_kind, polarity, "
-                "context_hash, created_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "context_hash, memory_ids_json, created_ms) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (evidence.trait_id, evidence.session_id, evidence.turn_id,
                  evidence.quote, evidence.quote_kind, evidence.polarity,
-                 evidence.context_hash, evidence.created_ms),
+                 evidence.context_hash, json.dumps(evidence.memory_ids),
+                 evidence.created_ms),
             )
             await conn.commit()
 
@@ -64,7 +67,7 @@ class SqliteTraitEvidenceStore:
         async with self._db.connect() as conn:
             cursor = await conn.execute(
                 "SELECT id, trait_id, session_id, turn_id, quote, quote_kind, "
-                "polarity, context_hash, created_ms FROM trait_evidence "
+                "polarity, context_hash, memory_ids_json, created_ms FROM trait_evidence "
                 "WHERE trait_id = ? ORDER BY created_ms DESC, id DESC LIMIT ?",
                 (trait_id, limit),
             )

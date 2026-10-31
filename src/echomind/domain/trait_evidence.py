@@ -20,4 +20,5 @@ class TraitEvidence(FrozenValueObject):
     quote_kind: Literal["assistant", "user", "tool"]
     polarity: Literal[-1, 1] = 1
     context_hash: str = Field(min_length=1)
+    memory_ids: tuple[int, ...] = ()
     created_ms: int = Field(ge=0)

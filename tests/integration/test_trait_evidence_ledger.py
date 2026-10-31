@@ -134,3 +134,29 @@ async def test_candidate_promotion_is_explicit_and_audited(tmp_path: Path) -> No
     assert promoted is not None and promoted.status == "promoted"
     assert promoted.promote_reason == "reviewed"
     assert await candidates.promote_candidate(saved.candidate_id, "operator", "again") is False
+
+
+async def test_included_memory_ids_create_causal_links(tmp_path: Path) -> None:
+    from echomind.adapters.storage.trait_memory_repo import SqliteTraitMemoryLinkStore
+
+    db = SqliteDatabase(tmp_path / "causal_links.db")
+    await db.initialize()
+    store = SqliteWorkingStateStore(db)
+    evidence_store = SqliteTraitEvidenceStore(db)
+    links = SqliteTraitMemoryLinkStore(db)
+    engine = NeuroplasticityEngine(
+        store, evidence_store=evidence_store, trait_links=links,
+    )
+    outcome = TurnOutcome(
+        session_id="turn-causal", chat_key="g", triggers=(),
+        sent_texts=("这张图里有小槽点",), tools_used=("look_at_image",),
+        social_reward=0.8,
+    )
+    await engine._learn_traits(outcome, memory_ids=(7,))  # noqa: SLF001
+    traits = await store.sync_persona_traits()
+    trait = next(item for item in traits if "看到群友发图" in item.trait_text)
+    rows = await links.list_links(trait.trait_id)
+    assert len(rows) == 1 and rows[0].memory_id == 7
+    second = outcome.model_copy(update={"session_id": "turn-causal-2"})
+    await engine._learn_traits(second, memory_ids=(7,))  # noqa: SLF001
+    assert len(await links.list_links(trait.trait_id)) == 1

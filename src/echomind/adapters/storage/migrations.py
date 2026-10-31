@@ -96,6 +96,7 @@ CREATE INDEX IF NOT EXISTS idx_trait_evidence_trait
 async def ensure_trait_evidence_table(conn: Any) -> None:
     """Create the append-only trait evidence ledger."""
     await conn.executescript(_TRAIT_EVIDENCE_DDL)
+    await _ensure_column(conn, "trait_evidence", "memory_ids_json", "TEXT NOT NULL DEFAULT '[]'")
 
 
 _TRAIT_CANDIDATE_DDL = """
