@@ -24,5 +24,8 @@ def trait_quote(
 
 def evidence_context(outcome: TurnOutcome, now_ms: int) -> str:
     audience = sorted({p.sender_id for p in outcome.triggers if p.sender_id})
-    raw = f"{outcome.chat_key}|{','.join(audience)}|{now_ms // 86_400_000}"
+    event_ms = max(
+        (p.timestamp_ms for p in outcome.triggers if p.timestamp_ms), default=now_ms
+    )
+    raw = f"{outcome.chat_key}|{','.join(audience)}|{event_ms // 86_400_000}"
     return hashlib.sha256(raw.encode()).hexdigest()

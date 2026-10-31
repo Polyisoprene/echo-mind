@@ -25,14 +25,21 @@ class LinkResult:
 async def _link_ids(
     trait_id: int, kind: str, ids: tuple[int, ...], evidence_ms: int,
     store: ITraitMemoryLinkStore, *, dry_run: bool,
+    seen: set[tuple[str, int]],
 ) -> int:
+    created = 0
     for memory_id in ids:
+        key = (kind, memory_id)
+        if key in seen:
+            continue
+        seen.add(key)
+        created += 1
         if not dry_run:
             await store.link(TraitMemoryLink(
                 trait_id=trait_id, memory_kind=cast(Any, kind), memory_id=memory_id,
                 relation="supports", evidence_ms=evidence_ms,
             ))
-    return len(ids)
+    return created
 
 
 async def link_exact_quotes(
@@ -41,6 +48,7 @@ async def link_exact_quotes(
 ) -> LinkResult:
     """Create only exact-quote links; never fuzzy-match or infer a threshold."""
     semantic = episodic = skipped = 0
+    seen: set[tuple[str, int]] = set()
     for item in evidence:
         if item.polarity <= 0:
             continue
@@ -50,9 +58,11 @@ async def link_exact_quotes(
             skipped += 1
             continue
         semantic += await _link_ids(
-            trait_id, "semantic", sem_ids, item.created_ms, store, dry_run=dry_run
+            trait_id, "semantic", sem_ids, item.created_ms, store,
+            dry_run=dry_run, seen=seen,
         )
         episodic += await _link_ids(
-            trait_id, "episodic", epi_ids, item.created_ms, store, dry_run=dry_run
+            trait_id, "episodic", epi_ids, item.created_ms, store,
+            dry_run=dry_run, seen=seen,
         )
     return LinkResult(semantic, episodic, skipped)

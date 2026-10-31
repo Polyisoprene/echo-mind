@@ -731,3 +731,31 @@ P3a 的 `trait_memory_links` 需要可审计来源。精确 quote 是唯一不�
 
 - `tests/integration/test_trait_memory_linker.py`：精确命中 semantic + episodic，无关 quote 跳过，dry-run 不落库；
 - 全门禁：**337 passed / 92%**，fusion 70/70。
+
+### 14.6 P3c 端到端闭环验证（2026-11-01）
+
+新增 `tests/integration/test_persona_self_evolution_loop.py`：
+
+```
+TurnOutcome(day1) ─┐
+TurnOutcome(day2) ─┴→ trait evidence（2 独立 context）
+                     → active
+                     → semantic memory source_quote 精确匹配
+                     → trait_memory_link
+                     → trait ranker
+                     → linked memory 排第一
+```
+
+同时修复：
+
+- `evidence_context` 以前用“处理时间”的 UTC day，重放/补数据会把不同事件混成同一天；
+- 现在优先用 `Percept.timestamp_ms` 的 UTC day，没有 trigger 时间才回退到当前时间。
+
+**验证**
+
+- 2 个独立情境 → `active`；
+- 精确链接 1 条 semantic；
+- 开 trait ranker 时 linked memory 第一；
+- 全门禁：**338 passed / 92%**，fusion 70/70。
+
+仍是离线闭环：没有接 live，没有自动提升 trait，没有跑真实 30 天数据。
