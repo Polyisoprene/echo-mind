@@ -1336,3 +1336,24 @@ signature.result: 形成反复确认小槽点的行为模式
 - 只有 active + exact source_quote link 才生效；
 - 没有自动建链/晋升；
 - 真实流量生效前仍需真实 active trait。
+
+### 14.25 live retriever 端到端 tie-break（2026-11-01）
+
+新增 `tests/integration/test_live_trait_retrieval.py`：
+
+- 构造两条事实，让其余 ranker 形成 3:3 平票；
+- 无 trait 时 distractor 因 id 顺序排第一；
+- 有 active trait + 精确 memory link 时，linked fact 多一个 trait ranker，排第一；
+- 证明 live `SemanticMemoryRetriever.rank_fused` 的接线真的改变排序，不是只传空 map。
+
+测试耗时约 4.7s。
+
+**验证**
+
+- 全门禁：**357 passed / 92%**，fusion 70/70。
+
+**边界**
+
+- 这是受控 tie-break，不是真实流量；
+- 隐私/secret 硬门在 retrieval 之外，尚未在这个测试里覆盖；
+- 没有自动建链/晋升。
