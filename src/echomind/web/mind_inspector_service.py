@@ -208,7 +208,6 @@ class MindInspectorService:
             await conn.execute("DELETE FROM banned_phrases WHERE phrase = ?", (phrase,))
             await conn.commit()
         return {"ok": True, "banned_phrases": await self._c.working_store.get_banned_phrases()}
-
     async def list_traits(self) -> list[dict[str, Any]]:
         sql = (
             "SELECT id, category, trait_text, strength "

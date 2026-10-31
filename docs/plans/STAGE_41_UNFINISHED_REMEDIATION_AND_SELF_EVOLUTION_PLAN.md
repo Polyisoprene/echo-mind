@@ -1684,3 +1684,41 @@ active-only prompt 影响：
 **验证**
 
 - 全门禁：**370 passed / 92%**，fusion 70/70。
+
+### 14.37 trait health 控制台 API（2026-11-01）
+
+新增只读：
+
+```text
+GET /api/mind/trait-health
+```
+
+返回：
+
+```json
+{
+  "ok": true,
+  "status": "waiting_turn",
+  "active_traits": 2,
+  "shadow_since_activation": 0,
+  "nonempty_shadow": 0,
+  "causal_links": 0,
+  "latest_turn_ms": 1793471085391
+}
+```
+
+实现：
+
+- 查询逻辑放到 `web/trait_health_service.py`；
+- `mind_inspector_service` 仍保持 <300 行；
+- 不改人格/prompt/retrieval。
+
+当前真实：
+
+- active_traits=2；
+- active 后无新回合；
+- waiting_turn，不是故障。
+
+**验证**
+
+- 全门禁：**370 passed / 92%**，fusion 70/70。

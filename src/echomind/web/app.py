@@ -31,6 +31,7 @@ from echomind.web.mind_inspector_service import MindInspectorService
 from echomind.web.probe_service import CognitiveProbeService
 from echomind.web.skill_config_service import SkillConfigService
 from echomind.web.social_router import build_social_router
+from echomind.web.trait_health_service import trait_health as trait_health_view
 from echomind.web.voice_health_service import VoiceHealthService
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -131,6 +132,10 @@ def _persona_router(
     @router.get("/api/mind/traits")
     async def traits() -> dict[str, Any]:
         return {"ok": True, "traits": await inspector.list_traits()}
+
+    @router.get("/api/mind/trait-health")
+    async def trait_health() -> dict[str, Any]:
+        return {"ok": True, **await trait_health_view(inspector._c.db)}
 
     @router.get("/api/mind/skills")
     async def skills() -> dict[str, Any]:
