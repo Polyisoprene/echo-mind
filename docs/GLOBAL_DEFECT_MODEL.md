@@ -40,7 +40,7 @@ percept
 | D16 | 工作状态多写入点 | 9 处 `save_working_state`，scheduler 与 turn 可并发 | 后写覆盖，情绪/驱动漂移 | all / 3 / 3 | ⏳ 方案回滚 |
 | D17 | 扩展好感阈值旧标尺 | 配置仍是 50/200/500/1000 | 无代码读取，死配置 | one / 5 / 2 | ✅ 非缺陷 |
 | D18 | 披露日志无保留策略 | 只增不删 | 168 行已在短时间累积 | all / 5 / 2 | ✅ 清理 |
-| D19 | 缺外部评测 | 只有单测/集成 | 无法证明跨会话一致性与授权边界 | all / 5 / 3 | ⏳ |
+| D19 | 缺外部评测 | 只有单测/集成 | 无法证明跨会话一致性与授权边界 | all / 5 / 3 | ✅ 内部基线 |
 | D20 | 本地领先 origin 24 提交 | 多轮提交未 push | 远端缺 P0-P5/P1 | ops / 5 / 3 | ⏳ |
 
 ## 3. 已修（D1-D9、D12、D13、D18）
@@ -120,6 +120,12 @@ percept
 - 会误伤 `dry_run` 探针和只建 frame 不完成 turn 的调用（测试/控制台），导致自主 tick 永久被挡；
 - 已回滚，不把半成品留在主线；下一步用快照版本号/单写者队列，生命周期由 runner 驱动。
 
+### D19 内部验收基线
+
+- `tests/integration/test_memory_eval.py` 断言：private/secret 0 越权、场合隔离、global 可见、来源 100%、门拒绝日志、跨场合温柔/耐心一致、俏皮归场合；
+- 详见 `docs/MEMORY_REFACTOR_EVAL.md`；
+- 外部 GroupMemBench/人工盲评仍未接。
+
 ### D16 评估（未修）
 
 - 共 **9 处** `save_working_state`：facade 2、facade_autonomy 2、qzone 2、scheduler 1、consolidator 1、chord_gateway 1；
@@ -144,4 +150,4 @@ percept
 
 - 每个 D 项：有复现/证据、有测试、有部署验证；
 - D1-D3 已满足：`tests/unit/test_bot_belief.py`、`test_dialogue_context.py`、发送拦截集成测试；
-- 全量门禁：286 passed / 92%。
+- 全量门禁：287 passed / 92%。
