@@ -82,11 +82,13 @@ class CognitiveHeartbeatScheduler:
         mem_writer: IMemoryWriter | None = None,
         working_store: IWorkingStateStore | None = None,
         trace_store: ITurnTraceStore | None = None, llm: ILlmGateway | None = None,
+        persona_layers: Any = None,
     ) -> None:
         self._db, self._reader, self._cognitive = db, mem_reader, cognitive
         self._sender, self._qzone, self._registry = sender, qzone_scheduler, registry
         self._writer, self._working, self._traces = mem_writer, working_store, trace_store
         self._llm = llm
+        self._layers = persona_layers
 
     async def _load_seen_keys(self) -> set[str]:
         sql_m = "SELECT text FROM chat_messages WHERE is_self = 1 ORDER BY id DESC LIMIT 40"
@@ -227,7 +229,7 @@ class CognitiveHeartbeatScheduler:
             updated = apply_exogenous_surf_affect(snap, unseen_line, shared_to_chat=bool(spoken))
             await self._working.save_working_state(updated)
         if unseen_line:
-            await NeuroplasticityEngine(self._working).adapt_from_exogenous_info(
+            await NeuroplasticityEngine(self._working, self._layers).adapt_from_exogenous_info(
                 proposal.drive_kind, unseen_line
             )
 

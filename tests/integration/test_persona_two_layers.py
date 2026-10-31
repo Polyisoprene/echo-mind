@@ -90,3 +90,22 @@ async def test_behaviour_params_use_the_two_layer_engine(tmp_path: Path) -> None
     assert any(spec.key == "talkativeness" for spec in moved)
     settled = (await container.working_store.get_plastic_params())["talkativeness"].value
     assert settled > baseline
+
+
+@pytest.mark.asyncio
+async def test_surfing_moves_curiosity_state_not_baseline(tmp_path: Path) -> None:
+    """The exogenous path must not bypass the layer store either."""
+    container = await EchoMindContainer.create(db_path=tmp_path / "surf.db")
+    baseline = (await container.working_store.get_plastic_params())["curiosity_rate"].value
+
+    moved = await container.cognitive_facade._plasticity.adapt_from_exogenous_info(
+        "bili", "一个新视频"
+    )
+
+    assert moved == ()
+    after = (await container.working_store.get_plastic_params())["curiosity_rate"].value
+    assert after == baseline
+    layers = container.persona_layers
+    assert layers is not None
+    state = await layers.load_state()
+    assert state["curiosity_rate"][0] > 0

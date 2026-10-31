@@ -215,6 +215,9 @@ class NeuroplasticityEngine:
         self, kind: str, topic: str
     ) -> tuple[PlasticParamSpec, ...]:
         """Surfing may raise curiosity, but must not move the slow personality baseline."""
+        if self._layers is not None:
+            await self._observe_param("curiosity_rate", 0.6, int(time.time() * 1000))
+            return ()
         current = await self._store.get_plastic_params()
         label = topic[:18] or kind
         snap = current.get("curiosity_rate")

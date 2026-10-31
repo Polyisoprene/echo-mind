@@ -130,6 +130,7 @@ def _build_scheduler(
         working_store=container.working_store,
         trace_store=container.trace_store,
         llm=llm,
+        persona_layers=container.persona_layers,
     )
 
 
