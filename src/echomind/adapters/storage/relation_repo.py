@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
+
 from echomind.adapters.storage.database import SqliteDatabase
-from echomind.domain.relation import RELATION_MAX_HOPS, MemoryRelation
+from echomind.domain.relation import PPR_DAMPING, PPR_ITERATIONS, PPR_TOL, MemoryRelation
 
 
 class SqliteRelationStore:
@@ -55,42 +57,68 @@ class SqliteRelationStore:
             )).fetchall()
         return tuple(str(r[0]) for r in rows if str(r[0]))
 
-    async def _expand(
-        self, subject: str, base: float, now_ms: int
-    ) -> dict[str, float]:
-        return {
-            relation.object_id: base * relation.confidence
-            for relation in await self.neighbors(subject, now_ms)
-        }
+    async def _active_edges(self, now_ms: int) -> list[tuple[str, str, float]]:
+        async with self._db.connect() as conn:
+            rows = await (await conn.execute(
+                "SELECT subject_id, object_id, confidence FROM memory_relations "
+                "WHERE (valid_from_ms = 0 OR valid_from_ms <= ?) "
+                "AND (valid_to_ms IS NULL OR valid_to_ms > ?)",
+                (now_ms, now_ms),
+            )).fetchall()
+        return [(str(s), str(o), max(0.0, float(c))) for s, o, c in rows]
 
     @staticmethod
-    def _merge(
-        target: dict[str, float], scores: dict[str, float], candidates: dict[str, float]
-    ) -> None:
-        for obj, candidate in candidates.items():
-            if candidate > scores.get(obj, 0.0):
-                scores[obj] = candidate
-                target[obj] = max(target.get(obj, 0.0), candidate)
+    def _adjacency(edges: list[tuple[str, str, float]]) -> dict[str, list[tuple[str, float]]]:
+        outgoing: dict[str, list[tuple[str, float]]] = defaultdict(list)
+        for subject, obj, confidence in edges:
+            outgoing[subject].append((obj, confidence))
+        return outgoing
 
-    async def reachable_scored(
-        self, starts: tuple[str, ...], max_hops: int, now_ms: int
-    ) -> dict[str, float]:
-        scores: dict[str, float] = dict.fromkeys(starts, 1.0)
-        frontier: dict[str, float] = dict(scores)
-        for _ in range(max_hops):
-            nxt: dict[str, float] = {}
-            for subject, base in frontier.items():
-                self._merge(nxt, scores, await self._expand(subject, base, now_ms))
-            frontier = nxt
-            if not frontier:
-                break
+    @staticmethod
+    def _initial(nodes: list[str], starts: tuple[str, ...]) -> dict[str, float]:
+        scores = dict.fromkeys(nodes, 0.0)
+        for start in starts:
+            if start in scores:
+                scores[start] += 1.0 / max(1, len(starts))
         return scores
 
-    async def reachable(
-        self, starts: tuple[str, ...], max_hops: int = RELATION_MAX_HOPS,
-        now_ms: int = 0,
-    ) -> set[str]:
-        return set(await self.reachable_scored(starts, max_hops, now_ms))
+    @staticmethod
+    def _distribute(score: float, links: list[tuple[str, float]],
+                    nxt: dict[str, float]) -> None:
+        total = sum(weight for _, weight in links) or 1.0
+        for obj, weight in links:
+            nxt[obj] += PPR_DAMPING * score * weight / total
 
+    def _step(self, scores: dict[str, float], nodes: list[str],
+              outgoing: dict[str, list[tuple[str, float]]]) -> dict[str, float]:
+        base = (1.0 - PPR_DAMPING) / len(nodes)
+        nxt = dict.fromkeys(nodes, base)
+        dangling = 0.0
+        for node, score in scores.items():
+            links = outgoing.get(node, [])
+            if not links:
+                dangling += score
+                continue
+            self._distribute(score, links, nxt)
+        if dangling:
+            for node in nodes:
+                nxt[node] += PPR_DAMPING * dangling / len(nodes)
+        return nxt
+
+    async def ppr(self, starts: tuple[str, ...], now_ms: int) -> dict[str, float]:
+        """Personalized PageRank over active, confidence-weighted edges."""
+        edges = await self._active_edges(now_ms)
+        nodes = sorted({node for s, o, _ in edges for node in (s, o)})
+        if not nodes:
+            return {}
+        outgoing = self._adjacency(edges)
+        scores = self._initial(nodes, starts)
+        for _ in range(PPR_ITERATIONS):
+            nxt = self._step(scores, nodes, outgoing)
+            delta = sum(abs(nxt[node] - scores[node]) for node in nodes)
+            scores = nxt
+            if delta < PPR_TOL:
+                break
+        return scores
 
 __all__ = ["SqliteRelationStore"]

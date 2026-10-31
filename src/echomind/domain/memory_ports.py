@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from echomind.domain.relation import RELATION_MAX_HOPS, MemoryRelation
+from echomind.domain.relation import MemoryRelation
 
 
 class IMemoryVectorStore(Protocol):
@@ -22,16 +22,9 @@ class IRelationStore(Protocol):
         self, subject_id: str, now_ms: int = 0
     ) -> tuple[MemoryRelation, ...]: ...
 
-    async def reachable_scored(
-        self, starts: tuple[str, ...], max_hops: int, now_ms: int
-    ) -> dict[str, float]: ...
-
-    async def reachable(
-        self, starts: tuple[str, ...], max_hops: int = RELATION_MAX_HOPS,
-        now_ms: int = 0,
-    ) -> set[str]: ...
-
     async def entities(self) -> tuple[str, ...]: ...
+
+    async def ppr(self, starts: tuple[str, ...], now_ms: int) -> dict[str, float]: ...
 
 
 class IEmbeddingGateway(Protocol):

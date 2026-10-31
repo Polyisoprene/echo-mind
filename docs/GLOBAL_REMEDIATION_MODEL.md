@@ -60,10 +60,11 @@ percept
 | 语义 recency 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | 语义 order 权重 | 已删除 | `mind/semantic_retrieval.py` | 语义排序改纯 cosine | ✅ 消除重复计分 |
 | `RRF_K` | 60 | `mind/retrieval_fusion.py` | 7 路 rank 融合 | ✅ Cormack et al. 2009 常用值 |
-| `max_hops` | 2 | `domain/relation.py::RELATION_MAX_HOPS` | 两跳可达 | ❌ 无来源；已由一处常量统一，fit_pending |
+| 关系跳数 | 已删除 | `domain/relation.py` | 改为 Personalized PageRank | ✅ 不再需要固定跳数 |
 | `RELATION_CONFIDENCE` | 0.8 | `mind/relation_extractor.py` | 抽取置信度 | ❌ 未参与排序；值无来源 |
 | 关系 validity | 字段存在 | `memory_relations` | 已按 `valid_from/to` 过滤 | ✅ 已接入 |
 | BM25 K1/B | 1.2 / 0.75 | `mind/ranker_fusion.py` | 词面 ranker 参数 | ✅ Robertson & Zaragoza 2009 默认值 |
+| PPR damping/iter/tol | 0.85 / 100 / 1e-6 | `domain/relation.py` | 图传播 | ✅ NetworkX 默认 + HippoRAG 思路 |
 | 真人感长度 | 26 字 | `personality.REALISM_MAX_CHARS` | 已收常量/账本，prompt 软约束 | ✅ 高分组 n=19：中位 15、p75 20、max 26 |
 
 ### 人工标签对“40 字”的实际支撑
@@ -273,6 +274,26 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 ### 仍然存在的债务
 
 - live 已无 3/6/5/4/6；这些只留在评测基线 `select_relevant_facts`；
-- `RELATION_MAX_HOPS=2`、`REALISM_MAX_CHARS=40` 仍未校准；
+- 关系跳数已由 PPR 替代；`REALISM_MAX_CHARS=26` 已按人工数据校准；
 - 7 个 ranker 等权是“无证据时的保守选择”，不是拟合结果；
 - 还没做权重拟合/外部 benchmark。
+
+
+---
+
+## 11. 第 8 轮：关系图改为 Personalized PageRank
+
+线上关系图实测：
+
+- 49 个节点、39 条边、14 个连通分量；
+- 有向最短路最大 4 跳，p95 = 3 跳；
+- 原来的 `max_hops=2` 覆盖不了图，不是数据驱动。
+
+已删除 `RELATION_MAX_HOPS`，改为 `ppr(starts, now_ms)`：
+
+- 只走 valid 边；
+- 边权 = confidence；
+- `damping=0.85, max_iter=100, tol=1e-6` 取自 NetworkX PageRank 默认值；
+- 多跳路径不再靠固定跳数。
+
+效果：fusion 基线仍 70/70，关 relations 后 multihop 0/10、overall 60/70。

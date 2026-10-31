@@ -4,14 +4,12 @@ from __future__ import annotations
 
 from echomind.domain.memory_ports import IRelationStore
 from echomind.domain.models import SemanticFact
-from echomind.domain.relation import RELATION_MAX_HOPS
 from echomind.mind.entity_order import entities
 
 
 class RelationResolver:
-    def __init__(self, store: IRelationStore, max_hops: int = RELATION_MAX_HOPS) -> None:
+    def __init__(self, store: IRelationStore) -> None:
         self._store = store
-        self._max_hops = max_hops
 
     async def _query_entities(self, query: str) -> set[str]:
         starts = set(entities(query))
@@ -26,9 +24,7 @@ class RelationResolver:
         starts = await self._query_entities(query)
         if not starts:
             return {}
-        reached = await self._store.reachable_scored(
-            tuple(starts), self._max_hops, now_ms
-        )
+        reached = await self._store.ppr(tuple(starts), now_ms)
         boosted: dict[int, float] = {}
         for fact in facts:
             fact_entities = set(entities(f"{fact.subject} {fact.fact_text}"))

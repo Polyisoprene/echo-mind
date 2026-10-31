@@ -1062,24 +1062,6 @@
       }
     },
     {
-      "id": "domain/relation.py::RELATION_MAX_HOPS",
-      "module": "domain/relation.py",
-      "symbol": "RELATION_MAX_HOPS",
-      "line": 1,
-      "value": "2",
-      "class": "fit_pending",
-      "status": "quarantined",
-      "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-016",
-      "experiment": "用 70 条内部场景 + 50 条人工标签拟合/消融；固定 2 跳；无图直径/成本依据",
-      "conservative_value": "2",
-      "e1_proposed_class": "experiment",
-      "e1_group": "E1-D 门控与召回",
-      "e1_blocked": true,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
-    },
-    {
       "id": "mind/personality.py::REALISM_MAX_CHARS",
       "module": "mind/personality.py",
       "symbol": "REALISM_MAX_CHARS",
@@ -1128,6 +1110,51 @@
         "paper": "Robertson & Zaragoza, The Probabilistic Relevance Framework: BM25 and Beyond, 2009",
         "doi": "10.1561/1500000019",
         "rationale": "BM25 文档长度归一化参数；采用 BM25 文献常用默认值，未在本地重拟合"
+      }
+    },
+    {
+      "id": "domain/relation.py::PPR_DAMPING",
+      "module": "domain/relation.py",
+      "symbol": "PPR_DAMPING",
+      "line": 1,
+      "value": "0.85",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "PageRank 阻尼系数",
+        "source": "NetworkX pagerank defaults (alpha=0.85, max_iter=100, tol=1e-6); HippoRAG uses Personalized PageRank",
+        "repo": "https://github.com/networkx/networkx/blob/main/networkx/algorithms/link_analysis/pagerank_alg.py"
+      }
+    },
+    {
+      "id": "domain/relation.py::PPR_ITERATIONS",
+      "module": "domain/relation.py",
+      "symbol": "PPR_ITERATIONS",
+      "line": 1,
+      "value": "100",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "PageRank 最大迭代",
+        "source": "NetworkX pagerank defaults (alpha=0.85, max_iter=100, tol=1e-6); HippoRAG uses Personalized PageRank",
+        "repo": "https://github.com/networkx/networkx/blob/main/networkx/algorithms/link_analysis/pagerank_alg.py"
+      }
+    },
+    {
+      "id": "domain/relation.py::PPR_TOL",
+      "module": "domain/relation.py",
+      "symbol": "PPR_TOL",
+      "line": 1,
+      "value": "1e-06",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "PageRank 收敛阈值",
+        "source": "NetworkX pagerank defaults (alpha=0.85, max_iter=100, tol=1e-6); HippoRAG uses Personalized PageRank",
+        "repo": "https://github.com/networkx/networkx/blob/main/networkx/algorithms/link_analysis/pagerank_alg.py"
       }
     }
   ]

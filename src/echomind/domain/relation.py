@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from echomind.domain.base import FrozenValueObject
 
-RELATION_MAX_HOPS = 2
+PPR_DAMPING = 0.85
+PPR_ITERATIONS = 100
+PPR_TOL = 1e-6
 
 
 class MemoryRelation(FrozenValueObject):
@@ -18,4 +20,4 @@ class MemoryRelation(FrozenValueObject):
     confidence: float = 0.8
 
 
-__all__ = ["MemoryRelation", "RELATION_MAX_HOPS"]
+__all__ = ["PPR_DAMPING", "PPR_ITERATIONS", "PPR_TOL", "MemoryRelation"]
