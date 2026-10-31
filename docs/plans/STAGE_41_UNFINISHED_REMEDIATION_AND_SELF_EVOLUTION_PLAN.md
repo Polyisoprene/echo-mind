@@ -1412,3 +1412,40 @@ signature.result: 形成反复确认小槽点的行为模式
 **验证**
 
 - 全门禁：**360 passed / 92%**，fusion 70/70。
+
+### 14.28 真实数据首查（2026-11-01）
+
+新增只读审计 `scripts/trait_evolution_status.py`：
+
+产物：`eval/baselines/trait-live-status-2026-11-01.json`
+
+主库 `data/echomind.db`：
+
+| 项 | 值 |
+|---|---:|
+| trait | 9 |
+| candidate | 1（trait 45） |
+| legacy_unverified | 8 |
+| ledger evidence | 1 |
+| 该 trait 独立 context | 1 |
+| cached evidence_count | 4 |
+| shadow rows | 12 |
+| shadow 非空 trait_ids | 0 |
+| links | 0 |
+| candidates | 0 |
+
+- trait 45 只有 **1 个可审计 context**，不够 active；
+- 12 条 shadow 的 trait_ids 全空，actual tools 只有 `feiyu_say`；
+- 旧 `evidence_count=4` 是历史缓存，不能当 4 个独立证据；
+- 小沫库没有真实 trait/shadow/link。
+
+**结论**
+
+- 真实证据密度不够，不能靠旧计数“假装 active”；
+- 不回填无 quote 的旧证据；
+- 需要一个**新的独立图片/视频情境**，或更稳定的证据写入；
+- 在此之前，trait ranker/资格在线上保持空跑。
+
+**验证**
+
+- 全门禁：**360 passed / 92%**，fusion 70/70。
