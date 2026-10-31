@@ -228,7 +228,16 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 3. kappa ≥0.6 后，judge 只做 nightly；
 4. 报告分维，不报总分。
 
-### Phase 3：外部 benchmark
+### Phase 3：人工校准包（已生成）
+
+- `eval/calibration/persona_v1/items.csv`：50 条中文评分表，表头直接写清“她面对的场面 / 期望方向 / 她的回复 / 四个 1–5 维度”；
+- `items.html`：浏览器阅读版；
+- `评分说明.md`：每一档 1–5 的中文含义；
+- `key.json`：模型名与 judge 分数，评分人不可见；
+- `scripts/calibrate_persona_judge.py`：回收后算二次加权 kappa + MAE；
+- kappa ≥0.6 才把 judge 分数当门禁。
+
+### Phase 3 原计划：外部 benchmark
 
 1. 适配 LoCoMo / LongMemEval / GroupMemBench 子集；
 2. 固定脚本与版本；
