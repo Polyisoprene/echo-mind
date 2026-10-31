@@ -97,3 +97,77 @@ async def ensure_columns(conn: aiosqlite.Connection) -> None:
     await conn.execute(
         "UPDATE episodic_memories SET source_venue_id=chat_key WHERE source_venue_id=''"
     )
+    await conn.executescript(KNOWLEDGE_SYNC_DDL)
+
+KNOWLEDGE_SYNC_DDL = """
+CREATE TABLE IF NOT EXISTS sensitivity_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  memory_kind TEXT NOT NULL,
+  memory_id INTEGER NOT NULL,
+  from_sensitivity TEXT NOT NULL,
+  to_sensitivity TEXT NOT NULL,
+  reviewer TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  ts_ms INTEGER NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS trg_fact_known_ins AFTER INSERT ON semantic_facts
+BEGIN
+  INSERT OR IGNORE INTO memory_knowledge
+    (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+  SELECT 'semantic', NEW.id, NEW.source_person_id, 'told_to_me', 1.0,
+         CAST(strftime('%s','now') AS INTEGER) * 1000
+  WHERE NEW.source_person_id <> '';
+  INSERT OR IGNORE INTO memory_knowledge
+    (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+  SELECT 'semantic', NEW.id, NEW.owner_id, 'knows', 1.0,
+         CAST(strftime('%s','now') AS INTEGER) * 1000
+  WHERE NEW.owner_id <> '' AND NEW.owner_id <> NEW.source_person_id;
+END;
+CREATE TRIGGER IF NOT EXISTS trg_fact_known_upd
+AFTER UPDATE OF source_person_id, owner_id ON semantic_facts
+BEGIN
+  INSERT OR IGNORE INTO memory_knowledge
+    (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+  SELECT 'semantic', NEW.id, NEW.source_person_id, 'told_to_me', 1.0,
+         CAST(strftime('%s','now') AS INTEGER) * 1000
+  WHERE NEW.source_person_id <> '';
+  INSERT OR IGNORE INTO memory_knowledge
+    (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+  SELECT 'semantic', NEW.id, NEW.owner_id, 'knows', 1.0,
+         CAST(strftime('%s','now') AS INTEGER) * 1000
+  WHERE NEW.owner_id <> '' AND NEW.owner_id <> NEW.source_person_id;
+END;
+CREATE TRIGGER IF NOT EXISTS trg_episode_known_ins AFTER INSERT ON episodic_memories
+BEGIN
+  INSERT OR IGNORE INTO memory_knowledge
+    (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+  SELECT 'episodic', NEW.id, NEW.source_person_id, 'told_to_me', 1.0,
+         CAST(strftime('%s','now') AS INTEGER) * 1000
+  WHERE NEW.source_person_id <> '';
+  INSERT OR IGNORE INTO memory_knowledge
+    (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+  SELECT 'episodic', NEW.id, NEW.owner_id, 'knows', 1.0,
+         CAST(strftime('%s','now') AS INTEGER) * 1000
+  WHERE NEW.owner_id <> '' AND NEW.owner_id <> NEW.source_person_id;
+END;
+INSERT OR IGNORE INTO memory_knowledge
+  (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+SELECT 'semantic', id, source_person_id, 'told_to_me', 1.0,
+       CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM semantic_facts WHERE source_person_id <> '';
+INSERT OR IGNORE INTO memory_knowledge
+  (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+SELECT 'semantic', id, owner_id, 'knows', 1.0,
+       CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM semantic_facts WHERE owner_id <> '' AND owner_id <> source_person_id;
+INSERT OR IGNORE INTO memory_knowledge
+  (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+SELECT 'episodic', id, source_person_id, 'told_to_me', 1.0,
+       CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM episodic_memories WHERE source_person_id <> '';
+INSERT OR IGNORE INTO memory_knowledge
+  (memory_kind, memory_id, person_id, state, confidence, updated_ms)
+SELECT 'episodic', id, owner_id, 'knows', 1.0,
+       CAST(strftime('%s','now') AS INTEGER) * 1000
+FROM episodic_memories WHERE owner_id <> '' AND owner_id <> source_person_id;
+"""

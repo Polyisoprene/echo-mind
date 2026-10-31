@@ -25,10 +25,10 @@ percept
 | D1 | bot 信念跨群串 | `_BELIEFS` 模块级 dict | A 群断言“某人是 bot”，B 群也按 bot 处理 | all / 2 / 3 | ✅ 已修 |
 | D2 | 探针对话上下文跨会话 | 单个 `DialogueContext` 共享 | 私聊/群聊的话进入彼此探针上下文 | all / 4 / 3 | ✅ 已修 |
 | D3 | 禁用词按“上一轮会话”生效 | `_active_bans` 单值 | 切群后误拦或漏拦 | all / 4 / 3 | ✅ 已修 |
-| D4 | 告知史空转 | 无代码调用 `mark_known` | `memory_knowledge` 0 行，“谁知道”不可用 | person / 5 / 4 | ⏳ |
-| D5 | 授权无法创建 | 只有 `grant/has_grant` 适配器 | `disclosure_grants` 0 行，secret 永远放不出 | person / 5 / 4 | ⏳ |
-| D6 | 25 条 global 事实未审 | 迁移默认 `scope=global`、`sensitivity=group` | 任何群可见，可能含私人信息 | all / 3 / 5 | ⏳ |
-| D7 | 敏感度误报不可逆 | 分类器只升不降、无复核入口 | 一条误判 secret 永久不可召回 | one / 2 / 4 | ⏳ |
+| D4 | 告知史空转 | 无代码调用 `mark_known` | `memory_knowledge` 0 行，“谁知道”不可用 | person / 5 / 4 | ✅ 触发器 |
+| D5 | 授权无法创建 | 只有 `grant/has_grant` 适配器 | `disclosure_grants` 0 行，secret 永远放不出 | person / 5 / 4 | ✅ CLI |
+| D6 | 26 条 global 事实未审 | 迁移默认 `scope=global`、`sensitivity=group` | 任何群可见，可能含私人信息 | all / 3 / 5 | ✅ 已审 |
+| D7 | 敏感度误报不可逆 | 分类器只升不降、无复核入口 | 一条误判 secret 永久不可召回 | one / 2 / 4 | ✅ 复核台 |
 | D8 | P1 表只写不读 | 检索仍实时计算 | 控制台/工具读表得到快照，可能与实时不一致 | person / 3 / 2 | ⏳ |
 | D9 | 披露日志不是“实际说了” | 只在 frame 记 include/keep | 168 行全是 `say/persona`，无法审计真正说出的内容 | all / 5 / 3 | ⏳ |
 | D10 | 人格特质按场合分裂 | `persona_traits` 6 条 global + 3 条 group | 群里长出的习惯私聊没有 | person / 4 / 4 | ⏳ |
@@ -43,12 +43,35 @@ percept
 | D19 | 缺外部评测 | 只有单测/集成 | 无法证明跨会话一致性与授权边界 | all / 5 / 3 | ⏳ |
 | D20 | 本地领先 origin 24 提交 | 多轮提交未 push | 远端缺 P0-P5/P1 | ops / 5 / 3 | ⏳ |
 
-## 3. 本轮已修（D1-D3）
+## 3. 已修（D1-D7）
 
 - `bot_belief`：`_BELIEFS` 改为 `dict[chat_key, dict[uid, score]]`；`set_beliefs(chat_key, ...)`、`apply_belief(chat_key, sender_id)`；感知门按 `percept.chat_key` 取。
 - `DialogueContext`：内部改为 `dict[scope, deque]`；`add/note/lines/clear` 都带 scope；facade 用 `percept.chat_key` / `outcome.chat_key`。
 - `AgentSessionRunner`：`_active_bans` 改为 `dict[chat_key, tuple]`；发送/救援按当前 `chat_key` 取。
 - 新增隔离测试：信念、对话、禁用词各自跨会话不串。
+
+### D4 告知史生产者
+
+- `semantic_facts` / `episodic_memories` 的 INSERT/UPDATE 触发器写入 `memory_knowledge`：
+  `source_person_id → told_to_me`，`owner_id → knows`；
+- 迁移时回填存量；主库现有 **29** 条知识行。
+
+### D5 授权入口
+
+- `scripts/grant_disclosure.py --memory-id --grantee --by [--expires-days]`；
+- 门仍按 `has_grant` 判断，授权现在有可执行入口（CLI，非 UI）。
+
+### D6 global 事实审计
+
+- 主库 26 条、全部是 B 站/梗 Wiki 的公开网页片段，`owner/source` 全空；
+- 统一标 `sensitivity=public`，`scope=global` 不变；小沫库 6 条同样处理；
+- 结论：无个人隐私外泄；成人向内容属于内容策略，不在本轮隐私范围。
+
+### D7 敏感度复核
+
+- `sensitivity_reviews` 表 + `SqliteSensitivityReviewer`；
+- `scripts/review_sensitivity.py --list` / `--id N --set group --reason ... --apply`；
+- 复核写入审计行，误报可降级。
 
 ## 4. 修复顺序（按依赖）
 
@@ -63,4 +86,4 @@ percept
 
 - 每个 D 项：有复现/证据、有测试、有部署验证；
 - D1-D3 已满足：`tests/unit/test_bot_belief.py`、`test_dialogue_context.py`、发送拦截集成测试；
-- 全量门禁：275 passed / 92%。
+- 全量门禁：277 passed / 92%。
