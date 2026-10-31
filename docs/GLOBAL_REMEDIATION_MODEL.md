@@ -64,7 +64,7 @@ percept
 | `RELATION_CONFIDENCE` | 0.8 | `mind/relation_extractor.py` | 抽取置信度 | ❌ 未参与排序；值无来源 |
 | 关系 validity | 字段存在 | `memory_relations` | 已按 `valid_from/to` 过滤 | ✅ 已接入 |
 | BM25 K1/B | 1.2 / 0.75 | `mind/ranker_fusion.py` | 词面 ranker 参数 | ✅ Robertson & Zaragoza 2009 默认值 |
-| 真人感长度 | 40 字 | `personality.REALISM_MAX_CHARS` | 已收常量/账本，prompt 软约束 | 🟡 来自 50 条人工标签，但样本小 |
+| 真人感长度 | 26 字 | `personality.REALISM_MAX_CHARS` | 已收常量/账本，prompt 软约束 | ✅ 高分组 n=19：中位 15、p75 20、max 26 |
 
 ### 人工标签对“40 字”的实际支撑
 
@@ -73,7 +73,7 @@ percept
 - 高分（4–5）n=19：长度中位数 **15**，p75 **20**，最大 **26**；
 - 低分（1–2）n=13：中位数 16，最大 85。
 
-结论：**40 字不是数据支持的阈值**；高分的典型长度更接近 15–25。长度也不是唯一因素，不能只靠截断。
+结论：**40 字不是数据支持的阈值**；高分组最大 26 字，因此上限收敛到 26（不再加无依据的余量）。长度也不是唯一因素，不能只靠截断。
 
 ---
 

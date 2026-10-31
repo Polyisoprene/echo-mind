@@ -1084,18 +1084,21 @@
       "module": "mind/personality.py",
       "symbol": "REALISM_MAX_CHARS",
       "line": 1,
-      "value": "40",
-      "class": "fit_pending",
-      "status": "quarantined",
+      "value": "26",
+      "class": "data",
+      "status": "active",
       "claim": "",
-      "evidence": {},
-      "issue": "ECHOMIND-E1-016",
-      "experiment": "用 70 条内部场景 + 50 条人工标签拟合/消融；真人感长度上限；50 条人工标签高分中位 15、p75 20、max 26",
-      "conservative_value": "40",
-      "e1_proposed_class": "experiment",
-      "e1_group": "E1-D 门控与召回",
-      "e1_blocked": true,
-      "e1_action": "按组内实验协议取值；未完成前保留现值"
+      "evidence": {
+        "dataset_sha256": "da167344c196b35c87bb737ef71bf82d891b4cfc2f3893cf11faf45e6d3aee3e",
+        "n": 19,
+        "estimate": 26,
+        "ci95": [
+          20,
+          26
+        ],
+        "script": "scripts/style_length_threshold.py",
+        "note": "high-score (overall 4-5) reply lengths: median 15, p75 20, max 26; upper bound = observed max"
+      }
     },
     {
       "id": "mind/ranker_fusion.py::BM25_K1",

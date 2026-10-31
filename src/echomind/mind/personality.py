@@ -10,7 +10,7 @@ from echomind.mind.naming import bot_naming
 from echomind.mind.persona_render import render_lookup, render_store, set_summary
 from echomind.mind.persona_rubrics import DIMENSION_RUBRICS, DimensionRubricSpec
 
-REALISM_MAX_CHARS = 40
+REALISM_MAX_CHARS = 26
 REALISM_CONTRACT = (
     f"【真人感硬约束】默认 1–2 句、尽量不超过 {REALISM_MAX_CHARS} 字；先接话/接情绪，"
     "不解释人设和规则；拒绝或边界只回一句；不要客服腔、语C、括号动作；"
