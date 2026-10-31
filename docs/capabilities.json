@@ -233,10 +233,10 @@
       "code": [
         "scripts/replay_eval.py"
       ],
-      "status": "absent",
-      "gap": "回放只输出 wakes/probe_calls/double_apply/reward_spread/cache_peak",
-      "acceptance_test": null,
-      "evidence_report": "",
+      "status": "partial",
+      "gap": "离线三套件已可跑：稳定性（365 天净变化 +3.991，无饱和）、情绪方向（4/5）、记忆召回（直接 100%、改写 50%，与随机基线 50% 持平）。敏感性审计与盲评尚未实现；已发现中性互动仍抬高效价 +3.98（安抚分支对所有非负评价触发）",
+      "acceptance_test": "tests/integration/test_persona_eval_harness.py::test_offline_eval_harness_reports_expected_metrics",
+      "evidence_report": "scripts/eval_persona.py",
       "target_release": "P6e"
     },
     {

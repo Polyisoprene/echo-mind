@@ -170,25 +170,29 @@ class NeuroplasticityEngine:
         """Apply one day of buffered evidence to the slow baseline, bounded and slow."""
         if self._layers is None:
             return ()
-        totals = await self._layers.pop_observations(now_ms)
-        if not totals:
+        buckets = await self._layers.pop_observations(now_ms)
+        if not buckets:
             return ()
         params = await self._store.get_plastic_params()
         updated: list[PlasticParamSpec] = []
-        for key, total in totals.items():
-            applied = await self._settle_one(key, total, params, now_ms)
+        for key, (total, last_ms) in buckets.items():
+            applied = await self._settle_one(key, total, last_ms, params, now_ms)
             if applied is not None:
                 updated.append(applied)
         return tuple(updated)
 
     async def _settle_one(
-        self, key: str, total: float, params: dict[str, PlasticParamSpec], now_ms: int
+        self,
+        key: str,
+        total: float,
+        last_ms: int,
+        params: dict[str, PlasticParamSpec],
+        now_ms: int,
     ) -> PlasticParamSpec | None:
         snap = params.get(key)
         if snap is None or not key.startswith("persona_"):
             return None
-        last = await self._layers.last_settle_ms(key) if self._layers else 0
-        days = max(0.0, (now_ms - (last or now_ms - int(DAY_MS))) / DAY_MS)
+        days = max(0.0, (now_ms - last_ms) / DAY_MS) if last_ms else 1.0
         baseline = PARAM_BASELINES.get(key, snap.value)
         regression = slow_regression(snap.value, baseline, days)
         wanted = _bounded(_bounded(total, TRAIT_DAILY_PUSH) + regression, TRAIT_DAILY_PUSH)

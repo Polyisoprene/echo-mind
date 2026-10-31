@@ -30,6 +30,10 @@ CREATE TABLE IF NOT EXISTS persona_pending (
     n INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (key, day)
 );
+CREATE TABLE IF NOT EXISTS persona_settlement (
+    key TEXT PRIMARY KEY,
+    settled_ms INTEGER NOT NULL DEFAULT 0
+);
 """
 
 
@@ -82,24 +86,23 @@ class SqlitePersonaLayerStore:
             await conn.execute(sql, (key, _day(now_ms), delta))
             await conn.commit()
 
-    async def pop_observations(self, now_ms: int) -> dict[str, float]:
-        """Return and delete every pending bucket strictly older than today."""
+    async def pop_observations(self, now_ms: int) -> dict[str, tuple[float, int]]:
+        """Return {key: (total, last_settled_ms)} for days before today, then settle them."""
         today = _day(now_ms)
         async with self._db.connect() as conn:
             cursor = await conn.execute(
-                "SELECT key, SUM(total) FROM persona_pending WHERE day < ? GROUP BY key",
+                "SELECT p.key, SUM(p.total), COALESCE(s.settled_ms, 0) "
+                "FROM persona_pending p LEFT JOIN persona_settlement s ON s.key = p.key "
+                "WHERE p.day < ? GROUP BY p.key",
                 (today,),
             )
             rows: list[Any] = list(await cursor.fetchall())
             await conn.execute("DELETE FROM persona_pending WHERE day < ?", (today,))
+            for row in rows:
+                await conn.execute(
+                    "INSERT INTO persona_settlement (key, settled_ms) VALUES (?, ?) "
+                    "ON CONFLICT(key) DO UPDATE SET settled_ms=excluded.settled_ms",
+                    (str(row[0]), now_ms),
+                )
             await conn.commit()
-        return {str(r[0]): float(r[1]) for r in rows if r[1] is not None}
-
-    async def last_settle_ms(self, key: str) -> int:
-        """Timestamp of the newest baseline write (0 when the dimension never moved)."""
-        async with self._db.connect() as conn:
-            cursor = await conn.execute(
-                "SELECT COALESCE(MAX(ts), 0) FROM plastic_logs WHERE param_key = ?", (key,)
-            )
-            row = await cursor.fetchone()
-        return int(row[0]) if row else 0
+        return {str(r[0]): (float(r[1]), int(r[2])) for r in rows if r[1] is not None}
