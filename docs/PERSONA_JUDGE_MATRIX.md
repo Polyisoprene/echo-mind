@@ -62,6 +62,18 @@ judge 与人工的总体 QWK 仅 **0.097**，旧 rubric 0.034；judge 系统性�
 
 `eval/calibration/persona_pairwise_v1/` 已生成 30 组同场景 A/B，用来替代不可信的绝对分 judge。
 
+## 人工成对比较（30 组）
+
+| 模型 | 更像真人决定性胜率 | 更适合发群决定性胜率 |
+|---|---:|---:|
+| DeepSeek-V4.1-Flash | **0.714** | **0.833** |
+| Kimi-K3 | 0.600 | 0.500 |
+| GLM-5.3 | 0.500 | 0.500 |
+| MiniMax-M3.1-Flash | 0.400 | 0.250 |
+| Mimo-V2.6-Pro | 0.167 | 0.200 |
+
+人工成对排序与 LLM judge 相反：judge 认为 Kimi 最好，人工认为 DeepSeek-V4.1-Flash 最好。11/14 组“都差”，说明整体还没过“像真人”的线。
+
 ## 使用建议
 
 - 不要用单一 judge 的绝对分做上线门禁；

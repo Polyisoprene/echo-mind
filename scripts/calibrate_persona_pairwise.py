@@ -27,22 +27,20 @@ def _choice(value: str) -> str:
 def _record(choice: str, pair: dict[str, Any],
             stats: dict[str, dict[str, float]]) -> None:
     a_model, b_model = pair["a"]["model"], pair["b"]["model"]
+    for model in (a_model, b_model):
+        stats[model]["game"] += 1.0
     if choice == "A":
         stats[a_model]["win"] += 1.0
-        stats[a_model]["game"] += 1.0
-        stats[b_model]["game"] += 1.0
+        stats[b_model]["loss"] += 1.0
     elif choice == "B":
         stats[b_model]["win"] += 1.0
-        stats[b_model]["game"] += 1.0
-        stats[a_model]["game"] += 1.0
+        stats[a_model]["loss"] += 1.0
     elif choice == "平局":
-        stats[a_model]["win"] += 0.5
-        stats[b_model]["win"] += 0.5
-        stats[a_model]["game"] += 1.0
-        stats[b_model]["game"] += 1.0
+        stats[a_model]["tie"] += 1.0
+        stats[b_model]["tie"] += 1.0
     else:
-        stats[a_model]["game"] += 1.0
-        stats[b_model]["game"] += 1.0
+        stats[a_model]["both_bad"] += 1.0
+        stats[b_model]["both_bad"] += 1.0
 
 
 def _agrees(choice: str, pair: dict[str, Any]) -> bool | None:
@@ -59,7 +57,9 @@ def _agrees(choice: str, pair: dict[str, Any]) -> bool | None:
 
 
 def _summarize(rows: list[dict[str, str]], key: dict[str, Any], header: str) -> dict[str, Any]:
-    stats: dict[str, dict[str, float]] = defaultdict(lambda: {"win": 0.0, "game": 0.0})
+    stats: dict[str, dict[str, float]] = defaultdict(
+        lambda: {"win": 0.0, "loss": 0.0, "tie": 0.0, "both_bad": 0.0, "game": 0.0}
+    )
     agree = total = 0
     for row in rows:
         choice = _choice(str(row.get(header, "")))
@@ -72,8 +72,20 @@ def _summarize(rows: list[dict[str, str]], key: dict[str, Any], header: str) -> 
             total += 1
             agree += int(result)
     return {
-        "models": {model: {"win_rate": round(v["win"] / v["game"], 3) if v["game"] else 0.0,
-                           "games": int(v["game"])} for model, v in stats.items()},
+        "models": {
+            model: {
+                "games": int(v["game"]),
+                "wins": int(v["win"]),
+                "losses": int(v["loss"]),
+                "ties": int(v["tie"]),
+                "both_bad": int(v["both_bad"]),
+                "decisive_win_rate": round(
+                    v["win"] / (v["win"] + v["loss"]), 3
+                ) if (v["win"] + v["loss"]) else 0.0,
+                "win_rate": round((v["win"] + 0.5 * v["tie"]) / v["game"], 3)
+                if v["game"] else 0.0,
+            } for model, v in stats.items()
+        },
         "agreement_with_absolute": round(agree / total, 3) if total else 0.0,
         "comparable_pairs": total,
     }
