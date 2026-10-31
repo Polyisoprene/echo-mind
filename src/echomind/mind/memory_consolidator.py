@@ -21,6 +21,7 @@ from echomind.mind.hippocampus import (
     parse_consolidation_json,
 )
 from echomind.mind.memory_budget import consolidation_budget, consolidation_thinking
+from echomind.mind.relation_persist import persist_relations
 from echomind.mind.working_update import mutate_working_state
 
 if TYPE_CHECKING:
@@ -30,7 +31,6 @@ if TYPE_CHECKING:
 AFFINITY_THRESHOLDS = (31.77, 40.75, 48.2, 56.79)
 DUNBAR_ACQUAINTANCE_CAP = 85.0
 RIVAL_EQUILIBRIUM = 45.0
-
 
 def build_turn_record(outcome: TurnOutcome, now_ms: int) -> TurnRecord:
     """Construct an immutable TurnRecord from a completed TurnOutcome."""
@@ -289,6 +289,7 @@ async def run_hippocampal_batch_consolidation(
         await _penalize_card_spoofers(chat_key, card, reader, writer)
     for fact in batch.facts:
         await writer.upsert_semantic_fact(fact)
+    await persist_relations(writer, batch.relations)
     for rule in batch.rules:
         await writer.upsert_procedural_rule(rule)
     await _apply_hippocampal_bond_adjustments(chat_key, batch.bond_adjustments, reader, writer)

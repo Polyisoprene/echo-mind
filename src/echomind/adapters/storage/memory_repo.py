@@ -28,7 +28,6 @@ FACT_COLUMNS = (
     "source_quote, event_time_ms"
 )
 
-
 def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
     raw_role = str(row[3])
     role: RoleType = (
@@ -50,7 +49,6 @@ def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
         traits=tuple(str(t) for t in traits if t),
     )
 
-
 def _merge_evolving_fact_text(old_text: str, new_text: str) -> str:
     clean_new = new_text.strip()
     if not old_text:
@@ -59,7 +57,6 @@ def _merge_evolving_fact_text(old_text: str, new_text: str) -> str:
     if not clean_old or clean_old == clean_new or clean_old in clean_new:
         return clean_new
     return f"{clean_new[:115]}（此前曾是：{clean_old[:28]}）"
-
 
 class SqliteMemoryRepository:
     """Repository satisfying both IMemoryReader and IMemoryWriter protocols."""
@@ -242,6 +239,10 @@ class SqliteMemoryRepository:
                           value=eff_txt, source=fact.source, is_locked=fact.is_locked,
                           now_ms=now_ms)
         return True, "ok"
+
+    async def upsert_relation(self, relation: object) -> None:
+        from echomind.adapters.storage.relation_repo import SqliteRelationStore
+        await SqliteRelationStore(self._db).upsert(relation)  # type: ignore[arg-type]
 
     async def upsert_procedural_rule(self, rule: ProceduralRule) -> int:
         sql = (

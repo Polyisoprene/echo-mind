@@ -12,6 +12,7 @@ from echomind.domain.models import (
     ProceduralRule,
     SemanticFact,
 )
+from echomind.domain.relation import MemoryRelation
 from echomind.mind.naming import bot_naming
 
 JSON_OBJ_RE = re.compile(r"\{[\s\S]*\}")
@@ -25,7 +26,9 @@ HIPPOCAMPUS_INSTRUCTIONS = (
     f"『某人开玩笑忽悠{bot_naming().label()}说…』，绝不能把假话记入 facts！",
     "3. rules (条件反射默契 0~1条)：triggerKeyword + triggerUserId + actionInstruction。",
     "4. newPersonaTrait(可选)：15~35字第一人称新习惯；newActivity(可选)：10~20字新日常状态。",
-    f"5. bondAdjustments(人际关系深度复盘 0~3条)：根据本段对话中群友对"
+    "5. relations (明确关系 0~3条)：subject + predicate + object + confidence；"
+    "predicate 只能是 friend/works_at/sibling/gave_to/alias/owns；只写本段明确出现的关系。",
+    f"6. bondAdjustments(人际关系深度复盘 0~3条)：根据本段对话中群友对"
     f"{bot_naming().label()}的真实态度"
     "（温柔照顾/真诚夸奖 vs 故意戏弄/忽悠挖坑/冷漠使唤），给出 userId、affinityDelta(-12~+12)、"
     "trustDelta(-0.10~+0.06) 与 reason。",
@@ -40,6 +43,7 @@ HIPPOCAMPUS_SCHEMA_LINE = (
     '"facts":[{"subject":"...","factText":"...","confidence":0.85}],'
     '"rules":[{"triggerKeyword":"...","triggerUserId":"","actionInstruction":"..."}],'
     '"bondAdjustments":[{"userId":"QQ","affinityDelta":3.0,"trustDelta":0.02,"reason":"..."}],'
+    '"relations":[{"subject":"","predicate":"","object":"","confidence":0.8}],'
     '"newPersonaTrait":"","newActivity":""}'
 )
 
@@ -59,6 +63,7 @@ class ConsolidationBatchResult(FrozenValueObject):
     cards: tuple[EpisodicCard, ...] = ()
     facts: tuple[SemanticFact, ...] = ()
     rules: tuple[ProceduralRule, ...] = ()
+    relations: tuple[MemoryRelation, ...] = ()
     bond_adjustments: tuple[HippocampalBondAdjustment, ...] = ()
     new_persona_trait: str = ""
     new_activity: str = ""
@@ -141,6 +146,23 @@ def _parse_single_rule(chat_key: str, raw: Any) -> ProceduralRule | None:
     )
 
 
+RELATION_PREDICATES = {"friend", "works_at", "sibling", "gave_to", "alias", "owns"}
+
+
+def _parse_single_relation(raw: Any) -> MemoryRelation | None:
+    if not isinstance(raw, dict):
+        return None
+    subject = str(raw.get("subject", "")).strip()
+    obj = str(raw.get("object", "")).strip()
+    predicate = str(raw.get("predicate", "")).strip()
+    if not subject or not obj or subject == obj or predicate not in RELATION_PREDICATES:
+        return None
+    return MemoryRelation(
+        subject_id=subject[:40], predicate=predicate, object_id=obj[:40],
+        confidence=max(0.1, min(0.95, float(raw.get("confidence", 0.8)))),
+    )
+
+
 def _parse_single_bond_adj(raw: Any) -> HippocampalBondAdjustment | None:
     if not isinstance(raw, dict):
         return None
@@ -178,11 +200,13 @@ def parse_consolidation_json(
     raw_cards = [_parse_single_card(chat_key, r, now_ms) for r in data.get("cards", [])]
     raw_facts = [_parse_single_fact(chat_key, r) for r in data.get("facts", [])]
     raw_rules = [_parse_single_rule(chat_key, x) for x in data.get("rules", [])]
+    raw_relations = [_parse_single_relation(r) for r in data.get("relations", [])]
     raw_bonds = [_parse_single_bond_adj(b) for b in data.get("bondAdjustments", [])]
     return ConsolidationBatchResult(
         cards=tuple(filter(None, raw_cards)),
         facts=tuple(filter(None, raw_facts)),
         rules=tuple(filter(None, raw_rules)),
+        relations=tuple(filter(None, raw_relations)),
         bond_adjustments=tuple(filter(None, raw_bonds)),
         new_persona_trait=str(data.get("newPersonaTrait", "")).strip()[:60],
         new_activity=str(data.get("newActivity", "")).strip()[:40],
