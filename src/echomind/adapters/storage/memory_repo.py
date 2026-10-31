@@ -21,6 +21,11 @@ from echomind.domain.models import (
 
 RoleType = Literal["owner", "admin", "member"]
 
+FACT_COLUMNS = (
+    "id, chat_key, subject, fact_text, confidence, is_locked, source, revision_count, "
+    "scope, source_person_id, source_venue_id, owner_id, sensitivity, audience_json, source_quote"
+)
+
 
 def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
     raw_role = str(row[3])
@@ -73,19 +78,28 @@ class SqliteMemoryRepository:
             return tuple(row_to_episodic(r) for r in rows)
 
     async def get_semantic_facts(
-        self, chat_key: str, min_confidence: float = 0.0
+        self,
+        chat_key: str,
+        min_confidence: float = 0.0,
+        person_ids: tuple[str, ...] = (),
     ) -> tuple[SemanticFact, ...]:
         if facts_v2_enabled():
             return await load_claim_facts(self._db, chat_key)
-        sql = (
-            "SELECT id, chat_key, subject, fact_text, confidence, is_locked, "
-            "source, revision_count, scope, source_person_id, source_venue_id, owner_id, "
-            "sensitivity, audience_json, source_quote "
-            "FROM semantic_facts WHERE chat_key IN (?, 'global') AND confidence >= ? "
-            "ORDER BY is_locked DESC, confidence DESC, id DESC"
-        )
+        where = "chat_key IN (?, 'global')"
+        params: list[Any] = [chat_key]
+        if person_ids:
+            marks = ",".join("?" for _ in person_ids)
+            where += (
+                f" OR (scope='person' AND (owner_id IN ({marks})"
+                f" OR source_person_id IN ({marks})))"
+            )
+            params.extend(person_ids)
+            params.extend(person_ids)
+        params.append(min_confidence)
+        sql = f"SELECT {FACT_COLUMNS} FROM semantic_facts WHERE ({where}) AND confidence >= ? " \
+              "ORDER BY is_locked DESC, confidence DESC, id DESC"  # noqa: S608 - placeholders only
         async with self._db.connect() as conn:
-            cursor = await conn.execute(sql, (chat_key, min_confidence))
+            cursor = await conn.execute(sql, tuple(params))
             rows = await cursor.fetchall()
             return tuple(row_to_fact(r) for r in rows)
 

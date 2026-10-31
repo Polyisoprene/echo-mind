@@ -42,7 +42,10 @@ class IMemoryReader(Protocol):
     async def get_episodic_cards(self, chat_key: str) -> tuple[EpisodicCard, ...]: ...
 
     async def get_semantic_facts(
-        self, chat_key: str, min_confidence: float = 0.0
+        self,
+        chat_key: str,
+        min_confidence: float = 0.0,
+        person_ids: tuple[str, ...] = (),
     ) -> tuple[SemanticFact, ...]: ...
 
     async def get_procedural_rules(self, chat_key: str) -> tuple[ProceduralRule, ...]: ...

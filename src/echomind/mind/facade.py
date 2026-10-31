@@ -216,6 +216,7 @@ class CognitiveCoreFacade:
         facts = await self._reader.get_semantic_facts(chat_key)
         set_beliefs(rebuild_beliefs(tuple((f.subject, f.fact_text, f.confidence) for f in facts)))
         uids = extract_mentioned_uids(tr, facts)
+        facts = await self._reader.get_semantic_facts(chat_key, person_ids=uids)
         pairs = [(u, await self._reader.get_social_bond(chat_key, u)) for u in uids]
         bm = await attach(self._bond_store, {u: b for u, b in pairs if b is not None})
         chord = await chord_for(self._sub_probe, tr, bm, self._chord_cache, dry_run)
