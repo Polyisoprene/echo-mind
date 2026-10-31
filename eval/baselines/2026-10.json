@@ -1,0 +1,473 @@
+{
+  "metrics": {
+    "paraphrase": {
+      "passed": 0,
+      "total": 10,
+      "rate": 0.0
+    },
+    "privacy": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "venue": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "role": {
+      "passed": 0,
+      "total": 10,
+      "rate": 0.0
+    },
+    "temporal": {
+      "passed": 0,
+      "total": 10,
+      "rate": 0.0
+    },
+    "persona": {
+      "passed": 10,
+      "total": 10,
+      "rate": 1.0
+    },
+    "privacy_leaks": 0,
+    "mrr": 0.333,
+    "overall_passed": 30,
+    "overall_total": 60
+  },
+  "results": [
+    {
+      "id": "para_01",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_02",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_03",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_04",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_05",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_06",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_07",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_08",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_09",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "para_10",
+      "category": "paraphrase",
+      "passed": false,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_01",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_02",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_03",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_04",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_05",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_06",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_07",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_08",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_09",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "privacy_10",
+      "category": "privacy",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_01",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_02",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_03",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_04",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_05",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_06",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_07",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_08",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_09",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "venue_10",
+      "category": "venue",
+      "passed": true,
+      "rank": null,
+      "visible": false
+    },
+    {
+      "id": "role_01",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_02",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_03",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_04",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_05",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_06",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_07",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_08",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_09",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "role_10",
+      "category": "role",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_01",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_02",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_03",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_04",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_05",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_06",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_07",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_08",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_09",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "time_10",
+      "category": "temporal",
+      "passed": false,
+      "rank": 3,
+      "visible": true,
+      "note": "capability not implemented"
+    },
+    {
+      "id": "persona_01",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_02",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_03",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_04",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_05",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_06",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_07",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_08",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_09",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    },
+    {
+      "id": "persona_10",
+      "category": "persona",
+      "passed": true,
+      "delta": 0.0
+    }
+  ],
+  "dataset_sha256": "054785c9cc1d72d56b606aefc49433b63d47aa75f741379e14fb5a8251e97b7b",
+  "version": "v1",
+  "date": "2026-10-31"
+}

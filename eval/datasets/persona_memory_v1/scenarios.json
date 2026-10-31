@@ -1,0 +1,1887 @@
+{
+  "version": "v1",
+  "created_at": "2026-10-31",
+  "description": "EchoMind persona/memory deterministic evaluation set (60 scenarios)",
+  "scenarios": [
+    {
+      "id": "para_01",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para1",
+      "audience": [
+        "u"
+      ],
+      "query": "家里那只小东西最近胃口不好",
+      "facts": [
+        {
+          "subject": "para1",
+          "text": "橘猫的猫粮吃得很少",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para1_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para1_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para1_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para1_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para1_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para1",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_02",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para2",
+      "audience": [
+        "u"
+      ],
+      "query": "那份工作还顺利吗",
+      "facts": [
+        {
+          "subject": "para2",
+          "text": "新岗位还在适应",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para2_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para2_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para2_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para2_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para2_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para2",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_03",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para3",
+      "audience": [
+        "u"
+      ],
+      "query": "你昨晚几点睡的",
+      "facts": [
+        {
+          "subject": "para3",
+          "text": "熬夜到凌晨两点",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para3_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para3_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para3_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para3_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para3_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para3",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_04",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para4",
+      "audience": [
+        "u"
+      ],
+      "query": "假期想出门走走吗",
+      "facts": [
+        {
+          "subject": "para4",
+          "text": "周末计划去爬山",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para4_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para4_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para4_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para4_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para4_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para4",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_05",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para5",
+      "audience": [
+        "u"
+      ],
+      "query": "她平时喝什么咖啡",
+      "facts": [
+        {
+          "subject": "para5",
+          "text": "只喝美式",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para5_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para5_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para5_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para5_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para5_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para5",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_06",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para6",
+      "audience": [
+        "u"
+      ],
+      "query": "材料什么时候要交",
+      "facts": [
+        {
+          "subject": "para6",
+          "text": "下周三截止",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para6_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para6_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para6_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para6_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para6_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para6",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_07",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para7",
+      "audience": [
+        "u"
+      ],
+      "query": "L 最近身体怎么样",
+      "facts": [
+        {
+          "subject": "para7",
+          "text": "在休养",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para7_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para7_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para7_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para7_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para7_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para7",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_08",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para8",
+      "audience": [
+        "u"
+      ],
+      "query": "那部片子看完哭了吗",
+      "facts": [
+        {
+          "subject": "para8",
+          "text": "电影很催泪",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para8_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para8_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para8_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para8_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para8_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para8",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_09",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para9",
+      "audience": [
+        "u"
+      ],
+      "query": "天气不好会害怕吗",
+      "facts": [
+        {
+          "subject": "para9",
+          "text": "怕打雷",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para9_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para9_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para9_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para9_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para9_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para9",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "para_10",
+      "kind": "retrieval",
+      "category": "paraphrase",
+      "venue": "group:para10",
+      "audience": [
+        "u"
+      ],
+      "query": "这个月钱够花吗",
+      "facts": [
+        {
+          "subject": "para10",
+          "text": "预算超了",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para10_d1",
+          "text": "群规周五发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para10_d2",
+          "text": "B 站热门视频",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para10_d3",
+          "text": "昨晚排位连胜",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para10_d4",
+          "text": "今天降温",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "para10_d5",
+          "text": "中午吃了面",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "para10",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "privacy_01",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy1-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "private",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy1"
+    },
+    {
+      "id": "privacy_02",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy2-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "private",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy2"
+    },
+    {
+      "id": "privacy_03",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy3-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "private",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy3"
+    },
+    {
+      "id": "privacy_04",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy4-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "private",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy4"
+    },
+    {
+      "id": "privacy_05",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy5-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "private",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy5"
+    },
+    {
+      "id": "privacy_06",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy6-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "secret",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy6"
+    },
+    {
+      "id": "privacy_07",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy7-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "secret",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy7"
+    },
+    {
+      "id": "privacy_08",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy8-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "secret",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy8"
+    },
+    {
+      "id": "privacy_09",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy9-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "secret",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy9"
+    },
+    {
+      "id": "privacy_10",
+      "kind": "retrieval",
+      "category": "privacy",
+      "venue": "group:privacy10-other",
+      "audience": [
+        "m"
+      ],
+      "query": "L 最近怎么样",
+      "facts": [
+        {
+          "subject": "L的病",
+          "text": "最近在休养",
+          "scope": "person",
+          "owner": "L",
+          "sensitivity": "secret",
+          "source_person_id": "L"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "L的病",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:privacy10"
+    },
+    {
+      "id": "venue_01",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue1-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue1-a"
+    },
+    {
+      "id": "venue_02",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue2-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue2-a"
+    },
+    {
+      "id": "venue_03",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue3-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue3-a"
+    },
+    {
+      "id": "venue_04",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue4-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue4-a"
+    },
+    {
+      "id": "venue_05",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue5-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue5-a"
+    },
+    {
+      "id": "venue_06",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue6-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue6-a"
+    },
+    {
+      "id": "venue_07",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue7-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue7-a"
+    },
+    {
+      "id": "venue_08",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue8-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue8-a"
+    },
+    {
+      "id": "venue_09",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue9-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue9-a"
+    },
+    {
+      "id": "venue_10",
+      "kind": "retrieval",
+      "category": "venue",
+      "venue": "group:venue10-b",
+      "audience": [
+        "u"
+      ],
+      "query": "周五有什么安排",
+      "facts": [
+        {
+          "subject": "群规",
+          "text": "周五晚上发图",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "公开梗",
+          "text": "B 站热门",
+          "scope": "global",
+          "sensitivity": "public"
+        }
+      ],
+      "target": "群规",
+      "expect_visible": false,
+      "max_rank": 5,
+      "seed_venue": "group:venue10-a"
+    },
+    {
+      "id": "role_01",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role1",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_02",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role2",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_03",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role3",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_04",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role4",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_05",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role5",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_06",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role6",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_07",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role7",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_08",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role8",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_09",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role9",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "role_10",
+      "kind": "retrieval",
+      "category": "role",
+      "venue": "group:role10",
+      "audience": [
+        "A",
+        "B"
+      ],
+      "query": "B 把书还给 A 了吗",
+      "facts": [
+        {
+          "subject": "role_target",
+          "text": "B 把书还给了 A",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_forbidden",
+          "text": "A 把书还给了 B",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "role_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "role_target",
+      "forbidden": "role_forbidden",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_01",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time1",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "6 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "4 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_02",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time2",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "7 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "5 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_03",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time3",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "8 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "6 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_04",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time4",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "9 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "7 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_05",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time5",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "10 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "8 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_06",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time6",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "11 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "9 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_07",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time7",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "12 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "10 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_08",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time8",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "13 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "11 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_09",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time9",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "14 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "12 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "time_10",
+      "kind": "retrieval",
+      "category": "temporal",
+      "venue": "group:time10",
+      "audience": [
+        "u"
+      ],
+      "query": "最近去了哪里",
+      "facts": [
+        {
+          "subject": "time_new",
+          "text": "15 月去了上海",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_old",
+          "text": "13 月去了北京",
+          "scope": "venue",
+          "sensitivity": "group"
+        },
+        {
+          "subject": "time_noise",
+          "text": "今天天气不错",
+          "scope": "venue",
+          "sensitivity": "group"
+        }
+      ],
+      "target": "time_new",
+      "forbidden": "time_old",
+      "expect_visible": true,
+      "max_rank": 5
+    },
+    {
+      "id": "persona_01",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 56,
+      "private_affinity": 26,
+      "trust": 0.61,
+      "depth": 81,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_02",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 57,
+      "private_affinity": 27,
+      "trust": 0.62,
+      "depth": 82,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_03",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 58,
+      "private_affinity": 28,
+      "trust": 0.63,
+      "depth": 83,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_04",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 59,
+      "private_affinity": 29,
+      "trust": 0.64,
+      "depth": 84,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_05",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 60,
+      "private_affinity": 30,
+      "trust": 0.65,
+      "depth": 85,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_06",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 61,
+      "private_affinity": 31,
+      "trust": 0.6599999999999999,
+      "depth": 86,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_07",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 62,
+      "private_affinity": 32,
+      "trust": 0.6699999999999999,
+      "depth": 87,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_08",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 63,
+      "private_affinity": 33,
+      "trust": 0.6799999999999999,
+      "depth": 88,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_09",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 64,
+      "private_affinity": 34,
+      "trust": 0.69,
+      "depth": 89,
+      "max_delta": 2.0
+    },
+    {
+      "id": "persona_10",
+      "kind": "persona",
+      "category": "persona",
+      "group_affinity": 65,
+      "private_affinity": 35,
+      "trust": 0.7,
+      "depth": 90,
+      "max_delta": 2.0
+    }
+  ]
+}

@@ -193,7 +193,15 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 
 ## 7. 落地顺序
 
-### Phase 1：先有标尺（不花钱）
+### Phase 1：先有标尺（不花钱）— 已落地
+
+- 数据集：`eval/datasets/persona_memory_v1/scenarios.json`（60 条，SHA256 随报告）；
+- Runner：`scripts/eval_suite.py`（临时 DB，不调 LLM）；
+- 基线：`eval/baselines/2026-10.json`；
+- 当前：paraphrase 0/10（零字面重叠）、privacy 10/10（0 泄露）、venue 10/10、role 0/10、temporal 0/10、persona 10/10，overall 30/60；
+- 门禁：`python scripts/eval_suite.py --check eval/baselines/2026-10.json`。
+
+### Phase 1 原计划
 
 1. 从线上脱敏 60 条场景，冻结输入/期望；
 2. 写 `eval_suite.py`，先接确定性指标：
