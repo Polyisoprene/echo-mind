@@ -58,6 +58,31 @@ def _facts() -> tuple[SemanticFact, ...]:
     )
 
 
+def _bigram_hits(facts: tuple[SemanticFact, ...]) -> tuple[int, list[dict[str, object]]]:
+    import math
+    from collections import Counter
+
+    texts = [f.fact_text for f in facts]
+    grams = [{t[i:i + 2] for i in range(len(t) - 1)} for t in texts]
+    df: Counter[str] = Counter()
+    for bag in grams:
+        df.update(bag)
+    idf = {g: math.log((len(texts) + 1) / (c + 1)) + 1 for g, c in df.items()}
+
+    def score(query: str, index: int) -> float:
+        q = {query[i:i + 2] for i in range(len(query) - 1)}
+        return sum(idf.get(g, 0.0) for g in q & grams[index])
+
+    hits = 0
+    details: list[dict[str, object]] = []
+    for query, target in PAIRS:
+        ranked = sorted(range(len(texts)), key=lambda i: score(query, i), reverse=True)[:5]
+        found = target in [texts[i] for i in ranked]
+        hits += int(found)
+        details.append({"query": query, "target": target, "found": found})
+    return hits, details
+
+
 def main() -> int:
     facts = _facts()
     hits = 0
@@ -69,12 +94,20 @@ def main() -> int:
         hits += int(found)
         details.append({"query": query, "target": target, "found": found,
                         "rank": texts.index(target) + 1 if found else None})
-    payload = {"n": len(PAIRS), "recall_at_5": round(hits / len(PAIRS), 3),
-               "details": details}
+    bigram_hits, bigram_details = _bigram_hits(facts)
+    payload = {
+        "n": len(PAIRS),
+        "recall_at_5": round(hits / len(PAIRS), 3),
+        "recall_at_5_bigram_idf": round(bigram_hits / len(PAIRS), 3),
+        "details": details,
+        "bigram_details": bigram_details,
+    }
     out = ROOT / "reports" / "memory_retrieval_baseline.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"recall@5 = {hits}/{len(PAIRS)} = {payload['recall_at_5']}")
+    print(f"bigram-idf recall@5 = {bigram_hits}/{len(PAIRS)} = "
+          f"{payload['recall_at_5_bigram_idf']}")
     for row in details:
         print(f"  {'OK ' if row['found'] else 'MISS'} {row['query']}")
     print(f"report: {out}")
