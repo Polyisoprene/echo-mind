@@ -34,6 +34,18 @@
 
 对照单评审：GLM 单评审给 DeepSeek 4.67，面板只有 4.33；GLM 单评审给 GLM 4.58，面板 4.50。**单评审会高估 DeepSeek，面板排名变成 Kimi > GLM > DeepSeek。**
 
+## 成对比较（更稳的排序）
+
+3 评审 × 12 场景，随机 A/B 顺序，tie 记 0.5。
+
+| 对比 | 左胜率 | n |
+|---|---:|---:|
+| Kimi-K3 vs GLM-5.3 | 0.556 | 36 |
+| Kimi-K3 vs DeepSeek-V4.1-Flash | 0.778 | 36 |
+| GLM-5.3 vs DeepSeek-V4.1-Flash | 0.686 | 35 |
+
+结论：**Kimi ≈ GLM > DeepSeek**。绝对分面板把 Kimi 与 GLM 的差距放大（4.67 vs 4.50），成对比较只有 0.556，接近平手。
+
 ## 结论
 
 1. **评审方差大于生成方差**：同一批 DeepSeek 回复，换评审模型 overall 从 4.08 到 4.67，差 0.59；生成模型之间最大差 0.75，但绝大多数落在 4.3–4.8。
@@ -47,7 +59,7 @@
 - 不要用单一 judge 的绝对分做上线门禁；
 - 用 **3 个评审模型取中位数**，并保留分维；
 - 先人工标 50 条，算 Cohen's kappa；kappa ≥0.6 再让 judge 进 nightly；
-- 生成模型选择用**成对比较**（同一场景 A/B），而不是绝对分。
+- 生成模型选择用**成对比较**（同一场景 A/B）；本次成对：Kimi 0.556 vs GLM，Kimi 0.778 vs DeepSeek，GLM 0.686 vs DeepSeek。
 
 ## 复现
 

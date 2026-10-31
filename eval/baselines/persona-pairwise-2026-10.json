@@ -1,0 +1,29 @@
+{
+  "models": [
+    "kimi-k3",
+    "glm-5.3",
+    "deepseek-v4.1-flash"
+  ],
+  "judges": [
+    "glm-5.3",
+    "kimi-k3",
+    "deepseek-v4-pro"
+  ],
+  "pairs": {
+    "kimi-k3 vs glm-5.3": {
+      "wins": 20.0,
+      "n": 36,
+      "win_rate": 0.556
+    },
+    "kimi-k3 vs deepseek-v4.1-flash": {
+      "wins": 28.0,
+      "n": 36,
+      "win_rate": 0.778
+    },
+    "glm-5.3 vs deepseek-v4.1-flash": {
+      "wins": 24.0,
+      "n": 35,
+      "win_rate": 0.686
+    }
+  }
+}
