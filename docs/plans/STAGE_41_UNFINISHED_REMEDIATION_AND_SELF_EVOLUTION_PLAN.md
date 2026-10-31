@@ -1357,3 +1357,33 @@ signature.result: 形成反复确认小槽点的行为模式
 - 这是受控 tie-break，不是真实流量；
 - 隐私/secret 硬门在 retrieval 之外，尚未在这个测试里覆盖；
 - 没有自动建链/晋升。
+
+### 14.26 trait ranker 隐私回归（2026-11-01）
+
+新增 `tests/integration/test_trait_memory_privacy.py`：
+
+1. **secret**：
+   - public + secret 两条事实；
+   - trait link 同时指向两条；
+   - `gate_frame` 先丢 secret；
+   - `select_facts` 只能看到 public，secret 不会因 ranker 回来。
+
+2. **private**：
+   - owner 不在 audience → 丢弃；
+   - owner 在 audience → 保留。
+
+结论：
+
+- 硬门在 `select_facts` 之前；
+- trait ranker 不能绕过 private/secret；
+- 隐私边界没有被自演化通道打开。
+
+**验证**
+
+- 全门禁：**359 passed / 92%**，fusion 70/70。
+
+**边界**
+
+- 没测跨 venue 的链接隔离；链接本身没有 venue 字段；
+- 没测 grant 后的 secret 传播；
+- 这些仍属于披露模型/GroupMemBench 工作流。
