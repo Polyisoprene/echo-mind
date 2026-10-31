@@ -36,7 +36,7 @@
       "rate": 1.0
     },
     "privacy_leaks": 0,
-    "mrr": 0.875,
+    "mrr": 1.0,
     "overall_passed": 70,
     "overall_total": 70
   },
@@ -455,70 +455,70 @@
       "id": "multihop_01",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_02",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_03",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_04",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_05",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_06",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_07",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_08",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_09",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     },
     {
       "id": "multihop_10",
       "category": "multihop",
       "passed": true,
-      "rank": 2,
+      "rank": 1,
       "visible": true
     }
   ],

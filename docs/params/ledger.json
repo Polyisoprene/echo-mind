@@ -1000,7 +1000,9 @@
       "class": "fit_pending",
       "status": "quarantined",
       "claim": "",
-      "evidence": {},
+      "evidence": {
+        "rationale": "仅 legacy 评测基线 select_relevant_facts 使用；live fusion 的 recency ranker 按 event_time 原值排序，半衰期不影响 rank"
+      },
       "issue": "ECHOMIND-E1-015",
       "experiment": "用事件时间探针（同义/时间/角色）与真实消息间隔拟合半衰期 30/60/90 天",
       "conservative_value": "30.0",
@@ -1053,12 +1055,12 @@
       "module": "mind/relation_extractor.py",
       "symbol": "RELATION_CONFIDENCE",
       "line": 16,
-      "value": "0.8",
+      "value": "1.0",
       "class": "convention",
       "status": "active",
       "claim": "",
       "evidence": {
-        "rationale": "与事实默认置信度一致；规则抽取只在高精度模式下使用，置信度不抬高来源可信度"
+        "rationale": "精确正则命中即结构明确，不引入 LLM 置信度；LLM 抽取使用自身 confidence"
       }
     },
     {

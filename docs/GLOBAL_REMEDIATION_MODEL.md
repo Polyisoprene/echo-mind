@@ -391,3 +391,28 @@ multihop 现在需要 relation ranker，不再靠字面泄漏通过。
 这也修掉了之前“最近胃口不好”被时间约束误伤的问题：只有“最近 + 哪里/什么时候”等时间疑问句才触发。
 
 边界：这是中文启发式，不是通用意图解析；但当前 70 条上 precision 为 1.0，已可回归。
+
+
+---
+
+## 16. 第 13 轮：清掉 live 的最后两个未校准数值
+
+1. **recency ranker 改按 event_time 原值排序**  
+   旧实现调用 `fact_recency(...)`，半衰期 30 天；但在 RRF 里 ranker 只输出排序，指数衰减是单调变换，半衰期完全不影响 rank。因此直接按 `event_time_ms` 排序，remove 了 live 的 30 天依赖。
+
+2. **规则抽取关系 confidence 改为 1.0**  
+   正则命中即结构明确，不再用无依据的 0.8；LLM 抽取仍用模型自身 confidence。
+
+现在 live 的数值参数只剩：
+
+| 参数 | 来源 |
+|---|---|
+| RRF k=60 | Cormack 2009 |
+| BM25 k1=1.2, b=0.75 | Robertson & Zaragoza 2009 |
+| PPR damping/iter/tol | NetworkX 默认 + HippoRAG |
+| 风格长度 26 | 50 条人工高分组 max |
+| relation confidence 1.0 | 精确规则无不确定性 |
+
+`FACT_RECENCY_HALF_LIFE_DAYS / FACT_RECENCY_WEIGHT / ENTITY_ORDER_WEIGHT` 与 3/6/5 只留在 **legacy 评测基线** `select_relevant_facts`，不进 live；`fact_shadow` 仍用旧分数，属于后续清理项。
+
+实测：fusion 70/70；关 relations 60/70（multihop 0）；门禁 321 passed。

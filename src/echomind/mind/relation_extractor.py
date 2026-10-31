@@ -14,7 +14,7 @@ _PATTERNS: tuple[tuple[str, str], ...] = (
     ("alias", r"QQ:(?P<s>\d{5,12})\s*(?:的群昵称是|的群友是)\s*"
               r"[「『\"']?(?P<o>[^\s，。；」』\"']{1,20})"),
 )
-RELATION_CONFIDENCE = 0.8
+RELATION_CONFIDENCE = 1.0
 
 
 @dataclass(frozen=True)

@@ -6,7 +6,7 @@ import math
 from collections import Counter
 
 from echomind.domain.models import SemanticFact
-from echomind.mind.ebbinghaus import TOKEN_RE, fact_recency
+from echomind.mind.ebbinghaus import TOKEN_RE
 from echomind.mind.entity_order import order_score
 from echomind.mind.retrieval_fusion import RRF_K, rrf_fuse
 
@@ -97,7 +97,7 @@ def _candidate_rankers(
     facts: tuple[SemanticFact, ...], query: str,
     dense: dict[int, float], relations: dict[int, float], now_ms: int,
 ) -> dict[str, tuple[int, ...]]:
-    recency = {f.fact_id: fact_recency(f.event_time_ms, now_ms) for f in facts}
+    recency = {f.fact_id: float(f.event_time_ms) for f in facts}
     order = {f.fact_id: order_score(query, f"{f.subject} {f.fact_text}") for f in facts}
     confidence = {f.fact_id: f.confidence for f in facts}
     lock = {f.fact_id: 1.0 if f.is_locked else 0.0 for f in facts}
