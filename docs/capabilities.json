@@ -329,7 +329,7 @@
         "scripts/persona_sensitivity.py"
       ],
       "status": "partial",
-      "gap": "6/7 维在极端档显著；温柔维可辨阈值约 17–20 分（±5 不可辨、±15 未显著、±20 起 0.854）；guile 0.625 未确立；注入位置 user vs system 配对检验 p=0.72，位置不是瓶颈；自评、无人工盲评",
+      "gap": "6/7 维极端档显著；行为示例版温柔 ±15 达标（0.792 [0.595,0.908]），±10 仍不可辨；guile 0.604 未确立且加示例无效（需重新操作化）；位置 user/system 配对 p=0.72；自评、无人工盲评",
       "acceptance_test": null,
       "evidence_report": "docs/PERSONA_SENSITIVITY_REPORT.md",
       "target_release": "P6e"

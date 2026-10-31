@@ -11,8 +11,8 @@ from __future__ import annotations
 import random
 
 from echomind.domain.models import Percept, PlasticParamSpec, TurnOutcome
+from echomind.mind.persona_rubrics import DIMENSION_RUBRICS
 from echomind.mind.personality import (
-    DIMENSION_RUBRICS,
     compute_personality_deltas,
     synthesize_live_persona_directive,
 )
