@@ -66,3 +66,27 @@ def test_effective_params_overlay_state() -> None:
     }
     merged = effective_params(params, {"persona_warmth": (6.0, 0)}, 0)
     assert merged["persona_warmth"].value == pytest.approx(71.0)
+
+
+@pytest.mark.asyncio
+async def test_behaviour_params_use_the_two_layer_engine(tmp_path: Path) -> None:
+    """The new engine covers behaviour keys too: state on the turn, baseline at settle."""
+    import time
+
+    container = await EchoMindContainer.create(db_path=tmp_path / "beh.db")
+    baseline = (await container.working_store.get_plastic_params())["talkativeness"].value
+
+    await container.cognitive_facade.on_turn_completed(_outcome(0.85))
+
+    after_turn = (await container.working_store.get_plastic_params())["talkativeness"].value
+    assert after_turn == baseline, "a turn must not move a behaviour baseline either"
+    layers = container.persona_layers
+    assert layers is not None
+    state = await layers.load_state()
+    assert state["talkativeness"][0] > 0, "the turn must land in the fast state"
+
+    now_ms = int(time.time() * 1000)
+    moved = await container.cognitive_facade._plasticity.settle_baseline(now_ms + 86_400_000)
+    assert any(spec.key == "talkativeness" for spec in moved)
+    settled = (await container.working_store.get_plastic_params())["talkativeness"].value
+    assert settled > baseline

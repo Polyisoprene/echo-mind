@@ -114,8 +114,13 @@ class NeuroplasticityEngine:
         self._store = store
         self._layers = layers
 
-    async def _observe_persona(self, key: str, delta: float, now_ms: int) -> None:
-        """Move the fast state and buffer the observation for tomorrow's settlement."""
+    async def _observe_param(self, key: str, delta: float, now_ms: int) -> None:
+        """Move the fast state and buffer the observation for the next settlement.
+
+        Used for every plastic parameter when the layer store is wired: the baseline
+        never moves on a turn, so the two-layer contract is uniform across persona
+        and behaviour parameters.
+        """
         if self._layers is None:
             return
         offset, _ = step_state(await self._layers.load_state(), key, delta, now_ms)
@@ -130,8 +135,10 @@ class NeuroplasticityEngine:
         current = await self._store.get_plastic_params()
         updated: list[PlasticParamSpec] = []
         for key, delta, reason in deltas:
+            if self._layers is not None:
+                await self._observe_param(key, delta, now_ms)
+                continue
             if key.startswith("persona_"):
-                await self._observe_persona(key, delta, now_ms)
                 continue
             applied = await self._apply_one(key, delta, reason, current, outcome.social_reward)
             if applied is not None:
@@ -190,7 +197,7 @@ class NeuroplasticityEngine:
         now_ms: int,
     ) -> PlasticParamSpec | None:
         snap = params.get(key)
-        if snap is None or not key.startswith("persona_"):
+        if snap is None:
             return None
         days = max(0.0, (now_ms - last_ms) / DAY_MS) if last_ms else 1.0
         baseline = PARAM_BASELINES.get(key, snap.value)
