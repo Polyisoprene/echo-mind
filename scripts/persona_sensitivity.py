@@ -142,7 +142,14 @@ def _wilson(hits: float, n: int, z: float = 1.96) -> tuple[float, float]:
     return (max(0.0, centre - margin), min(1.0, centre + margin))
 
 
-def _levels(spec: Any) -> dict[str, float]:
+def _levels(spec: Any, delta: float = 0.0) -> dict[str, float]:
+    """Extremes by default; with `delta`, a symmetric band around the default."""
+    if delta > 0:
+        return {
+            "low": round(max(spec.min_bound, spec.default - delta), 2),
+            "base": spec.default,
+            "high": round(min(spec.max_bound, spec.default + delta), 2),
+        }
     span = spec.max_bound - spec.min_bound
     return {
         "low": round(spec.min_bound + 0.10 * span, 2),
@@ -240,10 +247,11 @@ async def _run_dimension(
     gen_model: str,
     judge_model: str,
     placement: str,
+    delta: float,
     rng: random.Random,
 ) -> dict[str, Any]:
     spec = PERSONA_SPECS[dim]
-    levels = _levels(spec)
+    levels = _levels(spec, delta)
     label = DIMS[dim]
     hits = 0.0
     pairs: list[dict[str, Any]] = []
@@ -341,6 +349,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
             gen_model=gen_model,
             judge_model=judge_model,
             placement=args.placement,
+            delta=args.delta,
             rng=rng,
         )
         print(f"[{dim}] accuracy={results[dim]['accuracy']} ci={results[dim]['ci95']}", flush=True)
@@ -352,6 +361,7 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         "judge_model": judge_model,
         "self_judged": judge_model == gen_model,
         "placement": args.placement,
+        "delta": args.delta,
         "scenarios": counts,
         "criterion": "Wilson lower bound of judge accuracy > 0.5; >=5 of 7 dims",
         "passed_dimensions": passed,
@@ -368,6 +378,8 @@ def main() -> int:
     parser.add_argument("--model", default="")
     parser.add_argument("--judge-model", default="")
     parser.add_argument("--placement", choices=["user", "system"], default="user")
+    parser.add_argument("--delta", type=float, default=0.0,
+                        help="symmetric band around the default (0 = p10/p90 extremes)")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--out", type=Path, default=ROOT / "reports")
