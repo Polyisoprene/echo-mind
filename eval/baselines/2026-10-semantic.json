@@ -31,7 +31,7 @@
       "rate": 1.0
     },
     "privacy_leaks": 0,
-    "mrr": 1.0,
+    "mrr": 0.772,
     "overall_passed": 60,
     "overall_total": 60
   },
@@ -40,70 +40,70 @@
       "id": "para_01",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 3,
       "visible": true
     },
     {
       "id": "para_02",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 3,
       "visible": true
     },
     {
       "id": "para_03",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 4,
       "visible": true
     },
     {
       "id": "para_04",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 4,
       "visible": true
     },
     {
       "id": "para_05",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 3,
       "visible": true
     },
     {
       "id": "para_06",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 3,
       "visible": true
     },
     {
       "id": "para_07",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 4,
       "visible": true
     },
     {
       "id": "para_08",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 2,
       "visible": true
     },
     {
       "id": "para_09",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 4,
       "visible": true
     },
     {
       "id": "para_10",
       "category": "paraphrase",
       "passed": true,
-      "rank": 1,
+      "rank": 3,
       "visible": true
     },
     {

@@ -24,6 +24,7 @@ from echomind.mind.ebbinghaus import (
 )
 from echomind.mind.memory_consolidator import run_hippocampal_batch_consolidation
 from echomind.mind.recall_types import RecalledMemoryItem
+from echomind.mind.retrieval_fusion import rrf_fuse
 from echomind.mind.semantic_memory import SemanticMemoryRetriever
 
 
@@ -221,11 +222,15 @@ async def select_facts(
     now_ms: int | None = None,
 ) -> tuple[SemanticFact, ...]:
     current = int(time.time() * 1000) if now_ms is None else now_ms
-    if semantic is not None:
-        ranked = await semantic.rerank(facts, query, limit, current)
-        if ranked is not None:
-            return ranked
-    return select_relevant_facts(facts, query, limit, now_ms=current)
+    lexical = select_relevant_facts(facts, query, len(facts), now_ms=current)
+    if semantic is None:
+        return tuple(lexical[:limit])
+    ranked = await semantic.rerank(facts, query, len(facts), current)
+    if ranked is None:
+        return tuple(lexical[:limit])
+    fused = rrf_fuse((tuple(f.fact_id for f in lexical), tuple(f.fact_id for f in ranked)))
+    by_id = {f.fact_id: f for f in facts}
+    return tuple(by_id[i] for i in fused if i in by_id)[:limit]
 
 
 IncludedFact = tuple[int, str, str]

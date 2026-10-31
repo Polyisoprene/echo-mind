@@ -23,6 +23,7 @@ from echomind.domain.models import PlasticParamSpec, SemanticFact, SocialBondPro
 from echomind.mind.ebbinghaus import select_relevant_facts
 from echomind.mind.person_level import PersonProfile
 from echomind.mind.persona_stance import apply_stance_for
+from echomind.mind.retrieval_fusion import rrf_fuse
 from echomind.mind.semantic_retrieval import rerank_facts
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,11 +63,17 @@ async def _retrieval(
         str(scenario["venue"]), person_ids=tuple(scenario.get("audience", ()))
     )
     if gateway is not None and picked:
+        query = str(scenario["query"])
         embeddings = await gateway.embed(tuple(f.fact_text for f in picked))
         vectors = {f.fact_id: v for f, v in zip(picked, embeddings, strict=True)}
-        ranked = await rerank_facts(
-            picked, str(scenario["query"]), gateway, vectors, 5, now_ms=now_ms
+        lexical = select_relevant_facts(picked, query, len(picked), now_ms=now_ms)
+        semantic = await rerank_facts(
+            picked, query, gateway, vectors, len(picked), now_ms=now_ms
         )
+        fused = rrf_fuse((tuple(f.fact_id for f in lexical),
+                          tuple(f.fact_id for f in semantic)))
+        by_id = {f.fact_id: f for f in picked}
+        ranked = tuple(by_id[i] for i in fused if i in by_id)[:5]
     else:
         ranked = select_relevant_facts(
             picked, str(scenario["query"]), limit=5, now_ms=now_ms

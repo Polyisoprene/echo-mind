@@ -1034,6 +1034,19 @@
       "evidence": {
         "rationale": "6 分≈两次词重叠；让实体顺序在关键词同分时翻转 A→B/B→A；完整关系图（memory_relations）前的守卫，权重待角色探针拟合"
       }
+    },
+    {
+      "id": "mind/retrieval_fusion.py::RRF_K",
+      "module": "mind/retrieval_fusion.py",
+      "symbol": "RRF_K",
+      "line": 7,
+      "value": "60",
+      "class": "convention",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "rationale": "Cormack et al. 2009 常用的 RRF 常数 60；抑制单路排名尖峰，先采用标准值，融合权重评测后再调"
+      }
     }
   ]
 }

@@ -101,7 +101,7 @@ percept → 硬门（private/secret）
 |---|---|---|---|
 | M1 | 无类型化关系/角色 | **部分解决**：实体顺序守卫区分 A→B/B→A；`claims`/类型图仍未接 | 结构性失明 |
 | M2 | 事实没有事件时间，检索不看时间 | **部分解决**：`event_time_ms` + recency 已进关键词/语义排序；因果链仍未建 | 时间/因果缺失 |
-| M3 | 无融合打分 | recency 已加入语义排序；lexical/dense/relation 的 RRF 仍未做 | 向量迷雾 |
+| M3 | 无融合打分 | **已做 RRF**：lexical + dense 融合（relation 通道待接）；recency/order 仍作为特征 | 向量迷雾 |
 | M4 | 无层级/树 | 只有 scope（venue/person/global），没有 parent/child、层级摘要 | 情景断裂 |
 | M5 | 无预测回答检索 | 只用原始 query，没有 HyDE/query expansion | 检索脆弱 |
 | M6 | 披露多数是 frame 级 | 825 `say` vs 1 `said`；归因是词面重叠启发式 | 审计不精确 |
