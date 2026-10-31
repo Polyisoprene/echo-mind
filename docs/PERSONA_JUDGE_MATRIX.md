@@ -54,6 +54,10 @@
 4. **评审模型有自我偏好**：GLM 评 GLM、DeepSeek 评 DeepSeek 都略高；必须交叉评审。
 5. GPT-5.6 / Gemini-3.5 在当前 WorkBuddy 账号返回 `not allowed for user type [personal_free_user]`，未纳入。
 
+## 人工校准（50 条）
+
+judge 与人工的总体 QWK 仅 **0.097**，旧 rubric 0.034；judge 系统性偏松约 1 分。人工备注集中在“太语C/解释太多/像动漫”。因此 **judge 不能当门禁**，详见 `docs/PERSONA_HUMAN_CALIBRATION_RESULT.md`。
+
 ## 使用建议
 
 - 不要用单一 judge 的绝对分做上线门禁；

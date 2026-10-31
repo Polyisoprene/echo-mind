@@ -39,7 +39,7 @@
 | P2 | 涌现特质仍是 **5 条固定文案** | `derive_emergent_trait` 条件命中固定字符串 | “成长”有限，容易复读；evidence_count 只是给固定文案计数 |
 | P3 | 特质证据未反向影响 prompt | 线上 9 条特质全部 `evidence=1`，`min_evidence` 默认 0 | 证据型特质目前只是存储，未形成筛选/淘汰 |
 | P4 | 立场系数仍是 `fit:pending` | `STANCE_COEFFICIENTS` 注释 | 温柔/耐心/俏皮的偏移量未标定 |
-| P5 | 缺少长期人格一致性评测 | **已有 12 场景多模型矩阵 + 3 评审面板**（Kimi 4.67 / GLM 4.50 / DeepSeek 4.33；单评审会高估 DeepSeek），50 条中文人工校准表已生成（`eval/calibration/persona_v1/`），尚未回收 | 可回归，但不能当绝对质量 |
+| P5 | 缺少长期人格一致性评测 | **已有 12 场景多模型矩阵 + 3 评审面板**（Kimi 4.67 / GLM 4.50 / DeepSeek 4.33；单评审会高估 DeepSeek），50 条人工已回收；judge QWK 0.097，**不能当门禁**；人工标签作为唯一 ground truth | 可回归，但不能当绝对质量 |
 | P6 | 人格→记忆耦合弱 | 记忆影响 trait/state，但 trait 不参与检索 | 她不会因为“更温柔”而优先想起照顾类记忆 |
 
 ---

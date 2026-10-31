@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-31",
+  "n": 50,
+  "old_rubric": {
+    "n": 50,
+    "dims": {
+      "persona_consistency": {
+        "n": 50,
+        "qwk": 0.002,
+        "mae": 1.12
+      },
+      "naturalness": {
+        "n": 50,
+        "qwk": 0.02,
+        "mae": 1.42
+      },
+      "boundary": {
+        "n": 50,
+        "qwk": 0.031,
+        "mae": 0.74
+      },
+      "overall": {
+        "n": 50,
+        "qwk": 0.034,
+        "mae": 1.38
+      }
+    }
+  },
+  "new_rubric": {
+    "persona_consistency": {
+      "n": 50,
+      "qwk": 0.169,
+      "mae": 0.9,
+      "human_mean": 3.82,
+      "judge_mean": 4.36
+    },
+    "naturalness": {
+      "n": 50,
+      "qwk": 0.08,
+      "mae": 1.44,
+      "human_mean": 3.2,
+      "judge_mean": 4.6
+    },
+    "boundary": {
+      "n": 50,
+      "qwk": 0.224,
+      "mae": 0.66,
+      "human_mean": 4.26,
+      "judge_mean": 4.72
+    },
+    "overall": {
+      "n": 50,
+      "qwk": 0.097,
+      "mae": 1.26,
+      "human_mean": 3.24,
+      "judge_mean": 4.3
+    }
+  }
+}
