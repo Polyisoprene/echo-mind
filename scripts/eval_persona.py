@@ -19,7 +19,6 @@ import json
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 from typing import Any
 
@@ -209,18 +208,21 @@ def suite_sensitivity(live: bool) -> dict[str, Any]:
             "protocol": {
                 "scenarios": 24,
                 "levels": ["p10", "baseline", "p90"],
-                "generations": 7 * 3 * 24,
+                "generations": 7 * 2 * 24,
                 "metrics": ["pairwise_judge_accuracy", "feature_direction", "self_consistency"],
-                "pass": ">=5 of 7 dimensions reach 70% judge accuracy",
+                "pass": "Wilson lower bound > 0.5 for >=5 of 7 dimensions",
             },
         }
-    return {"status": "not_implemented", "reason": "live generator is the next P6e milestone"}
+    return {
+        "status": "not_implemented",
+        "reason": "run scripts/persona_sensitivity.py --dry-run, then --scenarios 4",
+    }
 
 
 def _git_head() -> str:
     try:
-        return subprocess.run(  # noqa: S603 - fixed argv, no shell
-            ["git", "rev-parse", "--short", "HEAD"],
+        return subprocess.run(  # noqa: S603, S607 - fixed argv, no shell
+            ["git", "rev-parse", "--short", "HEAD"],  # noqa: S607 - fixed argv
             cwd=ROOT, capture_output=True, text=True, check=False,
         ).stdout.strip()
     except OSError:
@@ -229,7 +231,7 @@ def _git_head() -> str:
 
 async def run(suites: tuple[str, ...], days: int, live: bool) -> dict[str, Any]:
     report: dict[str, Any] = {
-        "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "generated_at": datetime.datetime.now(datetime.UTC).isoformat(),
         "git_head": _git_head(),
         "clock": CLOCK,
         "suites": {},
@@ -254,10 +256,14 @@ def main() -> int:
     parser.add_argument("--live-llm", action="store_true")
     args = parser.parse_args()
 
-    suites = ("stability", "affect", "recall", "sensitivity") if args.suite == "all" else (args.suite,)
+    suites = (
+        ("stability", "affect", "recall", "sensitivity")
+        if args.suite == "all"
+        else (args.suite,)
+    )
     report = asyncio.run(run(suites, args.days, args.live_llm))
     args.out.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.datetime.now(datetime.UTC).strftime("%Y%m%dT%H%M%SZ")
     path = args.out / f"persona_eval_{stamp}.json"
     path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     summary = {name: {k: v for k, v in data.items() if k not in ("cases", "protocol")}
