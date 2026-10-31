@@ -17,7 +17,9 @@ def _row(row: aiosqlite.Row) -> TraitCandidate:
         category=cast(Any, str(row[2])), trait_text=str(row[3]),
         evidence_json=str(row[4]), prompt_hash=str(row[5]),
         generator_model=str(row[6]), status=cast(Any, str(row[7])),
-        reject_reason=str(row[8]), created_ms=int(row[9]),
+        reject_reason=str(row[8]), promoted_by=str(row[9]),
+        promote_reason=str(row[10]), promoted_ms=int(row[11]),
+        created_ms=int(row[12]),
     )
 
 
@@ -45,8 +47,32 @@ class SqliteTraitCandidateStore:
         async with self._db.connect() as conn:
             cursor = await conn.execute(
                 "SELECT id, trait_id, category, trait_text, evidence_json, "
-                "prompt_hash, generator_model, status, reject_reason, created_ms "
+                "prompt_hash, generator_model, status, reject_reason, promoted_by, "
+                "promote_reason, promoted_ms, created_ms "
                 "FROM trait_candidates WHERE trait_id=? ORDER BY id DESC LIMIT ?",
                 (trait_id, limit),
             )
             return tuple(_row(row) for row in await cursor.fetchall())
+
+    async def get_candidate(self, candidate_id: int) -> TraitCandidate | None:
+        async with self._db.connect() as conn:
+            cursor = await conn.execute(
+                "SELECT id, trait_id, category, trait_text, evidence_json, "
+                "prompt_hash, generator_model, status, reject_reason, promoted_by, "
+                "promote_reason, promoted_ms, created_ms "
+                "FROM trait_candidates WHERE id=?", (candidate_id,),
+            )
+            row = await cursor.fetchone()
+            return _row(row) if row else None
+
+    async def promote_candidate(
+        self, candidate_id: int, approved_by: str, reason: str
+    ) -> bool:
+        async with self._db.connect() as conn:
+            cursor = await conn.execute(
+                "UPDATE trait_candidates SET status='promoted', promoted_by=?, "
+                "promote_reason=?, promoted_ms=? WHERE id=? AND status='candidate'",
+                (approved_by, reason, int(time.time() * 1000), candidate_id),
+            )
+            await conn.commit()
+            return cursor.rowcount > 0

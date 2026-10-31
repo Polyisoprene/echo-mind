@@ -24,4 +24,7 @@ class TraitCandidate(FrozenValueObject):
     generator_model: str = ""
     status: CandidateStatus = "candidate"
     reject_reason: str = ""
+    promoted_by: str = ""
+    promote_reason: str = ""
+    promoted_ms: int = 0
     created_ms: int = Field(ge=0)

@@ -14,3 +14,9 @@ class ITraitCandidateStore(Protocol):
     async def list_candidates(
         self, trait_id: int, limit: int = 20
     ) -> tuple[TraitCandidate, ...]: ...
+
+    async def get_candidate(self, candidate_id: int) -> TraitCandidate | None: ...
+
+    async def promote_candidate(
+        self, candidate_id: int, approved_by: str, reason: str
+    ) -> bool: ...

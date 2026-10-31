@@ -108,3 +108,29 @@ async def test_candidate_store_dedupes_prompt_hash(tmp_path: Path) -> None:
     await candidates.save_candidate(candidate)
     await candidates.save_candidate(candidate)
     assert len(await candidates.list_candidates(trait.trait_id)) == 1
+
+
+async def test_candidate_promotion_is_explicit_and_audited(tmp_path: Path) -> None:
+    from echomind.adapters.storage.trait_candidate_repo import SqliteTraitCandidateStore
+    from echomind.domain.trait_candidate import TraitCandidate
+
+    db = SqliteDatabase(tmp_path / "promotion.db")
+    await db.initialize()
+    store = SqliteWorkingStateStore(db)
+    traits = await store.sync_persona_traits(
+        new_trait=PersonaTrait(trait_text="晋升测试", strength=6),
+        chat_key="g", source="turn:t1",
+    )
+    trait = next(item for item in traits if item.trait_text == "晋升测试")
+    candidates = SqliteTraitCandidateStore(db)
+    candidate = TraitCandidate(
+        trait_id=trait.trait_id, category="habit", trait_text="会先看细节",
+        evidence_json="[]", prompt_hash="promote-1", created_ms=1,
+    )
+    await candidates.save_candidate(candidate)
+    saved = (await candidates.list_candidates(trait.trait_id))[0]
+    assert await candidates.promote_candidate(saved.candidate_id, "operator", "reviewed") is True
+    promoted = await candidates.get_candidate(saved.candidate_id)
+    assert promoted is not None and promoted.status == "promoted"
+    assert promoted.promote_reason == "reviewed"
+    assert await candidates.promote_candidate(saved.candidate_id, "operator", "again") is False

@@ -970,3 +970,38 @@ assistant text > tool > user trigger
 
 - `tests/unit/test_trait_generation.py`：tool-only 不调用 LLM；
 - 全门禁：**348 passed / 92%**，fusion 70/70。
+
+### 14.14 晋升协议（2026-11-01 已落地，显式人工）
+
+**代码**
+
+- `src/echomind/mind/trait_promotion.py`；
+- `trait_candidates` 新增 `promoted_by / promote_reason / promoted_ms`；
+- `SqliteTraitCandidateStore.get_candidate()/promote_candidate()`；
+- `scripts/promote_trait_candidate.py`。
+
+**自动审查**
+
+- candidate 状态；
+- ≥2 个独立支持 context；
+- 至少一条非 tool 的行为/话语证据。
+
+**显式晋升**
+
+- 必须 `--approve`；
+- 必须提供 `--reason`；
+- 只把 `trait_candidates.status` 改为 `promoted`；
+- **不写 `persona_traits`、不改 prompt、不进检索**；
+- 重复晋升返回 false。
+
+**为什么不是自动**
+
+当前没有可靠的人格质量 ground truth；  
+quote 校验/结构审查只能证明“不是编的”，不能证明“像真人”。  
+所以 `promoted` 只是审计状态，不是上线开关。
+
+**验证**
+
+- `tests/unit/test_trait_promotion.py`：eligible / tool-only / one context / promoted；
+- 集成测试：晋升审计、重复晋升拒绝；
+- 全门禁：**352 passed / 92%**，fusion 70/70。

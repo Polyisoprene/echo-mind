@@ -120,6 +120,12 @@ CREATE INDEX IF NOT EXISTS idx_trait_candidates_trait
 
 async def ensure_trait_candidate_table(conn: Any) -> None:
     await conn.executescript(_TRAIT_CANDIDATE_DDL)
+    for column, ddl in (
+        ("promoted_by", "TEXT NOT NULL DEFAULT ''"),
+        ("promote_reason", "TEXT NOT NULL DEFAULT ''"),
+        ("promoted_ms", "INTEGER NOT NULL DEFAULT 0"),
+    ):
+        await _ensure_column(conn, "trait_candidates", column, ddl)
 
 
 _TRAIT_MEMORY_DDL = """
