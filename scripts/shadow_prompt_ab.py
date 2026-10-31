@@ -132,9 +132,15 @@ async def _run_replies(
     return rows, old_texts, new_texts, by_scenario
 
 
-def _filler(needed: int) -> str:
-    """Character-length control: add only neutral full-width spaces."""
-    return NEUTRAL_SPACE * max(0, needed)
+def _pad_shorter(shadow: PromptShadow) -> PromptShadow:
+    """Pad only the shorter directive, keeping semantic content untouched."""
+    if shadow.old_len < shadow.new_len:
+        padded = shadow.old + NEUTRAL_SPACE * (shadow.new_len - shadow.old_len)
+        return PromptShadow(padded, shadow.new)
+    if shadow.new_len < shadow.old_len:
+        padded = shadow.new + NEUTRAL_SPACE * (shadow.old_len - shadow.new_len)
+        return PromptShadow(shadow.old, padded)
+    return shadow
 
 
 async def _build_ab(
@@ -171,9 +177,7 @@ async def _build_ab(
     shadow = build_shadow_prompts(params, traits, saved)
     tested = saved
     if args.matched:
-        needed = shadow.old_len - shadow.new_len
-        tested = saved.model_copy(update={"trait_text": saved.trait_text + _filler(needed)})
-        shadow = build_shadow_prompts(params, traits, tested)
+        shadow = _pad_shorter(shadow)
         if shadow.old_len != shadow.new_len:
             raise ValueError(f"length match failed: {shadow.old_len} != {shadow.new_len}")
     return llm, saved, shadow, tested
