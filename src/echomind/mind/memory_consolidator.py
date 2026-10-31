@@ -20,7 +20,7 @@ from echomind.mind.hippocampus import (
     build_hippocampus_messages,
     parse_consolidation_json,
 )
-from echomind.mind.memory_budget import consolidation_budget
+from echomind.mind.memory_budget import consolidation_budget, consolidation_thinking
 
 if TYPE_CHECKING:
     from echomind.mind.subconscious_probe import SubconsciousChordResult
@@ -283,7 +283,7 @@ async def run_hippocampal_batch_consolidation(
     locked = tuple(f for f in facts if f.is_locked)
     msgs = build_hippocampus_messages(chat_key, transcript_lines, locked, role_text=role_text)
     resp = await llm.complete(msgs, temperature=0.3, max_tokens=consolidation_budget(),
-                              chat_key=chat_key, thinking_off=True)
+                              chat_key=chat_key, thinking_off=not consolidation_thinking())
     batch = parse_consolidation_json(chat_key, _extract_llm_text(resp), now_ms)
     for card in batch.cards:
         await writer.save_episodic_card(card)

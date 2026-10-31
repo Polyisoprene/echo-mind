@@ -649,7 +649,7 @@ async def test_qzone_tools_and_showcase_scheduler(tmp_path: Path) -> None:
     caller = _QzoneCaller()
     qz_tool = QzonePublishTool(caller)
     sig_tool = ProfileSignatureTool(caller)
-    assert len(qz_tool.config_fields()) == 13
+    assert len(qz_tool.config_fields()) == 16
     assert "ok" in await qz_tool.execute(
         "group:1", {"content": "今天阳光真好", "visibility": "public"}
     )

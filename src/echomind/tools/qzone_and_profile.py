@@ -15,6 +15,12 @@ QZONE_SHOWCASE_FIELDS: tuple[SkillConfigField, ...] = (
                      kind="number", default="400", placeholder="默认 400"),
     SkillConfigField(key="token_budget_signature", label="签名 token 预算",
                      kind="number", default="120", placeholder="默认 120"),
+    SkillConfigField(key="thinking_proactive", label="主动对话启用思考 (1=开/0=关)",
+                     kind="number", default="0", placeholder="默认 0 关闭"),
+    SkillConfigField(key="thinking_post", label="空间说说启用思考 (1=开/0=关)",
+                     kind="number", default="0", placeholder="默认 0 关闭"),
+    SkillConfigField(key="thinking_signature", label="签名启用思考 (1=开/0=关)",
+                     kind="number", default="0", placeholder="默认 0 关闭"),
     SkillConfigField(
         key="signature_enabled",
         label="自动改个性签名 (1=开/0=关)",

@@ -180,7 +180,8 @@ class QzoneMoodShowcaseScheduler:
         resp = await self._llm.complete(
             [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
             temperature=0.85, max_tokens=budget(cfg, "token_budget_signature", 120),
-            chat_key="qzone:signature", thinking_off=True,
+            chat_key="qzone:signature",
+            thinking_off=not bool(int(cfg.get("thinking_signature", "0") or 0)),
         )
         sig = extract_content(resp)[:50]
         if not sig:
@@ -199,7 +200,8 @@ class QzoneMoodShowcaseScheduler:
         resp = await self._llm.complete(
             [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
             temperature=0.85, max_tokens=budget(cfg, "token_budget_post", 400),
-            chat_key="qzone:post", thinking_off=True,
+            chat_key="qzone:post",
+            thinking_off=not bool(int(cfg.get("thinking_post", "0") or 0)),
         )
         post = extract_content(resp)[:280]
         if not post:
@@ -219,13 +221,13 @@ class QzoneMoodShowcaseScheduler:
         max_tok = budget(cfg, "token_budget_proactive", 300)
         resp = await self._llm.complete(
             [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
-            temperature=0.85, max_tokens=max_tok, chat_key=chat_key, thinking_off=True,
+            temperature=0.85, max_tokens=max_tok, chat_key=chat_key,
+            thinking_off=not bool(int(cfg.get("thinking_proactive", "0") or 0)),
         )
         if is_truncated(resp):
             resp = await self._llm.complete(
                 [{"role": "system", "content": ctx_text}, {"role": "user", "content": prompt}],
                 temperature=0.85, max_tokens=max_tok + 200, chat_key=chat_key,
-                thinking_off=True,
             )
         msg = extract_content(resp).strip()
         if not msg:
