@@ -70,7 +70,8 @@ class SqliteMemoryRepository:
             "SELECT id, chat_key, ts, msg_seq, summary, key_detail, participants_json, "
             "importance, pinned, rehearsals, last_recalled_ms, scope, source_person_id, "
             "source_venue_id, owner_id, sensitivity, audience_json, source_quote "
-            "FROM episodic_memories WHERE chat_key = ? ORDER BY ts ASC"
+            "FROM episodic_memories WHERE chat_key = ? AND sensitivity != 'secret' "
+            "ORDER BY ts ASC"
         )
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, (chat_key,))
@@ -85,19 +86,28 @@ class SqliteMemoryRepository:
     ) -> tuple[SemanticFact, ...]:
         if facts_v2_enabled():
             return await load_claim_facts(self._db, chat_key)
-        where = "chat_key IN (?, 'global')"
+        clauses = ["chat_key IN (?, 'global')"]
         params: list[Any] = [chat_key]
+        if chat_key.startswith("private:"):
+            clauses.append("(scope='person' AND owner_id=?)")
+            params.append(chat_key.split(":", 1)[1])
         if person_ids:
             marks = ",".join("?" for _ in person_ids)
-            where += (
-                f" OR (scope='person' AND (owner_id IN ({marks})"
+            clauses.append(
+                f"(scope='person' AND (owner_id IN ({marks})"
                 f" OR source_person_id IN ({marks})))"
             )
             params.extend(person_ids)
             params.extend(person_ids)
+        where = " OR ".join(clauses)
         params.append(min_confidence)
+        params.append(chat_key)
+        privacy = (
+            "(sensitivity IN ('public','group') OR (sensitivity='private' "
+            "AND ? IN (chat_key, 'private:'||owner_id)))"
+        )
         sql = f"SELECT {FACT_COLUMNS} FROM semantic_facts WHERE ({where}) AND confidence >= ? " \
-              "ORDER BY is_locked DESC, confidence DESC, id DESC"  # noqa: S608 - placeholders only
+              f"AND {privacy} ORDER BY is_locked DESC, confidence DESC, id DESC"  # noqa: S608
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, tuple(params))
             rows = await cursor.fetchall()

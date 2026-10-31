@@ -31,7 +31,7 @@ async def test_person_facts_follow_the_person_not_the_room(tmp_path: Path) -> No
     assert "群规" not in private, "venue facts must stay local"
     assert "新闻" in private, "global facts remain visible"
 
-    plain = {f.subject for f in await repo.get_semantic_facts("private:L")}
+    plain = {f.subject for f in await repo.get_semantic_facts("group:2")}
     assert "L" not in plain, "without person_ids, a person fact is not recalled elsewhere"
 
     group = {f.subject for f in await repo.get_semantic_facts("group:1")}

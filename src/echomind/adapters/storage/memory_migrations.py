@@ -14,7 +14,42 @@ async def _ensure_column(
         await conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
 
 
+KNOWLEDGE_DDL = """
+CREATE TABLE IF NOT EXISTS disclosures (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  memory_kind TEXT NOT NULL,
+  memory_id INTEGER NOT NULL,
+  venue TEXT NOT NULL,
+  audience_json TEXT NOT NULL,
+  action TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  phase TEXT NOT NULL DEFAULT 'gate',
+  persona_json TEXT NOT NULL DEFAULT '{}',
+  ts_ms INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS memory_knowledge (
+  memory_kind TEXT NOT NULL,
+  memory_id INTEGER NOT NULL,
+  person_id TEXT NOT NULL,
+  state TEXT NOT NULL,
+  confidence REAL NOT NULL DEFAULT 1.0,
+  updated_ms INTEGER NOT NULL,
+  PRIMARY KEY(memory_kind, memory_id, person_id)
+);
+CREATE TABLE IF NOT EXISTS disclosure_grants (
+  memory_kind TEXT NOT NULL,
+  memory_id INTEGER NOT NULL,
+  grantee_id TEXT NOT NULL,
+  granted_by TEXT NOT NULL,
+  granted_ms INTEGER NOT NULL,
+  expires_ms INTEGER,
+  PRIMARY KEY(memory_kind, memory_id, grantee_id)
+);
+"""
+
+
 async def ensure_columns(conn: aiosqlite.Connection) -> None:
+    await conn.executescript(KNOWLEDGE_DDL)
     await _ensure_column(conn, "llm_traces", "chat_key", "TEXT NOT NULL DEFAULT ''")
     await _ensure_column(conn, "stickers", "scene_tags", "TEXT NOT NULL DEFAULT ''")
     await _ensure_column(conn, "turn_traces", "context_count", "INTEGER NOT NULL DEFAULT 0")

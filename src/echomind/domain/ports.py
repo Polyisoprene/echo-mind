@@ -55,6 +55,25 @@ class IMemoryReader(Protocol):
     async def get_rival_names(self, chat_key: str) -> tuple[str, ...]: ...
 
 
+class IDisclosureLog(Protocol):
+    """Audit trail for what she kept or said, and who already knows a memory."""
+
+    async def log_disclosure(
+        self, *, memory_kind: str, memory_id: int, venue: str,
+        audience: tuple[str, ...], action: str, reason: str,
+        phase: str = "gate", persona_json: str = "{}",
+    ) -> None: ...
+
+    async def mark_known(
+        self, memory_kind: str, memory_id: int, person_id: str,
+        state: str, confidence: float = 1.0,
+    ) -> None: ...
+
+    async def who_knows(
+        self, memory_kind: str, memory_id: int
+    ) -> tuple[tuple[str, str], ...]: ...
+
+
 @runtime_checkable
 class IMemoryWriter(Protocol):
     """Write-only segregated port for memory consolidation and reinforcement (<=5 methods)."""
