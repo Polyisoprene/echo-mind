@@ -77,27 +77,39 @@ def _json(raw: dict[str, Any]) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
-def _key(scenario: dict[str, Any], model: str) -> str:
-    return hashlib.sha256(f"{model}\n{scenario['user']}".encode()).hexdigest()
+def _key(scenario: dict[str, Any], generator: str, judge_model: str) -> str:
+    return hashlib.sha256(
+        f"{generator}\n{judge_model}\n{scenario['user']}".encode()
+    ).hexdigest()
 
 
-async def _reply(gateway: FailoverLlmGateway, system: str, user: str) -> str:
+async def _reply(
+    gateway: FailoverLlmGateway, system: str, user: str, model: str
+) -> str:
     raw = await gateway.complete(
         [{"role": "system", "content": system}, {"role": "user", "content": user}],
         temperature=0.7, max_tokens=220, thinking_off=True, chat_key="persona-judge",
+        model_override=model,
     )
-    return _content(raw).strip()
+    reply = _content(raw).strip()
+    if not reply:
+        raise RuntimeError(f"model {model} returned an empty reply")
+    return reply
 
 
 async def _judge(gateway: FailoverLlmGateway, persona: str, scenario: dict[str, Any],
-                 reply: str) -> dict[str, Any]:
+                 reply: str, model: str) -> dict[str, Any]:
     user = f"{persona}\n\n场景：{scenario['user']}\n期望：{scenario['expect']}\n回复：{reply}"
     raw = await gateway.complete(
         [{"role": "system", "content": RUBRIC}, {"role": "user", "content": user}],
         temperature=0.0, max_tokens=500, thinking_off=True, json_mode=True,
-        chat_key="persona-judge",
+        chat_key="persona-judge", model_override=model,
     )
-    return _json(raw)
+    scores = _json(raw)
+    required = ("persona_consistency", "naturalness", "boundary", "overall")
+    if not all(key in scores for key in required):
+        raise RuntimeError(f"judge {model} returned no scores")
+    return scores
 
 
 async def main() -> int:
@@ -106,11 +118,15 @@ async def main() -> int:
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "persona-judge.json")
     parser.add_argument("--cache", type=Path, default=ROOT / "data" / "persona_judge_cache.json")
+    parser.add_argument("--model", default="")
+    parser.add_argument("--judge-model", default="")
     args = parser.parse_args()
 
     data = json.loads(SCENARIOS.read_text(encoding="utf-8"))
     scenarios = data["scenarios"][:args.limit] if args.limit else data["scenarios"]
     cfg = load_config_from_json(ROOT / "data" / "config.json")
+    generator = args.model or cfg.primary_llm.model
+    judge_model = args.judge_model or generator
     persona = synthesize_live_persona_directive(_params(args.db), _traits(args.db))
     system = f"你是「{cfg.bot_name}」。{cfg.role_text}\n{persona}\n只回复群聊内容，不解释规则。"
 
@@ -122,10 +138,14 @@ async def main() -> int:
     gateway = FailoverLlmGateway(cfg.primary_llm, cfg.fallback_llm, db)
     rows = []
     for scenario in scenarios:
-        key = _key(scenario, cfg.primary_llm.model)
+        key = _key(scenario, generator, judge_model)
         if key not in cache:
-            reply = await _reply(gateway, system, str(scenario["user"]))
-            scores = await _judge(gateway, persona, scenario, reply)
+            try:
+                reply = await _reply(gateway, system, str(scenario["user"]), generator)
+                scores = await _judge(gateway, persona, scenario, reply, judge_model)
+            except Exception as exc:  # noqa: BLE001 - one model/scenario failure
+                print(f"{scenario['id']} failed: {exc}")
+                continue
             cache[key] = {"reply": reply, "scores": scores}
             args.cache.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
         row = {"id": scenario["id"], **cache[key]}
@@ -135,7 +155,7 @@ async def main() -> int:
     keys = ("persona_consistency", "naturalness", "boundary", "overall")
     summary = {k: round(sum(float(r["scores"].get(k, 0)) for r in rows) / max(1, len(rows)), 2)
                for k in keys}
-    report = {"date": "2026-10-31", "model": cfg.primary_llm.model,
+    report = {"date": "2026-10-31", "model": generator, "judge_model": judge_model,
               "summary": summary, "rows": rows}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

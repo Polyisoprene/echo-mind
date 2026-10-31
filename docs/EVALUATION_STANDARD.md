@@ -217,7 +217,8 @@ python scripts/eval_suite.py --suite all --report reports/eval-$(date +%F).json
 - 数据集：`eval/datasets/persona_judge_v1/scenarios.json`（12 条）；
 - Runner：`scripts/eval_persona_judge.py`，先生成回复，再用固定 rubric 评审；
 - 基线：`eval/baselines/persona-judge-2026-10.json`；
-- 当前：persona_consistency 4.25 / naturalness 4.50 / boundary 5.00 / overall 4.25（1–5）；
+- 单模型基线：persona_consistency 4.25 / naturalness 4.50 / boundary 5.00 / overall 4.25；
+- 多模型矩阵：Kimi-K3 在 GLM-5.3 评审下 overall 4.83；同一 DeepSeek 回复换评审 overall 4.08–4.67；见 `docs/PERSONA_JUDGE_MATRIX.md`；
 - 注意：生成与评审是同一本地模型，尚未人工校准；只能做回归基线，不能当绝对质量。
 
 ### Phase 2 原计划

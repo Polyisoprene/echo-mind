@@ -1,0 +1,84 @@
+{
+  "entries": [
+    {
+      "generator": "kimi-k3",
+      "judge": "glm-5.3",
+      "n": 12,
+      "persona_consistency": 4.83,
+      "naturalness": 4.83,
+      "boundary": 5.0,
+      "overall": 4.83,
+      "file": "pj_kimi-k3__glm-5.3.json"
+    },
+    {
+      "generator": "deepseek-v4.1-flash",
+      "judge": "glm-5.3",
+      "n": 12,
+      "persona_consistency": 4.58,
+      "naturalness": 4.58,
+      "boundary": 5.0,
+      "overall": 4.67,
+      "file": "pj_deepseek-v4.1-flash__glm-5.3.json"
+    },
+    {
+      "generator": "glm-5.3",
+      "judge": "glm-5.3",
+      "n": 12,
+      "persona_consistency": 4.58,
+      "naturalness": 4.67,
+      "boundary": 4.75,
+      "overall": 4.58,
+      "file": "pj_glm-5.3__glm-5.3.json"
+    },
+    {
+      "generator": "minimax-m3.1-flash",
+      "judge": "glm-5.3",
+      "n": 12,
+      "persona_consistency": 4.5,
+      "naturalness": 4.5,
+      "boundary": 5.0,
+      "overall": 4.58,
+      "file": "pj_minimax-m3.1-flash__glm-5.3.json"
+    },
+    {
+      "generator": "deepseek-v4-pro",
+      "judge": "glm-5.3",
+      "n": 12,
+      "persona_consistency": 4.58,
+      "naturalness": 4.5,
+      "boundary": 4.92,
+      "overall": 4.33,
+      "file": "pj_deepseek-v4-pro__glm-5.3.json"
+    },
+    {
+      "generator": "deepseek-v4.1-flash",
+      "judge": "kimi-k3",
+      "n": 12,
+      "persona_consistency": 4.25,
+      "naturalness": 4.58,
+      "boundary": 4.75,
+      "overall": 4.33,
+      "file": "pj_deepseek-v4.1-flash__kimi-k3.json"
+    },
+    {
+      "generator": "deepseek-v4.1-flash",
+      "judge": "deepseek-v4-pro",
+      "n": 12,
+      "persona_consistency": 4.08,
+      "naturalness": 4.5,
+      "boundary": 5.0,
+      "overall": 4.08,
+      "file": "pj_deepseek-v4.1-flash__deepseek-v4-pro.json"
+    },
+    {
+      "generator": "mimo-v2.6-pro",
+      "judge": "glm-5.3",
+      "n": 12,
+      "persona_consistency": 4.17,
+      "naturalness": 4.17,
+      "boundary": 4.75,
+      "overall": 4.08,
+      "file": "pj_mimo-v2.6-pro__glm-5.3.json"
+    }
+  ]
+}
