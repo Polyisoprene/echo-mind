@@ -69,3 +69,31 @@ conversation JSON
 - 官方最强系统平均 46.0%（gpt-5 judge），BM25 是强基线；本机 LLM/judge 不同，不能直接排名；
 - 该结果只作 Finance 适配基线，尚未接 live；
 - 下一步优先 term_ambiguity/temporal，而不是继续加 top-k。
+
+## 6. Technology 复测（2026-11-01）
+
+同一消息级 BM25 + 官方 prompt：
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| multi_hop | 41 | 0.341 |
+| knowledge_update | 36 | 0.417 |
+| temporal | 37 | 0.378 |
+| user_implicit | 28 | 0.393 |
+| term_ambiguity | 43 | 0.070 |
+| abstention | 28 | 1.000 |
+| **总体** | **213** | **85/213 = 0.399** |
+
+对照 Finance：
+
+```text
+Finance 0.407
+Technology 0.399
+```
+
+结论：
+
+- 两个 solvability-filtered 域都约 40%，适配器不是 Finance 偶然；
+- term_ambiguity 在 Technology 只有 0.070，是最稳定的系统性短板；
+- abstention 1.000，说明拒答不是问题；
+- 下一步应做 term/entity normalization 或 dense retrieval，而不是继续加 top-k。

@@ -1,0 +1,18 @@
+{
+  "knowledge_update": {
+    "n": 36,
+    "accuracy": 0.417
+  },
+  "multi_hop": {
+    "n": 41,
+    "accuracy": 0.341
+  },
+  "temporal": {
+    "n": 37,
+    "accuracy": 0.378
+  },
+  "overall": {
+    "n": 114,
+    "accuracy": 0.377
+  }
+}
