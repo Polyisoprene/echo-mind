@@ -2375,3 +2375,52 @@ GET /api/mind/style-health
 - Web 测试覆盖 endpoint；
 - `app.py` 保持 300 行；
 - 全门禁：**375 passed / 92%**，fusion 70/70。
+
+### 14.59 删除 7 条 legacy trait（2026-11-01）
+
+用户确认删除无 evidence 的 legacy trait。
+
+删除前审计：
+
+- 7 条全部 `legacy_unverified`；
+- `trait_evidence=0`；
+- `trait_memory_links=0`；
+- `trait_candidates=0`；
+- 备份：`eval/baselines/deleted-legacy-traits-2026-11-01.json`。
+
+删除 ID：
+
+```text
+120, 154, 156, 158, 162, 163, 165
+```
+
+结果：
+
+```text
+all_traits=2
+active_traits=2
+current_prompt_len=1222
+active_only_prompt_len=1222
+delta=0
+```
+
+说明：
+
+- 现在 prompt 实际只剩 2 条 active；
+- 当前 filter 仍保留 `legacy_unverified` 分支，供未来显式迁移使用；
+- 但库里已经没有 legacy，所以行为等同 active-only；
+- 没有删除 active trait/evidence/support。
+
+**active-only prompt 定义**：
+
+```text
+只渲染 status='active' 的 trait；
+candidate / dormant / retired / legacy_unverified 不进入 prompt。
+```
+
+**验证**
+
+- 健康：`ok`；
+- shadow=53；
+- support=6；
+- 全门禁沿用：**375 passed / 92%**，fusion 70/70。
