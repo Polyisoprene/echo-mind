@@ -113,8 +113,10 @@ async def _ask(
     facts: tuple[SemanticFact, ...], agent: str, judge: str, topk: int,
     retriever: str = "bm25", vectors: list[tuple[float, ...]] | None = None,
     embedding: OpenAiEmbeddingGateway | None = None, sort_context: bool = False,
+    no_asker: bool = False,
 ) -> dict[str, Any]:
-    query = f"{question.get('asking_user_id', '')} {question['question']}".strip()
+    asker_id = "" if no_asker else str(question.get("asking_user_id", ""))
+    query = f"{asker_id} {question['question']}".strip()
     if retriever == "bm25":
         scores = bm25_scores(facts, query)
         top = sorted(
@@ -137,11 +139,11 @@ async def _ask(
             fused = rrf_fuse((lex_rank, dense_rank), RRF_K)
             by_id = {fact.fact_id: fact for fact in facts}
             top = [by_id[i] for i in fused[:topk]]
+    docs = [_passage(messages[fact.fact_id]) for fact in top]
     passages = "\n\n".join(
-        f"[{i}] {_passage(messages[fact.fact_id])}"
-        for i, fact in enumerate(top, 1)
+        f"[{i}] {doc}" for i, doc in enumerate(docs, 1)
     )
-    asker = f"Asking user: {question.get('asking_user_id', '')}\n\n"
+    asker = f"Asking user: {asker_id}\n\n" if asker_id else ""
     answer = await _reply(
         llm, agent,
         f"{asker}Question:\n{question['question']}\n\nRetrieved passages:\n{passages}\n\n"
@@ -154,10 +156,13 @@ async def _ask(
         f"Agent Answer:\n{final}\n", 256,
     )
     jfinal = _final(verdict).lower()
-    return {"answer": final, "correct": "correct" in jfinal and "incorrect" not in jfinal}
+    return {
+        "answer": final, "retrieved_docs": docs,
+        "correct": "correct" in jfinal and "incorrect" not in jfinal,
+    }
 
 
-async def main() -> int:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domain", default="Finance")
     parser.add_argument("--qtypes", default="")
@@ -166,10 +171,16 @@ async def main() -> int:
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--index-metadata", action="store_true")
     parser.add_argument("--sort-context", action="store_true")
+    parser.add_argument("--diagnose", action="store_true")
+    parser.add_argument("--no-asker", action="store_true")
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "groupmembench.json")
     parser.add_argument("--raw", type=Path, default=ROOT / "reports" / "groupmembench.jsonl")
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+async def main() -> int:
+    args = _parse_args()
     messages, _ = _load(args.domain)
     facts = tuple(
         _fact(message, index, metadata=args.index_metadata)
@@ -209,11 +220,14 @@ async def main() -> int:
                     llm, question=q, messages=messages, facts=facts,
                     agent=agent, judge=judge, topk=args.topk,
                     retriever=args.retriever, vectors=vectors, embedding=embedding,
-                    sort_context=args.sort_context,
+                    sort_context=args.sort_context, no_asker=args.no_asker,
                 )
-                rows.append({"qtype": qtype, "id": q.get("id"), "question": q["question"],
-                             "answer": result["answer"], "gold": q.get("answer"),
-                             "correct": result["correct"]})
+                row = {"qtype": qtype, "id": q.get("id"), "question": q["question"],
+                       "answer": result["answer"], "gold": q.get("answer"),
+                       "correct": result["correct"]}
+                if args.diagnose:
+                    row["retrieved_docs"] = result["retrieved_docs"]
+                rows.append(row)
                 summary[qtype]["total"] += 1
                 summary[qtype]["correct"] += int(result["correct"])
                 raw.write(json.dumps(rows[-1], ensure_ascii=False) + "\n")
