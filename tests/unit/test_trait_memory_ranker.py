@@ -18,7 +18,7 @@ def _facts() -> tuple[SemanticFact, SemanticFact]:
 
 def test_trait_scores_can_rank_a_memory() -> None:
     ranked = unified_rank(
-        _facts(), "q", {}, {}, 1_000,
+        _facts(), "记忆", {}, {}, 1_000,
         disabled=ALL - {"trait"}, trait_scores={2: 1.0},
     )
     assert [fact.fact_id for fact in ranked] == [2]
@@ -26,6 +26,6 @@ def test_trait_scores_can_rank_a_memory() -> None:
 
 def test_empty_trait_scores_have_no_effect() -> None:
     ranked = unified_rank(
-        _facts(), "q", {}, {}, 1_000, disabled=ALL - {"trait"},
+        _facts(), "记忆", {}, {}, 1_000, disabled=ALL - {"trait"},
     )
     assert ranked == ()

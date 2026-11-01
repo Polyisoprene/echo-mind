@@ -112,15 +112,21 @@ def _candidate_rankers(
     order = {f.fact_id: order_score(query, f"{f.subject} {f.fact_text}") for f in facts}
     confidence = {f.fact_id: f.confidence for f in facts}
     lock = {f.fact_id: 1.0 if f.is_locked else 0.0 for f in facts}
+    lexical = bm25_scores(facts, query)
+    # Trait support may amplify a lexically grounded memory, never create one.
+    grounded_trait = {
+        fact_id: score for fact_id, score in (trait_scores or {}).items()
+        if lexical.get(fact_id, 0.0) > 0.0
+    }
     return {
-        "bm25": _rank(bm25_scores(facts, query)),
+        "bm25": _rank(lexical),
         "dense": _rank(dense),
         "recency": _rank(recency),
         "order": _rank(order),
         "relations": _rank(relations),
         "confidence": _rank(confidence),
         "lock": _rank(lock),
-        "trait": _rank(trait_scores or {}),
+        "trait": _rank(grounded_trait),
     }
 
 

@@ -73,9 +73,9 @@ async def test_trait_link_breaks_live_retriever_tie(tmp_path: Path) -> None:
     db = SqliteDatabase(tmp_path / "live_trait.db")
     await db.initialize()
     baseline = await _retriever(db, with_trait=False)
-    before = await baseline.rank_fused(_facts(), "猫", 1_000)
+    before = await baseline.rank_fused(_facts(), "猫粮", 1_000)
     assert before is not None and before[0].fact_id == 1
 
     with_trait = await _retriever(db, with_trait=True)
-    after = await with_trait.rank_fused(_facts(), "猫", 1_000)
+    after = await with_trait.rank_fused(_facts(), "猫粮", 1_000)
     assert after is not None and after[0].fact_id == 2
