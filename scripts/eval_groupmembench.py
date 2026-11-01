@@ -173,6 +173,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--sort-context", action="store_true")
     parser.add_argument("--diagnose", action="store_true")
     parser.add_argument("--no-asker", action="store_true")
+    parser.add_argument("--decision-only", action="store_true")
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "groupmembench.json")
     parser.add_argument("--raw", type=Path, default=ROOT / "reports" / "groupmembench.jsonl")
@@ -185,6 +186,10 @@ async def main() -> int:
     facts = tuple(
         _fact(message, index, metadata=args.index_metadata)
         for index, message in enumerate(messages)
+    )
+    decision_facts = tuple(
+        fact for fact, message in zip(facts, messages, strict=True)
+        if message.get("is_decision_point")
     )
     qdir = BENCH / "questions" / args.domain
     agent = (BENCH / "prompts" / "hipporag_agent_system.txt").read_text(encoding="utf-8")
@@ -216,8 +221,9 @@ async def main() -> int:
                 lines = lines[:args.limit]
             for line in lines:
                 q = json.loads(line)
+                search_facts = decision_facts if args.decision_only else facts
                 result = await _ask(
-                    llm, question=q, messages=messages, facts=facts,
+                    llm, question=q, messages=messages, facts=search_facts,
                     agent=agent, judge=judge, topk=args.topk,
                     retriever=args.retriever, vectors=vectors, embedding=embedding,
                     sort_context=args.sort_context, no_asker=args.no_asker,
