@@ -112,7 +112,7 @@ async def _ask(
     question: dict[str, Any], messages: list[dict[str, Any]],
     facts: tuple[SemanticFact, ...], agent: str, judge: str, topk: int,
     retriever: str = "bm25", vectors: list[tuple[float, ...]] | None = None,
-    embedding: OpenAiEmbeddingGateway | None = None,
+    embedding: OpenAiEmbeddingGateway | None = None, sort_context: bool = False,
 ) -> dict[str, Any]:
     query = f"{question.get('asking_user_id', '')} {question['question']}".strip()
     if retriever == "bm25":
@@ -165,6 +165,7 @@ async def main() -> int:
     parser.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--index-metadata", action="store_true")
+    parser.add_argument("--sort-context", action="store_true")
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "groupmembench.json")
     parser.add_argument("--raw", type=Path, default=ROOT / "reports" / "groupmembench.jsonl")
@@ -208,6 +209,7 @@ async def main() -> int:
                     llm, question=q, messages=messages, facts=facts,
                     agent=agent, judge=judge, topk=args.topk,
                     retriever=args.retriever, vectors=vectors, embedding=embedding,
+                    sort_context=args.sort_context,
                 )
                 rows.append({"qtype": qtype, "id": q.get("id"), "question": q["question"],
                              "answer": result["answer"], "gold": q.get("answer"),

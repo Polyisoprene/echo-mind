@@ -1,0 +1,10 @@
+{
+  "knowledge_update": {
+    "n": 32,
+    "accuracy": 0.375
+  },
+  "overall": {
+    "n": 32,
+    "accuracy": 0.375
+  }
+}
