@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from echomind.domain.models import PersonaTrait
 from echomind.domain.trait_evidence import TraitEvidence
-from echomind.mind.trait_action_eligibility import evaluate_eligibility
+from echomind.mind.trait_action_eligibility import Eligibility, evaluate_eligibility
 
 
 def _trait(trait_id: int, category: str, text: str = "t") -> PersonaTrait:
@@ -40,3 +40,15 @@ def test_habit_allows_only_tools_in_evidence() -> None:
 def test_empty_traits_allow_nothing() -> None:
     result = evaluate_eligibility((), {})
     assert result.allowed_tools == frozenset() and result.allow_refusal is False
+
+
+def test_empty_grants_do_not_restrict_tools() -> None:
+    eligible = Eligibility()
+    assert eligible.permits_tool("send_message")
+    assert eligible.permits_tool("look_at_image")
+
+
+def test_nonempty_grants_are_a_whitelist() -> None:
+    eligible = Eligibility(allowed_tools=frozenset({"look_at_image"}))
+    assert eligible.permits_tool("look_at_image")
+    assert not eligible.permits_tool("send_message")

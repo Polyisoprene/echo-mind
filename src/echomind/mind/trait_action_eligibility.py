@@ -20,6 +20,10 @@ class Eligibility:
     allow_refusal: bool = False
     reasons: tuple[str, ...] = ()
 
+    def permits_tool(self, tool: str) -> bool:
+        """Empty grants mean "no restriction"; a non-empty set is a whitelist."""
+        return not self.allowed_tools or tool in self.allowed_tools
+
 
 def _tools(rows: tuple[TraitEvidence, ...]) -> set[str]:
     return {row.quote for row in rows if row.quote_kind == "tool"}

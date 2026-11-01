@@ -2455,3 +2455,39 @@ prompt_len=1222
 
 - 测试夹具更新为显式 active；
 - 全门禁：**375 passed / 92%**，fusion 70/70。
+
+### 14.61 action eligibility 语义（2026-11-01）
+
+先定语义，不直接接 live：
+
+```text
+allowed_tools 为空  → 不限制任何工具
+allowed_tools 非空  → 仅白名单内工具允许
+```
+
+理由：
+
+- active trait 45/66 的证据都是 assistant 文本，没有 tool 证据；
+- 如果“空=拒绝所有”，会让正常回合无法发送/看图；
+- 空授权只能表示“没有额外限制”，不能表示拒绝。
+
+新增：
+
+```python
+Eligibility.permits_tool(tool)
+```
+
+测试：
+
+- 空授权允许 send_message / look_at_image；
+- 非空白名单只允许白名单内工具。
+
+**边界**
+
+- 仍未接 live；
+- `allow_refusal` 仍只在 shadow 记录；
+- 接 live 前还需要决定：白名单是“额外允许”还是“硬性限制”。
+
+**验证**
+
+- 全门禁：**377 passed / 92%**，fusion 70/70。
