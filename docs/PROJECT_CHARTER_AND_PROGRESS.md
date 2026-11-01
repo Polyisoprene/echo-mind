@@ -25,7 +25,7 @@
 | 维度 | 现状 |
 |---|---|
 | **交付** | 当前仓库 `main` 为准；Stage 28 A/B 双线是历史工作流 |
-| **测试与门禁** | `392 passed`，覆盖率 93%，fusion 70/70，参数台账 59 compliant |
+| **测试与门禁** | `393 passed`，覆盖率 93%，fusion 70/70，参数台账 59 compliant |
 | **人格模型** | 7 维慢基线 + 快状态 + 日结算；**2 条 active trait**（看图、发语音）；active-only prompt |
 | **自演化** | 真实 evidence 16 条；support 6 条（手动）；shadow active 56 条；词法门控 ranker |
 | **关系/披露** | bond depth + memory_knowledge（told_by_me/hinted）；public/group/private/secret 硬门 |

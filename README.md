@@ -1,6 +1,6 @@
 # 🧠 EchoMind (`echomind`)
 
-> **当前状态（2026-11-01）**：真实 active trait **2 条**（看图、发语音），真实 evidence **16 条**，support link **6 条**，shadow **56 条非空**；active-only prompt；门禁 **392 passed / 93%**，fusion **70/70**。  
+> **当前状态（2026-11-01）**：真实 active trait **2 条**（看图、发语音），真实 evidence **16 条**，support link **6 条**，shadow **56 条非空**；active-only prompt；门禁 **393 passed / 93%**，fusion **70/70**。  
 > 详细现状与边界见 [docs/CURRENT_STATE_2026-11-01.md](docs/CURRENT_STATE_2026-11-01.md)；完整实现记录见 [Stage 41 计划](docs/plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md)。
 
 > **具备控制论「自组织核心（Order Parameter Core）」、「两级选矿智力放大器（Selection Amplifier）」、真实人性阴影面、时间感知与神经可塑性自学习的下一代认知型 QQ 智能体（Python 3.12+ / 六边形清洁架构）**
@@ -161,7 +161,7 @@ cp data/config.example.json data/config.json
 | **Gate 1C** | `pylint src/echomind` | 强制扁平化代码 `max-nested-blocks <= 2`，满分要求 | ✅ **10.00 / 10** |
 | **Gate 2** | `mypy --strict src tests` | 全量源码与测试文件 100% 严格静态类型与协议校验 | ✅ **0 Issues** |
 | **Gate 3** | `test_solid_boundaries.py` | 单文件 `<= 300` 行、单函数 `<= 40` 行、窄接口 `<= 5` 方法、零跨层依赖 | ✅ **All Passed** |
-| **Gate 4** | `pytest --cov=src/echomind` | 387 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **392 Passed / 93%** |
+| **Gate 4** | `pytest --cov=src/echomind` | 387 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **393 Passed / 93%** |
 
 ---
 
