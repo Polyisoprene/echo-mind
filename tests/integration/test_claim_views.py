@@ -30,11 +30,11 @@ def test_claims_as_facts_dedupes_functional_and_mentions() -> None:
     assert subjects.count("群主") == 1 and subjects.count("L") == 2
 
 
-async def test_facts_v2_is_rejected(
+async def test_facts_v2_read_path_is_available(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db = SqliteDatabase(tmp_path / "v2.db")
     await db.initialize()
     monkeypatch.setenv("FACTS_V2", "on")
-    with pytest.raises(RuntimeError, match="FACTS_V2"):
-        SqliteMemoryRepository(db)
+    repo = SqliteMemoryRepository(db)
+    assert await repo.get_semantic_facts("g") == ()

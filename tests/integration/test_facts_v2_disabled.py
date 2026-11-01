@@ -10,7 +10,9 @@ from echomind.core.bootstrap import EchoMindContainer
 
 
 @pytest.mark.asyncio
-async def test_facts_v2_is_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_facts_v2_can_create_container(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("FACTS_V2", "on")
-    with pytest.raises(RuntimeError, match="FACTS_V2"):
-        await EchoMindContainer.create(db_path=tmp_path / "v2.db")
+    container = await EchoMindContainer.create(db_path=tmp_path / "v2.db")
+    assert container.db is not None

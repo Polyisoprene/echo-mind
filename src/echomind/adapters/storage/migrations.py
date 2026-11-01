@@ -44,7 +44,14 @@ CREATE TABLE IF NOT EXISTS claims (
     recorded_at_ms INTEGER NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'asserted',
     superseded_by INTEGER,
-    created_by TEXT NOT NULL DEFAULT ''
+    created_by TEXT NOT NULL DEFAULT '',
+    scope TEXT NOT NULL DEFAULT 'venue',
+    source_person_id TEXT NOT NULL DEFAULT '',
+    owner_id TEXT NOT NULL DEFAULT '',
+    sensitivity TEXT NOT NULL DEFAULT 'group',
+    audience_json TEXT NOT NULL DEFAULT '[]',
+    source_quote TEXT NOT NULL DEFAULT '',
+    source_turn_id TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_claims_lookup ON claims (chat_key, subject, predicate, status);
 CREATE TABLE IF NOT EXISTS claim_evidence (
@@ -73,6 +80,16 @@ CREATE TABLE IF NOT EXISTS fact_reviews (
 async def ensure_claim_tables(conn: Any) -> None:
     """Stage 39: claim/evidence/review tables (shadow until reads are switched)."""
     await conn.executescript(_CLAIM_DDL)
+    for column, ddl in (
+        ("scope", "TEXT NOT NULL DEFAULT 'venue'"),
+        ("source_person_id", "TEXT NOT NULL DEFAULT ''"),
+        ("owner_id", "TEXT NOT NULL DEFAULT ''"),
+        ("sensitivity", "TEXT NOT NULL DEFAULT 'group'"),
+        ("audience_json", "TEXT NOT NULL DEFAULT '[]'"),
+        ("source_quote", "TEXT NOT NULL DEFAULT ''"),
+        ("source_turn_id", "TEXT NOT NULL DEFAULT ''"),
+    ):
+        await _ensure_column(conn, "claims", column, ddl)
 
 
 _TRAIT_EVIDENCE_DDL = """

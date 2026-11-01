@@ -2842,3 +2842,41 @@ AND (valid_to_ms IS NULL OR valid_to_ms > now)
 **验证**
 
 - 全门禁：**384 passed / 92%**，fusion 70/70。
+
+## 14.68 B4 claims 读路径（2026-11-01）
+
+claims 表补齐 provenance：
+
+```text
+scope
+source_person_id
+owner_id
+sensitivity
+audience_json
+source_quote
+source_turn_id
+```
+
+`mirror_fact` / `assert_claim` 写入这些字段。  
+`FACTS_V2=on` 时：
+
+```text
+load claims
+  → claims_as_facts
+  → confidence / privacy / person filters
+  → get_semantic_facts
+```
+
+安全：
+
+- 只放行 public/group；
+- private/secret 不在 claim 读路径放行；
+- 默认 `FACTS_V2=off`，线上仍走 legacy facts；
+- 没有自动切换。
+
+测试：
+
+- claim 读路径能看到 provenance；
+- secret 被过滤；
+- `FACTS_V2=on` 不再 fail-fast；
+- 全门禁：**385 passed / 92%**，fusion 70/70。

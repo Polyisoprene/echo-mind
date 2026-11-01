@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 from echomind.domain.models import SemanticFact
 from echomind.mind.ranker_fusion import unified_rank
@@ -19,6 +19,14 @@ class ClaimView:
     belief: float
     recorded_at_ms: int
     locked: bool
+    chat_key: str = ""
+    scope: Literal["venue", "person", "global"] = "venue"
+    source_person_id: str = ""
+    owner_id: str = ""
+    sensitivity: Literal["public", "group", "private", "secret"] = "group"
+    audience: tuple[str, ...] = ()
+    source_quote: str = ""
+    source_turn_id: str = ""
 
 
 def _key(subject: str, value: str) -> str:

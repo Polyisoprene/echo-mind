@@ -32,6 +32,9 @@ def belief_of(weights: list[float]) -> float:
 async def mirror_fact(
     db: SqliteDatabase, *, chat_key: str, subject: str, value: str,
     source: str, is_locked: bool, now_ms: int,
+    scope: str = "venue", source_person_id: str = "", owner_id: str = "",
+    sensitivity: str = "group", audience: tuple[str, ...] = (),
+    source_quote: str = "", source_turn_id: str = "",
 ) -> None:
     """Dual-write a legacy semantic fact into the claim store (FACTS_V2_WRITE=on)."""
     import os
@@ -43,6 +46,9 @@ async def mirror_fact(
     await store.assert_claim(
         chat_key, subject, "value", value, source_type=kind,
         source_id=source or kind, observed_at_ms=now_ms,
+        scope=scope, source_person_id=source_person_id, owner_id=owner_id,
+        sensitivity=sensitivity, audience=audience, source_quote=source_quote,
+        source_turn_id=source_turn_id,
     )
 
 
@@ -62,6 +68,9 @@ class SqliteClaimStore:
         source_type: str = "system", source_id: str = "",
         observed_at_ms: int | None = None, valid_from_ms: int = 0,
         valid_to_ms: int | None = None, weight_scale: float = 1.0, tag: str = "",
+        scope: str = "venue", source_person_id: str = "", owner_id: str = "",
+        sensitivity: str = "group", audience: tuple[str, ...] = (),
+        source_quote: str = "", source_turn_id: str = "",
     ) -> int:
         """Insert (or reuse) a claim and attach this piece of evidence to it."""
         now = int(time.time() * 1000) if observed_at_ms is None else observed_at_ms
@@ -77,10 +86,14 @@ class SqliteClaimStore:
             else:
                 cursor = await conn.execute(
                     "INSERT INTO claims (chat_key, subject, predicate, value, valid_from_ms, "
-                    "valid_to_ms, recorded_at_ms, status, created_by) "
-                    "VALUES (?,?,?,?,?,?,?,'asserted',?)",
+                    "valid_to_ms, recorded_at_ms, status, created_by, scope, "
+                    "source_person_id, owner_id, sensitivity, audience_json, source_quote, "
+                    "source_turn_id) "
+                    "VALUES (?,?,?,?,?,?,?,'asserted',?,?,?,?,?,?,?,?)",
                     (chat_key, subject, predicate, value, valid_from_ms, valid_to_ms, now,
-                     source_id or source_type),
+                     source_id or source_type, scope, source_person_id, owner_id,
+                     sensitivity, __import__("json").dumps(list(audience)),
+                     source_quote, source_turn_id),
                 )
                 claim_id = int(cursor.lastrowid or 0)
             await self._attach(

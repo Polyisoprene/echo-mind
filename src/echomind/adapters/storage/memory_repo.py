@@ -9,7 +9,10 @@ from typing import Any, Literal, cast
 import aiosqlite
 
 from echomind.adapters.storage.claim_repo import mirror_fact
-from echomind.adapters.storage.claim_views import facts_v2_enabled
+from echomind.adapters.storage.claim_views import (
+    facts_v2_enabled,
+    load_claim_facts_filtered as _claim_facts,
+)
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_rows import row_to_episodic, row_to_fact, row_to_rule
 from echomind.adapters.storage.memory_sql import UPSERT_FACT_SQL
@@ -62,11 +65,6 @@ class SqliteMemoryRepository:
     """Repository satisfying both IMemoryReader and IMemoryWriter protocols."""
 
     def __init__(self, db: SqliteDatabase) -> None:
-        if facts_v2_enabled():
-            raise RuntimeError(
-                "FACTS_V2 read path is disabled: claim rows lack provenance; "
-                "unset FACTS_V2 (legacy facts carry scope/owner/sensitivity)."
-            )
         self._db = db
 
     async def get_episodic_cards(self, chat_key: str) -> tuple[EpisodicCard, ...]:
@@ -90,6 +88,8 @@ class SqliteMemoryRepository:
         now_ms: int | None = None,
     ) -> tuple[SemanticFact, ...]:
         current = int(time.time() * 1000) if now_ms is None else now_ms
+        if facts_v2_enabled():
+            return await _claim_facts(self._db, chat_key, min_confidence, person_ids, current)
         clauses = ["chat_key IN (?, 'global')"]
         params: list[Any] = [chat_key]
         if chat_key.startswith("private:"):
@@ -107,10 +107,8 @@ class SqliteMemoryRepository:
         params.append(min_confidence)
         params.append(chat_key)
         params.extend((current, current))
-        privacy = (
-            "(sensitivity IN ('public','group') OR (sensitivity='private' "
-            "AND ? IN (chat_key, 'private:'||owner_id)))"
-        )
+        privacy = ("(sensitivity IN ('public','group') OR (sensitivity='private' "
+                   "AND ? IN (chat_key, 'private:'||owner_id)))")
         sql = (
             f"SELECT {FACT_COLUMNS} FROM semantic_facts WHERE ({where}) AND confidence >= ? "  # noqa: S608
             f"AND {privacy} AND (event_time_ms = 0 OR event_time_ms <= ?) "
@@ -229,9 +227,14 @@ class SqliteMemoryRepository:
                 ),
             )
             await conn.commit()
-        await mirror_fact(self._db, chat_key=fact.chat_key, subject=fact.subject,
-                          value=eff_txt, source=fact.source, is_locked=fact.is_locked,
-                          now_ms=now_ms)
+        await mirror_fact(
+            self._db, chat_key=fact.chat_key, subject=fact.subject,
+            value=eff_txt, source=fact.source, is_locked=fact.is_locked,
+            now_ms=now_ms, scope=fact.scope, source_person_id=fact.source_person_id,
+            owner_id=fact.owner_id, sensitivity=fact.sensitivity,
+            audience=fact.audience, source_quote=fact.source_quote,
+            source_turn_id=fact.source_turn_id,
+        )
         return True, "ok"
 
     async def upsert_relation(self, relation: object) -> None:
