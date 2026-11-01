@@ -1908,3 +1908,23 @@ included 的其他 fact
 - 不同回合 → 0；
 - context → support 升级不重复；
 - 全门禁：**373 passed / 92%**，fusion 70/70。
+
+### 14.44 真实流量复验（2026-11-01 11:03）
+
+修复早退后，真实回合：
+
+- 11:02 `look_at_image` → trait 45 新 evidence；
+- 11:03 `feiyu_say` → trait 66 新 evidence；
+- shadow 21 条，全部 `[45,66]`；
+- context links 25；
+- support links 0；
+- `semantic_facts.source_turn_id != ''` 仍为 0。
+
+结论：
+
+- trait learning、evidence、shadow、context 都已真实跑通；
+- support 为 0 的直接原因是最近没有 explicit fact；
+- 不是 linker 写入失败；
+- 不为了指标放宽 support 条件。
+
+下一步优先查 `subconscious_probe.explicit_fact` 的真实产出率，而不是继续改 ranker。
