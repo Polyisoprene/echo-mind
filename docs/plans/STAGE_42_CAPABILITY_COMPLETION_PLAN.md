@@ -253,7 +253,7 @@ P4 multi-venue / observation corpus
 | 阶段 | 交付 | 进入条件 |
 |---|---|---|
 | R1 | Response attribution schema + shadow + 30 条核对 | ✅ 2026-11-01 shadow 已跑：1654 outcomes |
-| R2 | LongMemEval 500 retrieval + QA/abstention | 🟡 500 retrieval 完成（52.8%）；30 题 QA 完成；500 QA 未跑 |
+| R2 | LongMemEval 500 retrieval + QA/abstention | 🟡 500 retrieval 完成（52.8%）；30 QA + 25 oracle reading 完成；500 QA 未跑 |
 | R3 | GroupMemBench + CharacterEval 适配 | 数据/许可 |
 | R4 | dormant/ACT-R 研究；stance 暂缓（无对照标签） | 来源/数据 |
 | R5 | HyDE/RAPTOR/semantic gate shadow | R2 基线 |

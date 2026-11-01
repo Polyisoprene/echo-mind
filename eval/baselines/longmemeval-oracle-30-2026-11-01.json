@@ -1,0 +1,238 @@
+{
+  "benchmark": "LongMemEval-S",
+  "n": 25,
+  "topk": 5,
+  "oracle": true,
+  "summary": {
+    "knowledge-update": {
+      "n": 5,
+      "accuracy": 0.0
+    },
+    "multi-session": {
+      "n": 4,
+      "accuracy": 0.0
+    },
+    "single-session-assistant": {
+      "n": 4,
+      "accuracy": 0.0
+    },
+    "single-session-preference": {
+      "n": 4,
+      "accuracy": 0.5
+    },
+    "single-session-user": {
+      "n": 4,
+      "accuracy": 0.0
+    },
+    "temporal-reasoning": {
+      "n": 4,
+      "accuracy": 0.0
+    },
+    "abstention": {
+      "n": 0,
+      "accuracy": 0.0
+    }
+  },
+  "rows": [
+    {
+      "id": "6a1eabeb",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "Your personal best time in the charity 5K run was 27:12, based on what you told me in our earlier conversation. (In a later message you mentioned hoping to beat a personal best of 25:50, so your most recent stated PB may be 25:50 — you said you were hoping to beat that time this time around.)",
+      "gold": "25 minutes and 50 seconds (or 25:50)",
+      "correct": false
+    },
+    {
+      "id": "0a995998",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "Based on the memories, you mentioned two items:\n\n1. The navy blue blazer from dry cleaning (memory [1])\n2. The new pair of boots from Zara that you exchanged on 2/5 (memory [3])\n\nSo you need to pick up or return **2 items**.",
+      "gold": 3,
+      "correct": false
+    },
+    {
+      "id": "7161e7e2",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "I don't know. The provided memories include the agent names (Admon, Magdy, Ehab, Sara, Mostafa, Nemr, Adam), but the final updated rotation table with those names is truncated and does not show Admon’s Sunday shift.",
+      "gold": "Admon was assigned to the 8 am - 4 pm (Day Shift) on Sundays.",
+      "correct": false
+    },
+    {
+      "id": "8a2466db",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "Based on the memories provided, the recommended resources for learning more about video editing (specifically in the context of Adobe Premiere Pro) are:\n\n* Adobe Premiere Pro's official documentation and tutorials\n* YouTube channels like Premiere Bro, Video Copilot, and Adobe Creative Cloud\n* Online courses on platforms like Udemy, LinkedIn Learning, and Skillshare\n* Premiere Pro communities and forums, such as Reddit's r/premierepro and Adobe's Premiere Pro forum",
+      "gold": "The user would prefer responses that suggest resources specifically tailored to Adobe Premiere Pro, especially those that delve into its advanced settings. They might not prefer general video editing resources or resources related to other video editing software.",
+      "correct": true
+    },
+    {
+      "id": "e47becba",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "I don't know. The memories don't mention your degree.",
+      "gold": "Business Administration",
+      "correct": false
+    },
+    {
+      "id": "gpt4_59149c77",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": "7 days. 8 days (including the last day) is also acceptable.",
+      "correct": false
+    },
+    {
+      "id": "6aeb4375",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "Based on the memories, you have tried four different Korean restaurants in your city.",
+      "gold": "four",
+      "correct": false
+    },
+    {
+      "id": "6d550036",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "Based on the memories provided, I can identify two projects where you led or are leading work:\n\n1. **Marketing Research class project** — you led the data analysis team on a comprehensive market analysis for a new product launch [1].\n2. **Customer data analysis project** — you are currently working on this project, analyzing customer data to identify trends and patterns [1].\n\nOther activities mentioned (the consulting firm case competition [2], the academic conference poster [3], and the Data Mining class solo project [4]) are not described as projects you led.\n\nSo: **2 projects** (one past, one current).",
+      "gold": 2,
+      "correct": false
+    },
+    {
+      "id": "c4f10528",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "The restaurant is Miss Bee Providore.",
+      "gold": "Miss Bee Providore",
+      "correct": false
+    },
+    {
+      "id": "06878be2",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "I don't know. The provided memories don't include information about your broader photography setup or accessory recommendations beyond flash cases/pouches for the Godox V1.",
+      "gold": "The user would prefer suggestions of Sony-compatible accessories or high-quality photography gear that can enhance their photography experience. They may not prefer suggestions of other brands' equipment or low-quality gear.",
+      "correct": true
+    },
+    {
+      "id": "118b2229",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": "45 minutes each way",
+      "correct": false
+    },
+    {
+      "id": "gpt4_f49edff3",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "Based on the memories, the order from first to last is:\n\n1. The day I helped my friend prepare the nursery — mentioned in memory [1] as something that happened \"today.\"\n2. The day I helped my cousin pick out stuff for her baby shower — mentioned in memory [2] as something that happened \"today.\"\n3. The day I ordered a customized phone case for my friend's birthday — mentioned in memory [3] as something that happened \"today.\"\n\nSo the order is: helped my friend prepare the nursery → helped my cousin pick out baby shower stuff → ordered a customized phone case.",
+      "gold": "First, I helped my friend prepare the nursery, then I helped my cousin pick out stuff for her baby shower, and lastly, I ordered a customized phone case for my friend's birthday.",
+      "correct": false
+    },
+    {
+      "id": "830ce83f",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "Rachel moved to Chicago.",
+      "gold": "the suburbs",
+      "correct": false
+    },
+    {
+      "id": "gpt4_59c863d7",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "Based on the memories, I can identify these model kits you've worked on or bought:\n\n1. A 1/72 scale B-29 bomber kit (bought at a model show)\n2. A 1/24 scale '69 Camaro kit (bought at the same model show)\n3. A Revell F-15 Eagle kit (finished; picked up at a hobby store in late April)\n4. A 1/16 scale German Tiger I tank diorama (in progress)\n5. A Tamiya 1/48 scale Spitfire Mk.V (finished)\n\nSo that's **5 model kits** mentioned.",
+      "gold": "I have worked on or bought five model kits. The scales of the models are: Revell F-15 Eagle (scale not mentioned), Tamiya 1/48 scale Spitfire Mk.V, 1/16 scale German Tiger I tank, 1/72 scale B-29 bomber, and 1/24 scale '69 Camaro.",
+      "correct": false
+    },
+    {
+      "id": "89527b6b",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "The Plesiosaur’s scaly body was blue.",
+      "gold": "The Plesiosaur had a blue scaly body.",
+      "correct": false
+    },
+    {
+      "id": "75832dbd",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "I don't know. The provided memories list several recent advancement areas and segmentation datasets, but they do not include specific recent publications or conference recommendations for this field.",
+      "gold": "The user would prefer suggestions related to recent research papers, articles, or conferences that focus on artificial intelligence in healthcare, particularly those that involve deep learning for medical image analysis. They would not be interested in general AI topics or those unrelated to healthcare.",
+      "correct": false
+    },
+    {
+      "id": "51a45a95",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "Based on the memories, you redeemed the $5 coupon on coffee creamer last Sunday, and you didn't know you had it in your email inbox—so it was in your email inbox.",
+      "gold": "Target",
+      "correct": false
+    },
+    {
+      "id": "71017276",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "I don't know. The memories say you got the chandelier from your aunt \"today,\" but they don't provide any information about how many weeks ago that was.",
+      "gold": 4,
+      "correct": false
+    },
+    {
+      "id": "852ce960",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "Based on the memories, you mentioned being pre-approved for **$400,000 from Wells Fargo** in a later message — but earlier you said you were pre-approved for **$350,000 from Wells Fargo**. The memories conflict, so I can’t determine a single reliable amount. I don't know which one is correct.",
+      "gold": "$400,000",
+      "correct": false
+    },
+    {
+      "id": "b5ef892d",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "I don't know. The memories mention a 5-day camping trip to Yellowstone and a 3-day solo camping trip to Big Sur, but they don't establish that both were this year or give a total number of camping days in the U.S. this year.",
+      "gold": "8 days.",
+      "correct": false
+    },
+    {
+      "id": "e9327a54",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "The Sugar Factory - A sweet shop located at Icon Park that offers an enormous menu of sweet treats, including specialty drinks and giant milkshakes.",
+      "gold": "The Sugar Factory at Icon Park.",
+      "correct": false
+    },
+    {
+      "id": "0edc2aef",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "I don't know. The memories only cover Seattle hotel recommendations and amenities; there is no information about Miami hotels.",
+      "gold": "The user would prefer suggestions of hotels in Miami that offer great views, possibly of the ocean or the city skyline, and have unique features such as a rooftop pool or a hot tub on the balcony. They may not prefer suggestions of basic or budget hotels without these features.",
+      "correct": false
+    },
+    {
+      "id": "58bf7951",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "The Glass Menagerie.",
+      "gold": "The Glass Menagerie",
+      "correct": false
+    },
+    {
+      "id": "b46e15ed",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": 2,
+      "correct": false
+    },
+    {
+      "id": "945e3d21",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "Based on the memories, you attend yoga classes **three times a week**.",
+      "gold": "Three times a week.",
+      "correct": false
+    }
+  ]
+}

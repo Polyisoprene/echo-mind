@@ -115,7 +115,7 @@ BM25
 - 真实 20 query 审计：3 改善 / 77 不变 / 0 恶化；
 - 但存在“串/号/五抽”这类弱词法命中，不是语义级；
 - LongMemEval-S 500 题：session recall@5 **52.8%**，MRR **0.375**；abstention 子集 recall@5 **56.7%**；
-- 500 题 QA/abstention 全量、GroupMemBench、CharacterEval **未做**；30 题 QA 小样本 11/30。
+- 500 题 QA/abstention 全量、GroupMemBench、CharacterEval **未做**；30 题 QA 11/30；oracle reading 2/25。
 
 **定位：小规模、混合检索完整的工程原型；不是生产级记忆系统。**
 

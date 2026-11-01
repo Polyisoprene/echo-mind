@@ -136,3 +136,31 @@ abstention 子集 recall@5 = 0.567
 报告：`eval/baselines/longmemeval-500-2026-11-01.json`
 
 仍未跑 500 题 QA 全量；30 题 QA 小样本只用于协议验证。
+
+## 10. Oracle reading 消融（2026-11-01）
+
+为区分“检索没找到”和“读到了也答不对”，新增 `--oracle`：
+
+```text
+context = answer_session_ids 对应的 gold sessions
+不跑 embedding/ranker
+```
+
+30 题样本中 5 条 abstention 跳过，剩 25 条：
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| knowledge-update | 5 | 0.0 |
+| multi-session | 4 | 0.0 |
+| single-session-assistant | 4 | 0.0 |
+| single-session-preference | 4 | 0.5 |
+| single-session-user | 4 | 0.0 |
+| temporal-reasoning | 4 | 0.0 |
+| **总** | **25** | **2/25 = 0.08** |
+
+结论：
+
+- 即使给 gold sessions，reading 仍然很差；
+- 不能把 30 题 end-to-end 的 11/30 全归因于检索；
+- 需要先检查 gold session 是否真的包含答案、上下文截断、生成 prompt，而不是继续调 ranker；
+- 这是 25 条小样本，不是 500 题结论。

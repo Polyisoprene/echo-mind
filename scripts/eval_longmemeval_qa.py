@@ -33,6 +33,13 @@ def _select(data: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
     for item in data:
         if "_abs" not in str(item["question_id"]):
             groups.setdefault(str(item["question_type"]), []).append(item)
+    return _fill_normal(groups, limit, picked)
+
+
+def _fill_normal(
+    groups: dict[str, list[dict[str, Any]]], limit: int,
+    picked: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
     for index in range(max(len(group) for group in groups.values())):
         for key in sorted(groups):
             if index < len(groups[key]) and len(picked) < limit:
@@ -53,6 +60,13 @@ async def _retrieve(
         constraints=False,
     )
     return [fact.fact_text for fact in ranked[:topk]]
+
+
+def _oracle_memories(question: dict[str, Any]) -> list[str]:
+    """Gold-session context: isolates reading from retrieval."""
+    facts, _ = _facts(question, "session")
+    wanted = set(question["answer_session_ids"])
+    return [fact.fact_text for fact in facts if fact.subject in wanted]
 
 
 async def _answer(llm: FailoverLlmGateway, question: str, memories: list[str]) -> str:
@@ -129,6 +143,7 @@ async def main() -> int:
     parser.add_argument("--topk", type=int, default=5)
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--skip-judge", action="store_true")
+    parser.add_argument("--oracle", action="store_true")
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval_qa.json")
     args = parser.parse_args()
     data = json.loads(args.data.read_text(encoding="utf-8"))
@@ -143,10 +158,16 @@ async def main() -> int:
     rows: list[dict[str, Any]] = []
     try:
         for question in selected:
-            memories = await _retrieve(question, embedding, args.topk, args.batch)
+            abstention = "_abs" in str(question["question_id"])
+            if args.oracle and abstention:
+                continue
+            memories = (
+                _oracle_memories(question) if args.oracle
+                else await _retrieve(question, embedding, args.topk, args.batch)
+            )
             answer = await _answer(llm, str(question["question"]), memories)
             row = {"id": question["question_id"], "type": question["question_type"],
-                   "abstention": "_abs" in str(question["question_id"]),
+                   "abstention": abstention,
                    "answer": answer, "gold": question["answer"]}
             if not args.skip_judge:
                 row["correct"] = await _judge(llm, question, answer)
@@ -168,7 +189,7 @@ async def main() -> int:
                 max(1, sum(1 for row in rows if row["abstention"])), 3),
         }
     report = {"benchmark": "LongMemEval-S", "n": len(rows), "topk": args.topk,
-              "summary": summary, "rows": rows}
+              "oracle": args.oracle, "summary": summary, "rows": rows}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
