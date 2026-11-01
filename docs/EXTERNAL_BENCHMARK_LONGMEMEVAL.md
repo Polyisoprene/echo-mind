@@ -71,3 +71,28 @@ abstention 子集（30 条）：recall@5 **0.567**，MRR **0.409**。
 2. 补单会话事实检索（当前 0.294–0.312）；
 3. 加 answer generation / abstention 指标，才可与论文端到端结果比较；
 4. 若继续中文产品，优先补 **GroupMemBench/中文多人群聊** 外部集。
+
+
+## 2026-11-01 最终 ranker 复测（500 题）
+
+conditional ranker（confidence/lock 常数修复 + recency/order 按 cue 启用）后：
+
+| 题型 | n | recall@5 | MRR |
+|---|---:|---:|---:|
+| knowledge-update | 78 | 1.000 | 0.965 |
+| multi-session | 133 | 0.947 | 0.914 |
+| single-session-assistant | 56 | 1.000 | 0.991 |
+| single-session-preference | 30 | 0.900 | 0.700 |
+| single-session-user | 70 | 0.914 | 0.818 |
+| temporal-reasoning | 133 | 0.947 | 0.867 |
+| **总体** | **500** | **0.954** | **0.892** |
+
+对照：
+
+```text
+旧 hybrid: 0.528 / 0.375
+BM25-only: 0.940 / 0.868
+最终 hybrid: 0.954 / 0.892
+```
+
+这是 retrieval，不是 QA。QA 30 题最终 ranker 结果：23/30（旧 10/30）。

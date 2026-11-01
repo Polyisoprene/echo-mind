@@ -197,3 +197,32 @@ LongMemEval 500 BM25 消融：
 - conditional 后，非 dense 专用 ranker 不再污染英文 benchmark；
 - claim_rank 仍显式 `force_recency=True`，保持“近期优先”；
 - hybrid 500（dense 仍参与）在远端验证；结果未出前不宣称整体提升。
+
+## 11. 最终 500 结果（2026-11-01）
+
+在 confidence/lock 常数修复 + recency/order 条件启用的最终 ranker 上：
+
+| 类型 | n | recall@5 | MRR |
+|---|---:|---:|---:|
+| knowledge-update | 78 | 1.000 | 0.965 |
+| multi-session | 133 | 0.947 | 0.914 |
+| single-session-assistant | 56 | 1.000 | 0.991 |
+| single-session-preference | 30 | 0.900 | 0.700 |
+| single-session-user | 70 | 0.914 | 0.818 |
+| temporal-reasoning | 133 | 0.947 | 0.867 |
+| **总体** | **500** | **0.954** | **0.892** |
+
+对照：
+
+```text
+旧 hybrid: 0.528 / 0.375
+BM25-only: 0.940 / 0.868
+最终 hybrid: 0.954 / 0.892
+```
+
+结论：
+
+- conditional 修复后，hybrid 不再被中文专用/常数 ranker 稀释；
+- hybrid 超过 BM25-only；
+- 这是 500 题 session retrieval，不是 QA 端到端；
+- 30 题 QA 正在用最终 ranker 重跑，结果未出。

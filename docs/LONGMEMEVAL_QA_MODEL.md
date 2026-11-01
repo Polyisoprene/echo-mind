@@ -232,3 +232,31 @@ temporal-reasoning: 2/4 命中，0/4 正确
 
 按 session date 排序后 end-to-end 仍为 **10/30**，没有提升。  
 检索丢失与 knowledge-update/temporal 的上下文选择是下一步，不是 judge/reading。
+
+## 13. 最终 conditional ranker 的 30 题 QA（2026-11-01）
+
+用最终 ranker 重跑同一 30 题：
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| knowledge-update | 5 | 0.60 |
+| multi-session | 4 | 0.50 |
+| single-session-assistant | 4 | 1.00 |
+| single-session-preference | 4 | 0.75 |
+| single-session-user | 9 | 0.778 |
+| temporal-reasoning | 4 | 1.00 |
+| abstention | 5 | 1.00 |
+| **总** | **30** | **23/30 = 0.767** |
+
+对比：
+
+```text
+旧 hybrid: 10/30
+最终 hybrid: 23/30
+```
+
+说明：
+
+- 检索修复确实传导到端到端 QA；
+- knowledge-update 仍只有 0.60，是剩余短板；
+- 30 题 abstention 过采样，不能直接外推 500 题总体。

@@ -236,7 +236,7 @@
         "scripts/replay_eval.py"
       ],
       "status": "partial",
-      "gap": "内部 70/70；LongMemEval 500 retrieval 52.8%/MRR .375；30 QA end-to-end 10/30；oracle 24/25；缺 500 QA 与 GroupMemBench/CharacterEval",
+      "gap": "内部 70/70；LongMemEval 500 retrieval 95.4%/MRR .892；30 QA 23/30；缺 500 QA 与 GroupMemBench/CharacterEval",
       "acceptance_test": "tests/integration/test_persona_eval_harness.py::test_offline_eval_harness_reports_expected_metrics",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "P6e"

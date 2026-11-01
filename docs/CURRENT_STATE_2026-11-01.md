@@ -114,8 +114,8 @@ BM25
 - support 手动对照：memory 359 从 44→6，361 从 30→4；
 - 真实 20 query 审计：3 改善 / 77 不变 / 0 恶化；
 - 但存在“串/号/五抽”这类弱词法命中，不是语义级；
-- LongMemEval-S 500 题：session recall@5 **52.8%**，MRR **0.375**；abstention 子集 recall@5 **56.7%**；
-- 500 题 QA/abstention 全量、GroupMemBench、CharacterEval **未做**；30 题 end-to-end QA 10/30；oracle reading 24/25。
+- LongMemEval-S 500 题：session recall@5 **95.4%**，MRR **0.892**（conditional ranker 后；旧 hybrid 为 52.8%/0.375，BM25-only 为 94.0%/0.868）；
+- 500 题 QA/abstention 全量、GroupMemBench、CharacterEval **未做**；30 题 end-to-end QA **23/30**（最终 conditional ranker）；oracle reading 24/25。
 
 **定位：小规模、混合检索完整的工程原型；不是生产级记忆系统。**
 

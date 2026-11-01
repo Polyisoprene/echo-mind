@@ -1,0 +1,600 @@
+{
+  "benchmark": "LongMemEval-S",
+  "n": 30,
+  "topk": 5,
+  "oracle": false,
+  "max_context_chars": 0,
+  "summary": {
+    "knowledge-update": {
+      "n": 5,
+      "accuracy": 0.6
+    },
+    "multi-session": {
+      "n": 4,
+      "accuracy": 0.5
+    },
+    "single-session-assistant": {
+      "n": 4,
+      "accuracy": 1.0
+    },
+    "single-session-preference": {
+      "n": 4,
+      "accuracy": 0.75
+    },
+    "single-session-user": {
+      "n": 9,
+      "accuracy": 0.778
+    },
+    "temporal-reasoning": {
+      "n": 4,
+      "accuracy": 1.0
+    },
+    "abstention": {
+      "n": 5,
+      "accuracy": 1.0
+    }
+  },
+  "rows": [
+    {
+      "id": "0862e8bf_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "memory_sessions": [
+        "answer_c6fd8ebd_abs",
+        "ultrachat_135959",
+        "f238edb0_1",
+        "1881e7db_2",
+        "c58fdf1e_1"
+      ],
+      "gold_sessions": [
+        "answer_c6fd8ebd_abs"
+      ],
+      "answer": "Based on the provided chat history, there is no mention of a hamster. The only pet mentioned is a cat named Luna. Therefore, I don't have that information.",
+      "gold": "You did not mention this information. You mentioned your cat Luna but not your hamster.",
+      "correct": true
+    },
+    {
+      "id": "15745da0_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "memory_sessions": [
+        "answer_586de428_abs",
+        "565929a2_2",
+        "9b638f21_4",
+        "sharegpt_ooVEXje_0",
+        "e839253d"
+      ],
+      "gold_sessions": [
+        "answer_586de428_abs"
+      ],
+      "answer": "Based on the chat history, you mentioned that you've been collecting vintage cameras for three months (in Session 5). However, there is no mention in any of the sessions of you collecting vintage **films**. So I don't have information about how long you've been collecting vintage films. If you meant vintage cameras, the answer would be three months.",
+      "gold": "You did not mention this information. You mentioned collecting vintage cameras but not vintage films.",
+      "correct": true
+    },
+    {
+      "id": "bc8a6e93_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "memory_sessions": [
+        "answer_e6143162_abs",
+        "9c68c22f",
+        "375354d1_2",
+        "sharegpt_hn3IS1q_0",
+        "sharegpt_MimvIAy_181"
+      ],
+      "gold_sessions": [
+        "answer_e6143162_abs"
+      ],
+      "answer": "Based on the provided history chats, there is no mention of baking anything for your uncle's birthday party. The only birthday-related baking mentioned is a lemon blueberry cake made for your niece's birthday party.",
+      "gold": "You did not mention this information. You mentioned baking for your niece's birthday party but not your uncle's",
+      "correct": true
+    },
+    {
+      "id": "19b5f2b3_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "memory_sessions": [
+        "e44a5733_1",
+        "sharegpt_G9RAbBH_0",
+        "answer_5ff494b9_abs",
+        "d0b0dabe",
+        "sharegpt_fX2quP4_21"
+      ],
+      "gold_sessions": [
+        "answer_5ff494b9_abs"
+      ],
+      "answer": "Based on the chat histories provided, there is no mention of you being in Korea. You discussed planning a trip to Seoul and asked about flights, neighborhoods, food, and the DMZ, but you never stated that you had been to Korea or how long you stayed.",
+      "gold": "You did not mention this information. You mentioned staying in Japan, but not in Korea.",
+      "correct": true
+    },
+    {
+      "id": "29f2956b_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "memory_sessions": [
+        "sharegpt_5n9NBC8_0",
+        "answer_7cc5362f_abs",
+        "ultrachat_70054",
+        "cc50c6a9",
+        "64b7d9cc_2"
+      ],
+      "gold_sessions": [
+        "answer_7cc5362f_abs"
+      ],
+      "answer": "Based on the chat history provided, there is no mention of you practicing the violin. In Session 2, you mentioned practicing **guitar** for 30 minutes daily, but nothing about violin. So I don't have information about your violin practice time.",
+      "gold": "You did not mention this information. You mentioned practing guitar everyday, but not violin.",
+      "correct": true
+    },
+    {
+      "id": "6a1eabeb",
+      "type": "knowledge-update",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_a25d4a91_2",
+        "answer_a25d4a91_1",
+        "4aaf678f_3",
+        "9b3a7f2c_1",
+        "d03995c6"
+      ],
+      "gold_sessions": [
+        "answer_a25d4a91_1",
+        "answer_a25d4a91_2"
+      ],
+      "answer": "Based on the chat history, your personal best time in the charity 5K run was **25:50**. You mentioned this in Session 5 when you said you were hoping to beat your personal best time of 25:50 in your upcoming charity 5K run.\n\n(Note: In Session 2, you mentioned a different 5K personal best of 27:12, but the most recent and relevant reference to your charity 5K personal best is 25:50.)",
+      "gold": "25 minutes and 50 seconds (or 25:50)",
+      "correct": true
+    },
+    {
+      "id": "0a995998",
+      "type": "multi-session",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_afa9873b_3",
+        "answer_afa9873b_2",
+        "answer_afa9873b_1",
+        "85846900_2",
+        "sharegpt_U3S02iq_0"
+      ],
+      "gold_sessions": [
+        "answer_afa9873b_2",
+        "answer_afa9873b_3",
+        "answer_afa9873b_1"
+      ],
+      "answer": "Based on the chat history, there are **2 items** of clothing you need to pick up or return from a store:\n\n1. **The navy blue blazer** — you need to pick it up from the dry cleaner (mentioned in Session 1).\n2. **The boots from Zara** — you exchanged them on February 5th for a larger size and still need to pick up the new pair (mentioned in Sessions 2 and 4).",
+      "gold": 3,
+      "correct": false
+    },
+    {
+      "id": "7161e7e2",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_sharegpt_5Lzox6N_0",
+        "dba97bb1_4",
+        "3c3fee41",
+        "5850de18_2",
+        "sharegpt_6kDZTZ2_0"
+      ],
+      "gold_sessions": [
+        "answer_sharegpt_5Lzox6N_0"
+      ],
+      "answer": "Based on our previous chat, in the 1-week shift rotation sheet (Sunday–Saturday) with the agent names added, **Admon was assigned to the 8 am – 4 pm (Day Shift) on Sunday**.",
+      "gold": "Admon was assigned to the 8 am - 4 pm (Day Shift) on Sundays.",
+      "correct": true
+    },
+    {
+      "id": "8a2466db",
+      "type": "single-session-preference",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_edb03329",
+        "6dcf5fa0_1",
+        "sharegpt_osTHjYi_0",
+        "84f2d563_1",
+        "6a5b5a78"
+      ],
+      "gold_sessions": [
+        "answer_edb03329"
+      ],
+      "answer": "Based on our conversation about Adobe Premiere Pro and video editing, here are some resources to help you learn more about video editing:\n\n**Official Documentation & Tutorials:**\n1. **Adobe Premiere Pro's official documentation and tutorials** – The best starting point for authoritative guidance on features and advanced settings.\n\n**YouTube Channels:**\n2. **Premiere Bro** – Tips, tutorials, and news for Premiere Pro users.\n3. **Video Copilot** – Great for effects, motion graphics, and creative techniques.\n4. **Adobe Creative Cloud** – Official tutorials covering the full suite.\n\n**Online Courses:**\n5. **Udemy**, **LinkedIn Learning**, and **Skillshare** – Structured courses ranging from beginner to advanced, covering everything from the Lumetri Color Panel to export settings and multi-camera editing.\n\n**Communities & Forums:**\n6. **Reddit's r/premierepro** – An active community for troubleshooting and advice.\n7. **Adobe's Premiere Pro forum** – Official community forums with expert input.\n\nSince you're particularly interested in color grading, you may also want to revisit the Lumetri Color Panel topics we discussed—the Creative panel, Curves panel (including the Toe and Shoulder controls), Color Match, and Color Wheels—and practice those techniques alongside these resources. Start with small projects and gradually work up to more complex ones as you build your skills.",
+      "gold": "The user would prefer responses that suggest resources specifically tailored to Adobe Premiere Pro, especially those that delve into its advanced settings. They might not prefer general video editing resources or resources related to other video editing software.",
+      "correct": true
+    },
+    {
+      "id": "e47becba",
+      "type": "single-session-user",
+      "abstention": false,
+      "memory_sessions": [
+        "sharegpt_rnG0ZuV_0",
+        "sharegpt_Cr2tc1f_0",
+        "41abc171_4",
+        "sharegpt_8dJs7Ai_0",
+        "ultrachat_214101"
+      ],
+      "gold_sessions": [
+        "answer_280352e9"
+      ],
+      "answer": "Based on the provided chat history, there is no information about your degree or graduation. None of the sessions mention what degree you graduated with.",
+      "gold": "Business Administration",
+      "correct": false
+    },
+    {
+      "id": "gpt4_59149c77",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "memory_sessions": [
+        "9e2c2a6c_2",
+        "answer_d00ba6d0_2",
+        "answer_d00ba6d0_1",
+        "sharegpt_XlNs8Lz_199",
+        "54a05e72_2"
+      ],
+      "gold_sessions": [
+        "answer_d00ba6d0_1",
+        "answer_d00ba6d0_2"
+      ],
+      "answer": "Based on the chat history:\n\n- The MoMA visit (Session 1) took place on **2023/01/08 (Sun)**.\n- The \"Ancient Civilizations\" exhibit at the Metropolitan Museum of Art (Session 3) took place on **2023/01/15 (Sun)**.\n\nThe number of days between these two dates is **7 days**.",
+      "gold": "7 days. 8 days (including the last day) is also acceptable.",
+      "correct": true
+    },
+    {
+      "id": "6aeb4375",
+      "type": "knowledge-update",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_3f9693b7_2",
+        "answer_3f9693b7_1",
+        "sharegpt_MWlvrvZ_0",
+        "sharegpt_wbbH6cZ_0",
+        "1bc87711_1"
+      ],
+      "gold_sessions": [
+        "answer_3f9693b7_1",
+        "answer_3f9693b7_2"
+      ],
+      "answer": "Based on the chat history, you mentioned trying **four different Korean restaurants** in your city (Session 5), saying: \"I've tried four different ones so far, and I'm always looking for new recommendations.\"",
+      "gold": "four",
+      "correct": true
+    },
+    {
+      "id": "6d550036",
+      "type": "multi-session",
+      "abstention": false,
+      "memory_sessions": [
+        "2e4430d8_2",
+        "sharegpt_UbMVpdp_93",
+        "sharegpt_zciCXP1_12",
+        "ultrachat_294469",
+        "sharegpt_J7ZAFLd_0"
+      ],
+      "gold_sessions": [
+        "answer_ec904b3c_1",
+        "answer_ec904b3c_4",
+        "answer_ec904b3c_3",
+        "answer_ec904b3c_2"
+      ],
+      "answer": "Based on the chat history, you have led or are currently leading **two** projects:\n\n1. **The high-priority project** you completed two months ahead of schedule (mentioned in Session 5), which led to a significant increase in company revenue.\n2. **The new product feature launch planned for June** (the current project in Session 5), for which you're creating a project timeline and leading a team of five engineers.\n\nNote: Your promotion to senior software engineer three months ago and your leadership of a team of five engineers is a role, not a specific project.",
+      "gold": 2,
+      "correct": true
+    },
+    {
+      "id": "c4f10528",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_ultrachat_234453",
+        "51c89181_1",
+        "107d40f0",
+        "de55485d_1",
+        "sharegpt_yMwEvl7_557"
+      ],
+      "gold_sessions": [
+        "answer_ultrachat_234453"
+      ],
+      "answer": "Based on our previous chat about Bandung, the restaurant in the Cihampelas Walk area that serves a great Nasi Goreng is **Miss Bee Providore**. Their signature **Miss Bee's Nasi Goreng** is a must-try — it's served with prawn crackers and topped with a fried egg. Enjoy your visit!",
+      "gold": "Miss Bee Providore",
+      "correct": true
+    },
+    {
+      "id": "06878be2",
+      "type": "single-session-preference",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_555dfb94",
+        "8fcfbe43_2",
+        "ca929779_1",
+        "sharegpt_GSC090N_6",
+        "ultrachat_448784"
+      ],
+      "gold_sessions": [
+        "answer_555dfb94"
+      ],
+      "answer": "Based on your photography setup (Sony A7R IV, Godox V1 flash, and interest in the Gitzo GT3543LS tripod), here are some accessories that would complement your gear:\n\n**Flash & Lighting Accessories:**\n- **Flash diffuser/modifier** (e.g., MagMod or Godox round head accessories) – softens the harsh light from the Godox V1 for more flattering portraits.\n- **Off-camera flash triggers** – a Godox wireless trigger (like the XPro-S) to fire your V1 off-camera for creative lighting.\n- **Light stand and umbrella/softbox** – pairs with the V1 for off-camera setups.\n\n**Tripod & Support:**\n- **Ballhead** – if you get the Gitzo GT3543LS, pair it with a compatible head like the Gitzo GH3382QD (or another quality ballhead).\n- **Quick-release plate/L-bracket** – an L-bracket for the A7R IV makes switching between landscape and portrait on a tripod much easier.\n- **Tripod bag or strap** – to protect and carry the Gitzo.\n\n**Power & Storage:**\n- **External battery pack** (e.g., Anker PowerCore 20000 PD) – to charge the A7R IV and other devices on the go via USB-C PD.\n- **Extra batteries and a dual charger** for the A7R IV.\n- **Fast, high-capacity SD/CFexpress cards** – the A7R IV's high-resolution files benefit from fast cards.\n\n**Protection & Cleaning:**\n- **Flash pouch/case** – a soft pouch (e.g., Think Tank or Vello) or hard case (e.g., Godox V1 Hard Case) to protect your flash.\n- **Lens cleaning kit** – microfiber cloth, blower, and lens cleaning solution for your 24-70mm f/2.8.\n- **A comfortable, durable camera bag** designed to fit Sony gear (Think Tank, Lowepro, Peak Design, etc.).\n\n**Other Useful Extras:**\n- **Remote shutter release** – for long exposures and shake-free shots on the tripod.\n- **Filters** (CPL and ND) for your 24-70mm – useful for landscapes and controlling light.\n- **Lens hood** – to reduce flare and protect the front element.\n\nWould you like me to go deeper on any of these categories",
+      "gold": "The user would prefer suggestions of Sony-compatible accessories or high-quality photography gear that can enhance their photography experience. They may not prefer suggestions of other brands' equipment or low-quality gear.",
+      "correct": true
+    },
+    {
+      "id": "118b2229",
+      "type": "single-session-user",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_40a90d51",
+        "afe04238_1",
+        "ultrachat_311002",
+        "628c958c_7",
+        "db73b7e4_4"
+      ],
+      "gold_sessions": [
+        "answer_40a90d51"
+      ],
+      "answer": "Based on the chat history, your daily commute is **45 minutes each way** (about 1.5 hours total per day).",
+      "gold": "45 minutes each way",
+      "correct": true
+    },
+    {
+      "id": "gpt4_f49edff3",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_3e9fce53_3",
+        "answer_3e9fce53_2",
+        "answer_3e9fce53_1",
+        "7d33fcb4_1",
+        "ultrachat_369361"
+      ],
+      "gold_sessions": [
+        "answer_3e9fce53_1",
+        "answer_3e9fce53_2",
+        "answer_3e9fce53_3"
+      ],
+      "answer": "Based on the chat history, the events happened in this order:\n\n1. **The day I helped my friend prepare the nursery** — Session 1, dated 2023/02/05 (Sun). You mentioned spending a Sunday afternoon shopping at Buy Buy Baby to help your friend prepare a nursery.\n2. **The day I helped my cousin pick out stuff for her baby shower** — Session 4, dated 2023/02/10 (Fri). You mentioned helping your cousin pick out diapers, wipes, and a baby monitor at Target.\n3. **The day I ordered a customized phone case for my friend's birthday** — Session 5, dated 2023/02/20 (Mon). You mentioned ordering the customized phone case that day.\n\nSo the order from first to last is: **nursery preparation (Feb 5) → cousin's baby shower shopping (Feb 10) → ordering the customized phone case (Feb 20)**.",
+      "gold": "First, I helped my friend prepare the nursery, then I helped my cousin pick out stuff for her baby shower, and lastly, I ordered a customized phone case for my friend's birthday.",
+      "correct": true
+    },
+    {
+      "id": "830ce83f",
+      "type": "knowledge-update",
+      "abstention": false,
+      "memory_sessions": [
+        "47c5482a",
+        "sharegpt_mMTudFY_0",
+        "answer_0b1a0942_1",
+        "8bc305e4_2",
+        "ultrachat_343392"
+      ],
+      "gold_sessions": [
+        "answer_0b1a0942_1",
+        "answer_0b1a0942_2"
+      ],
+      "answer": "Based on the history chats, Rachel moved to Chicago.",
+      "gold": "the suburbs",
+      "correct": false
+    },
+    {
+      "id": "gpt4_59c863d7",
+      "type": "multi-session",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_593bdffd_1",
+        "answer_593bdffd_4",
+        "eb47739f_2",
+        "answer_593bdffd_2",
+        "ultrachat_233858"
+      ],
+      "gold_sessions": [
+        "answer_593bdffd_4",
+        "answer_593bdffd_1",
+        "answer_593bdffd_3",
+        "answer_593bdffd_2"
+      ],
+      "answer": "Based on the chat history, you have worked on or bought **4 model kits**:\n\n1. **1/72 scale B-29 bomber** – bought at a model show (Session 1) and planned as a future project.\n2. **1/24 scale '69 Camaro** – bought at the same model show (Session 1).\n3. **Revell F-15 Eagle** – a simple kit you picked up on a whim in late April and finished (Session 4).\n4. **Tamiya 1/48 scale Spitfire Mk.V** – a kit you recently finished (Session 5).",
+      "gold": "I have worked on or bought five model kits. The scales of the models are: Revell F-15 Eagle (scale not mentioned), Tamiya 1/48 scale Spitfire Mk.V, 1/16 scale German Tiger I tank, 1/72 scale B-29 bomber, and 1/24 scale '69 Camaro.",
+      "correct": false
+    },
+    {
+      "id": "89527b6b",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_sharegpt_YkWn1Ne_0",
+        "644e1d00",
+        "ultrachat_117600",
+        "48d385f0_1",
+        "sharegpt_M9T66Xd_5"
+      ],
+      "gold_sessions": [
+        "answer_sharegpt_YkWn1Ne_0"
+      ],
+      "answer": "Based on our previous conversation about the children's book on dinosaurs, the Plesiosaur in the image had a **blue scaly body**.\n\nSpecifically, the description read: \"A Plesiosaur is shown swimming in the ocean, with its long neck and flippers in motion. The Plesiosaur has a **blue** scaly body, and its eyes are fixed on something in the distance.\"",
+      "gold": "The Plesiosaur had a blue scaly body.",
+      "correct": true
+    },
+    {
+      "id": "75832dbd",
+      "type": "single-session-preference",
+      "abstention": false,
+      "memory_sessions": [
+        "sharegpt_xni9yYO_6",
+        "ultrachat_533748",
+        "c51583cd_1",
+        "ultrachat_165893",
+        "sharegpt_FYqt26U_0"
+      ],
+      "gold_sessions": [
+        "answer_d87a6ef8"
+      ],
+      "answer": "Based on our conversation about book clubs and social connection, I don't have specific information about your professional or academic field to recommend relevant publications or conferences. However, I can offer some general suggestions:\n\n1. **If you're interested in reading-related events**: Look into literary festivals, author talks, or book fairs in your area. Sites like Meetup.com or your local library often list these.\n\n2. **Book club resources**: Publications like *The New York Times Book Review*, *The Guardian Books*, or *Kirkus Reviews* can keep you informed about new releases. Conferences like the **BookExpo** or local literary conferences might also interest you.\n\n3. **Social/hobby conferences**: Depending on your other interests, there may be conventions or meetups related to hobbies (e.g., gaming conventions, art fairs, hiking meetups).\n\nIf you could clarify what field or topic you're asking about (e.g., academic, professional, or hobby-related), I'd be happy to give more targeted recommendations!",
+      "gold": "The user would prefer suggestions related to recent research papers, articles, or conferences that focus on artificial intelligence in healthcare, particularly those that involve deep learning for medical image analysis. They would not be interested in general AI topics or those unrelated to healthcare.",
+      "correct": false
+    },
+    {
+      "id": "51a45a95",
+      "type": "single-session-user",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_d61669c7",
+        "98c198fb",
+        "5c44d9fe_1",
+        "55e0c6db_2",
+        "83addb61_4"
+      ],
+      "gold_sessions": [
+        "answer_d61669c7"
+      ],
+      "answer": "Based on the chat history, you redeemed a $5 coupon on coffee creamer **last Sunday** (which was a nice surprise since you didn't know you had it in your email inbox).",
+      "gold": "Target",
+      "correct": false
+    },
+    {
+      "id": "71017276",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_0b4a8adc_1",
+        "sharegpt_tCLMKZY_0",
+        "sharegpt_11WxPMZ_0",
+        "398f23e7",
+        "58ec258f_2"
+      ],
+      "gold_sessions": [
+        "answer_0b4a8adc_1"
+      ],
+      "answer": "Based on the chat history, you mentioned receiving the crystal chandelier from your aunt in Session 5, which took place on **2023/03/04 (Sat)**. The current date is **2023/04/01 (Sat)**.\n\nThat is **4 weeks ago**.",
+      "gold": 4,
+      "correct": true
+    },
+    {
+      "id": "852ce960",
+      "type": "knowledge-update",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_3a6f1e82_1",
+        "answer_3a6f1e82_2",
+        "a76e7e3c_1",
+        "010a28ab_3",
+        "aaf22693"
+      ],
+      "gold_sessions": [
+        "answer_3a6f1e82_1",
+        "answer_3a6f1e82_2"
+      ],
+      "answer": "Based on the history chats, you mentioned in Session 1 that you were **pre-approved for $350,000 from Wells Fargo** for your home purchase. (Note: In Session 5, there's a reference to \"$400,000 from Wells Fargo,\" but that appears in a context where the assistant noted it didn't have access to prior conversations—the actual figure you provided earlier was **$350,000**.)",
+      "gold": "$400,000",
+      "correct": false
+    },
+    {
+      "id": "b5ef892d",
+      "type": "multi-session",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_a8b4290f_2",
+        "answer_a8b4290f_3",
+        "answer_a8b4290f_1",
+        "ultrachat_565056",
+        "f2ccf83b"
+      ],
+      "gold_sessions": [
+        "answer_a8b4290f_3",
+        "answer_a8b4290f_1",
+        "answer_a8b4290f_2"
+      ],
+      "answer": "Based on the chat history, you mentioned two camping trips this year:\n\n1. A **5-day camping trip to Yellowstone National Park** last month (March 2023).\n2. A **3-day solo camping trip to Big Sur** in early April 2023.\n\nThat adds up to **8 days** of camping trips in the United States this year.",
+      "gold": "8 days.",
+      "correct": true
+    },
+    {
+      "id": "e9327a54",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_ultrachat_480665",
+        "ba944cdc",
+        "c58fdf1e_2",
+        "7613d5ec_2",
+        "c0d099e6_2"
+      ],
+      "gold_sessions": [
+        "answer_ultrachat_480665"
+      ],
+      "answer": "Based on our previous conversation about Orlando, the unique dessert shop with the giant milkshakes is **The Sugar Factory**, located at Icon Park. It offers an enormous menu of sweet treats, including specialty drinks and giant milkshakes.",
+      "gold": "The Sugar Factory at Icon Park.",
+      "correct": true
+    },
+    {
+      "id": "0edc2aef",
+      "type": "single-session-preference",
+      "abstention": false,
+      "memory_sessions": [
+        "f20e72e4_1",
+        "answer_d586e9cd",
+        "53dc1394",
+        "8464304d_2",
+        "08ca1f31_2"
+      ],
+      "gold_sessions": [
+        "answer_d586e9cd"
+      ],
+      "answer": "Based on our conversations, I don't have any details about a Miami trip—our travel chats have covered Arizona, Seattle, Las Vegas, and your Bay Area bike routes, but nothing about Miami yet.\n\nTo give you good hotel recommendations, it would help to know:\n\n1. **Your priorities**: Are you looking for oceanfront views, a rooftop pool, a hot tub on the balcony (like The Edgewater in Seattle), boutique charm, or budget-friendly options?\n2. **Neighborhood preference**: South Beach, Miami Beach, Brickell, Downtown, Wynwood, or Coral Gables?\n3. **Trip style**: Romantic getaway, solo travel, nightlife-focused, or relaxation?\n4. **Budget range**: This will help narrow down luxury vs. mid-range vs. value options.\n\nOnce you share a bit more, I'd be happy to suggest some great hotels—and if you're still in \"pack light\" mode from your Vegas planning, I can help with that too!",
+      "gold": "The user would prefer suggestions of hotels in Miami that offer great views, possibly of the ocean or the city skyline, and have unique features such as a rooftop pool or a hot tub on the balcony. They may not prefer suggestions of basic or budget hotels without these features.",
+      "correct": true
+    },
+    {
+      "id": "58bf7951",
+      "type": "single-session-user",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_355c48bb",
+        "sharegpt_gmLF3PE_17",
+        "5b83c26e_1",
+        "sharegpt_M84blrA_53",
+        "ultrachat_155546"
+      ],
+      "gold_sessions": [
+        "answer_355c48bb"
+      ],
+      "answer": "Based on the conversation history, you attended a production of **The Glass Menagerie** at the local community theater.",
+      "gold": "The Glass Menagerie",
+      "correct": true
+    },
+    {
+      "id": "b46e15ed",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_4bfcc250_1",
+        "sharegpt_cXkL3cR_28",
+        "answer_4bfcc250_3",
+        "answer_4bfcc250_2",
+        "4bf66c38_2"
+      ],
+      "gold_sessions": [
+        "answer_4bfcc250_4",
+        "answer_4bfcc250_3",
+        "answer_4bfcc250_2",
+        "answer_4bfcc250_1"
+      ],
+      "answer": "Based on the chat history, the two charity events on consecutive days were:\n\n1. **February 14, 2023** – The \"24-Hour Bike Ride\" charity event (cycled 4 hours non-stop)\n2. **February 15, 2023** – The \"Books for Kids\" charity book drive at the local library\n\nFrom February 15, 2023 to the current date of April 18, 2023 is approximately **2 months** (just over 2 months).",
+      "gold": 2,
+      "correct": true
+    },
+    {
+      "id": "945e3d21",
+      "type": "knowledge-update",
+      "abstention": false,
+      "memory_sessions": [
+        "answer_6a4f8626_1",
+        "answer_6a4f8626_2",
+        "sharegpt_E7VUcfj_0",
+        "ultrachat_518638",
+        "sharegpt_zn81iL6_9"
+      ],
+      "gold_sessions": [
+        "answer_6a4f8626_1",
+        "answer_6a4f8626_2"
+      ],
+      "answer": "Based on the chat history, you attend yoga classes **three times a week**. You mentioned in Session 2 that you're \"more focused on days when I attend yoga classes, which is three times a week - it really helps me clear my head.\"",
+      "gold": "Three times a week.",
+      "correct": true
+    }
+  ]
+}
