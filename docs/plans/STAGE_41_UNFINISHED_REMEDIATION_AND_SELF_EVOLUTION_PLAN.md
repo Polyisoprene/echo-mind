@@ -2314,3 +2314,39 @@ status=ok
 **验证**
 
 - 全门禁沿用：**375 passed / 92%**，fusion 70/70。
+
+### 14.57 真实 query 下的 support 审计（2026-11-01）
+
+最近 20 条真实群消息作为 query：
+
+```text
+queries=20
+improved=3
+unchanged=77
+worsened=0
+```
+
+提升样例：
+
+| query | memory | before → after |
+|---|---|---:|
+| 昨天忆染也发过一串… | 332 | 56→9 |
+| 那是橡皮的号 不是我的 | 332 | 70→9 |
+| 噗，五抽就出… | 361 | 43→9 |
+
+结论：
+
+- 没有恶化；
+- 但提升的 query 有“串/号/五抽”这类**弱相关**；
+- 词法门控仍会因单个 bigram 命中而 boost；
+- 不能把这 3 次提升当成“语义正确”；
+- 不继续调参/加阈值，先记录。
+
+产物：
+
+`eval/baselines/support-live-queries-2026-11-01.json`
+
+**验证**
+
+- 只读；
+- 全门禁沿用：**375 passed / 92%**，fusion 70/70。

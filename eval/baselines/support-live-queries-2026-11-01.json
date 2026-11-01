@@ -1,0 +1,434 @@
+{
+  "queries": 20,
+  "improved": 3,
+  "unchanged": 77,
+  "worsened": 0,
+  "support_memories": [
+    332,
+    342,
+    359,
+    361
+  ],
+  "rows": [
+    {
+      "query": "原来是藏起来的「我爱你」呀",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "E6 88 91 E7 88 B1 E4 BD A0",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "就是那个十六进制码吧",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "诶？",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "麻叽你@两个人一起说？",
+      "movement": {
+        "361": {
+          "before": 138,
+          "after": 138
+        },
+        "359": {
+          "before": 143,
+          "after": 143
+        },
+        "342": {
+          "before": 167,
+          "after": 167
+        },
+        "332": {
+          "before": 157,
+          "after": 157
+        }
+      }
+    },
+    {
+      "query": "昨天忆染也发过一串，解出来是我爱你的",
+      "movement": {
+        "361": {
+          "before": 143,
+          "after": 143
+        },
+        "359": {
+          "before": 146,
+          "after": 146
+        },
+        "342": {
+          "before": 169,
+          "after": 169
+        },
+        "332": {
+          "before": 56,
+          "after": 9
+        }
+      }
+    },
+    {
+      "query": "有话直说 别写十六进制",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "草 是「我爱你」",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "噗，这串数字又来了",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "?",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "@3993173948(QQ:3993173948)  @1914532415(QQ:1914532415)  E6 8",
+      "movement": {
+        "361": {
+          "before": 144,
+          "after": 144
+        },
+        "359": {
+          "before": 148,
+          "after": 148
+        },
+        "342": {
+          "before": 173,
+          "after": 173
+        },
+        "332": {
+          "before": 163,
+          "after": 163
+        }
+      }
+    },
+    {
+      "query": "一个多月 这是走路送的吧",
+      "movement": {
+        "361": {
+          "before": 134,
+          "after": 134
+        },
+        "359": {
+          "before": 139,
+          "after": 139
+        },
+        "342": {
+          "before": 165,
+          "after": 165
+        },
+        "332": {
+          "before": 155,
+          "after": 155
+        }
+      }
+    },
+    {
+      "query": "牛逼，九月二十一号买的快递到了",
+      "movement": {
+        "361": {
+          "before": 132,
+          "after": 132
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "[视频]",
+      "movement": {
+        "361": {
+          "before": 133,
+          "after": 133
+        },
+        "359": {
+          "before": 138,
+          "after": 138
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 151,
+          "after": 151
+        }
+      }
+    },
+    {
+      "query": "那是橡皮的号 不是我的",
+      "movement": {
+        "361": {
+          "before": 151,
+          "after": 151
+        },
+        "359": {
+          "before": 155,
+          "after": 155
+        },
+        "342": {
+          "before": 176,
+          "after": 176
+        },
+        "332": {
+          "before": 70,
+          "after": 9
+        }
+      }
+    },
+    {
+      "query": "刚还啃着白饭呢转眼就欧皇了",
+      "movement": {
+        "361": {
+          "before": 136,
+          "after": 136
+        },
+        "359": {
+          "before": 141,
+          "after": 141
+        },
+        "342": {
+          "before": 164,
+          "after": 164
+        },
+        "332": {
+          "before": 156,
+          "after": 156
+        }
+      }
+    },
+    {
+      "query": "噗，五抽就出，汐你这运气也太好了吧",
+      "movement": {
+        "361": {
+          "before": 43,
+          "after": 9
+        },
+        "359": {
+          "before": 136,
+          "after": 136
+        },
+        "342": {
+          "before": 162,
+          "after": 162
+        },
+        "332": {
+          "before": 153,
+          "after": 153
+        }
+      }
+    },
+    {
+      "query": "5抽就出 还让不让人活了",
+      "movement": {
+        "361": {
+          "before": 135,
+          "after": 135
+        },
+        "359": {
+          "before": 140,
+          "after": 140
+        },
+        "342": {
+          "before": 165,
+          "after": 165
+        },
+        "332": {
+          "before": 155,
+          "after": 155
+        }
+      }
+    },
+    {
+      "query": "[图片]",
+      "movement": {
+        "361": {
+          "before": 134,
+          "after": 134
+        },
+        "359": {
+          "before": 138,
+          "after": 138
+        },
+        "342": {
+          "before": 164,
+          "after": 164
+        },
+        "332": {
+          "before": 154,
+          "after": 154
+        }
+      }
+    },
+    {
+      "query": "[图片]",
+      "movement": {
+        "361": {
+          "before": 134,
+          "after": 134
+        },
+        "359": {
+          "before": 138,
+          "after": 138
+        },
+        "342": {
+          "before": 164,
+          "after": 164
+        },
+        "332": {
+          "before": 154,
+          "after": 154
+        }
+      }
+    }
+  ]
+}
