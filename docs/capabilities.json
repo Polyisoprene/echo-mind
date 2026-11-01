@@ -300,7 +300,7 @@
         "src/echomind/adapters/storage/claim_repo.py"
       ],
       "status": "partial",
-      "gap": "claims 已有 provenance/隐私读路径与 valid_to；FACTS_V2 默认仍 off，线上仍读 legacy facts",
+      "gap": "claims 已有 provenance/隐私读路径与 valid_to；生产 claims 仍 0 superseded/retracted，8 组同 subject/predicate 多 asserted，写入侧更新检测未闭合；FACTS_V2 默认 off",
       "acceptance_test": "tests/integration/test_claim_read_path.py::test_facts_v2_reads_claims_with_privacy",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "E3"

@@ -29,7 +29,7 @@
 | CAP-HEXACO | 7 维人格对应 HEXACO 六轴 | ⛔ contradicted | 7 维为 warmth/tsundere/playfulness/possessiveness/confidence/guile/defiance，与 HEXACO 无映射矩阵，缺 C/O 轴 |
 | CAP-ZERO-LEXICON | 全链路零硬编码词表（Stage 26） | ⛔ contradicted | mind/ 下仍有 40+ 处中文词表与正则（角色冒充词、停用词、机器人关键词） |
 | CAP-OPERATOR-NO-PRIVILEGE | operator 只有纠错权限，无情感特权 | ⛔ contradicted | update_sender_bond 对 is_owner 直接置 trust=1.0；且 _check_reactance 对 w_care>=0.85 免除逆反 |
-| CAP-MEMORY-EVIDENCE | 事实带来源与时效，冲突可复核 | ⚠️ partial | claims 已有 provenance/隐私读路径与 valid_to；FACTS_V2 默认仍 off，线上仍读 legacy facts |
+| CAP-MEMORY-EVIDENCE | 事实带来源与时效，冲突可复核 | ⚠️ partial | claims 已有 provenance/隐私读路径与 valid_to；生产 claims 仍 0 superseded/retracted，8 组同 subject/predicate 多 asserted，写入侧更新检测未闭合；FACTS_V2 默认 off |
 | CAP-AUTH-WRITE | 控制台写操作强制 token 并留审计 | ⚠️ partial | auth_key 为空时全放行；/api/session/token 把 token 发给 loopback（隧道下等同公开） |
 | CAP-PERSONA-EFFECTIVE | 7 维人格在生成输出上可被盲评识别 | ⚠️ partial | 历史人工总体 3.24/5；当前 24h 风格约 28 字、长句率 14%；无新人工盲评，真人感未达标 |
 | CAP-ACTIVE-ONLY-PROMPT | prompt 只渲染 active trait | ✅ implemented | tests/unit/test_personality_invariants.py::test_only_active_traits_reach_the_prompt |
