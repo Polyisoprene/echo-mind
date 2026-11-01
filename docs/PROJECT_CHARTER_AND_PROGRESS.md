@@ -31,7 +31,7 @@
 | **关系/披露** | bond depth + memory_knowledge（told_by_me/hinted）；public/group/private/secret 硬门 |
 | **记忆** | semantic 221 / episodic 209；BM25+dense+recency+order+PPR+confidence+lock+RRF；claims 读路径已补 provenance，默认 `FACTS_V2=off` |
 | **数据** | 7 条无 evidence legacy 已删除并备份；`valid_to_ms` 事实有效期已支持 |
-| **已知边界** | 真人感未达标；自动 support 稀疏；GroupMemBench/CharacterEval 未接；LongMemEval 仅 100 题 |
+| **已知边界** | 真人感未达标；自动 support 稀疏；GroupMemBench/CharacterEval 未接；LongMemEval 500 题 retrieval 52.8% / MRR 0.375；QA 仅 30 题 |
 
 ---
 
@@ -122,7 +122,7 @@
 | Stage 41 B5/B6 | memory_knowledge 披露归因、fact `valid_to_ms` | ✅ 已上线 |
 | Stage 41 G1/G2 | 结构评审自动晋升器、只读叙事投影（prompt A/B 否决） | ✅ 代码完成 |
 
-**当前边界**：真人感未达标；自动 support 稀疏；GroupMemBench/CharacterEval 未接；LongMemEval 仅 100 题。  
+**当前边界**：真人感未达标；自动 support 稀疏；GroupMemBench/CharacterEval 未接；LongMemEval 500 题 retrieval 52.8% / MRR 0.375；QA 仅 30 题。  
 完整记录见 [Stage 41 计划](plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md)。
 
 ---

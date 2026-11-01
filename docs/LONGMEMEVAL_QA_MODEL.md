@@ -121,3 +121,18 @@ PYTHONPATH=src .venv/bin/python scripts/eval_longmemeval_qa.py \
 - 普通题大量回答 `I don't know`，说明 top-5 session 没覆盖证据，或生成端过度保守；
 - 先修检索/上下文，不调 judge；
 - 500 题 retrieval 正在远端跑，结果单独落盘。
+
+
+## 9. 500 题 retrieval（已完成）
+
+远端全量：
+
+```text
+session recall@5 = 0.528
+MRR = 0.375
+abstention 子集 recall@5 = 0.567
+```
+
+报告：`eval/baselines/longmemeval-500-2026-11-01.json`
+
+仍未跑 500 题 QA 全量；30 题 QA 小样本只用于协议验证。
