@@ -61,11 +61,15 @@ async def main() -> int:
     if evidence_id is None:
         print("已取消")
         return 1
+    keyword = _ask("输入关键词筛选 memory（可空，直接回车显示最近 30 条）：")
+    like = f"%{keyword}%"
     memories = [
         (int(row["id"]), f"{row['subject']}：{row['fact_text'][:90]}")
         for row in con.execute(
             "SELECT id, subject, fact_text FROM semantic_facts "
-            "ORDER BY id DESC LIMIT 30"
+            "WHERE (? = '' OR subject LIKE ? OR fact_text LIKE ?) "
+            "ORDER BY id DESC LIMIT 30",
+            (keyword, like, like),
         )
     ]
     memory_id = _pick(memories, "选择 memory（这条证据支持的记忆）")
