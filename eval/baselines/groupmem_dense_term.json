@@ -1,0 +1,10 @@
+{
+  "term_ambiguity": {
+    "n": 45,
+    "accuracy": 0.356
+  },
+  "overall": {
+    "n": 45,
+    "accuracy": 0.356
+  }
+}

@@ -12,10 +12,12 @@ from pathlib import Path
 from typing import Any
 
 from echomind.adapters.llm.client import FailoverLlmGateway
+from echomind.adapters.llm.embedding_client import OpenAiEmbeddingGateway
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.core.config import load_config_from_json
 from echomind.domain.models import SemanticFact
 from echomind.mind.ranker_fusion import bm25_scores
+from echomind.mind.semantic_retrieval import cosine
 
 ROOT = Path(__file__).resolve().parents[1]
 BENCH = ROOT / "data" / "external" / "GroupMemBench"
@@ -85,13 +87,31 @@ async def _reply(llm: FailoverLlmGateway, system: str, user: str, max_tokens: in
     return str(choices[0].get("message", {}).get("content") or "")
 
 
+async def _load_vectors(
+    embedding: OpenAiEmbeddingGateway, facts: tuple[SemanticFact, ...], batch: int,
+) -> list[tuple[float, ...]]:
+    vectors: list[tuple[float, ...]] = []
+    for start in range(0, len(facts), batch):
+        vectors.extend(await embedding.embed(
+            tuple(fact.fact_text for fact in facts[start:start + batch])
+        ))
+    return vectors
+
+
 async def _ask(
     llm: FailoverLlmGateway, *,
     question: dict[str, Any], messages: list[dict[str, Any]],
     facts: tuple[SemanticFact, ...], agent: str, judge: str, topk: int,
+    retriever: str = "bm25", vectors: list[tuple[float, ...]] | None = None,
+    embedding: OpenAiEmbeddingGateway | None = None,
 ) -> dict[str, Any]:
     query = f"{question.get('asking_user_id', '')} {question['question']}".strip()
-    scores = bm25_scores(facts, query)
+    if retriever == "dense" and vectors is not None and embedding is not None:
+        query_vec = (await embedding.embed((query,)))[0]
+        scores = {fact.fact_id: cosine(query_vec, vectors[fact.fact_id])
+                  for fact in facts}
+    else:
+        scores = bm25_scores(facts, query)
     top = sorted(
         facts, key=lambda fact: (-scores[fact.fact_id], fact.fact_id)
     )[:topk]
@@ -120,6 +140,8 @@ async def main() -> int:
     parser.add_argument("--domain", default="Finance")
     parser.add_argument("--qtypes", default="")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--retriever", choices=("bm25", "dense"), default="bm25")
+    parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "groupmembench.json")
     parser.add_argument("--raw", type=Path, default=ROOT / "reports" / "groupmembench.jsonl")
@@ -130,6 +152,8 @@ async def main() -> int:
     agent = (BENCH / "prompts" / "hipporag_agent_system.txt").read_text(encoding="utf-8")
     judge = (BENCH / "prompts" / "hipporag_judge_system.txt").read_text(encoding="utf-8")
     cfg = load_config_from_json(ROOT / "data" / "config.json")
+    embedding = OpenAiEmbeddingGateway(cfg.embedding) if args.retriever == "dense" else None
+    vectors = await _load_vectors(embedding, facts, args.batch) if embedding else None
     db = SqliteDatabase(ROOT / "reports" / "groupmembench_trace.db")
     await db.initialize()
     llm = FailoverLlmGateway(cfg.primary_llm, cfg.fallback_llm, db,
@@ -154,6 +178,7 @@ async def main() -> int:
                 result = await _ask(
                     llm, question=q, messages=messages, facts=facts,
                     agent=agent, judge=judge, topk=args.topk,
+                    retriever=args.retriever, vectors=vectors, embedding=embedding,
                 )
                 rows.append({"qtype": qtype, "id": q.get("id"), "question": q["question"],
                              "answer": result["answer"], "gold": q.get("answer"),
