@@ -1,0 +1,30 @@
+{
+  "abstention": {
+    "n": 34,
+    "accuracy": 0.971
+  },
+  "knowledge_update": {
+    "n": 17,
+    "accuracy": 0.235
+  },
+  "multi_hop": {
+    "n": 48,
+    "accuracy": 0.438
+  },
+  "temporal": {
+    "n": 37,
+    "accuracy": 0.216
+  },
+  "term_ambiguity": {
+    "n": 7,
+    "accuracy": 0.286
+  },
+  "user_implicit": {
+    "n": 2,
+    "accuracy": 1.0
+  },
+  "overall": {
+    "n": 145,
+    "accuracy": 0.483
+  }
+}

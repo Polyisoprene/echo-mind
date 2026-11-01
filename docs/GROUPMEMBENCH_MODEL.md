@@ -132,3 +132,35 @@ user_implicit 0.571, term 0.326, abstention 0.929
 - Finance abstention 有下降，不能忽略；
 - 这是**外部适配条件**：GroupMemBench 提供 role/channel/phase/topic metadata，官方 content-only BM25 不使用这些；因此不能与官方排名直接比较；
 - 不接 live；live 记忆没有这些字段，不能假装等价。
+
+## 8. 四域 metadata-aware 矩阵（2026-11-01）
+
+同一 metadata-aware BM25 + 官方 prompt：
+
+| 域 | n | accuracy | 数据性质 |
+|---|---:|---:|---|
+| Finance | 214 | 0.486 | solvability-filtered |
+| Technology | 213 | 0.526 | solvability-filtered |
+| Healthcare | 145 | 0.483 | 未过滤 |
+| Manufacturing | 173 | 0.578 | 未过滤 |
+
+分题型：
+
+| 类型 | Finance | Technology | Healthcare | Manufacturing |
+|---|---:|---:|---:|---:|
+| multi_hop | 0.583 | 0.659 | 0.438 | 0.489 |
+| knowledge_update | 0.469 | 0.472 | 0.235 | 0.273 |
+| temporal | 0.333 | 0.324 | 0.216 | 0.442 |
+| user_implicit | 0.667 | 0.571 | 1.000* | 0.500* |
+| term_ambiguity | 0.267 | 0.326 | 0.286* | 0.455* |
+| abstention | 0.828 | 0.929 | 0.971 | 0.958 |
+
+`*` 样本很小（2–11 条），不能单独下结论。
+
+结论：
+
+- 四域都在 48–58% 区间；
+- knowledge_update 是跨域稳定短板（0.235–0.472）；
+- Healthcare/Manufacturing 是未过滤集，不能和 Finance/Technology 直接排名；
+- metadata-aware 仍不是官方 content-only BM25 条件；
+- 不接 live。
