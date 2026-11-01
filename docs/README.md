@@ -10,6 +10,7 @@
 | 文档 | 作用 |
 |---|---|
 | [`CURRENT_STATE_2026-11-01.md`](CURRENT_STATE_2026-11-01.md) | **当前真实状态**：active trait、support、评测、能力边界 |
+| [`CLOSURE_MATRIX_2026-11-02.md`](CLOSURE_MATRIX_2026-11-02.md) | 闭环矩阵：已完成、已验证、被外部资源阻塞的项 |
 | [`plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md`](plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md) | Stage 41 全景：证据账本、生命周期、trait→记忆、support、ranker、闭环矩阵 |
 | [`plans/STAGE_42_CAPABILITY_COMPLETION_PLAN.md`](plans/STAGE_42_CAPABILITY_COMPLETION_PLAN.md) | Stage 42：可做未做能力的全局建模、外部依据、P0–P4 与验收 |
 | [`RESPONSE_ATTRIBUTION_MODEL.md`](RESPONSE_ATTRIBUTION_MODEL.md) | P0 回应归因：tier B/C、30min 工程窗口、shadow 结果 |
