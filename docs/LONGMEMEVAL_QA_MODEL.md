@@ -322,3 +322,33 @@ temporal-reasoning: 2/4 命中，0/4 正确
 - 不能把 226/500=45.2% 写成模型能力；
 - 需要恢复稳定 LLM 网关后，用 `--resume` 补齐 229 条；
 - 修复后才有资格报 500 QA。
+
+## 16. 500 题最终有效结果（2026-11-01）
+
+LLM 网关恢复后，用 `--resume` 补齐 229 条 ConnectError；按 id 取最新行去重：
+
+```text
+unique = 500/500
+errors = 0
+correct = 417/500 = 83.4%
+```
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| knowledge-update | 78 | 0.833 |
+| multi-session | 133 | 0.729 |
+| single-session-assistant | 56 | 1.000 |
+| single-session-preference | 30 | 0.900 |
+| single-session-user | 70 | 0.957 |
+| temporal-reasoning | 133 | 0.789 |
+| abstention | 30 | 0.900 |
+| **总体** | **500** | **417/500 = 0.834** |
+
+结论：
+
+- 之前的 226/500 是网关连接失败导致的无效结果；
+- 补齐后 500 QA = **83.4%**；
+- multi-session 0.729、temporal 0.789 仍是相对短板；
+- abstention 0.900，不再是主要问题；
+- 该分数使用本机 LLM/judge，不是 GPT-4o 官方 judge，不能直接排名；
+- 文件：`eval/baselines/longmemeval-qa-500-final-2026-11-01.json`。
