@@ -167,3 +167,39 @@ after:  196 facts
 - 没有观察到读路径退化；
 - 生产仍未 apply；
 - 下一步是确认 7 组语义正确性，再考虑小流量。
+
+## 9. 7 组候选语义核对（2026-11-01）
+
+逐条检查后：**7/7 都不是真正的函数槽覆盖**。
+
+| 组 | 内容 | 判断 |
+|---|---|---|
+| 冰色-瑟瑟馍馍 (2510544622) | B站动画/万圣节/直播等不同事件 | 不同 fact，不是覆盖 |
+| 冰色-瑟瑟馍馍 (QQ...) | 昵称描述 | 可能更新，但 subject 不是槽 |
+| L今晚早睡了吗 (306...) | 性别/退群等不同属性 | 不同 fact |
+| L今晚早睡了吗 | 主人相关不同描述 | 不同 fact |
+| 最近B站冲浪 (2 组) | 不同视频 | 不同 fact |
+| 不要象挑战 | 不同格斗技巧 | 不同 fact |
+
+根因：
+
+```text
+claims.subject = 人名/实体
+claims.predicate = value
+value 不是“同一函数槽的最新值”，而是某人的多条不同事实。
+```
+
+因此 planner 的“同 subject+predicate=value 就覆盖”假设**不成立**。  
+生产 `--apply` 现在被安全闸拒绝，除非显式设置：
+
+```bash
+CLAIM_SUPERSEDE_CONFIRM=yes
+```
+
+但在 schema 增加真正的 slot key 之前，不应设置。
+
+结论：
+
+- supersede 在当前 schema 上**拒绝**；
+- 只保留 planner/shadow 作为未来 slot-aware 模型的基础；
+- 不改生产 claims。

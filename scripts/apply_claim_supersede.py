@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sqlite3
 from collections import defaultdict
 from pathlib import Path
@@ -61,6 +62,13 @@ def main() -> int:
         "--out", type=Path, default=ROOT / "reports" / "claim_supersede_apply.json"
     )
     args = parser.parse_args()
+    if args.apply and os.getenv("CLAIM_SUPERSEDE_CONFIRM") != "yes":
+        print(
+            "REFUSED: current claims use person-as-subject; value is not a "
+            "functional slot. Set CLAIM_SUPERSEDE_CONFIRM=yes only after a "
+            "schema-level slot key exists."
+        )
+        return 2
     con = sqlite3.connect(args.db)
     con.row_factory = sqlite3.Row
     rows = con.execute(
