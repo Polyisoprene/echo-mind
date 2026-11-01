@@ -388,6 +388,10 @@ async def test_m3_4_dynamic_personality_evolution_and_trait_lifecycle(tmp_path: 
     traits = await work_repo.sync_persona_traits()
     assert len(traits) >= 1
     assert any("拆穿" in t.trait_text for t in traits)
+    # Active-only prompt policy: the test explicitly activates the fixture.
+    async with work_repo._db.connect() as conn:  # noqa: SLF001
+        await conn.execute("UPDATE persona_traits SET status='active'")
+        await conn.commit()
 
     frame = await facade.build_cognitive_frame("group:10002002", (trig,))
     assert (

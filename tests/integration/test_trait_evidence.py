@@ -34,8 +34,10 @@ async def test_reinforcement_increments_evidence(tmp_path: Path) -> None:
 def test_prompt_can_filter_traits_by_evidence() -> None:
     from echomind.mind.personality import synthesize_live_persona_directive
 
-    old = PersonaTrait(category="habit", trait_text="只出现一次的习惯", evidence_count=1)
-    stable = PersonaTrait(category="habit", trait_text="反复出现的习惯", evidence_count=3)
+    old = PersonaTrait(category="habit", trait_text="只出现一次的习惯", evidence_count=1,
+                       status="candidate")
+    stable = PersonaTrait(category="habit", trait_text="反复出现的习惯", evidence_count=3,
+                          status="active")
     text = synthesize_live_persona_directive(
         {}, (old, stable), min_evidence=2, max_traits=6
     )

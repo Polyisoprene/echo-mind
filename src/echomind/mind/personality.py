@@ -124,10 +124,7 @@ def _trait_lines(traits: tuple[PersonaTrait, ...]) -> list[str]:
 def _visible_traits(
     traits: tuple[PersonaTrait, ...], min_evidence: int, max_traits: int
 ) -> tuple[PersonaTrait, ...]:
-    visible = tuple(
-        trait for trait in traits
-        if trait.status in ("active", "legacy_unverified")
-    )
+    visible = tuple(trait for trait in traits if trait.status == "active")
     picked = (
         tuple(t for t in visible if t.evidence_count >= min_evidence)
         if min_evidence > 0 else visible

@@ -2424,3 +2424,34 @@ candidate / dormant / retired / legacy_unverified 不进入 prompt。
 - shadow=53；
 - support=6；
 - 全门禁沿用：**375 passed / 92%**，fusion 70/70。
+
+### 14.60 active-only prompt 正式启用（2026-11-01）
+
+删除 legacy 后，把 filter 从：
+
+```text
+active + legacy_unverified
+```
+
+改为：
+
+```text
+active
+```
+
+同时修复 `trait_prompt_shadow`：候选替换文本时保留原 trait 的 status，避免 shadow 对比里 active 被降成 legacy。
+
+当前生产：
+
+```text
+all_traits=2
+active_traits=2
+prompt_len=1222
+```
+
+未来新 trait 必须先经过 evidence/lifecycle 成为 active，才会进入 prompt。
+
+**验证**
+
+- 测试夹具更新为显式 active；
+- 全门禁：**375 passed / 92%**，fusion 70/70。

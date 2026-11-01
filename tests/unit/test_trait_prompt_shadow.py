@@ -16,7 +16,8 @@ def _params() -> dict[str, PlasticParamSpec]:
 
 
 def test_candidate_replaces_only_the_trait_text() -> None:
-    trait = PersonaTrait(trait_id=7, category="habit", trait_text="旧习惯", strength=6)
+    trait = PersonaTrait(trait_id=7, category="habit", trait_text="旧习惯", strength=6,
+                        status="active")
     candidate = TraitCandidate(
         trait_id=7, category="habit", trait_text="看到图会先找小槽点",
         evidence_json="[]", prompt_hash="h", status="promoted", created_ms=1,

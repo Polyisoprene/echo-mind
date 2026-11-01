@@ -38,7 +38,7 @@ def build_shadow_prompts(
             trait_id=trait.trait_id, category=candidate.category,
             trait_text=candidate.trait_text, strength=trait.strength,
             evidence_count=trait.evidence_count,
-            contradiction_count=trait.contradiction_count,
+            contradiction_count=trait.contradiction_count, status=trait.status,
         ) if trait.trait_id == candidate.trait_id else trait
         for trait in traits
     )

@@ -88,7 +88,7 @@ def _spec(key: str) -> PlasticParamSpec:
                             description=key)
 
 
-def test_only_active_and_legacy_traits_reach_the_prompt() -> None:
+def test_only_active_traits_reach_the_prompt() -> None:
     traits = (
         PersonaTrait(trait_text="活跃习惯", status="active"),
         PersonaTrait(trait_text="旧习惯", status="legacy_unverified"),
@@ -97,6 +97,6 @@ def test_only_active_and_legacy_traits_reach_the_prompt() -> None:
     )
     directive = synthesize_live_persona_directive({}, traits, max_traits=10)
     assert "活跃习惯" in directive
-    assert "旧习惯" in directive
+    assert "旧习惯" not in directive
     assert "候选不该出现" not in directive
     assert "退休不该出现" not in directive
