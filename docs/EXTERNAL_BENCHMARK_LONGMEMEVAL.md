@@ -95,4 +95,4 @@ BM25-only: 0.940 / 0.868
 最终 hybrid: 0.954 / 0.892
 ```
 
-这是 retrieval，不是 QA。500 QA 417/500（CoT 431/500）；229 条 ConnectError 已补齐；30 题样本 23/30。
+这是 retrieval，不是 QA。500 QA 417/500（CoT 431，top10 430）；229 条 ConnectError 已补齐；30 题样本 23/30。

@@ -83,21 +83,33 @@ def _dated(question: dict[str, Any], facts: list[Any]) -> list[str]:
     ]
 
 
-async def _answer(
-    llm: FailoverLlmGateway, question: str, question_date: str, memories: list[str],
+def _answer_prompt(
+    question: str, question_date: str, memories: list[str], cot: bool,
 ) -> str:
     context = "\n\n".join(
         f"### Session {index + 1}:\n{text}" for index, text in enumerate(memories)
     )
-    prompt = (
-        "I will give you several history chats between you and a user. "
-        "Please answer the question based on the relevant chat history.\n\n"
-        f"History Chats:\n\n{context}\n\n"
-        f"Current Date: {question_date}\nQuestion: {question}\nAnswer:"
+    step = (
+        "Answer the question step by step: first extract all the relevant "
+        "information, and then reason over the information to get the answer."
+        if cot else "Please answer the question based on the relevant chat history."
     )
+    answer_tag = "Answer (step by step):" if cot else "Answer:"
+    return (
+        "I will give you several history chats between you and a user. "
+        f"{step}\n\nHistory Chats:\n\n{context}\n\n"
+        f"Current Date: {question_date}\nQuestion: {question}\n{answer_tag}"
+    )
+
+
+async def _answer(
+    llm: FailoverLlmGateway, question: str, question_date: str, memories: list[str],
+    cot: bool = False,
+) -> str:
+    prompt = _answer_prompt(question, question_date, memories, cot)
     response = await llm.complete(
         [{"role": "user", "content": prompt}],
-        temperature=0.0, max_tokens=512, thinking_off=True,
+        temperature=0.0, max_tokens=512 if not cot else 768, thinking_off=True,
     )
     choices = response.get("choices", [])
     if not choices:
@@ -173,7 +185,8 @@ async def _process_question(
     try:
         memories, memory_sessions = await _memories(question, args, embedding)
         answer = await _answer(
-            llm, str(question["question"]), str(question["question_date"]), memories
+            llm, str(question["question"]), str(question["question_date"]), memories,
+            args.cot,
         )
         row.update({"memory_sessions": memory_sessions, "answer": answer})
         if not args.skip_judge:
@@ -217,7 +230,8 @@ def _write_report(
 ) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     report = {"benchmark": "LongMemEval-S", "n": len(rows), "topk": args.topk,
-              "oracle": args.oracle, "max_context_chars": args.max_context_chars,
+              "oracle": args.oracle, "cot": args.cot,
+              "max_context_chars": args.max_context_chars,
               "summary": summary, "rows": rows}
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -232,11 +246,20 @@ async def main() -> int:
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--skip-judge", action="store_true")
     parser.add_argument("--oracle", action="store_true")
+    parser.add_argument("--cot", action="store_true")
+    parser.add_argument("--full-order", action="store_true")
     parser.add_argument("--max-context-chars", type=int, default=0)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval_qa.json")
     args = parser.parse_args()
     data = json.loads(args.data.read_text(encoding="utf-8"))
-    selected = _select(data, args.offset + args.limit)[args.offset:]
+    if args.full_order:
+        all_selected = _select(data, len(data))
+        selected = all_selected[args.offset:args.offset + args.limit]
+    elif args.offset == 0 and args.limit < len(data):
+        selected = _select(data, args.limit)
+    else:
+        all_selected = _select(data, len(data))
+        selected = all_selected[args.offset:args.offset + args.limit]
     cfg = load_config_from_json(ROOT / "data" / "config.json")
     embedding = OpenAiEmbeddingGateway(cfg.embedding)
     trace_db = SqliteDatabase(ROOT / "reports" / "longmemeval_qa_trace.db")
