@@ -10,7 +10,7 @@
 
 | 项 | 当前值 |
 |---|---|
-| 测试门禁 | **387 passed / 92%** |
+| 测试门禁 | **390 passed / 93%** |
 | Persona/Memory Eval | **70/70** |
 | 参数账本 | **59 compliant** |
 | 服务 | 3310 / 3312 正常 |
@@ -19,6 +19,7 @@
 | trait evidence | **16** 条真实证据 |
 | shadow 行 | **68** 条历史；active 后 **56** 条非空 |
 | trait memory links | **58** 条：6 条 support、其余 context |
+| interaction outcomes | **1654**（1333 mention / 321 temporal） |
 | semantic facts | **221** |
 | episodic memories | **209** |
 | prompt | **active-only** |

@@ -1112,6 +1112,33 @@
       "evidence": {
         "rationale": "单位换算（24*3600*1000），用于 UTC 日桶去重；无自由度"
       }
+    },
+    {
+      "id": "mind/response_attribution.py::RESPONSE_WINDOW_MS",
+      "module": "mind/response_attribution.py",
+      "symbol": "RESPONSE_WINDOW_MS",
+      "line": 11,
+      "value": "1800000",
+      "class": "data",
+      "status": "active",
+      "claim": "",
+      "evidence": {
+        "dataset_sha256": "b3e69206b9a3967485aa2c13c554c3e04118c79bfbb87f50d281e6bf524fdeda",
+        "n": 1333,
+        "estimate": {
+          "p50_s": 208.894,
+          "p90_s": 1122.171,
+          "p95_s": 1371.933
+        },
+        "ci95": {
+          "p95_s": [
+            1300.996,
+            1431.572
+          ]
+        },
+        "script": "scripts/attribute_interactions.py",
+        "note": "first directed reply within 30 min; p95=22.9 min, window 30 min"
+      }
     }
   ]
 }

@@ -94,8 +94,29 @@ CREATE TABLE IF NOT EXISTS disclosure_grants (
 """
 
 
+INTERACTION_DDL = """
+CREATE TABLE IF NOT EXISTS interaction_outcomes (
+  self_message_id INTEGER NOT NULL,
+  response_message_id INTEGER NOT NULL,
+  chat_key TEXT NOT NULL,
+  self_ts INTEGER NOT NULL,
+  response_ts INTEGER NOT NULL,
+  delay_ms INTEGER NOT NULL,
+  attribution TEXT NOT NULL CHECK(attribution IN ('mention','temporal')),
+  sender_id TEXT NOT NULL DEFAULT '',
+  sender_name TEXT NOT NULL DEFAULT '',
+  response_text TEXT NOT NULL DEFAULT '',
+  created_ms INTEGER NOT NULL,
+  PRIMARY KEY(self_message_id, response_message_id)
+);
+CREATE INDEX IF NOT EXISTS idx_interaction_chat
+  ON interaction_outcomes(chat_key, self_ts);
+"""
+
+
 async def ensure_columns(conn: aiosqlite.Connection) -> None:
     await conn.executescript(KNOWLEDGE_DDL)
+    await conn.executescript(INTERACTION_DDL)
     await _ensure_column(conn, "llm_traces", "chat_key", "TEXT NOT NULL DEFAULT ''")
     await _ensure_column(conn, "stickers", "scene_tags", "TEXT NOT NULL DEFAULT ''")
     await _ensure_column(conn, "turn_traces", "context_count", "INTEGER NOT NULL DEFAULT 0")

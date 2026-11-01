@@ -1,0 +1,15 @@
+{
+  "self_messages": 1709,
+  "outcomes": 1654,
+  "coverage": 0.968,
+  "attribution": {
+    "mention": 1333,
+    "temporal": 321
+  },
+  "delay_seconds": {
+    "p50": 131.4,
+    "p90": 995.4,
+    "p95": 1329.1
+  },
+  "applied": 1654
+}
