@@ -240,3 +240,20 @@
 | **词条作用域** | `chat_key`/`source` 溯源；类别上限 habit 8 / taste 4 / temperament 4 / taboo 3；负性只削弱 taboo/temperament | `test_trait_scope_and_caps.py` |
 | **探针一致** | 潜意识 prompt 必须携带一行人格摘要 | `test_probe_persona_summary.py` |
 | **参数溯源** | 新增常数必须标 `src:` / `convention:` / `fit:`；未拟合的标 `fit:pending` | `test_param_provenance.py` |
+
+### 八·一 Stage 41 人格/记忆增补契约（2026-11-01）
+
+以 [CURRENT_STATE_2026-11-01.md](CURRENT_STATE_2026-11-01.md) 为当前事实源。
+
+| 契约 | 内容 | 守护测试 |
+|---|---|---|
+| **证据可审计** | active trait 必须有真实 `TraitEvidence`（quote/context/polarity），不能只有计数 | `test_trait_evidence_ledger.py` |
+| **active-only** | prompt 只渲染 `status='active'`；candidate/retired/legacy 不进入人格 | `test_personality_invariants.py::test_only_active_traits_reach_the_prompt` |
+| **生命周期** | `Beta(1+s,1+c)`；至少 2 个独立 context 才 active；反证可 retired；dormant 暂未实现 | `test_trait_lifecycle.py` |
+| **trait→记忆** | support link 只对 active trait 生效；默认 presence-only；必须经 `BM25>0` 词法门控 | `test_live_trait_retrieval.py`、`ranker_fusion.py` 单测 |
+| **action eligibility** | 默认 additive：只追加工具；whitelist 可选；active taboo 只授予拒绝许可，不强制拒绝 | `test_trait_tool_grants.py` |
+| **隐私** | support/知识/披露一律在 private/secret 硬门之后；turn-context 不能冒充 support | `test_trait_memory_privacy.py`、`test_claim_read_path.py` |
+| **B4 claims** | `FACTS_V2` 读路径带 provenance/privacy；默认仍 off | `test_claim_read_path.py` |
+| **B5 knowledge** | say/hint 写 `memory_knowledge`；keep 不写 | `test_disclosure_choice.py` |
+| **B6 validity** | `event_time_ms` 为有效起点，`valid_to_ms` 过滤过期/未来事实 | `test_memory_validity.py` |
+
