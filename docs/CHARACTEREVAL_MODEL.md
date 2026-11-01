@@ -62,3 +62,30 @@ CharacterEval 不是“代码没写”，而是**评分资源缺失**：
 1. 确认远端 ROCm/GPU 能否加载 BaichuanCharRM；
 2. 或使用官方提供的中间结果做协议校验；
 3. 没有 reward model 就不宣称 CharacterEval 完成。
+
+## 6. 资源核查（2026-11-01）
+
+远端 GPU：
+
+```text
+AMD Radeon RX 6800 (gfx1030)
+显存约 16GB
+```
+
+BaichuanCharRM：
+
+```text
+Baichuan2-13B-RM
+pytorch_model-00001-of-00003.bin ...
+```
+
+13B 模型 fp16 权重约 26GB，超过 16GB 显存；直接加载不可行。  
+可用路径只有：
+
+- 4-bit/8-bit 量化（需验证官方脚本兼容性）；
+- 或更大显存节点；
+- 或使用官方提供的中间结果做协议校验。
+
+当前不下载 26GB 权重硬跑，也不在 CPU 上跑 13B 评分；没有官方分数就不报分。
+
+**结论：CharacterEval 仍处于“数据已获取、评分资源不足”，不是代码完成。**
