@@ -1,6 +1,8 @@
 # EchoMind 12层认知核心、真实人性（含阴影面）与神经可塑性自学习架构规范
 **（Cognitive Core, Full-Spectrum Human Persona & Neuroplastic Self-Learning Specification v2.0）**
 
+> **2026-11-01 状态**：本文是 Stage 30 的核心规范；trait evidence、active-only、support/ranker、B4/B5/B6 已新增。当前实现与数字见 [CURRENT_STATE_2026-11-01.md](CURRENT_STATE_2026-11-01.md) 与 [ARCHITECTURE_CONTRACTS.md](ARCHITECTURE_CONTRACTS.md) §八·一。
+
 > **文档定位**：本文档是 `EchoMind` 的核心认知科学架构说明书。针对传统大模型智能体普遍存在的 **“讨好型圣母病（Sycophancy Bias）”、“静态死板人设”、“无厌恶与逆反心理”、“不会因面子或私心说谎”** 等问题，本文档综合 **14 篇认知科学、计算心理学与 AI 智能体前沿公开论文**，构建涵盖 **五维记忆巩固、CPM/OCC 情绪评估、厌恶雷点、厌烦与逆反冷暴力、四大动机冲突型撒谎策略、二维依恋动力与神经可塑性自学习** 的完整理论与工程模型。
 
 ---

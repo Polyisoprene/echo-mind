@@ -1,5 +1,7 @@
 # 真人感风格修正（基于已冻结的人工标签）
 
+> **2026-11-01 状态**：本文是历史人工标签分析；当前确定性风格指标与 API 见 [PERSONA_STYLE_MONITORING.md](PERSONA_STYLE_MONITORING.md) 与 [CURRENT_STATE_2026-11-01.md](CURRENT_STATE_2026-11-01.md)。
+
 > 不再新增真人测试。以下规则只从已有 50 条人工标签和 90 组成对比较中提炼，之后用确定性指标监控。
 
 ## 从 50 条标签里看到的
