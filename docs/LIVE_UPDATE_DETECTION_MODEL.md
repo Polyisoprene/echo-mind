@@ -203,3 +203,25 @@ CLAIM_SUPERSEDE_CONFIRM=yes
 - supersede 在当前 schema 上**拒绝**；
 - 只保留 planner/shadow 作为未来 slot-aware 模型的基础；
 - 不改生产 claims。
+
+## 10. revision_count 审计（2026-11-01）
+
+```text
+semantic_facts = 233
+revision_count > 1 = 21
+```
+
+样例：
+
+- 最近B站冲浪 revision_count=36，但文本是不同视频；
+- 不要象挑战=10，但文本是不同格斗技巧；
+- 冰色=11，但文本是不同事件。
+
+结论：
+
+- `revision_count` 只表示“该 fact 行被重写过”，不是“同一函数槽的新值”；
+- 不能用它作为 slot key；
+- live 更新检测仍需要稳定的 `slot_key`（如 `person:L|preference:food`）；
+- 在当前 schema 下，不写、不自动 supersede、不改读路径。
+
+这是 schema/product 决策，不是再写一个补丁脚本能解决的。
