@@ -137,3 +137,33 @@ groups = 7
 
 **本轮没有执行 `--apply`**，生产 claims 仍是 0 superseded。  
 下一步是先核对 7 组，再决定是否小流量写入。
+
+## 8. 临时库 apply 验证（2026-11-01）
+
+复制生产库到 `/tmp/claim_supersede_test.db` 后：
+
+```text
+apply groups = 7
+superseded rows = 25
+valid_to rows = 25
+```
+
+FACTS_V2 读路径：
+
+```text
+before: 196 facts for group:813506156
+after:  196 facts
+```
+
+原因：
+
+- `claims_as_facts` 已按 subject/predicate 只取 belief 最高/最新；
+- 旧 claim 本来就不在当前读路径里；
+- supersede 目前主要是**审计/历史闭合**，不是立刻改变召回。
+
+结论：
+
+- 写入逻辑可执行；
+- 没有观察到读路径退化；
+- 生产仍未 apply；
+- 下一步是确认 7 组语义正确性，再考虑小流量。
