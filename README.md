@@ -159,7 +159,7 @@ cp data/config.example.json data/config.json
 | **Gate 1A** | `ruff check src tests` | PEP8、`line-length <= 100`、圈复杂度 `C901 <= 6`、`SIM/RET/C4/PLR` | ✅ **0 Errors** |
 | **Gate 1B** | `radon cc src -nc` | 所有函数/方法 Radon 圈复杂度必须为 **Grade A 或 B**（严禁 Grade C~F） | ✅ **0 Functions > B** |
 | **Gate 1C** | `pylint src/echomind` | 强制扁平化代码 `max-nested-blocks <= 2`，满分要求 | ✅ **10.00 / 10** |
-| **Gate 2** | `mypy --strict src tests` | 90 个源文件与测试文件 100% 严格静态类型与协议校验 | ✅ **0 Issues** |
+| **Gate 2** | `mypy --strict src tests` | 全量源码与测试文件 100% 严格静态类型与协议校验 | ✅ **0 Issues** |
 | **Gate 3** | `test_solid_boundaries.py` | 单文件 `<= 300` 行、单函数 `<= 40` 行、窄接口 `<= 5` 方法、零跨层依赖 | ✅ **All Passed** |
 | **Gate 4** | `pytest --cov=src/echomind` | 387 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **387 Passed / 92%** |
 
