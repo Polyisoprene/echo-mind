@@ -35,7 +35,12 @@ def status(db_path: Path) -> TraitHealth:
         "SELECT COUNT(*) FROM trait_memory_links WHERE relation='supports' AND is_context=0"
     ).fetchone()[0]
     latest = con.execute("SELECT COALESCE(MAX(ts),0) FROM turn_traces").fetchone()[0]
-    return TraitHealth(active_count, int(shadow), int(nonempty), int(links), int(latest))
+    facts = con.execute(
+        "SELECT COUNT(*) FROM semantic_facts WHERE source_turn_id != ''"
+    ).fetchone()[0]
+    return TraitHealth(
+        active_count, int(shadow), int(nonempty), int(links), int(latest), int(facts)
+    )
 
 
 def main() -> int:
@@ -55,6 +60,7 @@ def main() -> int:
         "nonempty_shadow": health.nonempty_shadow,
         "causal_links": health.causal_links,
         "latest_turn_ms": health.latest_turn_ms,
+        "facts_with_turn": health.facts_with_turn,
     }
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)

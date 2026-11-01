@@ -17,6 +17,7 @@ class TraitHealth:
     nonempty_shadow: int
     causal_links: int
     latest_turn_ms: int
+    facts_with_turn: int = 0
 
     @property
     def status(self) -> HealthStatus:

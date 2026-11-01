@@ -1980,3 +1980,30 @@ included 的其他 fact
 **验证**
 
 - 全门禁沿用：**373 passed / 92%**，fusion 70/70。
+
+### 14.47 health 增加 support 来源字段（2026-11-01）
+
+`/api/mind/trait-health` 和 CLI 新增：
+
+```text
+facts_with_turn
+```
+
+用于区分：
+
+- `no_causal_links`：有 shadow，但没有 support；
+- `facts_with_turn=0`：连同回合 fact 来源都没有。
+
+当前：
+
+```text
+status=no_causal_links
+facts_with_turn=0
+```
+
+不是 ranker 丢数据，而是没有 explicit fact 带 `source_turn_id`。
+
+**验证**
+
+- 停掉 live 服务后跑全门禁，避免测试与生产进程同时写 config；
+- **373 passed / 92%**，fusion 70/70。

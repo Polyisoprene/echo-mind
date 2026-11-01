@@ -34,11 +34,15 @@ async def trait_health(db: SqliteDatabase) -> dict[str, Any]:
         latest = _int_row(await (await conn.execute(
             "SELECT COALESCE(MAX(ts),0) FROM turn_traces"
         )).fetchone())
-    health = TraitHealth(active_count, shadow, nonempty, links, latest)
+        facts = _int_row(await (await conn.execute(
+            "SELECT COUNT(*) FROM semantic_facts WHERE source_turn_id != ''"
+        )).fetchone())
+    health = TraitHealth(active_count, shadow, nonempty, links, latest, facts)
     return {
         "status": health.status, "active_traits": health.active_traits,
         "shadow_since_activation": health.shadow_since_activation,
         "nonempty_shadow": health.nonempty_shadow,
         "causal_links": health.causal_links,
         "latest_turn_ms": health.latest_turn_ms,
+        "facts_with_turn": health.facts_with_turn,
     }
