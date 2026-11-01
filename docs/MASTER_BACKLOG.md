@@ -1,5 +1,8 @@
 # EchoMind 总账（Master Backlog）：硬编码 · 身份解耦 · 关系模型
 
+> **2026-11-01 状态**：本文件仍是待办/硬编码总账，但“当前能力/数字”以 [CURRENT_STATE_2026-11-01.md](CURRENT_STATE_2026-11-01.md) 和 Stage 41 计划为准。  
+> 当前：2 active trait、6 手动 support、387 tests / 92%、active-only prompt；7 条无证据 legacy 已删除并备份。
+
 > 📚 文档入口：[`docs/README.md`](README.md)（现行契约 / 设计说明 / 历史规划 / 交付纪律）
 
 > **唯一权威**：本文件以 `main` 分支为准。A 线开工前先执行

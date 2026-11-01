@@ -18,17 +18,20 @@
 
 ---
 
-## 一·五、 当前工程状态（2026-10-30 快照）
+## 一·五、 当前工程状态（2026-11-01 Stage 41 收口后）
+
+> 本表只保留当前快照；历史数字见变更日志。详细基线见 [CURRENT_STATE_2026-11-01.md](CURRENT_STATE_2026-11-01.md)。
 
 | 维度 | 现状 |
 |---|---|
-| **双线交付（Stage 28 起）** | **A 线** `../echo-mind-a`（`lane/a-stage29`，修复与回放验证）；**B 线** 本仓库 `main`（生产，`:3310`）。代码只允许在 A 线修改，经 `scripts/promote.sh`（门禁 + 回放 + 证据落盘）准出 |
-| **测试与门禁** | `156 passed`，覆盖率 91%+，mypy strict 151 文件，7 道门禁全绿 |
-| **人格模型** | 7 维向量（默认值唯一来源 `domain/persona_specs.py`）；四象限连续叙事；±2/次裁剪 + 6/日上限 + 1%/日慢回归；关系姿态 σ_u（≤8 分，不改本体） |
-| **关系深度** | 六项 earned bond depth（$D=100\sigma(1.0f+1.2v+1.4r+1.0c+1.1i-1.6b-2.6)$），L1–L4 四层自适应已接入评分链路 |
-| **身份与权限** | `operator_ids` 取代 `owner_qq`（无情感特权）；控制台身份配置卡热生效；所有写操作需 token 并写 `admin_audit` |
-| **数据** | D4 已执行：旧号 `9999` 关系清零；`persona_traits` 已加 `chat_key/source/last_used_ms`；人设 278 字已恢复 |
-| **已知纪律** | 测试禁止写入生产 `data/config.json`（`tests/conftest.py` 会话级守卫）；`reports/` 与 `data/*.db` 不进版本库 |
+| **交付** | 当前仓库 `main` 为准；Stage 28 A/B 双线是历史工作流 |
+| **测试与门禁** | `387 passed`，覆盖率 92%，fusion 70/70，参数台账 59 compliant |
+| **人格模型** | 7 维慢基线 + 快状态 + 日结算；**2 条 active trait**（看图、发语音）；active-only prompt |
+| **自演化** | 真实 evidence 16 条；support 6 条（手动）；shadow active 56 条；词法门控 ranker |
+| **关系/披露** | bond depth + memory_knowledge（told_by_me/hinted）；public/group/private/secret 硬门 |
+| **记忆** | semantic 221 / episodic 209；BM25+dense+recency+order+PPR+confidence+lock+RRF；claims 读路径已补 provenance，默认 `FACTS_V2=off` |
+| **数据** | 7 条无 evidence legacy 已删除并备份；`valid_to_ms` 事实有效期已支持 |
+| **已知边界** | 真人感未达标；自动 support 稀疏；GroupMemBench/CharacterEval 未接；LongMemEval 仅 100 题 |
 
 ---
 
@@ -108,6 +111,19 @@
 | **Stage 27**<br>括号独白外泄与出站隔离 | `M27.1` | 根治 `（这轮…我先不插嘴）` 括号内心独白被漏发挽救器外发；出站三层剥离思考块；探针补齐门控上下文并跳过同行 Bot 外围发言 | `STAGE_27_INNER_MONOLOGUE_LEAK_AND_OUTBOUND_REASONING_ISOLATION_PLAN.md` | `runtime/{reply_rescue,agent_runner}.py`, `adapters/onebot/send_guard.py`, `mind/{facade,subconscious_probe}.py` | 73/73 Tests Pass / Pylint 10.00/10 / **Total Cov: 90.24% (90%)** | ✅ 已验收通过 |
 | **Stage 29**<br>关系深度与身份解耦 | `M29.1` | earned bond depth 六项模型 + Beta 信任 + L1–L4 自适应；`operator_ids` 取代 `owner_qq`；控制台身份配置卡与写鉴权 | `STAGE_29_IDENTITY_DECOUPLING_AND_BOND_DEPTH_PLAN.md` | `mind/{bond_depth,bond_features,bond_adapt,bond_scoring,bond_recorder}.py`, `domain/{bond_stats,ports}.py`, `web/{identity_service,identity_router,audit}.py` | 156 Tests Pass / Cov 91%+ / 7 门禁全绿 | ✅ 已验收通过 |
 | **Stage 30**<br>人格模型全局重构 | `M30.1` | 不变量骨架（I-1~I-4）、默认值单一源、四象限连续叙事、裁剪+日限+慢回归、关系姿态、词条溯源与类别上限、探针人格摘要、控制台绝对值设定 | `STAGE_30_PERSONALITY_MODEL_REMEDIATION_PLAN.md` | `mind/{persona_specs,persona_dynamics,persona_stance,persona_render,personality,plasticity}.py` | 156 Tests Pass / Cov 91%+ / 7 门禁全绿 | ✅ 已验收通过（A 线验证，已合入 B） |
+
+### Stage 31–41 当前扩展（2026-11-01）
+
+| 里程碑 | 交付 | 状态 |
+|---|---|---|
+| Stage 39 claims/evidence | claims + claim_evidence 双写、provenance、带隐私过滤的 `FACTS_V2` 读路径 | ✅ 代码完成，默认 off |
+| Stage 41 A1/A2/A3 | trait evidence、Beta 生命周期、active-only prompt | ✅ 已上线 |
+| Stage 41 A5/A6 | trait→记忆 ranker、action eligibility（additive/refusal permission） | ✅ 基础闭环 |
+| Stage 41 B5/B6 | memory_knowledge 披露归因、fact `valid_to_ms` | ✅ 已上线 |
+| Stage 41 G1/G2 | 结构评审自动晋升器、只读叙事投影（prompt A/B 否决） | ✅ 代码完成 |
+
+**当前边界**：真人感未达标；自动 support 稀疏；GroupMemBench/CharacterEval 未接；LongMemEval 仅 100 题。  
+完整记录见 [Stage 41 计划](plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md)。
 
 ---
 

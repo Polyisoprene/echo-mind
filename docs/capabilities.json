@@ -107,9 +107,9 @@
         "scripts/param_gate.py"
       ],
       "status": "partial",
-      "gap": "E1 分类完成：32 条 → 4 convention、2 条已用数据解决（好感分档、TAU_S=247）、21 条待实验、5 条被样本量阻塞、0 删除。E1-A：排序对 ±20% 鲁棒（rank≥0.996），绝对深度对 BIAS/W_RESP/W_RECIP/W_FREQ 敏感；W_BETRAY 从未被触发（0 次背叛）",
+      "gap": "59 条 ledger compliant；仍有 fit_pending/未校准项，不能把 pending 当 fit",
       "acceptance_test": "tests/architecture/test_evidence_ledger.py::test_param_ledger_is_consistent",
-      "evidence_report": "docs/params/E1_CLASSIFICATION.md",
+      "evidence_report": "docs/params/ledger.json",
       "target_release": "E1"
     },
     {
@@ -120,12 +120,14 @@
         "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md"
       ],
       "code": [
-        "src/echomind/mind/personality.py"
+        "src/echomind/mind/trait_lifecycle.py",
+        "src/echomind/adapters/storage/trait_evidence_repo.py",
+        "src/echomind/adapters/storage/trait_auto_promotion.py"
       ],
-      "status": "absent",
-      "gap": "derive_emergent_trait 只有 5 条固定文案；trait_text 精确去重；last_used_ms 列从未读写",
-      "acceptance_test": null,
-      "evidence_report": "",
+      "status": "partial",
+      "gap": "已具备 evidence 账本、Beta+独立 context 生命周期、active-only；derive_emergent_trait 仍是固定文案，自动 support/candidate 流仍稀疏",
+      "acceptance_test": "tests/integration/test_trait_evidence_ledger.py::test_evidence_roundtrip_and_turn_dedupe",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "P6c"
     },
     {
@@ -138,10 +140,10 @@
       "code": [
         "src/echomind/mind/plasticity.py"
       ],
-      "status": "absent",
-      "gap": "reward 来自探针自评；探针失败时退化为常数 0.08；全库无延迟反馈/后续消息评估",
-      "acceptance_test": null,
-      "evidence_report": "",
+      "status": "partial",
+      "gap": "真实回合→evidence→support→ranker 已闭环；自动 support 仍稀有，主要靠手动确认；reward 仍含探针自评",
+      "acceptance_test": "tests/integration/test_trait_shadow_facade.py::test_facade_shadow_and_causal_link",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "P6b"
     },
     {
@@ -151,13 +153,13 @@
         "docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md"
       ],
       "code": [
-        "src/echomind/mind/drives.py",
-        "src/echomind/runtime/prompt_composer.py"
+        "src/echomind/mind/narrative_identity.py",
+        "scripts/trait_narrative.py"
       ],
-      "status": "absent",
-      "gap": "只有 140 字情绪余波；role_text 静态；冲突优先级是 prompt 内的硬编码段落",
-      "acceptance_test": null,
-      "evidence_report": "",
+      "status": "partial",
+      "gap": "已有 evidence-bound 只读叙事投影；A/B 无稳定风格收益，未接 prompt，也未参与冲突判定",
+      "acceptance_test": "tests/unit/test_narrative_identity.py::test_narrative_uses_only_active_traits_and_quotes",
+      "evidence_report": "eval/baselines/narrative-prompt-ab-2026-11-01.json",
       "target_release": "P6d"
     },
     {
@@ -234,9 +236,9 @@
         "scripts/replay_eval.py"
       ],
       "status": "partial",
-      "gap": "离线三套件（稳定/情绪/召回）+ live 敏感性审计已跑通：6/7 维在盲评中显著优于随机；guile 0.625 未确立；尚无人工盲评与中等幅度敏感性",
+      "gap": "内部 70/70 与 replay 已跑；LongMemEval 仅 100 题 retrieval，缺 500 题/QA/abstention 与外部人格集",
       "acceptance_test": "tests/integration/test_persona_eval_harness.py::test_offline_eval_harness_reports_expected_metrics",
-      "evidence_report": "docs/PERSONA_SENSITIVITY_REPORT.md",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "P6e"
     },
     {
@@ -298,9 +300,9 @@
         "src/echomind/adapters/storage/claim_repo.py"
       ],
       "status": "partial",
-      "gap": "claims/evidence 表已建但读路径默认关闭（FACTS_V2=off），且转换时 chat_key 被置空",
-      "acceptance_test": null,
-      "evidence_report": "",
+      "gap": "claims 已有 provenance/隐私读路径与 valid_to；FACTS_V2 默认仍 off，线上仍读 legacy facts",
+      "acceptance_test": "tests/integration/test_claim_read_path.py::test_facts_v2_reads_claims_with_privacy",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "E3"
     },
     {
@@ -329,10 +331,73 @@
         "scripts/persona_sensitivity.py"
       ],
       "status": "partial",
-      "gap": "7/7 维有证据；狡黠 R=3 0.708 [0.605,0.812]、温柔 ±15 R=6 0.747 [0.636,0.858]、±10 R=4 0.719 [0.640,0.798] 均确立；状态层 +2/轮 5 轮到顶、77% 时间在顶；阈值 ≤10；自评、无人工盲评",
+      "gap": "历史人工总体 3.24/5；当前 24h 风格约 28 字、长句率 14%；无新人工盲评，真人感未达标",
       "acceptance_test": null,
-      "evidence_report": "docs/PERSONA_SENSITIVITY_REPORT.md",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "P6e"
+    },
+    {
+      "id": "CAP-ACTIVE-ONLY-PROMPT",
+      "claim": "prompt 只渲染 active trait",
+      "docs": [
+        "docs/CURRENT_STATE_2026-11-01.md",
+        "docs/plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/mind/personality.py"
+      ],
+      "status": "implemented",
+      "gap": "",
+      "acceptance_test": "tests/unit/test_personality_invariants.py::test_only_active_traits_reach_the_prompt",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
+      "target_release": "Stage41"
+    },
+    {
+      "id": "CAP-TRAIT-EVIDENCE",
+      "claim": "每条 active trait 有可审计 quote/context 证据",
+      "docs": [
+        "docs/CURRENT_STATE_2026-11-01.md"
+      ],
+      "code": [
+        "src/echomind/domain/trait_evidence.py",
+        "src/echomind/adapters/storage/trait_evidence_repo.py"
+      ],
+      "status": "implemented",
+      "gap": "",
+      "acceptance_test": "tests/integration/test_trait_evidence_ledger.py::test_evidence_roundtrip_and_turn_dedupe",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
+      "target_release": "Stage41"
+    },
+    {
+      "id": "CAP-TRAIT-MEMORY",
+      "claim": "active trait 的 support 能影响记忆检索排序",
+      "docs": [
+        "docs/CURRENT_STATE_2026-11-01.md"
+      ],
+      "code": [
+        "src/echomind/mind/semantic_memory.py",
+        "src/echomind/mind/ranker_fusion.py"
+      ],
+      "status": "partial",
+      "gap": "手动 support 6 条已生效；自动 support 稀有，门控仅 BM25>0",
+      "acceptance_test": "tests/integration/test_live_trait_retrieval.py::test_trait_link_breaks_live_retriever_tie",
+      "evidence_report": "eval/baselines/ranker-support-6links-gated-2026-11-01.json",
+      "target_release": "Stage41"
+    },
+    {
+      "id": "CAP-ACTION-ELIGIBILITY",
+      "claim": "active trait 可追加工具授权并授予拒绝许可",
+      "docs": [
+        "docs/CURRENT_STATE_2026-11-01.md"
+      ],
+      "code": [
+        "src/echomind/mind/trait_tool_grants.py"
+      ],
+      "status": "partial",
+      "gap": "默认 additive；whitelist 模式已实现但未启用；refusal 只许可不强制",
+      "acceptance_test": "tests/unit/test_trait_tool_grants.py::test_tool_grant_is_added_not_substituted",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
+      "target_release": "Stage41"
     }
   ]
 }
