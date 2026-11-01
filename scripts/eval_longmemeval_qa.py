@@ -50,7 +50,7 @@ def _fill_normal(
 async def _retrieve(
     question: dict[str, Any], gateway: OpenAiEmbeddingGateway, topk: int, batch: int,
     max_chars: int,
-) -> list[str]:
+) -> tuple[list[str], list[str]]:
     facts, _ = _facts(question, "session", max_chars)
     vectors = await _embed_all(gateway, [fact.fact_text for fact in facts], batch)
     query_vec = (await gateway.embed((str(question["question"]),)))[0]
@@ -60,21 +60,26 @@ async def _retrieve(
         facts, str(question["question"]), dense, {}, _ms(str(question["question_date"])),
         constraints=False,
     )
-    return _dated(question, list(ranked[:topk]))
+    top = list(ranked[:topk])
+    return _dated(question, top), [str(fact.subject) for fact in top]
 
 
-def _oracle_memories(question: dict[str, Any], max_chars: int) -> list[str]:
+def _oracle_memories(
+    question: dict[str, Any], max_chars: int,
+) -> tuple[list[str], list[str]]:
     """Gold-session context: isolates reading from retrieval."""
     facts, _ = _facts(question, "session", max_chars)
     wanted = set(question["answer_session_ids"])
-    return _dated(question, [fact for fact in facts if fact.subject in wanted])
+    chosen = [fact for fact in facts if fact.subject in wanted]
+    return _dated(question, chosen), [str(fact.subject) for fact in chosen]
 
 
 def _dated(question: dict[str, Any], facts: list[Any]) -> list[str]:
     dates = dict(zip(question["haystack_session_ids"], question["haystack_dates"], strict=True))
+    ordered = sorted(facts, key=lambda fact: str(dates.get(fact.subject, "")))
     return [
         f"Session Date: {dates.get(fact.subject, '')}\n{fact.fact_text}"
-        for fact in facts
+        for fact in ordered
     ]
 
 
@@ -155,6 +160,17 @@ async def _judge(llm: FailoverLlmGateway, question: dict[str, Any], response: st
     return "yes" in text.lower()
 
 
+async def _memories(
+    question: dict[str, Any], args: argparse.Namespace,
+    embedding: OpenAiEmbeddingGateway,
+) -> tuple[list[str], list[str]]:
+    if args.oracle:
+        return _oracle_memories(question, args.max_context_chars)
+    return await _retrieve(
+        question, embedding, args.topk, args.batch, args.max_context_chars
+    )
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=DATA)
@@ -181,17 +197,14 @@ async def main() -> int:
             abstention = "_abs" in str(question["question_id"])
             if args.oracle and abstention:
                 continue
-            memories = (
-                _oracle_memories(question, args.max_context_chars) if args.oracle
-                else await _retrieve(
-                    question, embedding, args.topk, args.batch, args.max_context_chars
-                )
-            )
+            memories, memory_sessions = await _memories(question, args, embedding)
             answer = await _answer(
                 llm, str(question["question"]), str(question["question_date"]), memories
             )
             row = {"id": question["question_id"], "type": question["question_type"],
                    "abstention": abstention,
+                   "memory_sessions": memory_sessions,
+                   "gold_sessions": list(question["answer_session_ids"]),
                    "answer": answer, "gold": question["answer"]}
             if not args.skip_judge:
                 row["correct"] = await _judge(llm, question, answer)

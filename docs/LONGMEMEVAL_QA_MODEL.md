@@ -218,3 +218,17 @@ correct = 24/25 = 0.96
 
 - 旧 `11/30`、`2/25` 是 judge 占位符 bug + 过度拒答的组合结果，**不再作为结论**；
 - 保留文件仅作 bug 审计记录。
+
+
+## 12. 诊断与日期排序（2026-11-01）
+
+30 题 top-5 诊断：
+
+```text
+gold 命中 top5: 13/30
+knowledge-update: 2/5 命中，0/5 正确
+temporal-reasoning: 2/4 命中，0/4 正确
+```
+
+按 session date 排序后 end-to-end 仍为 **10/30**，没有提升。  
+检索丢失与 knowledge-update/temporal 的上下文选择是下一步，不是 judge/reading。
