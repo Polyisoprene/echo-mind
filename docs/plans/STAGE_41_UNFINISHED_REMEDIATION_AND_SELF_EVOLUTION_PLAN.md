@@ -2139,3 +2139,49 @@ ranker 首次在生产中看到真实 support。
 **验证**
 
 - 全门禁沿用：**375 passed / 92%**，fusion 70/70。
+
+### 14.52 手动 support 的检索效果（2026-11-01）
+
+只读对照：同一批真实 semantic facts，比较有/无 trait support。
+
+```text
+chat_key=group:813506156
+query=回音唱歌 老婆 嘴硬
+facts=220
+support_scores={359: 1.0, 361: 1.0}
+```
+
+排名：
+
+| memory | 无 support | 有 support |
+|---|---:|---:|
+| 359 | 44 | **6** |
+| 361 | 30 | **4** |
+
+top5 无 support：
+
+```text
+48, 3, 59, 1, 2
+```
+
+top5 有 support：
+
+```text
+48, 3, 59, 361, 1
+```
+
+结论：
+
+- 手动 support 不只是写表，确实改变 live ranker 的排序；
+- 359/361 都显著提前；
+- 没有改变 raw facts，也没有伪造；
+- manual note 可审计。
+
+产物：
+
+`eval/baselines/ranker-support-2026-11-01.json`
+
+**验证**
+
+- 只读脚本；
+- 全门禁沿用：**375 passed / 92%**，fusion 70/70。
