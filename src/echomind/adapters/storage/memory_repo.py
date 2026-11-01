@@ -26,7 +26,7 @@ RoleType = Literal["owner", "admin", "member"]
 FACT_COLUMNS = (
     "id, chat_key, subject, fact_text, confidence, is_locked, source, revision_count, "
     "scope, source_person_id, source_venue_id, owner_id, sensitivity, audience_json, "
-    "source_quote, source_turn_id, event_time_ms"
+    "source_quote, source_turn_id, event_time_ms, valid_to_ms"
 )
 def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
     raw_role = str(row[3])
@@ -87,7 +87,9 @@ class SqliteMemoryRepository:
         chat_key: str,
         min_confidence: float = 0.0,
         person_ids: tuple[str, ...] = (),
+        now_ms: int | None = None,
     ) -> tuple[SemanticFact, ...]:
+        current = int(time.time() * 1000) if now_ms is None else now_ms
         clauses = ["chat_key IN (?, 'global')"]
         params: list[Any] = [chat_key]
         if chat_key.startswith("private:"):
@@ -104,12 +106,17 @@ class SqliteMemoryRepository:
         where = " OR ".join(clauses)
         params.append(min_confidence)
         params.append(chat_key)
+        params.extend((current, current))
         privacy = (
             "(sensitivity IN ('public','group') OR (sensitivity='private' "
             "AND ? IN (chat_key, 'private:'||owner_id)))"
         )
-        sql = f"SELECT {FACT_COLUMNS} FROM semantic_facts WHERE ({where}) AND confidence >= ? " \
-              f"AND {privacy} ORDER BY is_locked DESC, confidence DESC, id DESC"  # noqa: S608
+        sql = (
+            f"SELECT {FACT_COLUMNS} FROM semantic_facts WHERE ({where}) AND confidence >= ? "  # noqa: S608
+            f"AND {privacy} AND (event_time_ms = 0 OR event_time_ms <= ?) "
+            "AND (valid_to_ms IS NULL OR valid_to_ms > ?) "
+            "ORDER BY is_locked DESC, confidence DESC, id DESC"
+        )
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, tuple(params))
             rows = await cursor.fetchall()
@@ -218,7 +225,7 @@ class SqliteMemoryRepository:
                     fact.scope, fact.source_person_id, fact.source_venue_id or fact.chat_key,
                     fact.owner_id, fact.sensitivity, json.dumps(list(fact.audience)),
                     fact.source_quote, fact.source_turn_id,
-                    fact.event_time_ms or now_ms,
+                    fact.event_time_ms or now_ms, fact.valid_to_ms,
                 ),
             )
             await conn.commit()

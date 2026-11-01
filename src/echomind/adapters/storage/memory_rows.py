@@ -65,6 +65,7 @@ def row_to_fact(row: aiosqlite.Row) -> SemanticFact:
         source_quote=str(row[14]),
         source_turn_id=str(row[15]) if len(row) > 15 else "",
         event_time_ms=int(row[16]) if len(row) > 16 else 0,
+        valid_to_ms=int(row[17]) if len(row) > 17 and row[17] is not None else None,
     )
 
 

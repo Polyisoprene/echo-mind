@@ -143,11 +143,11 @@ class SemanticFact(FrozenValueObject):
     source_quote: str = ""
     source_turn_id: str = ""
     event_time_ms: int = 0
+    valid_to_ms: int | None = None
 
 
 class ProceduralRule(FrozenValueObject):
     """Conditioned reflex / interactive habit rule."""
-
     rule_id: int = 0
     chat_key: str
     trigger_keyword: str

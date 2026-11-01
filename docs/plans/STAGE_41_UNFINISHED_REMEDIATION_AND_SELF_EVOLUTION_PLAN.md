@@ -2812,3 +2812,33 @@ state = told_by_me | hinted
 
 - 私密 fact 说给 owner：knowledge 状态为 `told_by_me`；
 - 全门禁：**383 passed / 92%**，fusion 70/70。
+
+## 14.67 B6 事实层时间边（2026-11-01）
+
+实现：
+
+- `SemanticFact.valid_to_ms`（`None` = 长期有效）；
+- 有效起点复用已有 `event_time_ms`；
+- `semantic_facts.valid_to_ms` 迁移；
+- 读路径过滤：
+
+```text
+event_time_ms = 0 OR event_time_ms <= now
+AND (valid_to_ms IS NULL OR valid_to_ms > now)
+```
+
+当前真实数据：
+
+- 所有 fact 的 `valid_to_ms` 都是 NULL；
+- 因此线上结果不变；
+- 新 fact 可以写入明确失效时间。
+
+测试：
+
+- 有效 fact 保留；
+- 过期 fact 排除；
+- 未来 fact 排除。
+
+**验证**
+
+- 全门禁：**384 passed / 92%**，fusion 70/70。

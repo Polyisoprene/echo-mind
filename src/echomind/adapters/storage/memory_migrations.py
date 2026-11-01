@@ -113,6 +113,7 @@ async def ensure_columns(conn: aiosqlite.Connection) -> None:
         await _ensure_column(conn, table, "source_quote", "TEXT NOT NULL DEFAULT ''")
         await _ensure_column(conn, table, "event_time_ms", "INTEGER NOT NULL DEFAULT 0")
         await _ensure_column(conn, table, "source_turn_id", "TEXT NOT NULL DEFAULT ''")
+        await _ensure_column(conn, table, "valid_to_ms", "INTEGER")
     await conn.execute(
         "UPDATE semantic_facts SET source_venue_id=chat_key WHERE source_venue_id=''"
     )
