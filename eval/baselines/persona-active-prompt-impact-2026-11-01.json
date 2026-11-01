@@ -1,17 +1,9 @@
 {
   "db": "/home/polyisoprene/Documents/echo-mind/data/echomind.db",
-  "all_traits": 9,
+  "all_traits": 2,
   "active_traits": 2,
-  "current_len": 1367,
+  "current_len": 1222,
   "active_only_len": 1222,
-  "delta": -145,
-  "removed_traits": [
-    "极度讨厌别人用命令语气拿我当没有感情的工具人使唤",
-    "熬夜没辙了会嘴硬赖床，被催也不怂",
-    "被说偷懒会立刻嘴硬反驳，还要抢回一点小功劳",
-    "困的时候会直说睁不开眼，不硬撑",
-    "被主人抓到小动作会嘴硬吐槽，但心里有点窃喜",
-    "被排除在真人活动外时嘴硬装无所谓，其实心里记着小账本",
-    "我嘴硬心软，主人一说不哄我就偏要翻账本加码"
-  ]
+  "delta": 0,
+  "removed_traits": []
 }
