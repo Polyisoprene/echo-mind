@@ -290,3 +290,35 @@ temporal-reasoning: 2/4 命中，0/4 正确
 - retrieval 已 0.954，oracle reading 24/25，说明剩下主要是“选中/读对/该拒答”；
 - 该分数使用本机 judge/模型，不是 GPT-4o 官方 judge，不能直接与论文排名比较；
 - 500 QA 完整结果文件：`eval/baselines/longmemeval-qa-500-final-2026-11-01.json`。
+
+## 15. 500 题结果的效度修正（重要）
+
+第 14 节的 226/500 不能作为最终 QA：
+
+```text
+229 条 ConnectError: All connection attempts failed
+有效作答 = 271
+有效作答正确 = 226
+有效作答 accuracy = 83.4%
+```
+
+按有效作答：
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| knowledge-update | 60 | 0.833 |
+| multi-session | 53 | 0.679 |
+| single-session-assistant | 37 | 1.000 |
+| single-session-preference | 21 | 0.905 |
+| single-session-user | 49 | 0.959 |
+| temporal-reasoning | 51 | 0.725 |
+| abstention | 11 | 0.909 |
+
+但这 271 条是**非随机子集**：连接失败与长上下文/网关过载相关，所以 83.4% 只能作“有效作答诊断”，不能当 500 总体准确率。
+
+结论：
+
+- 500 题 run 因 LLM 网关连接失败 **无效**；
+- 不能把 226/500=45.2% 写成模型能力；
+- 需要恢复稳定 LLM 网关后，用 `--resume` 补齐 229 条；
+- 修复后才有资格报 500 QA。
