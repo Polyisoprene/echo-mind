@@ -177,7 +177,7 @@ async def _extract_explicit_fact(
             chat_key=outcome.chat_key, subject=f"{last.sender_name}({last.sender_id})"[:40],
             fact_text=f"{last.sender_name}提到：{clause}"[:160],
             confidence=0.88 if is_owner else 0.58, is_locked=False,
-            source="owner" if is_owner else "peer",
+            source="owner" if is_owner else "peer", source_turn_id=outcome.session_id,
         )
     )
 

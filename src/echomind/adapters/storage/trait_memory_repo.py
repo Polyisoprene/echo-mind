@@ -64,3 +64,21 @@ class SqliteTraitMemoryLinkStore:
                 int(row[1]): 1.0 for row in await cursor.fetchall()
                 if int(row[0]) in wanted
             }
+    async def link_turn_support(self, chat_key: str, turn_id: str) -> int:
+        """A fact from the same turn is precise support evidence, not context."""
+        if not turn_id:
+            return 0
+        async with self._db.connect() as conn:
+            cursor = await conn.execute(
+                "INSERT INTO trait_memory_links "
+                "(trait_id, memory_kind, memory_id, relation, is_context, evidence_ms) "
+                "SELECT e.trait_id, 'semantic', f.id, 'supports', 0, e.created_ms "
+                "FROM trait_evidence e JOIN semantic_facts f "
+                "ON f.source_turn_id = e.turn_id AND f.chat_key = ? "
+                "WHERE e.turn_id = ? "
+                "ON CONFLICT(trait_id, memory_kind, memory_id, relation) DO UPDATE SET "
+                "is_context=0, evidence_ms=excluded.evidence_ms",
+                (chat_key, turn_id),
+            )
+            await conn.commit()
+            return int(cursor.rowcount)

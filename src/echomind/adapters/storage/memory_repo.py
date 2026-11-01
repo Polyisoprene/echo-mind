@@ -12,6 +12,7 @@ from echomind.adapters.storage.claim_repo import mirror_fact
 from echomind.adapters.storage.claim_views import facts_v2_enabled
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.memory_rows import row_to_episodic, row_to_fact, row_to_rule
+from echomind.adapters.storage.memory_sql import UPSERT_FACT_SQL
 from echomind.domain.models import (
     EpisodicCard,
     ProceduralRule,
@@ -25,9 +26,8 @@ RoleType = Literal["owner", "admin", "member"]
 FACT_COLUMNS = (
     "id, chat_key, subject, fact_text, confidence, is_locked, source, revision_count, "
     "scope, source_person_id, source_venue_id, owner_id, sensitivity, audience_json, "
-    "source_quote, event_time_ms"
+    "source_quote, source_turn_id, event_time_ms"
 )
-
 def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
     raw_role = str(row[3])
     role: RoleType = (
@@ -209,21 +209,7 @@ class SqliteMemoryRepository:
             new_rev = prev_rev + 1
             eff_conf = max(fact.confidence, 0.85) if new_rev >= 2 else fact.confidence
             eff_txt = _merge_evolving_fact_text(prev_txt, fact.fact_text)
-            sql = (
-                "INSERT INTO semantic_facts "
-                "(chat_key, subject, fact_text, confidence, is_locked, "
-                "source, revision_count, updated_at, scope, source_person_id, "
-                "source_venue_id, owner_id, sensitivity, audience_json, source_quote, "
-                "event_time_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-                "ON CONFLICT(chat_key, subject) DO UPDATE SET "
-                "fact_text=excluded.fact_text, confidence=excluded.confidence, "
-                "is_locked=excluded.is_locked, source=excluded.source, "
-                "revision_count=excluded.revision_count, updated_at=excluded.updated_at, "
-                "scope=excluded.scope, source_person_id=excluded.source_person_id, "
-                "source_venue_id=excluded.source_venue_id, owner_id=excluded.owner_id, "
-                "sensitivity=excluded.sensitivity, audience_json=excluded.audience_json, "
-                "source_quote=excluded.source_quote, event_time_ms=excluded.event_time_ms"
-            )
+            sql = UPSERT_FACT_SQL
             await conn.execute(
                 sql,
                 (
@@ -231,7 +217,8 @@ class SqliteMemoryRepository:
                     int(fact.is_locked), fact.source, new_rev, now_ms,
                     fact.scope, fact.source_person_id, fact.source_venue_id or fact.chat_key,
                     fact.owner_id, fact.sensitivity, json.dumps(list(fact.audience)),
-                    fact.source_quote, fact.event_time_ms or now_ms,
+                    fact.source_quote, fact.source_turn_id,
+                    fact.event_time_ms or now_ms,
                 ),
             )
             await conn.commit()

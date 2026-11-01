@@ -1879,3 +1879,32 @@ status=no_causal_links
 **验证**
 
 - 全门禁：**372 passed / 92%**，fusion 70/70。
+
+### 14.43 精确 support：source_turn_id（2026-11-01）
+
+context 链接不能当 support；新增精确来源：
+
+- `SemanticFact.source_turn_id`；
+- `_extract_explicit_fact` 写入当前 `outcome.session_id`；
+- `SqliteTraitMemoryLinkStore.link_turn_support(chat_key, turn_id)`：
+  - 只连接 `semantic_facts.source_turn_id = trait_evidence.turn_id`；
+  - `relation='supports'`、`is_context=0`；
+  - 已有 context 链接会被**升级**为 support，不新增重复行。
+- `CognitiveCoreFacade` 在 trait evidence 写入后调用该 linker；
+- 不同 turn 的 fact 不会连接。
+
+语义：
+
+```text
+同一真实回合产生的 explicit fact
+  → 可以作为该回合 trait evidence 的 support
+included 的其他 fact
+  → 只能留在 context，不进 ranker
+```
+
+**验证**
+
+- 同回合 fact → supports，ranker 得分；
+- 不同回合 → 0；
+- context → support 升级不重复；
+- 全门禁：**373 passed / 92%**，fusion 70/70。

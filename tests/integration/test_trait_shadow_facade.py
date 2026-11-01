@@ -30,6 +30,7 @@ async def test_facade_shadow_and_causal_link(tmp_path: Path) -> None:
     await evidence.refresh_lifecycle(trait.trait_id)
     fact = SemanticFact(
         chat_key="group:x", subject="图", fact_text="看到图会先找小槽点",
+        source_turn_id="turn-facade",
     )
     await container.memory_repo.upsert_semantic_fact(fact)
     facts = await container.memory_repo.get_semantic_facts("group:x")
@@ -44,6 +45,11 @@ async def test_facade_shadow_and_causal_link(tmp_path: Path) -> None:
     )
     await container.cognitive_facade.on_turn_completed(outcome)
     links = await SqliteTraitMemoryLinkStore(container.db).list_links(trait.trait_id)
-    assert [link.memory_id for link in links] == [target.fact_id]
+    supports = [
+        link for link in links
+        if link.memory_id == target.fact_id and link.relation == "supports"
+        and not link.is_context
+    ]
+    assert len(supports) == 1
     shadows = await SqliteTraitShadowStore(container.db).list_shadow("group:x")
     assert shadows and trait.trait_id in shadows[0].trait_ids

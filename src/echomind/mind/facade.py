@@ -27,7 +27,7 @@ from echomind.domain.ports import (
     IWorkingStateStore,
 )
 from echomind.domain.trait_evidence_ports import ITraitEvidenceStore
-from echomind.domain.trait_memory_ports import ITraitMemoryLinkStore
+from echomind.domain.trait_memory_ports import ITraitMemoryLinkStore, ITurnSupportLinker
 from echomind.mind import facade_memory as mem
 from echomind.mind.ban_control import resolve_bans
 from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
@@ -85,6 +85,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         disclosure_log: IDisclosureLog | None = None,
         trait_evidence_store: ITraitEvidenceStore | None = None,
         trait_links: ITraitMemoryLinkStore | None = None,
+        turn_linker: ITurnSupportLinker | None = None,
         trait_shadow: TraitShadowService | None = None,
     ) -> None:
         self._reader, self._writer, self._working = mem_reader, mem_writer, working_store
@@ -98,6 +99,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         self._disclosure_log = disclosure_log
         self._trait_shadow = trait_shadow
         self._included: dict[str, tuple[tuple[int, str, str], ...]] = {}
+        self._turn_linker = turn_linker
         self._plasticity = NeuroplasticityEngine(
             working_store, persona_layers, evidence_store=trait_evidence_store,
             trait_links=trait_links,
@@ -274,6 +276,8 @@ class CognitiveCoreFacade(FacadeAccessors):
             self._reader, self._writer, o, now_ms, chord=chord
         )
         await self._plasticity.adapt_from_outcome(o, memory_ids=memory_ids)
+        if self._turn_linker is not None:
+            await self._turn_linker.link_turn_support(o.chat_key, o.session_id)
         if self._trait_shadow is not None:
             await self._trait_shadow.record(o)
 

@@ -18,3 +18,9 @@ class ITraitMemoryLinkStore(Protocol):
     async def ranker_scores(
         self, trait_ids: tuple[int, ...], memory_kind: str = "semantic"
     ) -> dict[int, float]: ...
+
+
+class ITurnSupportLinker(Protocol):
+    """Link support only to facts produced by the same real turn."""
+
+    async def link_turn_support(self, chat_key: str, turn_id: str) -> int: ...

@@ -29,3 +29,33 @@ async def test_link_roundtrip_and_ranker_scores(tmp_path: Path) -> None:
     assert len(await store.list_links(trait.trait_id)) == 1
     assert await store.ranker_scores((trait.trait_id,)) == {7: 1.0}
     assert await store.ranker_scores((trait.trait_id,), "episodic") == {}
+
+
+async def test_turn_support_links_only_same_turn_facts(tmp_path: Path) -> None:
+    from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
+    from echomind.adapters.storage.trait_evidence_repo import SqliteTraitEvidenceStore
+    from echomind.domain.models import SemanticFact
+    from echomind.domain.trait_evidence import TraitEvidence
+
+    db = SqliteDatabase(tmp_path / "turn_support.db")
+    await db.initialize()
+    traits = await SqliteWorkingStateStore(db).sync_persona_traits(
+        new_trait=PersonaTrait(trait_text="会记住同回合的事实", strength=6),
+        chat_key="g", source="turn:t1",
+    )
+    trait = traits[0]
+    await SqliteTraitEvidenceStore(db).record_trait_evidence(TraitEvidence(
+        trait_id=trait.trait_id, session_id="t1", turn_id="t1", quote="事实",
+        quote_kind="assistant", polarity=1, context_hash="c1", created_ms=1,
+    ))
+    repo = SqliteMemoryRepository(db)
+    await repo.upsert_semantic_fact(SemanticFact(
+        chat_key="g", subject="某人", fact_text="同回合事实", source_turn_id="t1",
+    ))
+    fact_id = (await repo.get_semantic_facts("g"))[0].fact_id
+    store = SqliteTraitMemoryLinkStore(db)
+    assert await store.link_turn_support("g", "t1") == 1
+    assert await store.link_turn_support("g", "other") == 0
+    rows = await store.list_links(trait.trait_id)
+    assert [(row.memory_id, row.is_context) for row in rows] == [(fact_id, False)]
+    assert await store.ranker_scores((trait.trait_id,)) == {fact_id: 1.0}

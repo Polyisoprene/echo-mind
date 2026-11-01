@@ -126,7 +126,6 @@ class EpisodicCard(FrozenValueObject):
 
 class SemanticFact(FrozenValueObject):
     """Epistemic fact with calibrated confidence, provenance, and anti-spoofing lock."""
-
     fact_id: int = 0
     chat_key: str
     subject: str
@@ -142,6 +141,7 @@ class SemanticFact(FrozenValueObject):
     sensitivity: Literal["public", "group", "private", "secret"] = "group"
     audience: tuple[str, ...] = ()
     source_quote: str = ""
+    source_turn_id: str = ""
     event_time_ms: int = 0
 
 

@@ -138,7 +138,7 @@ class EchoMindContainer:
             person_level=person_level, disclosure_log=disclosure_log,
             trait_evidence_store=SqliteTraitEvidenceStore(db),
             trait_shadow=_build_trait_shadow(db),
-            trait_links=SqliteTraitMemoryLinkStore(db),
+            trait_links=SqliteTraitMemoryLinkStore(db), turn_linker=SqliteTraitMemoryLinkStore(db),
         )
         instance = cls(
             db=db, memory_repo=mem_repo, working_store=work_store,
