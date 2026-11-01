@@ -123,3 +123,39 @@ overall 61/70
 - 在该策略通过 70/70 与 500 题前，不改 live。
 
 **当前生产 ranker 未改变。**
+
+## 9. 最小修复（已上线，2026-11-01）
+
+只改一处：
+
+```text
+confidence / lock 若所有 fact 分数相同 → 不进入 RRF
+```
+
+不改 bm25 / dense / recency / order / relations / trait，不改 fallback 顺序。
+
+内部评测：
+
+```text
+paraphrase 10/10
+overall 70/70
+```
+
+LongMemEval 500 消融：
+
+| 配置 | recall@5 | MRR |
+|---|---:|---:|
+| bm25 only | 0.940 | 0.868 |
+| + confidence + lock（过滤后） | **0.940** | **0.868** |
+| + recency | 0.626 | 0.426 |
+| + order | 0.702 | 0.460 |
+
+结论：
+
+- 常数 confidence/lock 不再稀释 BM25；
+- recency/order 仍会降分，但不在本轮改；
+- hybrid 500 正在远端验证，结果未出前不宣称整体提升。
+
+**回归测试**：`test_constant_confidence_and_lock_do_not_dilute_bm25`。
+
+**全门禁：392 passed / 93%，fusion 70/70。**

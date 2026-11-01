@@ -84,3 +84,20 @@ def test_each_ranker_is_necessary_on_its_hard_case() -> None:
         only = ALL_RANKERS - {case.disable}
         assert _target_wins(case, only), case.name
         assert not _target_wins(case, ALL_RANKERS), case.name
+
+
+def test_constant_confidence_and_lock_do_not_dilute_bm25() -> None:
+    facts = (
+        SemanticFact(fact_id=1, chat_key="g", subject="a", fact_text="猫粮",
+                     confidence=0.8, is_locked=False),
+        SemanticFact(fact_id=2, chat_key="g", subject="b", fact_text="电影",
+                     confidence=0.8, is_locked=False),
+    )
+    drop = frozenset({"dense", "recency", "order", "relations"})
+    with_constant = unified_rank(facts, "猫粮", {}, {}, 1_000, disabled=drop)
+    without_constant = unified_rank(
+        facts, "猫粮", {}, {}, 1_000, disabled=drop | {"confidence", "lock"}
+    )
+    assert [fact.fact_id for fact in with_constant] == [
+        fact.fact_id for fact in without_constant
+    ]

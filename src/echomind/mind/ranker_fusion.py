@@ -65,6 +65,13 @@ def _rank(scores: dict[int, float]) -> tuple[int, ...]:
     return tuple(sorted(scores, key=lambda item: (-scores[item], item)))
 
 
+def _informative_rank(scores: dict[int, float]) -> tuple[int, ...]:
+    """Constant confidence/lock is noise in RRF; do not invent a 1..N order."""
+    if len(scores) > 1 and len(set(scores.values())) <= 1:
+        return ()
+    return _rank(scores)
+
+
 def _temporal_mode(query: str) -> bool | None:
     if not any(cue in query for cue in _TEMPORAL_QUESTION):
         return None
@@ -124,8 +131,8 @@ def _candidate_rankers(
         "recency": _rank(recency),
         "order": _rank(order),
         "relations": _rank(relations),
-        "confidence": _rank(confidence),
-        "lock": _rank(lock),
+        "confidence": _informative_rank(confidence),
+        "lock": _informative_rank(lock),
         "trait": _rank(grounded_trait),
     }
 
