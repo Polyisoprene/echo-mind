@@ -1,0 +1,19 @@
+{
+  "days": 7,
+  "overall": {
+    "n": 1000,
+    "avg_len": 41.6,
+    "long_rate": 0.336,
+    "explain_rate": 0.033,
+    "roleplay_rate": 0.101,
+    "multi_question_rate": 0.004
+  },
+  "last_24h": {
+    "n": 200,
+    "avg_len": 28.8,
+    "long_rate": 0.15,
+    "explain_rate": 0.03,
+    "roleplay_rate": 0.035,
+    "multi_question_rate": 0.0
+  }
+}
