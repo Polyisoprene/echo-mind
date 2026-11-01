@@ -55,5 +55,6 @@ async def record_evidence(
     for memory_id in memory_ids:
         await trait_links.link(TraitMemoryLink(
             trait_id=trait.trait_id, memory_kind="semantic",
-            memory_id=memory_id, relation="supports", evidence_ms=now_ms,
+            memory_id=memory_id, relation="supports", is_context=True,
+                    evidence_ms=now_ms,
         ))

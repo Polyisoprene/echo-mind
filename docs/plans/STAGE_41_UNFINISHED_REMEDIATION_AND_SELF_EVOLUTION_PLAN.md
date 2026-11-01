@@ -1838,3 +1838,44 @@ shadow 正常记录 `[45,66]`，但 evidence/link 一直不写。
 **验证**
 
 - 全门禁：**372 passed / 92%**，fusion 70/70。
+
+### 14.42 真实链接质量修正：context vs supports（2026-11-01）
+
+真实 `feiyu_say` 回合第一次产生：
+
+```text
+shadow=25
+trait 66 evidence 新增 1 条
+memory_ids=25
+links=25
+```
+
+但逐条检查后发现，这 25 条都是当轮 included 的**群友资料/琐事**，与“情绪上来会发语音”习惯没有支持关系。
+
+问题：
+
+- “当轮 included”只能证明**上下文**，不能证明**支持**；
+- 自动把它们全部建成 `supports`，会让 trait ranker 对所有记忆等权加分，失去区分度。
+
+修复：
+
+- `TraitMemoryLink.is_context`；
+- 真实回合自动链接标记 `is_context=True`；
+- `ranker_scores` 只取 `relation='supports' AND is_context=0`；
+- 历史 25 条改为 context；
+- `trait_health.causal_links` 只数 support 链接。
+
+结果：
+
+```text
+context links=25
+support links=0
+status=no_causal_links
+```
+
+这是正确的：有上下文证据，但没有被证明的 support 链接。  
+不再用“全部 included”冒充 trait→记忆支持。
+
+**验证**
+
+- 全门禁：**372 passed / 92%**，fusion 70/70。

@@ -138,6 +138,7 @@ CREATE TABLE IF NOT EXISTS trait_memory_links (
   memory_id INTEGER NOT NULL CHECK(memory_id > 0),
   relation TEXT NOT NULL DEFAULT 'supports'
     CHECK(relation IN ('supports','contradicts')),
+  is_context INTEGER NOT NULL DEFAULT 0,
   evidence_ms INTEGER NOT NULL DEFAULT 0,
   UNIQUE(trait_id, memory_kind, memory_id, relation)
 );
@@ -148,6 +149,7 @@ CREATE INDEX IF NOT EXISTS idx_trait_memory_trait
 
 async def ensure_trait_memory_table(conn: Any) -> None:
     await conn.executescript(_TRAIT_MEMORY_DDL)
+    await _ensure_column(conn, "trait_memory_links", "is_context", "INTEGER NOT NULL DEFAULT 0")
 
 
 _TRAIT_SHADOW_DDL = """

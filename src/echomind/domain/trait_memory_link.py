@@ -15,4 +15,5 @@ class TraitMemoryLink(FrozenValueObject):
     memory_kind: Literal["semantic", "episodic"]
     memory_id: int = Field(ge=1)
     relation: Literal["supports", "contradicts"] = "supports"
+    is_context: bool = False
     evidence_ms: int = 0

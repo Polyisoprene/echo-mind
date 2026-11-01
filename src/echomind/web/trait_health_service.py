@@ -29,7 +29,7 @@ async def trait_health(db: SqliteDatabase) -> dict[str, Any]:
             "AND trait_ids_json != '[]'", (active_since,),
         )).fetchone())
         links = _int_row(await (await conn.execute(
-            "SELECT COUNT(*) FROM trait_memory_links"
+            "SELECT COUNT(*) FROM trait_memory_links WHERE relation='supports' AND is_context=0"
         )).fetchone())
         latest = _int_row(await (await conn.execute(
             "SELECT COALESCE(MAX(ts),0) FROM turn_traces"

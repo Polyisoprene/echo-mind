@@ -31,7 +31,9 @@ def status(db_path: Path) -> TraitHealth:
         "SELECT COUNT(*) FROM trait_action_shadow WHERE created_ms >= ? "
         "AND trait_ids_json != '[]'", (active_since,),
     ).fetchone()[0]
-    links = con.execute("SELECT COUNT(*) FROM trait_memory_links").fetchone()[0]
+    links = con.execute(
+        "SELECT COUNT(*) FROM trait_memory_links WHERE relation='supports' AND is_context=0"
+    ).fetchone()[0]
     latest = con.execute("SELECT COALESCE(MAX(ts),0) FROM turn_traces").fetchone()[0]
     return TraitHealth(active_count, int(shadow), int(nonempty), int(links), int(latest))
 

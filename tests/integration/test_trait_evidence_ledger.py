@@ -158,6 +158,7 @@ async def test_included_memory_ids_create_causal_links(tmp_path: Path) -> None:
     trait = next(item for item in traits if "看到群友发图" in item.trait_text)
     rows = await links.list_links(trait.trait_id)
     assert len(rows) == 1 and rows[0].memory_id == 7
+    assert rows[0].is_context is True
     second = outcome.model_copy(update={"session_id": "turn-causal-2"})
     await engine._learn_traits(second, memory_ids=(7,))  # noqa: SLF001
     assert len(await links.list_links(trait.trait_id)) == 1

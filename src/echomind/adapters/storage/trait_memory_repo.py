@@ -14,7 +14,8 @@ def _row(row: aiosqlite.Row) -> TraitMemoryLink:
     return TraitMemoryLink(
         link_id=int(row[0]), trait_id=int(row[1]),
         memory_kind=cast(Any, str(row[2])), memory_id=int(row[3]),
-        relation=cast(Any, str(row[4])), evidence_ms=int(row[5]),
+        relation=cast(Any, str(row[4])), is_context=bool(row[5]),
+        evidence_ms=int(row[6]),
     )
 
 
@@ -26,10 +27,10 @@ class SqliteTraitMemoryLinkStore:
         async with self._db.connect() as conn:
             await conn.execute(
                 "INSERT OR IGNORE INTO trait_memory_links "
-                "(trait_id, memory_kind, memory_id, relation, evidence_ms) "
-                "VALUES (?,?,?,?,?)",
+                "(trait_id, memory_kind, memory_id, relation, is_context, evidence_ms) "
+                "VALUES (?,?,?,?,?,?)",
                 (link.trait_id, link.memory_kind, link.memory_id,
-                 link.relation, link.evidence_ms),
+                 link.relation, int(link.is_context), link.evidence_ms),
             )
             await conn.commit()
 
@@ -38,7 +39,8 @@ class SqliteTraitMemoryLinkStore:
     ) -> tuple[TraitMemoryLink, ...]:
         async with self._db.connect() as conn:
             cursor = await conn.execute(
-                "SELECT id, trait_id, memory_kind, memory_id, relation, evidence_ms "
+                "SELECT id, trait_id, memory_kind, memory_id, relation, is_context, "
+                "evidence_ms "
                 "FROM trait_memory_links WHERE trait_id=? ORDER BY id DESC LIMIT ?",
                 (trait_id, limit),
             )
@@ -55,7 +57,7 @@ class SqliteTraitMemoryLinkStore:
         async with self._db.connect() as conn:
             cursor = await conn.execute(
                 "SELECT trait_id, memory_id FROM trait_memory_links "
-                "WHERE memory_kind=? AND relation='supports'",
+                "WHERE memory_kind=? AND relation='supports' AND is_context=0",
                 (memory_kind,),
             )
             return {
