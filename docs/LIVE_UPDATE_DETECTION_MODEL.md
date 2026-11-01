@@ -114,3 +114,26 @@ supersede candidates = 7
 - 7/195 个组，比例小；
 - 下一步应只对 `value` 且 audience 相同的组做小流量，不动 mentioned；
 - 不接 live。
+
+## 7. 可控写入工具（未执行 apply）
+
+新增：
+
+```text
+scripts/apply_claim_supersede.py
+```
+
+- 默认 dry-run；
+- `--apply` 才写；
+- 只处理 planner 通过的 value 候选；
+- `valid_to_ms = new.recorded_at_ms`；
+- `superseded_by = new.id`。
+
+生产 dry-run：
+
+```text
+groups = 7
+```
+
+**本轮没有执行 `--apply`**，生产 claims 仍是 0 superseded。  
+下一步是先核对 7 组，再决定是否小流量写入。
