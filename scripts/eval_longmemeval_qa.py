@@ -160,6 +160,29 @@ async def _judge(llm: FailoverLlmGateway, question: dict[str, Any], response: st
     return "yes" in text.lower()
 
 
+async def _process_question(
+    question: dict[str, Any], args: argparse.Namespace,
+    embedding: OpenAiEmbeddingGateway, llm: FailoverLlmGateway,
+) -> dict[str, Any]:
+    abstention = "_abs" in str(question["question_id"])
+    row: dict[str, Any] = {
+        "id": question["question_id"], "type": question["question_type"],
+        "abstention": abstention, "gold": question["answer"],
+        "gold_sessions": list(question["answer_session_ids"]),
+    }
+    try:
+        memories, memory_sessions = await _memories(question, args, embedding)
+        answer = await _answer(
+            llm, str(question["question"]), str(question["question_date"]), memories
+        )
+        row.update({"memory_sessions": memory_sessions, "answer": answer})
+        if not args.skip_judge:
+            row["correct"] = await _judge(llm, question, answer)
+    except Exception as exc:  # noqa: BLE001 - keep the batch resumable
+        row["error"] = f"{type(exc).__name__}: {exc}"
+    return row
+
+
 async def _memories(
     question: dict[str, Any], args: argparse.Namespace,
     embedding: OpenAiEmbeddingGateway,
@@ -171,10 +194,40 @@ async def _memories(
     )
 
 
+def _summary(rows: list[dict[str, Any]], skip_judge: bool) -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+    for kind in sorted({row["type"] for row in rows}):
+        subset = [row for row in rows if row["type"] == kind]
+        summary[kind] = {"n": len(subset), "accuracy": round(
+            sum(1 for row in subset if row.get("correct")) / len(subset), 3
+        ) if not skip_judge else None}
+    if not skip_judge:
+        abstention = [row for row in rows if row["abstention"]]
+        summary["abstention"] = {
+            "n": len(abstention),
+            "accuracy": round(sum(1 for row in abstention if row.get("correct")) /
+                              max(1, len(abstention)), 3),
+        }
+    return summary
+
+
+def _write_report(
+    out: Path, rows: list[dict[str, Any]], args: argparse.Namespace,
+    summary: dict[str, Any],
+) -> None:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    report = {"benchmark": "LongMemEval-S", "n": len(rows), "topk": args.topk,
+              "oracle": args.oracle, "max_context_chars": args.max_context_chars,
+              "summary": summary, "rows": rows}
+    out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=DATA)
     parser.add_argument("--limit", type=int, default=30)
+    parser.add_argument("--offset", type=int, default=0)
+    parser.add_argument("--resume", action="store_true")
     parser.add_argument("--topk", type=int, default=5)
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--skip-judge", action="store_true")
@@ -183,7 +236,7 @@ async def main() -> int:
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval_qa.json")
     args = parser.parse_args()
     data = json.loads(args.data.read_text(encoding="utf-8"))
-    selected = _select(data, args.limit)
+    selected = _select(data, args.offset + args.limit)[args.offset:]
     cfg = load_config_from_json(ROOT / "data" / "config.json")
     embedding = OpenAiEmbeddingGateway(cfg.embedding)
     trace_db = SqliteDatabase(ROOT / "reports" / "longmemeval_qa_trace.db")
@@ -192,44 +245,25 @@ async def main() -> int:
         cfg.primary_llm, cfg.fallback_llm, trace_db, extra_fallbacks=cfg.fallback_chain
     )
     rows: list[dict[str, Any]] = []
+    if args.resume and args.out.is_file():
+        rows = list(json.loads(args.out.read_text(encoding="utf-8")).get("rows", []))
+    done = {str(row["id"]) for row in rows}
     try:
         for question in selected:
+            if str(question["question_id"]) in done:
+                continue
             abstention = "_abs" in str(question["question_id"])
             if args.oracle and abstention:
                 continue
-            memories, memory_sessions = await _memories(question, args, embedding)
-            answer = await _answer(
-                llm, str(question["question"]), str(question["question_date"]), memories
-            )
-            row = {"id": question["question_id"], "type": question["question_type"],
-                   "abstention": abstention,
-                   "memory_sessions": memory_sessions,
-                   "gold_sessions": list(question["answer_session_ids"]),
-                   "answer": answer, "gold": question["answer"]}
-            if not args.skip_judge:
-                row["correct"] = await _judge(llm, question, answer)
+            row = await _process_question(question, args, embedding, llm)
             rows.append(row)
-            print(f"{row['id']} {row['type']} correct={row.get('correct')}")
+            _write_report(args.out, rows, args, _summary(rows, args.skip_judge))
+            print(f"{row['id']} {row['type']} correct={row.get('correct')} "
+                  f"error={bool(row.get('error'))}", flush=True)
     finally:
         await embedding.aclose()
-    summary: dict[str, Any] = {}
-    for kind in sorted({row["type"] for row in rows}):
-        subset = [row for row in rows if row["type"] == kind]
-        summary[kind] = {"n": len(subset), "accuracy": round(
-            sum(1 for row in subset if row.get("correct")) / len(subset), 3
-        ) if not args.skip_judge else None}
-    if not args.skip_judge:
-        summary["abstention"] = {
-            "n": sum(1 for row in rows if row["abstention"]),
-            "accuracy": round(sum(1 for row in rows
-                if row["abstention"] and row.get("correct")) /
-                max(1, sum(1 for row in rows if row["abstention"])), 3),
-        }
-    report = {"benchmark": "LongMemEval-S", "n": len(rows), "topk": args.topk,
-              "oracle": args.oracle, "max_context_chars": args.max_context_chars,
-              "summary": summary, "rows": rows}
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    summary = _summary(rows, args.skip_judge)
+    _write_report(args.out, rows, args, summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0
 
