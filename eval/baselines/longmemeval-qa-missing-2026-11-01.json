@@ -1,0 +1,1073 @@
+{
+  "benchmark": "LongMemEval-S",
+  "n": 94,
+  "topk": 5,
+  "oracle": false,
+  "max_context_chars": 0,
+  "summary": {
+    "multi-session": {
+      "n": 46,
+      "accuracy": 0.0
+    },
+    "single-session-user": {
+      "n": 1,
+      "accuracy": 0.0
+    },
+    "temporal-reasoning": {
+      "n": 47,
+      "accuracy": 0.0
+    },
+    "abstention": {
+      "n": 19,
+      "accuracy": 0.0
+    }
+  },
+  "rows": [
+    {
+      "id": "f4f1d8a4_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "gold": "You did not mention this information. You mentioned receiving a birthday gift from your sister, but not your dad.",
+      "gold_sessions": [
+        "answer_f5b33470_abs"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "88432d0a_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention baking egg tarts.",
+      "gold_sessions": [
+        "answer_733e443a_abs_1",
+        "answer_733e443a_abs_3",
+        "answer_733e443a_abs_2",
+        "answer_733e443a_abs_4"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "80ec1f4f_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "0. You did not mention visitng any museum in December",
+      "gold_sessions": [
+        "answer_990c8992_abs_2",
+        "answer_990c8992_abs_3",
+        "answer_990c8992_abs_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "eeda8a6d_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention that you have a 30-gallon tank.",
+      "gold_sessions": [
+        "answer_3e5fea0e_abs_2",
+        "answer_3e5fea0e_abs_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "60bf93ed_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention buying an iPad case.",
+      "gold_sessions": [
+        "answer_e0956e0a_abs_2",
+        "answer_e0956e0a_abs_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "edced276_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You mentioned traveling for 10 days in Hawaii but did not mention abything about the trip to Seattle.",
+      "gold_sessions": [
+        "answer_60e8941a_abs_1",
+        "answer_60e8941a_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_372c3eed_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You mentioned 4 years in high school (2010-2014), 2 years at PCC (2014-2016), and 4 years at UCLA (2016-2020). But you didn't mention the number of years you spend getting the Master's degree",
+      "gold_sessions": [
+        "answer_35c5419d_abs_3",
+        "answer_35c5419d_abs_1",
+        "answer_35c5419d_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "0100672e",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$12",
+      "gold_sessions": [
+        "answer_35c9798c_2",
+        "answer_35c9798c_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "a96c20ee",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "Harvard University",
+      "gold_sessions": [
+        "answer_ef84b994_1",
+        "answer_ef84b994_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "92a0aa75",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "1 year and 5 months",
+      "gold_sessions": [
+        "answer_6cb8f792_1",
+        "answer_6cb8f792_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "3fe836c9",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$25,000",
+      "gold_sessions": [
+        "answer_1bb63ea5_2",
+        "answer_1bb63ea5_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "1c549ce4",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$140",
+      "gold_sessions": [
+        "answer_4cb841a8_1",
+        "answer_4cb841a8_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "6c49646a",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "3,000 miles",
+      "gold_sessions": [
+        "answer_cc1ced21_2",
+        "answer_cc1ced21_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "1192316e",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "an hour and a half",
+      "gold_sessions": [
+        "answer_e184e4c3_2",
+        "answer_e184e4c3_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "0ea62687",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "2",
+      "gold_sessions": [
+        "answer_dc5e537d_1",
+        "answer_dc5e537d_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "67e0d0f2",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "20",
+      "gold_sessions": [
+        "answer_3a5010af_2",
+        "answer_3a5010af_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "bb7c3b45",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$300",
+      "gold_sessions": [
+        "answer_de64539a_1",
+        "answer_de64539a_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "ba358f49",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "33",
+      "gold_sessions": [
+        "answer_cbd08e3c_1",
+        "answer_cbd08e3c_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "61f8c8f8",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "10 minutes",
+      "gold_sessions": [
+        "answer_872e8da2_2",
+        "answer_872e8da2_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "60159905",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "three",
+      "gold_sessions": [
+        "answer_75eca223_2",
+        "answer_75eca223_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "ef9cf60a",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$300",
+      "gold_sessions": [
+        "answer_87e3a1cb_1",
+        "answer_87e3a1cb_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "73d42213",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "9:00 AM",
+      "gold_sessions": [
+        "answer_1881e7db_1",
+        "answer_1881e7db_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "bc149d6b",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "70 pounds",
+      "gold_sessions": [
+        "answer_92147866_1",
+        "answer_92147866_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "099778bb",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "20%",
+      "gold_sessions": [
+        "answer_80d6d664_2",
+        "answer_80d6d664_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "09ba9854",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$50",
+      "gold_sessions": [
+        "answer_96c743d0_2",
+        "answer_96c743d0_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "d6062bb9",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "1,998",
+      "gold_sessions": [
+        "answer_23f3a657_2",
+        "answer_23f3a657_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "157a136e",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "43",
+      "gold_sessions": [
+        "answer_8de18468_2",
+        "answer_8de18468_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "c18a7dc8",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "7",
+      "gold_sessions": [
+        "answer_2e2085fa_2",
+        "answer_2e2085fa_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "a3332713",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$200",
+      "gold_sessions": [
+        "answer_16ece55f_2",
+        "answer_16ece55f_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "55241a1f",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "33",
+      "gold_sessions": [
+        "answer_fa08bf49_1",
+        "answer_fa08bf49_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "a08a253f",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "4 days.",
+      "gold_sessions": [
+        "answer_47152166_2",
+        "answer_47152166_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "f0e564bc",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$1,300",
+      "gold_sessions": [
+        "answer_cfcf5340_1",
+        "answer_cfcf5340_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "078150f1",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$50",
+      "gold_sessions": [
+        "answer_254d8b09_1",
+        "answer_254d8b09_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "8cf4d046",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "3.83",
+      "gold_sessions": [
+        "answer_e2278b24_1",
+        "answer_e2278b24_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "a346bb18",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "12",
+      "gold_sessions": [
+        "answer_4934b2d7_2",
+        "answer_4934b2d7_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "37f165cf",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "856",
+      "gold_sessions": [
+        "answer_6b9b2b1e_2",
+        "answer_6b9b2b1e_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "8e91e7d9",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "4",
+      "gold_sessions": [
+        "answer_477ae455_1",
+        "answer_477ae455_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "87f22b4a",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$120",
+      "gold_sessions": [
+        "answer_f56e6152_2",
+        "answer_f56e6152_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "e56a43b9",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "$5",
+      "gold_sessions": [
+        "answer_430d0a87_1",
+        "answer_430d0a87_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "efc3f7c2",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "30 minutes",
+      "gold_sessions": [
+        "answer_fc81d1a2_1",
+        "answer_fc81d1a2_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "21d02d0d",
+      "type": "multi-session",
+      "abstention": false,
+      "gold": "2",
+      "gold_sessions": [
+        "answer_2c637141_2",
+        "answer_2c637141_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "2311e44b_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention how many paged do you have left to read in 'Sapiens'.",
+      "gold_sessions": [
+        "answer_bf633415_abs_1",
+        "answer_bf633415_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "6456829e_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You mentioned planting 5 plants for tomatoes but you did not mention chili peppers.",
+      "gold_sessions": [
+        "answer_743f03a1_abs_1",
+        "answer_743f03a1_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "e5ba910e_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You mentioned purchasing a headphone, but you did not mention the iPad.",
+      "gold_sessions": [
+        "answer_e49ed9d3_abs_1",
+        "answer_e49ed9d3_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "a96c20ee_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention presenting a poster for your undergrad course research project.",
+      "gold_sessions": [
+        "answer_ef84b994_abs_1",
+        "answer_ef84b994_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "ba358f49_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention how old Rachel is right now, nor when will you get married.",
+      "gold_sessions": [
+        "answer_cbd08e3c_abs_1",
+        "answer_cbd08e3c_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "09ba9854_abs",
+      "type": "multi-session",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention how much will the bus take.",
+      "gold_sessions": [
+        "answer_96c743d0_abs_1",
+        "answer_96c743d0_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_6ed717ea",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Training pads for Luna",
+      "gold_sessions": [
+        "answer_d50a8a33_1",
+        "answer_d50a8a33_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_70e84552",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Fixing the fence",
+      "gold_sessions": [
+        "answer_b3070ec4_2",
+        "answer_b3070ec4_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "a3838d2b",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "4",
+      "gold_sessions": [
+        "answer_4ffa04a2_1",
+        "answer_4ffa04a2_6",
+        "answer_4ffa04a2_4",
+        "answer_4ffa04a2_3",
+        "answer_4ffa04a2_5",
+        "answer_4ffa04a2_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_93159ced",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "4 years and 9 months",
+      "gold_sessions": [
+        "answer_e5131a1b_2",
+        "answer_e5131a1b_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_2d58bcd6",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "'The Hate U Give'",
+      "gold_sessions": [
+        "answer_3e11e0ae_1",
+        "answer_3e11e0ae_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_65aabe59",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Smart thermostat",
+      "gold_sessions": [
+        "answer_30dfe889_1",
+        "answer_30dfe889_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "982b5123",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Five months ago",
+      "gold_sessions": [
+        "answer_ab603dd5_1",
+        "answer_ab603dd5_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "b9cfe692",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "5.5 weeks",
+      "gold_sessions": [
+        "answer_5e3bb940_3",
+        "answer_5e3bb940_2",
+        "answer_5e3bb940_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_4edbafa2",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "June 3rd",
+      "gold_sessions": [
+        "answer_0a00c163_1",
+        "answer_0a00c163_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "c8090214",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "7 days. 8 days (including the last day) is also acceptable.",
+      "gold_sessions": [
+        "answer_70dc7d08_2",
+        "answer_70dc7d08_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_483dd43c",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "'Game of Thrones'",
+      "gold_sessions": [
+        "answer_fb793c87_1",
+        "answer_fb793c87_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "e4e14d04",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Two weeks",
+      "gold_sessions": [
+        "answer_cf425855_1",
+        "answer_cf425855_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "c9f37c46",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "2 months",
+      "gold_sessions": [
+        "answer_cdba3d9f_1",
+        "answer_cdba3d9f_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_2c50253f",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "6:45 AM",
+      "gold_sessions": [
+        "answer_9af4e346_1",
+        "answer_9af4e346_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "dcfa8644",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "14 days. 15 days (including the last day) is also acceptable.",
+      "gold_sessions": [
+        "answer_5e3eeb12_2",
+        "answer_5e3eeb12_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_b4a80587",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "The arrival of the new prime lens",
+      "gold_sessions": [
+        "answer_b9d9150e_2",
+        "answer_b9d9150e_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_9a159967",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "United Airlines",
+      "gold_sessions": [
+        "answer_8a42fedf_1",
+        "answer_8a42fedf_3",
+        "answer_8a42fedf_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "cc6d1ec1",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Two months",
+      "gold_sessions": [
+        "answer_be73098b_2",
+        "answer_be73098b_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_8c8961ae",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "The solo trip to Thailand",
+      "gold_sessions": [
+        "answer_72d9aa58_1",
+        "answer_72d9aa58_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_d9af6064",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "new router",
+      "gold_sessions": [
+        "answer_da704e79_2",
+        "answer_da704e79_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_7de946e7",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Persistent cough",
+      "gold_sessions": [
+        "answer_6a78e959_2",
+        "answer_6a78e959_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "d01c6aa8",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "27",
+      "gold_sessions": [
+        "answer_991d55e5_1",
+        "answer_991d55e5_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "993da5e2",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "One week. Answers ranging from 7 days to 10 days are also acceptable.",
+      "gold_sessions": [
+        "answer_54f0d6f9_1",
+        "answer_54f0d6f9_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "a3045048",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "7 days. 8 days (including the last day) is also acceptable.",
+      "gold_sessions": [
+        "answer_016f6bd4_2",
+        "answer_016f6bd4_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_d31cdae3",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "The family road trip across the American Southwest",
+      "gold_sessions": [
+        "answer_8464304d_1",
+        "answer_8464304d_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_cd90e484",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Two weeks",
+      "gold_sessions": [
+        "answer_aa930b56_1",
+        "answer_aa930b56_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_88806d6e",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Tom",
+      "gold_sessions": [
+        "answer_e60a93ff_1",
+        "answer_e60a93ff_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_4cd9eba1",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "one week",
+      "gold_sessions": [
+        "answer_5fcca8bc_2",
+        "answer_5fcca8bc_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_93f6379c",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Page Turners",
+      "gold_sessions": [
+        "answer_544fe66c_2",
+        "answer_544fe66c_1",
+        "answer_544fe66c_3"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "b29f3365",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Four weeks",
+      "gold_sessions": [
+        "answer_436d4309_2",
+        "answer_436d4309_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_2f56ae70",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Disney+",
+      "gold_sessions": [
+        "answer_7a36e820_2",
+        "answer_7a36e820_3",
+        "answer_7a36e820_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "6613b389",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "2",
+      "gold_sessions": [
+        "answer_aaf71ce2_3",
+        "answer_aaf71ce2_2",
+        "answer_aaf71ce2_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_78cf46a3",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Receiving the new phone case",
+      "gold_sessions": [
+        "answer_5a78688d_1",
+        "answer_5a78688d_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_0a05b494",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "the woman selling jam at the farmer's market",
+      "gold_sessions": [
+        "answer_a68db5db_2",
+        "answer_a68db5db_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_1a1dc16d",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "The meeting with Rachel",
+      "gold_sessions": [
+        "answer_faad7d7a_2",
+        "answer_faad7d7a_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_2f584639",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "the photo album for my mom",
+      "gold_sessions": [
+        "answer_11a8f823_2",
+        "answer_11a8f823_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_213fd887",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "volleyball league",
+      "gold_sessions": [
+        "answer_53582e7e_2",
+        "answer_53582e7e_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_5438fa52",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Spanish classes",
+      "gold_sessions": [
+        "answer_b10f3828_1",
+        "answer_b10f3828_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_c27434e8",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Japanese Zero fighter plane model",
+      "gold_sessions": [
+        "answer_d8e33f5c_1",
+        "answer_d8e33f5c_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_fe651585",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "Alex",
+      "gold_sessions": [
+        "answer_65600ff6_2",
+        "answer_65600ff6_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "8c18457d",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "gold": "7 days. 8 days (including the last day) is also acceptable.",
+      "gold_sessions": [
+        "answer_124f5dc3_2",
+        "answer_124f5dc3_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_70e84552_abs",
+      "type": "temporal-reasoning",
+      "abstention": true,
+      "gold": "The information provided is not enough. You mentioned fixing the fence but did not mention purchasing cows from Peter.",
+      "gold_sessions": [
+        "answer_b3070ec4_abs_2",
+        "answer_b3070ec4_abs_1"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_93159ced_abs",
+      "type": "temporal-reasoning",
+      "abstention": true,
+      "gold": "The information provided is not enough. From the information provided, You haven't started working at Google yet.",
+      "gold_sessions": [
+        "answer_e5131a1b_abs_1",
+        "answer_e5131a1b_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "982b5123_abs",
+      "type": "temporal-reasoning",
+      "abstention": true,
+      "gold": "The information provided is not enough. You only mentioned booking Airbnb in San Francisco.",
+      "gold_sessions": [
+        "answer_ab603dd5_abs_1",
+        "answer_ab603dd5_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "c8090214_abs",
+      "type": "temporal-reasoning",
+      "abstention": true,
+      "gold": "The information provided is not enough. You mentioned getting the iPhone 13 Pro and attending the market, but you did not mention buying an iPad.",
+      "gold_sessions": [
+        "answer_70dc7d08_abs_1",
+        "answer_70dc7d08_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_c27434e8_abs",
+      "type": "temporal-reasoning",
+      "abstention": true,
+      "gold": "The information provided is not enough. You did not mention starting the Porsche 991 Turbo S model.",
+      "gold_sessions": [
+        "answer_d8e33f5c_abs_1",
+        "answer_d8e33f5c_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    },
+    {
+      "id": "gpt4_fe651585_abs",
+      "type": "temporal-reasoning",
+      "abstention": true,
+      "gold": "The information provided is not enough. You mentioned Alex becoming a parent in January, but you didn't mention anything about Tom.",
+      "gold_sessions": [
+        "answer_65600ff6_abs_1",
+        "answer_65600ff6_abs_2"
+      ],
+      "error": "ConnectError: All connection attempts failed"
+    }
+  ]
+}

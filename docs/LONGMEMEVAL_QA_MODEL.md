@@ -260,3 +260,33 @@ temporal-reasoning: 2/4 命中，0/4 正确
 - 检索修复确实传导到端到端 QA；
 - knowledge-update 仍只有 0.60，是剩余短板；
 - 30 题 abstention 过采样，不能直接外推 500 题总体。
+
+## 14. 500 题全量 QA（2026-11-01，最终 ranker）
+
+5 个 100 题分片 + 缺失补齐，合并后 **500/500 覆盖，无重复、无缺失**：
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| knowledge-update | 78 | 0.641 |
+| multi-session | 133 | 0.271 |
+| single-session-assistant | 56 | 0.661 |
+| single-session-preference | 30 | 0.633 |
+| single-session-user | 70 | 0.671 |
+| temporal-reasoning | 133 | 0.278 |
+| abstention | 30 | 0.333 |
+| **总体** | **500** | **226/500 = 0.452** |
+
+对照：
+
+```text
+30 题样本：23/30 = 0.767
+500 题全量：226/500 = 0.452
+```
+
+结论：
+
+- 30 题样本的 abstention 过采样 + 小样本，显著高估总体；
+- 500 题真实短板是 **multi-session 0.271、temporal 0.278、abstention 0.333**；
+- retrieval 已 0.954，oracle reading 24/25，说明剩下主要是“选中/读对/该拒答”；
+- 该分数使用本机 judge/模型，不是 GPT-4o 官方 judge，不能直接与论文排名比较；
+- 500 QA 完整结果文件：`eval/baselines/longmemeval-qa-500-final-2026-11-01.json`。
