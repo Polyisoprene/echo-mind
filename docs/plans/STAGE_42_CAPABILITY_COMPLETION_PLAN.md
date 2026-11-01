@@ -166,17 +166,12 @@ SelfMessage
 
 ## 4. P2：已有标签/理论可完成的校准
 
-### 4.1 Stance 系数
+### 4.1 Stance 系数（数据审计后暂停）
 
-- 文档记录有 90 组冻结 pairwise 标签；
-- 用序数回归/偏好模型，不新增真人测试；
-- 依据：[Ordinal Regression via Binary Preference vs Simple Regression](https://ar5iv.labs.arxiv.org/html/2207.02454)。
-
-验收：
-
-- 交叉验证；
-- 与 `fit:pending` 的规则基线对比；
-- 不通过就保持 pending。
+- 现有 90 组 pairwise 是**模型 A/B**，不是 stance 偏移标签；
+- 审计见 [STANCE_CALIBRATION_DATA_AUDIT.md](../STANCE_CALIBRATION_DATA_AUDIT.md)；
+- 不能用它拟合 `STANCE_MAX_POINTS`；
+- **保持 `fit_pending`**，不跑序数回归，不新增手调值。
 
 ### 4.2 Dormant 策略
 
@@ -260,7 +255,7 @@ P4 multi-venue / observation corpus
 | R1 | Response attribution schema + shadow + 30 条核对 | ✅ 2026-11-01 shadow 已跑：1654 outcomes |
 | R2 | LongMemEval 500 retrieval + QA/abstention | 🟡 500 retrieval 完成（52.8%）；30 题 QA 完成；500 QA 未跑 |
 | R3 | GroupMemBench + CharacterEval 适配 | 数据/许可 |
-| R4 | stance 序数回归 + dormant/ACT-R 研究 | 标签/来源 |
+| R4 | dormant/ACT-R 研究；stance 暂缓（无对照标签） | 来源/数据 |
 | R5 | HyDE/RAPTOR/semantic gate shadow | R2 基线 |
 | R6 | 多 venue/observation corpus | P0 稳定 |
 
