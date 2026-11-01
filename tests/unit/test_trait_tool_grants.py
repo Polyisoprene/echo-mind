@@ -66,3 +66,17 @@ async def test_absent_evidence_store_is_a_noop() -> None:
     assert await apply_live_grants(
         core, cast(IWorkingStateStore, _Working(())), None
     ) == core
+
+
+@pytest.mark.asyncio
+async def test_active_taboo_grants_refusal_permission_without_tools() -> None:
+    core = CyberneticCoreState(selected_tools=("send_message",))
+    trait = PersonaTrait(
+        trait_id=2, category="taboo", trait_text="讨厌被命令", status="active",
+    )
+    result = await apply_live_grants(
+        core, cast(IWorkingStateStore, _Working((trait,))),
+        cast(ITraitEvidenceStore, _Evidence({})),
+    )
+    assert result.allow_refusal is True
+    assert result.selected_tools == ("send_message",)

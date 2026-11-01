@@ -214,7 +214,6 @@ class ProactiveProposal(FrozenValueObject):
 
 class CyberneticCoreState(FrozenValueObject):
     """Haken Order Parameters (3 master magnetic needles) & Ashby selected reagents."""
-
     stance_order: float = Field(default=0.2, ge=-1.0, le=1.0)
     epistemic_order: float = Field(default=0.3, ge=0.0, le=1.0)
     modality_order: float = Field(default=0.2, ge=0.0, le=1.0)
@@ -222,6 +221,7 @@ class CyberneticCoreState(FrozenValueObject):
     active_reagents: tuple[str, ...] = ("日常轻装剂",)
     selected_tools: tuple[str, ...] = ()
     recommended_temperature: float = Field(default=0.65, ge=0.1, le=1.2)
+    allow_refusal: bool = False
 
 
 class CognitiveFrame(FrozenValueObject):

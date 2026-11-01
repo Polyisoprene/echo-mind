@@ -2516,3 +2516,28 @@ Eligibility.permits_tool(tool)
 **验证**
 
 - 全门禁：**380 passed / 92%**，fusion 70/70。
+
+### 14.63 allow_refusal 接 live 许可（2026-11-01）
+
+`allow_refusal` 从 shadow 字段变为 `CyberneticCoreState.allow_refusal` 许可：
+
+- active taboo → true；
+- 只在 prompt 增加“本轮允许拒绝”提示；
+- **不强制拒绝**；
+- 当前没有 active taboo，所以线上值仍为 false。
+
+`apply_live_grants` 同时合并：
+
+```text
+tool grants（追加）
+allow_refusal（许可）
+```
+
+测试：
+
+- active taboo 无 tool evidence 时，工具集不变、allow_refusal=true；
+- 普通 active trait 仍 false。
+
+**验证**
+
+- 全门禁：**381 passed / 92%**，fusion 70/70。

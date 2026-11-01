@@ -184,6 +184,7 @@ def render_cybernetic_core_directive(core: CyberneticCoreState) -> str:
         f"（姿态核={core.stance_order:+.2f} ｜ 求真核={core.epistemic_order:.2f} "
         f"｜ 声情模态核={core.modality_order:.2f}）\n"
         f"- 🔬 智力放大选矿剂：{reagent_str}（推荐采样温度 T={core.recommended_temperature}）"
+        + ("\n- 🚫 本轮允许拒绝：active taboo 触发的拒绝许可" if core.allow_refusal else "")
     )
 
 

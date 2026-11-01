@@ -28,11 +28,13 @@ async def apply_live_grants(
         trait.trait_id: await evidence_store.list_trait_evidence(trait.trait_id, 50)
         for trait in active
     }
-    grants = evaluate_eligibility(active, rows).allowed_tools
-    if not grants:
+    eligible = evaluate_eligibility(active, rows)
+    if not eligible.allowed_tools and not eligible.allow_refusal:
         return core
-    tools = tuple(dict.fromkeys((*core.selected_tools, *sorted(grants))))
-    return core.model_copy(update={"selected_tools": tools})
+    tools = tuple(dict.fromkeys((*core.selected_tools, *sorted(eligible.allowed_tools))))
+    return core.model_copy(update={
+        "selected_tools": tools, "allow_refusal": eligible.allow_refusal,
+    })
 
 
 async def compute_and_grant(
