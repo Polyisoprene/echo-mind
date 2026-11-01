@@ -15,7 +15,7 @@ def _row(row: aiosqlite.Row) -> TraitMemoryLink:
         link_id=int(row[0]), trait_id=int(row[1]),
         memory_kind=cast(Any, str(row[2])), memory_id=int(row[3]),
         relation=cast(Any, str(row[4])), is_context=bool(row[5]),
-        evidence_ms=int(row[6]),
+        note=str(row[6]), evidence_ms=int(row[7]),
     )
 
 
@@ -27,10 +27,10 @@ class SqliteTraitMemoryLinkStore:
         async with self._db.connect() as conn:
             await conn.execute(
                 "INSERT OR IGNORE INTO trait_memory_links "
-                "(trait_id, memory_kind, memory_id, relation, is_context, evidence_ms) "
-                "VALUES (?,?,?,?,?,?)",
+                "(trait_id, memory_kind, memory_id, relation, is_context, note, "
+                "evidence_ms) VALUES (?,?,?,?,?,?,?)",
                 (link.trait_id, link.memory_kind, link.memory_id,
-                 link.relation, int(link.is_context), link.evidence_ms),
+                 link.relation, int(link.is_context), link.note, link.evidence_ms),
             )
             await conn.commit()
 
@@ -40,7 +40,7 @@ class SqliteTraitMemoryLinkStore:
         async with self._db.connect() as conn:
             cursor = await conn.execute(
                 "SELECT id, trait_id, memory_kind, memory_id, relation, is_context, "
-                "evidence_ms "
+                "note, evidence_ms "
                 "FROM trait_memory_links WHERE trait_id=? ORDER BY id DESC LIMIT ?",
                 (trait_id, limit),
             )
@@ -82,3 +82,17 @@ class SqliteTraitMemoryLinkStore:
             )
             await conn.commit()
             return int(cursor.rowcount)
+    async def upsert_manual_support(
+        self, trait_id: int, memory_id: int, note: str, evidence_ms: int,
+    ) -> None:
+        """Explicit operator annotation; upgrades a context row to support."""
+        async with self._db.connect() as conn:
+            await conn.execute(
+                "INSERT INTO trait_memory_links "
+                "(trait_id, memory_kind, memory_id, relation, is_context, note, evidence_ms) "
+                "VALUES (?, 'semantic', ?, 'supports', 0, ?, ?) "
+                "ON CONFLICT(trait_id, memory_kind, memory_id, relation) DO UPDATE SET "
+                "is_context=0, note=excluded.note, evidence_ms=excluded.evidence_ms",
+                (trait_id, memory_id, note, evidence_ms),
+            )
+            await conn.commit()

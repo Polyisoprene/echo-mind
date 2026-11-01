@@ -59,3 +59,25 @@ async def test_turn_support_links_only_same_turn_facts(tmp_path: Path) -> None:
     rows = await store.list_links(trait.trait_id)
     assert [(row.memory_id, row.is_context) for row in rows] == [(fact_id, False)]
     assert await store.ranker_scores((trait.trait_id,)) == {fact_id: 1.0}
+
+
+async def test_manual_support_upgrades_context_with_note(tmp_path: Path) -> None:
+    db = SqliteDatabase(tmp_path / "manual.db")
+    await db.initialize()
+    traits = await SqliteWorkingStateStore(db).sync_persona_traits(
+        new_trait=PersonaTrait(trait_text="手动确认", strength=6),
+        chat_key="g", source="turn:t1",
+    )
+    trait = traits[0]
+    store = SqliteTraitMemoryLinkStore(db)
+    await store.link(TraitMemoryLink(
+        trait_id=trait.trait_id, memory_kind="semantic", memory_id=7,
+        is_context=True,
+    ))
+    await store.upsert_manual_support(
+        trait.trait_id, 7, "手动确认：同回合语音行为", 123,
+    )
+    rows = await store.list_links(trait.trait_id)
+    assert rows[0].is_context is False
+    assert rows[0].note == "手动确认：同回合语音行为"
+    assert await store.ranker_scores((trait.trait_id,)) == {7: 1.0}

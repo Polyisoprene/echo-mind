@@ -2045,3 +2045,40 @@ facts_with_turn=0
 - 全门禁：**374 passed / 92%**，fusion 70/70；
 - 生产库未写入 replay；
 - 生产 support 仍为 0，因为真实同回合样本还没出现。
+
+### 14.49 手动 support 标注（2026-11-01）
+
+用户明确需要手动标注，新增：
+
+```text
+scripts/manual_trait_support.py
+```
+
+规则：
+
+- 必须指定 trait / evidence / semantic memory / reason；
+- 默认 dry-run；
+- 只有 `--apply` 才写；
+- evidence 必须属于该 trait；
+- memory 必须存在；
+- reason 必填；
+- 写入 `relation='supports'`、`is_context=0`、`note=reason`；
+- context 行会被升级，不重复插入。
+
+示例：
+
+```bash
+python scripts/manual_trait_support.py \
+  --trait-id 66 \
+  --evidence-id 14 \
+  --memory-id 292 \
+  --reason "手动确认：同回合语音行为"
+```
+
+当前只做了 dry-run，没有自动写生产。  
+自动 support 仍只接受同回合 explicit fact。
+
+**验证**
+
+- 手动 support 升级 context + note + ranker 得分测试；
+- 全门禁：**375 passed / 92%**，fusion 70/70。
