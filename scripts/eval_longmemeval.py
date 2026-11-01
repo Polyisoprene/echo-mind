@@ -15,7 +15,7 @@ from typing import Any
 from echomind.adapters.llm.embedding_client import OpenAiEmbeddingGateway
 from echomind.core.config import load_config_from_json
 from echomind.domain.models import SemanticFact
-from echomind.mind.ranker_fusion import unified_rank
+from echomind.mind.ranker_fusion import bm25_scores, unified_rank
 from echomind.mind.semantic_retrieval import cosine
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -89,12 +89,37 @@ def _facts(
     return tuple(facts), targets
 
 
+async def _ranked(
+    question: dict[str, Any], facts: tuple[SemanticFact, ...],
+    gateway: OpenAiEmbeddingGateway, retriever: str, batch: int, *,
+    disabled: frozenset[str],
+) -> tuple[SemanticFact, ...]:
+    if retriever == "bm25":
+        if not disabled:
+            scores = bm25_scores(facts, str(question["question"]))
+            return tuple(sorted(facts, key=lambda fact: (-scores[fact.fact_id], fact.fact_id)))
+        return unified_rank(
+            facts, str(question["question"]), {}, {},
+            _ms(str(question["question_date"])), constraints=False, disabled=disabled,
+        )
+    vectors = await _embed_all(gateway, [fact.fact_text for fact in facts], batch)
+    query_vec = (await gateway.embed((str(question["question"]),)))[0]
+    dense = {fact.fact_id: cosine(query_vec, vec)
+             for fact, vec in zip(facts, vectors, strict=True)}
+    return unified_rank(
+        facts, str(question["question"]), dense, {},
+        _ms(str(question["question_date"])), constraints=False,
+    )
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=DATA)
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument("--batch", type=int, default=32)
     parser.add_argument("--granularity", choices=("session", "turn"), default="session")
+    parser.add_argument("--retriever", choices=("hybrid", "bm25"), default="hybrid")
+    parser.add_argument("--disable", default="")
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval.json")
     args = parser.parse_args()
 
@@ -106,15 +131,10 @@ async def main() -> int:
     try:
         for question in selected:
             facts, target_ids = _facts(question, args.granularity)
-            texts = [fact.fact_text for fact in facts]
-            vectors = await _embed_all(gateway, texts, args.batch)
-            query_vec = (await gateway.embed((str(question["question"]),)))[0]
-            dense = {fact.fact_id: cosine(query_vec, vector)
-                     for fact, vector in zip(facts, vectors, strict=True)}
-            now_ms = _ms(str(question["question_date"]))
-            ranked = unified_rank(
-                facts, str(question["question"]), dense, {}, now_ms,
-                constraints=False,
+            disabled = frozenset(x for x in args.disable.split(",") if x)
+            ranked = await _ranked(
+                question, facts, gateway, args.retriever, args.batch,
+                disabled=disabled,
             )
             answer_sessions = set(question["answer_session_ids"])
             top5 = ranked[:5]
@@ -148,7 +168,8 @@ async def main() -> int:
             "mrr": round(sum(item["mrr"] for item in rows) / len(rows), 3),
         }
     report = {"benchmark": "LongMemEval-S", "granularity": args.granularity,
-              "n": len(results), "summary": summary, "results": results}
+              "retriever": args.retriever, "disabled": args.disable, "n": len(results),
+              "summary": summary, "results": results}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
