@@ -31,6 +31,7 @@ from echomind.web.mind_inspector_service import MindInspectorService
 from echomind.web.probe_service import CognitiveProbeService
 from echomind.web.skill_config_service import SkillConfigService
 from echomind.web.social_router import build_social_router
+from echomind.web.style_health_service import style_health as style_health_view
 from echomind.web.trait_evidence_service import trait_evidence as trait_evidence_view
 from echomind.web.trait_health_service import trait_health as trait_health_view
 from echomind.web.voice_health_service import VoiceHealthService
@@ -110,6 +111,9 @@ def _trait_evidence_router(inspector: MindInspectorService) -> APIRouter:
     async def trait_evidence(trait_id: int, limit: int = 20) -> dict[str, Any]:
         rows = await trait_evidence_view(inspector._c.db, trait_id, limit)
         return {"ok": True, "trait_id": trait_id, "evidence": rows}
+    @router.get("/api/mind/style-health")
+    async def style_health(chat_key: str = "") -> dict[str, Any]:
+        return {"ok": True, **await style_health_view(inspector._c.db, chat_key)}
 
     return router
 

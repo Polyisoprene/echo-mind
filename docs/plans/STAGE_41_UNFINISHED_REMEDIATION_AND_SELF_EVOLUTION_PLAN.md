@@ -2350,3 +2350,28 @@ worsened=0
 
 - 只读；
 - 全门禁沿用：**375 passed / 92%**，fusion 70/70。
+
+### 14.58 风格监控接线（2026-11-01）
+
+新增只读：
+
+```text
+GET /api/mind/style-health
+```
+
+返回最近 24h self 消息的确定性指标：
+
+- n
+- avg_len
+- long_rate
+- explain_rate
+- roleplay_rate
+- multi_question_rate
+
+这是 C5 的接线；不改 prompt，不接 LLM judge。
+
+**验证**
+
+- Web 测试覆盖 endpoint；
+- `app.py` 保持 300 行；
+- 全门禁：**375 passed / 92%**，fusion 70/70。

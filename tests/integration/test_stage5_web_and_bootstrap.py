@@ -220,6 +220,8 @@ async def test_ac5_6_console_api_sessions_memory_persona_probe_and_logs(tmp_path
         tid = traits["traits"][0]["id"]
         evidence = (await client.get(f"/api/mind/traits/{tid}/evidence")).json()
         assert evidence["ok"] is True and evidence["evidence"] == []
+        style = (await client.get("/api/mind/style-health")).json()
+        assert style["ok"] is True and style["n"] >= 0
         health = (await client.get("/api/mind/trait-health")).json()
         assert health["ok"] is True
         assert health["status"] in {
