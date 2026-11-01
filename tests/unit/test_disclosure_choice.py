@@ -55,6 +55,12 @@ class _Log:
     async def log_disclosure(self, **kwargs: Any) -> None:
         self.calls.append(kwargs)
 
+    async def mark_known(
+        self, memory_kind: str, memory_id: int, person_id: str, state: str,
+        confidence: float = 1.0,
+    ) -> None:
+        self.calls.append({"known": (memory_kind, memory_id, person_id, state)})
+
 
 @pytest.mark.asyncio
 async def test_frame_gate_drops_a_possessive_keep_and_logs_it() -> None:
@@ -94,8 +100,9 @@ async def test_included_person_fact_is_logged_as_say() -> None:
         working=cast(Any, _Work({})), bonds={},
     )
     assert len(kept) == 1
-    assert log.calls[-1]["action"] == "say"
-    assert log.calls[-1]["reason"] == "persona"
+    assert log.calls[0]["action"] == "say"
+    assert log.calls[0]["reason"] == "persona"
+    assert log.calls[1]["known"] == ("semantic", 4, "L", "told_by_me")
 
 
 @pytest.mark.asyncio
@@ -110,4 +117,4 @@ async def test_granted_secret_passes_the_gate_and_the_choice() -> None:
         working=cast(Any, _Work({})), bonds={},
     )
     assert len(kept) == 1
-    assert log.calls[-1]["action"] == "say"
+    assert log.calls[0]["action"] == "say"

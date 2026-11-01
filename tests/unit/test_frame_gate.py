@@ -21,6 +21,12 @@ class _Log:
     async def has_grant(self, **kwargs: Any) -> bool:
         return False
 
+    async def mark_known(
+        self, memory_kind: str, memory_id: int, person_id: str, state: str,
+        confidence: float = 1.0,
+    ) -> None:
+        self.calls.append({"known": (memory_kind, memory_id, person_id, state)})
+
 
 def _fact(
     sensitivity: Literal["public", "group", "private", "secret"],
@@ -48,7 +54,7 @@ async def test_private_fact_passes_with_the_owner_and_secret_never() -> None:
     kept, _ = await gate_frame((_fact("private"),), (), frozenset({"L"}), "group:1",
                                cast(IDisclosureLog, log))
     assert len(kept) == 1
-    assert log.calls[-1]["action"] == "say", "the included person fact is logged"
+    assert log.calls[0]["action"] == "say", "the included person fact is logged"
 
     kept, _ = await gate_frame((_fact("secret"),), (), frozenset({"L"}), "group:1",
                                cast(IDisclosureLog, log))

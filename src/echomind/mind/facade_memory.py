@@ -125,6 +125,19 @@ async def _traits_and_rival(
     return traits, rival
 
 
+async def _record_known(
+    log: IDisclosureLog | None, fact: SemanticFact, audience: frozenset[str],
+    action: str,
+) -> None:
+    if log is None:
+        return
+    state = "hinted" if action == "hint" else "told_by_me"
+    for person in audience:
+        await log.mark_known(
+            "semantic", fact.fact_id, person, state=state,
+        )
+
+
 async def _handle_choice(
     choice: DisclosureChoice | None,
     fact: SemanticFact,
@@ -141,6 +154,7 @@ async def _handle_choice(
         return True
     await _log_disclosure(log, kind="semantic", memory_id=fact.fact_id, venue=venue,
                           audience=audience, action=choice.action, reason="persona")
+    await _record_known(log, fact, audience, choice.action)
     return False
 
 

@@ -2793,3 +2793,22 @@ whitelist: 有 grants 时只保留 grants；无 grants 时保持基础工具
 **验证**
 
 - 全门禁：**383 passed / 92%**，fusion 70/70。
+
+## 14.66 B5 披露归因接线（2026-11-01）
+
+`_handle_choice` 在 persona 选择 `say` / `hint` 后，对 audience 中每个人写入：
+
+```text
+memory_knowledge(memory_kind='semantic', memory_id, person_id, state)
+state = told_by_me | hinted
+```
+
+- `keep` 不写；
+- secret/private 硬门仍在前面；
+- `who_knows` 可查询谁听到/谁没听到；
+- 只有 log 实现 `mark_known` 时写入，测试 fake log 已补齐。
+
+**验证**
+
+- 私密 fact 说给 owner：knowledge 状态为 `told_by_me`；
+- 全门禁：**383 passed / 92%**，fusion 70/70。
