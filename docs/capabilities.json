@@ -398,6 +398,23 @@
       "acceptance_test": "tests/unit/test_trait_tool_grants.py::test_tool_grant_is_added_not_substituted",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "Stage41"
+    },
+    {
+      "id": "CAP-RESPONSE-ATTRIBUTION",
+      "claim": "记录她的消息之后的回应归因（mention/temporal）",
+      "docs": [
+        "docs/RESPONSE_ATTRIBUTION_MODEL.md",
+        "docs/plans/STAGE_42_CAPABILITY_COMPLETION_PLAN.md"
+      ],
+      "code": [
+        "src/echomind/mind/response_attribution.py",
+        "src/echomind/adapters/storage/interaction_outcome_repo.py"
+      ],
+      "status": "partial",
+      "gap": "shadow only：不接 trait/ranker/prompt；tier A quote 元数据当前不可用",
+      "acceptance_test": "tests/unit/test_response_attribution.py::test_mention_and_temporal_attribution",
+      "evidence_report": "eval/baselines/response-attribution-2026-11-01.json",
+      "target_release": "Stage42-P0"
     }
   ]
 }

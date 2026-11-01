@@ -5,7 +5,7 @@
 | 状态 | 数量 |
 |---|---|
 | ✅ implemented | 7 |
-| ⚠️ partial | 13 |
+| ⚠️ partial | 14 |
 | ❌ absent | 2 |
 | ⛔ contradicted | 3 |
 
@@ -36,3 +36,4 @@
 | CAP-TRAIT-EVIDENCE | 每条 active trait 有可审计 quote/context 证据 | ✅ implemented | tests/integration/test_trait_evidence_ledger.py::test_evidence_roundtrip_and_turn_dedupe |
 | CAP-TRAIT-MEMORY | active trait 的 support 能影响记忆检索排序 | ⚠️ partial | 手动 support 6 条已生效；自动 support 稀有，门控仅 BM25>0 |
 | CAP-ACTION-ELIGIBILITY | active trait 可追加工具授权并授予拒绝许可 | ⚠️ partial | 默认 additive；whitelist 模式已实现但未启用；refusal 只许可不强制 |
+| CAP-RESPONSE-ATTRIBUTION | 记录她的消息之后的回应归因（mention/temporal） | ⚠️ partial | shadow only：不接 trait/ranker/prompt；tier A quote 元数据当前不可用 |
