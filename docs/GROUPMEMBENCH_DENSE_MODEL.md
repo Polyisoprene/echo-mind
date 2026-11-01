@@ -81,3 +81,48 @@ dense bge-m3 + cosine
 - 全局 dense 不如 BM25；
 - 下一步只做 **BM25+dense 的 hybrid/RRF**，不能全局切 dense；
 - 该结果只作外部评测，不接 live。
+
+## 7. Hybrid/RRF 设计（下一步）
+
+BM25 与 dense 的互补：
+
+```text
+BM25:  knowledge/temporal 更好
+dense: term_ambiguity 更好
+```
+
+采用公开的 Reciprocal Rank Fusion：
+
+```text
+score(doc) = Σ 1/(k + rank_i(doc)), k=60
+```
+
+- 不引入手调特征权重；
+- 两个 ranker 等权；
+- top10；
+- 同一 Finance 214 题；
+- 判据：总 accuracy > BM25 40.7%，且 knowledge/temporal 不崩。
+
+这是“验证是否能同时保留两类优势”，不是默认上线。
+
+## 8. Hybrid/RRF 结果（2026-11-01）
+
+Finance 214 题：
+
+| 类型 | n | BM25 | dense | hybrid RRF |
+|---|---:|---:|---:|---:|
+| multi_hop | 48 | 0.479 | 0.458 | **0.521** |
+| knowledge_update | 32 | 0.406 | 0.188 | 0.406 |
+| temporal | 45 | 0.222 | 0.089 | 0.200 |
+| user_implicit | 15 | 0.400 | 0.333 | **0.467** |
+| term_ambiguity | 45 | 0.178 | **0.400** | 0.244 |
+| abstention | 29 | 0.931 | 0.862 | 0.793 |
+| **总体** | **214** | **0.407** | 0.374 | **0.411** |
+
+结论：
+
+- hybrid 只比 BM25 高 1 题（0.411 vs 0.407），不具实际意义；
+- term 只恢复到 0.244，未吸收 dense 的 0.400；
+- temporal/abstention 下降；
+- 不接 live；
+- 说明 term_ambiguity 需要 **term/entity normalization**，不是 RRF 融合。

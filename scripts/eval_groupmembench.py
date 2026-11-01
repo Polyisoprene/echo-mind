@@ -17,6 +17,7 @@ from echomind.adapters.storage.database import SqliteDatabase
 from echomind.core.config import load_config_from_json
 from echomind.domain.models import SemanticFact
 from echomind.mind.ranker_fusion import bm25_scores
+from echomind.mind.retrieval_fusion import RRF_K, rrf_fuse
 from echomind.mind.semantic_retrieval import cosine
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -106,15 +107,28 @@ async def _ask(
     embedding: OpenAiEmbeddingGateway | None = None,
 ) -> dict[str, Any]:
     query = f"{question.get('asking_user_id', '')} {question['question']}".strip()
-    if retriever == "dense" and vectors is not None and embedding is not None:
-        query_vec = (await embedding.embed((query,)))[0]
-        scores = {fact.fact_id: cosine(query_vec, vectors[fact.fact_id])
-                  for fact in facts}
-    else:
+    if retriever == "bm25":
         scores = bm25_scores(facts, query)
-    top = sorted(
-        facts, key=lambda fact: (-scores[fact.fact_id], fact.fact_id)
-    )[:topk]
+        top = sorted(
+            facts, key=lambda fact: (-scores[fact.fact_id], fact.fact_id)
+        )[:topk]
+    else:
+        if vectors is None or embedding is None:
+            raise ValueError("dense retrieval requires vectors and embedding")
+        query_vec = (await embedding.embed((query,)))[0]
+        dense = {fact.fact_id: cosine(query_vec, vectors[fact.fact_id])
+                 for fact in facts}
+        if retriever == "dense":
+            top = sorted(
+                facts, key=lambda fact: (-dense[fact.fact_id], fact.fact_id)
+            )[:topk]
+        else:
+            lexical = bm25_scores(facts, query)
+            lex_rank = tuple(sorted(lexical, key=lambda i: (-lexical[i], i)))
+            dense_rank = tuple(sorted(dense, key=lambda i: (-dense[i], i)))
+            fused = rrf_fuse((lex_rank, dense_rank), RRF_K)
+            by_id = {fact.fact_id: fact for fact in facts}
+            top = [by_id[i] for i in fused[:topk]]
     passages = "\n\n".join(
         f"[{i}] {_passage(messages[fact.fact_id])}"
         for i, fact in enumerate(top, 1)
@@ -140,7 +154,7 @@ async def main() -> int:
     parser.add_argument("--domain", default="Finance")
     parser.add_argument("--qtypes", default="")
     parser.add_argument("--limit", type=int, default=0)
-    parser.add_argument("--retriever", choices=("bm25", "dense"), default="bm25")
+    parser.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "groupmembench.json")
@@ -152,7 +166,10 @@ async def main() -> int:
     agent = (BENCH / "prompts" / "hipporag_agent_system.txt").read_text(encoding="utf-8")
     judge = (BENCH / "prompts" / "hipporag_judge_system.txt").read_text(encoding="utf-8")
     cfg = load_config_from_json(ROOT / "data" / "config.json")
-    embedding = OpenAiEmbeddingGateway(cfg.embedding) if args.retriever == "dense" else None
+    embedding = (
+        OpenAiEmbeddingGateway(cfg.embedding)
+        if args.retriever in ("dense", "hybrid") else None
+    )
     vectors = await _load_vectors(embedding, facts, args.batch) if embedding else None
     db = SqliteDatabase(ROOT / "reports" / "groupmembench_trace.db")
     await db.initialize()

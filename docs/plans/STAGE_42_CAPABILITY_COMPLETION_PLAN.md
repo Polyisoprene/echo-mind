@@ -254,7 +254,7 @@ P4 multi-venue / observation corpus
 |---|---|---|
 | R1 | Response attribution schema + shadow + 30 条核对 | ✅ 2026-11-01 shadow 已跑：1654 outcomes |
 | R2 | LongMemEval 500 retrieval + QA/abstention | 🟡 500 retrieval 完成（52.8%）；30 QA 10/30；oracle 24/25；top5 gold 13/30；500 hybrid=0.954/0.892；QA 417（CoT 431，top10 430）/500；内部 70/70 |
-| R3 | GroupMemBench Finance BM25 40.7/dense 37.4、Technology 39.9；CharacterEval 未做 | 数据/许可 |
+| R3 | GroupMemBench Finance BM25 40.7/dense 37.4/hybrid 41.1、Technology 39.9；CharacterEval 未做 | 数据/许可 |
 | R4 | dormant/ACT-R 研究；stance 暂缓（无对照标签） | 来源/数据 |
 | R5 | HyDE/RAPTOR/semantic gate shadow | R2 基线 |
 | R6 | 多 venue/observation corpus | P0 稳定 |
