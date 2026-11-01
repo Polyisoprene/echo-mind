@@ -2106,3 +2106,36 @@ scripts/manual_trait_support_wizard.py
 
 - 向导 dry 交互已跑通；
 - 全门禁沿用：**375 passed / 92%**，fusion 70/70。
+
+### 14.51 首批真实手动 support（2026-11-01）
+
+用户手动确认两条 support：
+
+| trait | memory | note |
+|---|---|---|
+| 45 看图习惯 | 361「回音嘴硬反」自组织图式 | 下文有回复 |
+| 66 发语音习惯 | 359「回音顺势吐」自组织图式 | 这个和上下文明显有关联 |
+
+结果：
+
+```text
+status=ok
+active_traits=2
+shadow_since_activation=51
+nonempty_shadow=51
+causal_links=2
+facts_with_turn=2
+```
+
+ranker 首次在生产中看到真实 support。
+
+说明：
+
+- 这是**人工确认**，不是自动 support；
+- 自动 support 仍只接受同回合 explicit fact；
+- 手动 link 带 note 审计；
+- 没有改人格/prompt 参数。
+
+**验证**
+
+- 全门禁沿用：**375 passed / 92%**，fusion 70/70。
