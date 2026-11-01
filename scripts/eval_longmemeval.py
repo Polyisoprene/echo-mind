@@ -57,7 +57,7 @@ async def _embed_all(
 
 
 def _facts(
-    question: dict[str, Any], granularity: str = "session"
+    question: dict[str, Any], granularity: str = "session", max_chars: int = 6000,
 ) -> tuple[tuple[SemanticFact, ...], set[int]]:
     facts: list[SemanticFact] = []
     targets: set[int] = set()
@@ -71,7 +71,7 @@ def _facts(
             text = "\n".join(f"{turn['role']}: {turn['content']}" for turn in turns)
             facts.append(SemanticFact(
                 fact_id=len(facts) + 1, chat_key=str(question["question_id"]),
-                subject=str(sid), fact_text=text[:6000],
+                subject=str(sid), fact_text=text[:max_chars] if max_chars else text,
                 event_time_ms=base, confidence=1.0,
             ))
             if sid in answer_sessions:

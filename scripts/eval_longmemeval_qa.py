@@ -49,8 +49,9 @@ def _fill_normal(
 
 async def _retrieve(
     question: dict[str, Any], gateway: OpenAiEmbeddingGateway, topk: int, batch: int,
+    max_chars: int,
 ) -> list[str]:
-    facts, _ = _facts(question, "session")
+    facts, _ = _facts(question, "session", max_chars)
     vectors = await _embed_all(gateway, [fact.fact_text for fact in facts], batch)
     query_vec = (await gateway.embed((str(question["question"]),)))[0]
     dense = {fact.fact_id: cosine(query_vec, vec)
@@ -59,22 +60,40 @@ async def _retrieve(
         facts, str(question["question"]), dense, {}, _ms(str(question["question_date"])),
         constraints=False,
     )
-    return [fact.fact_text for fact in ranked[:topk]]
+    return _dated(question, list(ranked[:topk]))
 
 
-def _oracle_memories(question: dict[str, Any]) -> list[str]:
+def _oracle_memories(question: dict[str, Any], max_chars: int) -> list[str]:
     """Gold-session context: isolates reading from retrieval."""
-    facts, _ = _facts(question, "session")
+    facts, _ = _facts(question, "session", max_chars)
     wanted = set(question["answer_session_ids"])
-    return [fact.fact_text for fact in facts if fact.subject in wanted]
+    return _dated(question, [fact for fact in facts if fact.subject in wanted])
 
 
-async def _answer(llm: FailoverLlmGateway, question: str, memories: list[str]) -> str:
-    context = "\n\n".join(f"[{index + 1}] {text}" for index, text in enumerate(memories))
-    response = await llm.complete([
-        {"role": "system", "content": "只使用给出的 memories 回答；证据不足就说 I don't know。"},
-        {"role": "user", "content": f"Memories:\n{context}\n\nQuestion: {question}\nAnswer:"},
-    ], temperature=0.0, max_tokens=512, thinking_off=True)
+def _dated(question: dict[str, Any], facts: list[Any]) -> list[str]:
+    dates = dict(zip(question["haystack_session_ids"], question["haystack_dates"], strict=True))
+    return [
+        f"Session Date: {dates.get(fact.subject, '')}\n{fact.fact_text}"
+        for fact in facts
+    ]
+
+
+async def _answer(
+    llm: FailoverLlmGateway, question: str, question_date: str, memories: list[str],
+) -> str:
+    context = "\n\n".join(
+        f"### Session {index + 1}:\n{text}" for index, text in enumerate(memories)
+    )
+    prompt = (
+        "I will give you several history chats between you and a user. "
+        "Please answer the question based on the relevant chat history.\n\n"
+        f"History Chats:\n\n{context}\n\n"
+        f"Current Date: {question_date}\nQuestion: {question}\nAnswer:"
+    )
+    response = await llm.complete(
+        [{"role": "user", "content": prompt}],
+        temperature=0.0, max_tokens=512, thinking_off=True,
+    )
     choices = response.get("choices", [])
     if not choices:
         return ""
@@ -119,7 +138,7 @@ def _judge_prompt(question: dict[str, Any], response: str) -> str:
         "If the response is equivalent to the correct answer or contains all the intermediate "
         "steps to get the correct answer, you should also answer yes. "
         f"{extra}\n\nQuestion: {{}}\n\nCorrect Answer: {{}}\n\n"
-        "Model Response: {{}}\n\n"
+        "Model Response: {}\n\n"
         "Is the model response correct? Answer yes or no only."
     ).format(question["question"], question["answer"], response)
 
@@ -144,6 +163,7 @@ async def main() -> int:
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--skip-judge", action="store_true")
     parser.add_argument("--oracle", action="store_true")
+    parser.add_argument("--max-context-chars", type=int, default=0)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval_qa.json")
     args = parser.parse_args()
     data = json.loads(args.data.read_text(encoding="utf-8"))
@@ -162,10 +182,14 @@ async def main() -> int:
             if args.oracle and abstention:
                 continue
             memories = (
-                _oracle_memories(question) if args.oracle
-                else await _retrieve(question, embedding, args.topk, args.batch)
+                _oracle_memories(question, args.max_context_chars) if args.oracle
+                else await _retrieve(
+                    question, embedding, args.topk, args.batch, args.max_context_chars
+                )
             )
-            answer = await _answer(llm, str(question["question"]), memories)
+            answer = await _answer(
+                llm, str(question["question"]), str(question["question_date"]), memories
+            )
             row = {"id": question["question_id"], "type": question["question_type"],
                    "abstention": abstention,
                    "answer": answer, "gold": question["answer"]}
@@ -189,7 +213,8 @@ async def main() -> int:
                 max(1, sum(1 for row in rows if row["abstention"])), 3),
         }
     report = {"benchmark": "LongMemEval-S", "n": len(rows), "topk": args.topk,
-              "oracle": args.oracle, "summary": summary, "rows": rows}
+              "oracle": args.oracle, "max_context_chars": args.max_context_chars,
+              "summary": summary, "rows": rows}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))

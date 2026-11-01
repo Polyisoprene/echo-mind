@@ -164,3 +164,57 @@ context = answer_session_ids 对应的 gold sessions
 - 不能把 30 题 end-to-end 的 11/30 全归因于检索；
 - 需要先检查 gold session 是否真的包含答案、上下文截断、生成 prompt，而不是继续调 ranker；
 - 这是 25 条小样本，不是 500 题结论。
+
+## 11. 修正后的正式结果（2026-11-01）
+
+### 11.1 两个 bug
+
+1. **生成 prompt 偏离官方**：之前强制“只使用 memories，证据不足就说 I don't know”，造成过度拒答；已改为官方 `History Chats + Current Date + Question + Answer`。
+2. **judge prompt 占位符 bug**：普通字符串里的 `Model Response: {{}}` 被 `.format` 当成转义字面量，judge 永远看到空响应 `{}`，因此大量正确答案被判 no。
+
+修复后加回归测试：
+
+`tests/unit/test_longmemeval_judge_prompt.py`
+
+### 11.2 Oracle reading（gold sessions，25 条可答）
+
+```text
+correct = 24/25 = 0.96
+```
+
+分类型：
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| knowledge-update | 5 | 1.0 |
+| multi-session | 4 | 0.75 |
+| single-session-assistant | 4 | 1.0 |
+| single-session-preference | 4 | 1.0 |
+| single-session-user | 4 | 1.0 |
+| temporal-reasoning | 4 | 1.0 |
+
+结论：**reading 本身基本可用；主要损失来自检索/上下文选择**，不是模型不会答。
+
+### 11.3 End-to-end 30 题（检索 + reading）
+
+| 类型 | n | accuracy |
+|---|---:|---:|
+| knowledge-update | 5 | 0.0 |
+| multi-session | 4 | 0.25 |
+| single-session-assistant | 4 | 0.5 |
+| single-session-preference | 4 | 0.25 |
+| single-session-user | 9 | 0.667 |
+| temporal-reasoning | 4 | 0.0 |
+| abstention | 5 | 1.0 |
+| **总** | **30** | **10/30 = 0.333** |
+
+解读：
+
+- 30 条中 5 条 abstention 过采样，总体不是 500 题估计；
+- oracle 24/25 vs end-to-end 10/30，差距主要来自检索没把证据 session 放进 top-5；
+- 下一步应针对 knowledge-update / temporal-reasoning 的检索，而不是改 judge。
+
+### 11.4 旧结果作废
+
+- 旧 `11/30`、`2/25` 是 judge 占位符 bug + 过度拒答的组合结果，**不再作为结论**；
+- 保留文件仅作 bug 审计记录。
