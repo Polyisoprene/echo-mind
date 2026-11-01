@@ -2778,21 +2778,25 @@ whitelist: 有 grants 时只保留 grants；无 grants 时保持基础工具
 | B7 | 当前规模不触发 ANN |
 | D3/D4 | 需要跨群/人工 bond 标签 |
 
-### 仍未闭环、但不属于“长期数据”的工程设计
+### 非长期数据的工程设计（已闭环）
 
-| ID | 缺口 | 性质 |
+| ID | 结果 | 证据 |
 |---|---|---|
-| B4 | claims `FACTS_V2` 读路径 | provenance/migration，需单独设计 |
-| B5 | 披露归因 M6/M7 | memory_knowledge 传播模型 |
-| B6 | 事实层时间边 | schema/迁移/读路径 |
-| G1 | 自动 candidate → active | 需要质量/晋升评审 |
-| G2 | narrative identity | 需要评估与隐私过滤 |
+| B4 | claims `FACTS_V2` 读路径 | 14.68：provenance + privacy filter |
+| B5 | 披露归因 M6/M7 | 14.66：told_by_me/hinted 写入 memory_knowledge |
+| B6 | 事实层时间边 | 14.67：valid_to_ms + 检索过滤 |
+| G1 | 自动 candidate → active | 14.70：结构评审自动晋升，dry-run 默认 |
+| G2 | narrative identity | 14.69 投影；14.71 A/B 无稳定收益，不接 prompt |
 
-这些不是“跑一阵数据就会自动完成”，而是仍需设计/迁移；不能靠本轮直接拍脑袋接 live。
+结论：
+
+- 这五项不再是“未做工程”；
+- G2 的 prompt 接入被 A/B 证据否决；
+- 其余仍未做的项都属于长期数据/外部集依赖。
 
 **验证**
 
-- 全门禁：**383 passed / 92%**，fusion 70/70。
+- 全门禁：**387 passed / 92%**，fusion 70/70。
 
 ## 14.66 B5 披露归因接线（2026-11-01）
 
