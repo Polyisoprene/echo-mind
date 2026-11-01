@@ -110,30 +110,51 @@ def _apply_constraints(
 ) -> tuple[SemanticFact, ...]:
     return _temporal_filter(facts, query) or _direction_filter(facts, query) or facts
 
+def _query_cues(query: str) -> tuple[bool, bool]:
+    temporal = _temporal_mode(query) is not None or any(
+        cue in query for cue in (*_NEW_TIME, *_OLD_TIME)
+    )
+    directional = any(cue in query for cue in _DIRECTION)
+    return temporal, directional
+
+
+def _score_maps(
+    facts: tuple[SemanticFact, ...], query: str,
+    dense: dict[int, float], relations: dict[int, float],
+    trait_scores: dict[int, float] | None,
+) -> dict[str, dict[int, float]]:
+    lexical = bm25_scores(facts, query)
+    return {
+        "lexical": lexical,
+        "recency": {f.fact_id: float(f.event_time_ms) for f in facts},
+        "order": {f.fact_id: order_score(query, f"{f.subject} {f.fact_text}") for f in facts},
+        "confidence": {f.fact_id: f.confidence for f in facts},
+        "lock": {f.fact_id: 1.0 if f.is_locked else 0.0 for f in facts},
+        "trait": {
+            fact_id: score for fact_id, score in (trait_scores or {}).items()
+            if lexical.get(fact_id, 0.0) > 0.0
+        },
+    }
+
+
 def _candidate_rankers(
     facts: tuple[SemanticFact, ...], query: str,
     dense: dict[int, float], relations: dict[int, float], now_ms: int,
     *, trait_scores: dict[int, float] | None = None,
+    force_recency: bool = False,
 ) -> dict[str, tuple[int, ...]]:
-    recency = {f.fact_id: float(f.event_time_ms) for f in facts}
-    order = {f.fact_id: order_score(query, f"{f.subject} {f.fact_text}") for f in facts}
-    confidence = {f.fact_id: f.confidence for f in facts}
-    lock = {f.fact_id: 1.0 if f.is_locked else 0.0 for f in facts}
-    lexical = bm25_scores(facts, query)
-    # Trait support may amplify a lexically grounded memory, never create one.
-    grounded_trait = {
-        fact_id: score for fact_id, score in (trait_scores or {}).items()
-        if lexical.get(fact_id, 0.0) > 0.0
-    }
+    scores = _score_maps(facts, query, dense, relations, trait_scores)
+    temporal_cue, directional_cue = _query_cues(query)
+    temporal_cue = temporal_cue or force_recency
     return {
-        "bm25": _rank(lexical),
+        "bm25": _rank(scores["lexical"]),
         "dense": _rank(dense),
-        "recency": _rank(recency),
-        "order": _rank(order),
+        "recency": _informative_rank(scores["recency"]) if temporal_cue else (),
+        "order": _informative_rank(scores["order"]) if directional_cue else (),
         "relations": _rank(relations),
-        "confidence": _informative_rank(confidence),
-        "lock": _informative_rank(lock),
-        "trait": _rank(grounded_trait),
+        "confidence": _informative_rank(scores["confidence"]),
+        "lock": _informative_rank(scores["lock"]),
+        "trait": _rank(scores["trait"]),
     }
 
 
@@ -141,7 +162,7 @@ def unified_rank(
     facts: tuple[SemanticFact, ...], query: str,
     dense: dict[int, float], relations: dict[int, float], now_ms: int,
     *, disabled: frozenset[str] = frozenset(), constraints: bool = True,
-    trait_scores: dict[int, float] | None = None,
+    trait_scores: dict[int, float] | None = None, force_recency: bool = False,
 ) -> tuple[SemanticFact, ...]:
     """Fuse independent signals as ranks; no hand-tuned feature weights."""
     if not facts:
@@ -151,7 +172,8 @@ def unified_rank(
     if not facts:
         return ()
     candidates = _candidate_rankers(
-        facts, query, dense, relations, now_ms, trait_scores=trait_scores
+        facts, query, dense, relations, now_ms, trait_scores=trait_scores,
+        force_recency=force_recency,
     )
     rankers = tuple(
         items for name, items in candidates.items() if name not in disabled

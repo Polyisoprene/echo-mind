@@ -159,3 +159,41 @@ LongMemEval 500 消融：
 **回归测试**：`test_constant_confidence_and_lock_do_not_dilute_bm25`。
 
 **全门禁：392 passed / 93%，fusion 70/70。**
+
+## 10. Conditional ranker（已验证，2026-11-01）
+
+在最小 confidence/lock 修复上，再加一个条件：
+
+```text
+recency 只在 query 含时间 cue 时进入 RRF
+order   只在 query 含方向 cue 时进入 RRF
+```
+
+依据：
+
+- 这两个 ranker 是中文时间/方向专用；
+- LongMemEval 英文 query 没有这些 cue，旧实现仍把它们当全局 ranker，造成稀释；
+- 不引入新权重，只按已有 `_temporal_mode/_DIRECTION` cue 决定是否启用。
+
+内部评测：
+
+```text
+paraphrase 10/10
+overall 70/70
+mrr 0.988
+```
+
+LongMemEval 500 BM25 消融：
+
+| 配置 | recall@5 | MRR |
+|---|---:|---:|
+| BM25 only | 0.940 | 0.868 |
+| + recency（无 cue，跳过） | 0.940 | 0.868 |
+| + order（无 cue，跳过） | 0.940 | 0.868 |
+| + all non-dense | 0.940 | 0.868 |
+
+结论：
+
+- conditional 后，非 dense 专用 ranker 不再污染英文 benchmark；
+- claim_rank 仍显式 `force_recency=True`，保持“近期优先”；
+- hybrid 500（dense 仍参与）在远端验证；结果未出前不宣称整体提升。

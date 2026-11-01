@@ -47,6 +47,7 @@ def claim_rank(views: list[ClaimView], query: str, limit: int, now_ms: int) -> l
     ranked = unified_rank(
         facts, query, {}, {}, now_ms,
         disabled=frozenset({"order", "relations", "lock"}),
+        force_recency=True,
     )
     seen: set[str] = set()
     lines: list[str] = []
