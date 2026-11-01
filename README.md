@@ -1,12 +1,15 @@
 # 🧠 EchoMind (`echomind`)
 
+> **当前状态（2026-11-01）**：真实 active trait **2 条**（看图、发语音），真实 evidence **16 条**，support link **6 条**，shadow **56 条非空**；active-only prompt；门禁 **387 passed / 92%**，fusion **70/70**。  
+> 详细现状与边界见 [docs/CURRENT_STATE_2026-11-01.md](docs/CURRENT_STATE_2026-11-01.md)；完整实现记录见 [Stage 41 计划](docs/plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md)。
+
 > **具备控制论「自组织核心（Order Parameter Core）」、「两级选矿智力放大器（Selection Amplifier）」、真实人性阴影面、时间感知与神经可塑性自学习的下一代认知型 QQ 智能体（Python 3.12+ / 六边形清洁架构）**
 
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](pyproject.toml)
 [![Pylint 10.00/10](https://img.shields.io/badge/Pylint-10.00%2F10-brightgreen)](scripts/qa_gate.sh)
 [![Mypy Strict](https://img.shields.io/badge/Mypy-100%25_Strict-blue)](scripts/qa_gate.sh)
 [![Radon CC](https://img.shields.io/badge/Radon_CC-Grade_A%2FB-success)](scripts/qa_gate.sh)
-[![Coverage >90%](https://img.shields.io/badge/Coverage-91%25-brightgreen)](scripts/qa_gate.sh)
+[![Coverage >90%](https://img.shields.io/badge/Coverage-92%25-brightgreen)](scripts/qa_gate.sh)
 
 ---
 
@@ -92,7 +95,7 @@ echo-mind/
 │       └── static/              # 零构建响应式控制台 (支持昼夜主题切换、流式会话、多服务商模型中心)
 ├── docs/                        # 架构契约、认知科学规范与 Stage 0 ~ Stage 18 全套工程设计文档
 ├── scripts/                     # qa_gate.sh (7道门禁) 与 service.sh (后台守护进程管理)
-└── tests/                       # 66 项架构边界测试、属性模糊测试 (Hypothesis)、单元与集成测试
+└── tests/                       # 387 项架构边界/属性/单元/集成测试
 ```
 
 ---
@@ -158,14 +161,15 @@ cp data/config.example.json data/config.json
 | **Gate 1C** | `pylint src/echomind` | 强制扁平化代码 `max-nested-blocks <= 2`，满分要求 | ✅ **10.00 / 10** |
 | **Gate 2** | `mypy --strict src tests` | 90 个源文件与测试文件 100% 严格静态类型与协议校验 | ✅ **0 Issues** |
 | **Gate 3** | `test_solid_boundaries.py` | 单文件 `<= 300` 行、单函数 `<= 40` 行、窄接口 `<= 5` 方法、零跨层依赖 | ✅ **All Passed** |
-| **Gate 4** | `pytest --cov=src/echomind` | 73 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **73 Passed (>90% Cov)** |
+| **Gate 4** | `pytest --cov=src/echomind` | 387 项单元/属性/集成测试全绿，整体代码覆盖率 `>= 90%` | ✅ **387 Passed / 92%** |
 
 ---
 
 ## 五、 架构规范与阶段演进文档索引
 
 - **顶层架构契约**：
-  - [docs/PROJECT_CHARTER_AND_PROGRESS.md](docs/PROJECT_CHARTER_AND_PROGRESS.md) —— 项目工程宪章与 Stage 0 ~ Stage 18 全景进度追踪总表
+  - [docs/CURRENT_STATE_2026-11-01.md](docs/CURRENT_STATE_2026-11-01.md) —— **当前真实状态单一入口**（active trait、support、评测、边界）
+  - [docs/PROJECT_CHARTER_AND_PROGRESS.md](docs/PROJECT_CHARTER_AND_PROGRESS.md) —— 项目工程宪章与阶段进度（含历史快照）
   - [docs/ARCHITECTURE_CONTRACTS.md](docs/ARCHITECTURE_CONTRACTS.md) —— 六边形架构、SOLID 边界与零嵌套代码规范
   - [docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md](docs/COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md) —— 认知核心、人性阴影面与神经可塑性自学习规范
 - **各阶段详细工程设计规范（`docs/plans/`）**：
@@ -191,3 +195,4 @@ cp data/config.example.json data/config.json
   - [Stage 26：全链路100%潜意识6维和弦驱动与全库硬编码词表清零规范](docs/plans/STAGE_26_PURE_SUBCONSCIOUS_CHORD_ENGINE_AND_ZERO_LEXICON_PLAN.md)
   - [Stage 27：括号内心独白外泄根治与出站思考块隔离规范](docs/plans/STAGE_27_INNER_MONOLOGUE_LEAK_AND_OUTBOUND_REASONING_ISOLATION_PLAN.md)
   - [Stage 28：A/B 双线修复建模、修复后评估与红绿交付契约](docs/plans/STAGE_28_AB_LANE_REMEDIATION_AND_EVALUATION_PLAN.md)
+  - [Stage 41：人格自演化闭环、证据/support/ranker 与当前状态](docs/plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md)
