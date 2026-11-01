@@ -34,7 +34,6 @@ from echomind.mind.bot_belief import rebuild as rebuild_beliefs, set_beliefs
 from echomind.mind.chord_gateway import apply_probe_if_allowed, chord_for
 from echomind.mind.circadian import record_gate_decision
 from echomind.mind.cybernetics import (
-    compute_cybernetic_core,
     render_cybernetic_core_directive,
 )
 from echomind.mind.dialogue_context import DialogueContext
@@ -65,6 +64,7 @@ from echomind.mind.subconscious_probe import (
     SubconsciousChordResult,
 )
 from echomind.mind.trait_shadow_service import TraitShadowService
+from echomind.mind.trait_tool_grants import compute_and_grant
 from echomind.mind.turn_mutations import satiate_snapshot, with_irritation_delta
 from echomind.mind.working_update import mutate_working_state
 
@@ -100,6 +100,7 @@ class CognitiveCoreFacade(FacadeAccessors):
         self._trait_shadow = trait_shadow
         self._included: dict[str, tuple[tuple[int, str, str], ...]] = {}
         self._turn_linker = turn_linker
+        self._trait_evidence = trait_evidence_store
         self._plasticity = NeuroplasticityEngine(
             working_store, persona_layers, evidence_store=trait_evidence_store,
             trait_links=trait_links,
@@ -206,7 +207,6 @@ class CognitiveCoreFacade(FacadeAccessors):
             return apply_turn_affect_and_drives(
                 s, triggers, rivals, unknowns, curiosity_rate=cur_rate,
                 bonds_map=bonds_map, params=params, chord=chord, profiles=profiles)
-
         if dry_run:
             updated = _apply(snap)
         else:
@@ -236,10 +236,10 @@ class CognitiveCoreFacade(FacadeAccessors):
         self._included[chat_key] = mem.included_facts(facts)
         cur_p = build_curiosity_prompts(tr, last_dec, snap.affect)
         unk = last_dec.detected_unknown_terms if last_dec else ()
-        cyber = compute_cybernetic_core(
-            scene, snap, tr, bm,
-            unknown_terms=unk, warnings=warns, chord_reagents=chord.reagents if chord else (),
-        )
+        cyber = await compute_and_grant(
+            scene, snap, tr, bm, unknown=unk, warnings=warns,
+            chord_reagents=chord.reagents if chord else (), working=self._working,
+            evidence_store=self._trait_evidence)
         rel_facts = await mem.select_facts(self._semantic, facts, " ".join(p.text for p in tr), 28)
         core_blk = render_mind_block(
             scene, snap, bonds=bm, facts=rel_facts, warnings=warns,

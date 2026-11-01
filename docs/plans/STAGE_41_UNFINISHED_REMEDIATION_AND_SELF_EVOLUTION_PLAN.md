@@ -2491,3 +2491,28 @@ Eligibility.permits_tool(tool)
 **验证**
 
 - 全门禁：**377 passed / 92%**，fusion 70/70。
+
+### 14.62 action eligibility 接 live（2026-11-01）
+
+采用**额外授权**语义，不是硬白名单：
+
+- 基础工具集保持不变；
+- active trait 的 tool evidence 只**追加**允许工具；
+- 空授权不改任何工具；
+- 当前 active 45/66 都是 assistant 证据，所以线上工具集不变。
+
+实现：
+
+- `mind/trait_tool_grants.py::apply_live_grants`；
+- `compute_and_grant` 在 facade 构建 frame 时调用；
+- `allow_refusal` 仍未接 live。
+
+测试：
+
+- tool grant 追加，不替换 send_message；
+- 无 tool 证据不变；
+- 无 evidence store no-op。
+
+**验证**
+
+- 全门禁：**380 passed / 92%**，fusion 70/70。
