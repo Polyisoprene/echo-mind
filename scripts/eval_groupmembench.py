@@ -174,10 +174,22 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--diagnose", action="store_true")
     parser.add_argument("--no-asker", action="store_true")
     parser.add_argument("--decision-only", action="store_true")
+    parser.add_argument("--change-only", action="store_true")
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "groupmembench.json")
     parser.add_argument("--raw", type=Path, default=ROOT / "reports" / "groupmembench.jsonl")
     return parser.parse_args()
+
+
+def _search_facts(
+    args: argparse.Namespace, facts: tuple[SemanticFact, ...],
+    decision_facts: tuple[SemanticFact, ...], changed_facts: tuple[SemanticFact, ...],
+) -> tuple[SemanticFact, ...]:
+    if args.change_only:
+        return changed_facts
+    if args.decision_only:
+        return decision_facts
+    return facts
 
 
 async def main() -> int:
@@ -190,6 +202,11 @@ async def main() -> int:
     decision_facts = tuple(
         fact for fact, message in zip(facts, messages, strict=True)
         if message.get("is_decision_point")
+    )
+    changed_facts = tuple(
+        fact for fact, message in zip(facts, messages, strict=True)
+        if message.get("decision_type") == "changed"
+        or message.get("decision_change_metadata")
     )
     qdir = BENCH / "questions" / args.domain
     agent = (BENCH / "prompts" / "hipporag_agent_system.txt").read_text(encoding="utf-8")
@@ -221,7 +238,7 @@ async def main() -> int:
                 lines = lines[:args.limit]
             for line in lines:
                 q = json.loads(line)
-                search_facts = decision_facts if args.decision_only else facts
+                search_facts = _search_facts(args, facts, decision_facts, changed_facts)
                 result = await _ask(
                     llm, question=q, messages=messages, facts=search_facts,
                     agent=agent, judge=judge, topk=args.topk,

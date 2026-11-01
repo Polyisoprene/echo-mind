@@ -115,7 +115,7 @@ BM25
 - 真实 20 query 审计：3 改善 / 77 不变 / 0 恶化；
 - 但存在“串/号/五抽”这类弱词法命中，不是语义级；
 - LongMemEval-S 500 题：session recall@5 **95.4%**，MRR **0.892**（conditional ranker 后；旧 hybrid 为 52.8%/0.375，BM25-only 为 94.0%/0.868）；
-- LongMemEval 500 QA：non-CoT **417/500 (83.4%)**，CoT **431/500 (86.2%)**，top10 **430/500 (86.0%)**（均为评测开关，不改 live prompt）；30 题样本 23/30；oracle reading 24/25。GroupMemBench metadata-aware：Finance **48.6%**、Technology **52.6%**、Healthcare **48.3%**、Manufacturing **57.8%**；knowledge_update：日期排序（0.469→0.375 / 0.472→0.444）、asker 消融（0.438）、decision-only（0.406/0.472）均无改善；CharacterEval 缺 CharacterRM。
+- LongMemEval 500 QA：non-CoT **417/500 (83.4%)**，CoT **431/500 (86.2%)**，top10 **430/500 (86.0%)**（均为评测开关，不改 live prompt）；30 题样本 23/30；oracle reading 24/25。GroupMemBench metadata-aware：Finance **48.6%**、Technology **52.6%**、Healthcare **48.3%**、Manufacturing **57.8%**；knowledge_update：change-only 候选集 **0.688/0.833**（原 0.469/0.472）；日期排序、asker、decision-only 均无效；CharacterEval 缺 CharacterRM。
 
 **定位：小规模、混合检索完整的工程原型；不是生产级记忆系统。**
 
