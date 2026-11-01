@@ -27,6 +27,7 @@ class ClaimView:
     audience: tuple[str, ...] = ()
     source_quote: str = ""
     source_turn_id: str = ""
+    slot_key: str = ""
 
 
 def _key(subject: str, value: str) -> str:

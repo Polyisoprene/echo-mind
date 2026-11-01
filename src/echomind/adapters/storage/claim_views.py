@@ -21,7 +21,7 @@ _SQL = (
     "SELECT c.subject, c.value, c.predicate, c.recorded_at_ms, "
     "SUM(e.weight), MAX(CASE WHEN e.source_type='operator' THEN 1 ELSE 0 END), "
     "c.chat_key, c.scope, c.source_person_id, c.owner_id, c.sensitivity, "
-    "c.audience_json, c.source_quote, c.source_turn_id "
+    "c.audience_json, c.source_quote, c.source_turn_id, c.slot_key "
     "FROM claims c JOIN claim_evidence e ON e.claim_id=c.id "
     "WHERE c.chat_key IN (?, 'global') AND c.status='asserted' "
     "AND c.valid_from_ms <= ? AND (c.valid_to_ms IS NULL OR c.valid_to_ms > ?) "
@@ -49,6 +49,7 @@ async def load_claim_views(
             ),
             audience=tuple(str(p) for p in json.loads(str(r[11] or "[]")) if p),
             source_quote=str(r[12]), source_turn_id=str(r[13]),
+            slot_key=str(r[14]),
         )
         for r in rows
     ]

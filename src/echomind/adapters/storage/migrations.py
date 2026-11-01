@@ -51,7 +51,8 @@ CREATE TABLE IF NOT EXISTS claims (
     sensitivity TEXT NOT NULL DEFAULT 'group',
     audience_json TEXT NOT NULL DEFAULT '[]',
     source_quote TEXT NOT NULL DEFAULT '',
-    source_turn_id TEXT NOT NULL DEFAULT ''
+    source_turn_id TEXT NOT NULL DEFAULT '',
+    slot_key TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_claims_lookup ON claims (chat_key, subject, predicate, status);
 CREATE TABLE IF NOT EXISTS claim_evidence (
@@ -88,6 +89,7 @@ async def ensure_claim_tables(conn: Any) -> None:
         ("audience_json", "TEXT NOT NULL DEFAULT '[]'"),
         ("source_quote", "TEXT NOT NULL DEFAULT ''"),
         ("source_turn_id", "TEXT NOT NULL DEFAULT ''"),
+        ("slot_key", "TEXT NOT NULL DEFAULT ''"),
     ):
         await _ensure_column(conn, "claims", column, ddl)
 

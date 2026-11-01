@@ -225,3 +225,20 @@ revision_count > 1 = 21
 - 在当前 schema 下，不写、不自动 supersede、不改读路径。
 
 这是 schema/product 决策，不是再写一个补丁脚本能解决的。
+
+## 11. slot_key schema 占位（2026-11-01）
+
+新增：
+
+```text
+claims.slot_key TEXT NOT NULL DEFAULT ''
+```
+
+- 默认空；
+- 不回填；
+- 不参与 supersede 判断；
+- 不从 value 猜；
+- 只是为未来 `person:L|preference:food` 这类稳定槽键留位置。
+
+当前 `plan_supersedes` 仍按 subject/predicate，只在 shadow 中使用；生产 apply 仍被安全闸拒绝。  
+下一步必须由产品/数据模型定义 slot 命名与回填规则，不能自动生成。
