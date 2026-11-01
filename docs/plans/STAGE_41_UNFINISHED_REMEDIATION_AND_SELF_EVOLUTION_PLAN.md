@@ -4,6 +4,8 @@
 > 范围：以 `docs/PERSONA_MEMORY_AUDIT_AND_ROADMAP.md`、`docs/PERSONA_SELF_EVOLUTION_MODEL.md`、`docs/MASTER_BACKLOG.md` 为基线，覆盖人格、记忆、评测、身份/关系四条未完成线。
 > 原则：先建模再写代码；新数值必须有论文/数据/账本依据；不做代码或 prompt 的自修改。
 
+> **2026-11-01 更新**：第 0 节是历史基线；最新真实状态与代码审计盲区见文末 14.64。
+
 ---
 
 ## 0. 当前基线（2026-11-01）
@@ -2541,3 +2543,201 @@ allow_refusal（许可）
 **验证**
 
 - 全门禁：**381 passed / 92%**，fusion 70/70。
+
+## 14.64 代码审计发现的文档盲区（2026-11-01）
+
+以下是代码与真实数据中已经存在、但原计划没有单列的缺口。它们不是“没写代码”，而是“机制不完整或没有进入 live”。
+
+### 当前真实基线
+
+```text
+active_traits=2          # 45 看图、66 语音
+legacy_traits=0          # 7 条已删除并审计
+shadow=53                # 全部非空 [45,66]
+support_links=6          # 4 个不同 memory
+facts_with_turn=2
+tests=381
+prompt=active-only
+```
+
+### G1 自动 candidate → active 晋升（未做）
+
+现状：
+
+- `TraitTextGenerator` 能生成带 `situation/behavior/result` 的候选；
+- 但只在离线脚本中使用；
+- live `adapt_from_outcome` 直接写 evidence/lifecycle，不生成 candidate，也没有自动晋升器。
+
+缺口：
+
+```text
+真实证据
+  → candidate（未接 live）
+  → 自动 review（未接）
+  → active（仍靠 evidence 直达或人工）
+```
+
+未做原因：
+
+- candidate 质量评估和晋升边界尚未冻结；
+- 自动晋升会直接改变 prompt，必须先有回放/A-B 证据。
+
+### G2 narrative identity 实时闭环（未做）
+
+现状：
+
+- 模型文档有 narrative identity 设计；
+- 代码没有“把 active trait + 关键情节合成第一人称叙事”的 live 服务；
+- prompt 里没有叙事层。
+
+缺口：
+
+- 叙事生成、去重、冲突消解、隐私过滤均未实现。
+
+未做原因：
+
+- 没有评估集判断叙事是否改善一致性；
+- 容易把 trait 文本复述成空话。
+
+### G3 自动 support 的语义级门控（部分）
+
+现状：
+
+- 自动 support 只接受同回合 explicit fact；
+- ranker 只保留 `BM25 > 0` 的 memory；
+- 真实 20 query 审计仍有“串/号/五抽”这类弱相关命中。
+
+缺口：
+
+```text
+BM25 > 0
+  ≠ 语义相关
+```
+
+未做原因：
+
+- 没有可靠的 query-memory 相关性标签；
+- 加阈值或 LLM judge 会引入新的未校准参数；
+- 当前用手动 support 作为可控路径。
+
+### G4 action eligibility 硬限制模式（未做）
+
+现状：
+
+- 已接 live 的是“额外授权”：
+  - tool evidence 只追加工具；
+  - taboo 只授予拒绝许可；
+- 不是硬白名单，不会移除基础工具；
+- 也不会强制拒绝。
+
+缺口：
+
+- “白名单=硬性限制”的语义没有实现；
+- “taboo=强制拒绝”没有实现。
+
+未做原因：
+
+- 当前 active trait 都是 assistant 证据；
+- 硬限制会误伤正常回复；
+- 需要先有 active taboo/tool trait 的真实样本。
+
+### G5 dormant / 长期不活跃策略（未做）
+
+现状：
+
+- `dormant` 只是状态类型；
+- lifecycle 只写 candidate/active/retired/legacy；
+- 没有“长期无强化 → dormant”的规则。
+
+缺口：
+
+- 没有有来源的不活跃时间窗口；
+- 没有 dormant 的恢复/退场路径。
+
+未做原因：
+
+- 不愿拍脑袋定“多少天算 dormant”；
+- 需要论文或真实数据支持。
+
+### G6 support ranker 的强度/校准（未做）
+
+现状：
+
+- support 仍是 presence-only（1.0）；
+- RRF 等权；
+- 没有置信度/证据强度权重。
+
+缺口：
+
+- 无法区分“强支持”和“弱支持”；
+- 多条 support 会等权叠加。
+
+未做原因：
+
+- 没有可靠的相关性/强度标签；
+- 任何权重都会是新的未校准参数。
+
+### G7 风格监控只报告，不拦截（设计如此，未闭环）
+
+现状：
+
+- `/api/mind/style-health` 可看 24h 指标；
+- 没有在生成后做拦截、重写或告警。
+
+缺口：
+
+- 风格漂移没有自动响应；
+- 没有“超过目标就回退 prompt”的机制。
+
+未做原因：
+
+- 之前 trait 改风格的 A/B 没有稳定收益；
+- 强行拦截可能损伤内容质量。
+
+### G8 外部 benchmark 适配器（未做）
+
+现状：
+
+- LongMemEval 只跑了 100 题 retrieval；
+- GroupMemBench / CharacterEval 未接；
+- 没有数据许可/字段映射/评分脚本。
+
+缺口：
+
+- 没有外部有效性证据；
+- 没有多人群聊/中文人格的横向比较。
+
+未做原因：
+
+- 数据集、许可、适配协议尚未落地；
+- 不应在没有数据时写“已接”。
+
+### G9 文档自身的历史漂移（已发现）
+
+第 0 节仍写着：
+
+- 9 条 trait；
+- 321 tests；
+- trait→记忆未接；
+- style 未跟踪。
+
+这些已被 14.1–14.63 推翻。  
+本节的“当前真实基线”应作为后续入口；第 0 节保留为历史快照。
+
+### 优先级
+
+| 优先级 | 缺口 | 进入条件 |
+|---|---|---|
+| P1 | G5 dormant 策略 | 找到有来源的不活跃窗口 |
+| P1 | G6 support 强度 | 有相关性/强度标签 |
+| P2 | G4 硬限制 | 有 active taboo/tool 真实样本 |
+| P2 | G1 自动晋升 | 候选质量评审 + 回放通过 |
+| P3 | G2 narrative | 评估集 + 隐私过滤 |
+| P3 | G3 语义门控 | 相关性标签或校准过的 judge |
+| P3 | G8 外部 benchmark | 数据/许可/适配 |
+| P4 | G7 风格拦截 | 有稳定风格收益证据 |
+
+**验证**
+
+- 文档更新，无代码变更；
+- 全门禁基线：**381 passed / 92%**，fusion 70/70。
