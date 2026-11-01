@@ -1,0 +1,19 @@
+{
+  "temp_db": "/tmp/tmpa86zgb7y/replay.db",
+  "trait_id": 66,
+  "fact_id": 362,
+  "fact_source_turn": "controlled-replay",
+  "support_links": [
+    {
+      "memory_id": 362,
+      "relation": "supports"
+    }
+  ],
+  "ranker_scores": {
+    "362": 1.0
+  },
+  "shadow_trait_ids": [
+    45,
+    66
+  ]
+}

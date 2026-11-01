@@ -2007,3 +2007,41 @@ facts_with_turn=0
 
 - 停掉 live 服务后跑全门禁，避免测试与生产进程同时写 config；
 - **373 passed / 92%**，fusion 70/70。
+
+### 14.48 受控 replay 验证 support（2026-11-01）
+
+用户允许受控 replay 后：
+
+- 将生产库只读备份到临时库；
+- 使用真实 active traits；
+- 构造一个 `feiyu_say` 回合；
+- 同回合提供 `SubconsciousChordResult(explicit_fact=...)`；
+- 跑真实 `on_turn_completed`。
+
+结果（临时库，无生产写入）：
+
+```json
+{
+  "trait_id": 66,
+  "fact_id": 362,
+  "fact_source_turn": "controlled-replay",
+  "support_links": [{"memory_id": 362, "relation": "supports"}],
+  "ranker_scores": {"362": 1.0},
+  "shadow_trait_ids": [45, 66]
+}
+```
+
+证明：
+
+- 同回合 explicit fact 会带 `source_turn_id`；
+- trait evidence 与 fact 建 support；
+- ranker 看见 support；
+- shadow 同时记录 active traits。
+
+同时新增正式集成测试 `test_same_turn_explicit_fact_becomes_support`。
+
+**验证**
+
+- 全门禁：**374 passed / 92%**，fusion 70/70；
+- 生产库未写入 replay；
+- 生产 support 仍为 0，因为真实同回合样本还没出现。
