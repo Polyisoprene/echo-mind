@@ -13,6 +13,7 @@
 | [`plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md`](plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md) | Stage 41 全景：证据账本、生命周期、trait→记忆、support、ranker、闭环矩阵 |
 | [`plans/STAGE_42_CAPABILITY_COMPLETION_PLAN.md`](plans/STAGE_42_CAPABILITY_COMPLETION_PLAN.md) | Stage 42：可做未做能力的全局建模、外部依据、P0–P4 与验收 |
 | [`RESPONSE_ATTRIBUTION_MODEL.md`](RESPONSE_ATTRIBUTION_MODEL.md) | P0 回应归因：tier B/C、30min 工程窗口、shadow 结果 |
+| [`LONGMEMEVAL_QA_MODEL.md`](LONGMEMEVAL_QA_MODEL.md) | P1 LongMemEval QA/abstention：官方 judge prompt、远端运行、30 题样本 |
 | [`PERSONA_STATUS_CN.md`](PERSONA_STATUS_CN.md) | 人格模型现在到哪一步（人话版） |
 | [`PERSONA_SELF_EVOLUTION_STATUS_CN.md`](PERSONA_SELF_EVOLUTION_STATUS_CN.md) | 自演化现在到哪一步 |
 | [`MASTER_BACKLOG.md`](MASTER_BACKLOG.md) | 单一事实源：硬编码、待办、变更日志 |
