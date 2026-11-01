@@ -1928,3 +1928,31 @@ included 的其他 fact
 - 不为了指标放宽 support 条件。
 
 下一步优先查 `subconscious_probe.explicit_fact` 的真实产出率，而不是继续改 ranker。
+
+### 14.45 explicit fact 产出率（2026-11-01）
+
+用固定文本模式 `“提到：”` 统计真实 explicit fact：
+
+```json
+{
+  "total": 13,
+  "last_24h": 7,
+  "last_1h": 1,
+  "with_source_turn": 0,
+  "latest_ms": 1793501443885
+}
+```
+
+结论：
+
+- explicit fact 不是 0，最近 24h 有 7 条；
+- `source_turn_id` 为 0 是因为这些 fact 多产生于字段上线前；
+- support 稀缺不是因为 linker 坏了，而是因为“同回合同时有 trait 行为 + explicit fact”很罕见；
+- 不放宽 support 条件。
+
+新增 `scripts/explicit_fact_stats.py` 持续统计。
+
+**验证**
+
+- 参数账本 59 compliant；
+- 全门禁沿用：**373 passed / 92%**，fusion 70/70。
