@@ -48,3 +48,20 @@ change-only：只检索 decision_type=changed / 有 decision_change_metadata 的
 - 只对 knowledge_update 有效，不能全题型；
 - 这是 benchmark/typed routing，不是 live 通用检索；
 - 不接 live：live 没有 `decision_type=changed` 字段。
+
+## 5. 四域复测（2026-11-01）
+
+| 域 | n | 原 KU | change-only |
+|---|---:|---:|---:|
+| Finance | 32 | 0.469 | **0.688** |
+| Technology | 36 | 0.472 | **0.833** |
+| Healthcare | 17 | 0.235 | **0.765** |
+| Manufacturing | 22 | 0.273 | **0.727** |
+
+结论：
+
+- change-only 四域全部显著提升；
+- 这不是 Finance 偶然，而是“KU 目标=变更决策”的稳定规律；
+- 但 live 没有 `decision_type=changed`，不能直接搬；
+- 这是 benchmark-specific 的候选集条件，不是通用检索算法；
+- 下一步若要迁移，需在 live 建立“同主题更新检测/claim revision”等价信号。
