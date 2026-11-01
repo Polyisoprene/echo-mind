@@ -2741,3 +2741,55 @@ BM25 > 0
 
 - 文档更新，无代码变更；
 - 全门禁基线：**381 passed / 92%**，fusion 70/70。
+
+## 14.65 任务闭环矩阵（2026-11-01）
+
+### 已闭环（本轮或已存在）
+
+| ID | 证据 |
+|---|---|
+| D1 | 固定自称已通过 `bot_naming()` 渲染；`grep -R` 仅剩 naming 默认值与 enricher 否定词 |
+| D2 | `bond_recorder.record_turn_events` 已在 `live_client` 回合完成处调用 |
+| G4 | `apply_live_grants(mode="additive"|"whitelist")`；默认 additive，whitelist 有测试 |
+| C5 | `/api/mind/style-health` 已接线 |
+| A1/A3/A5/A6 | evidence、active-only、trait ranker、资格许可均 live |
+| A7/C1 | 30/90 天 replay 基线已存在 |
+| G9 | 文档历史基线已标注 |
+
+G4 语义：
+
+```text
+additive: 基础工具 + 允许工具（默认）
+whitelist: 有 grants 时只保留 grants；无 grants 时保持基础工具
+```
+
+### 明确排除：需要长期数据/外部集
+
+| ID | 原因 |
+|---|---|
+| G3 | 需要 query-memory 相关性标签或校准 judge |
+| G5 | 需要 sourced dormant 时间窗 |
+| G6 | 需要 support 强度/相关性标签 |
+| G7 | 需要稳定风格收益证据 |
+| G8/C2/C3/C4 | 需要数据集、许可、远端资源 |
+| A8/A9/A10 | 需要构念效度/冻结标签/外部人格集 |
+| B1 | 需要确认 ACT-R `d` 的公开来源；无来源不实现 |
+| B2/B3 | 需要 shadow/A-B 与层级聚类数据 |
+| B7 | 当前规模不触发 ANN |
+| D3/D4 | 需要跨群/人工 bond 标签 |
+
+### 仍未闭环、但不属于“长期数据”的工程设计
+
+| ID | 缺口 | 性质 |
+|---|---|---|
+| B4 | claims `FACTS_V2` 读路径 | provenance/migration，需单独设计 |
+| B5 | 披露归因 M6/M7 | memory_knowledge 传播模型 |
+| B6 | 事实层时间边 | schema/迁移/读路径 |
+| G1 | 自动 candidate → active | 需要质量/晋升评审 |
+| G2 | narrative identity | 需要评估与隐私过滤 |
+
+这些不是“跑一阵数据就会自动完成”，而是仍需设计/迁移；不能靠本轮直接拍脑袋接 live。
+
+**验证**
+
+- 全门禁：**383 passed / 92%**，fusion 70/70。

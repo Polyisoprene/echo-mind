@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from echomind.domain.models import (
     CyberneticCoreState,
     Percept,
@@ -13,10 +15,13 @@ from echomind.domain.trait_evidence_ports import ITraitEvidenceStore
 from echomind.mind.cybernetics import compute_cybernetic_core
 from echomind.mind.trait_action_eligibility import evaluate_eligibility
 
+EligibilityMode = Literal["additive", "whitelist"]
+
 
 async def apply_live_grants(
     core: CyberneticCoreState, working: IWorkingStateStore,
     evidence_store: ITraitEvidenceStore | None,
+    *, mode: EligibilityMode = "additive",
 ) -> CyberneticCoreState:
     if evidence_store is None:
         return core
@@ -31,7 +36,10 @@ async def apply_live_grants(
     eligible = evaluate_eligibility(active, rows)
     if not eligible.allowed_tools and not eligible.allow_refusal:
         return core
-    tools = tuple(dict.fromkeys((*core.selected_tools, *sorted(eligible.allowed_tools))))
+    if mode == "whitelist" and eligible.allowed_tools:
+        tools = tuple(sorted(eligible.allowed_tools))
+    else:
+        tools = tuple(dict.fromkeys((*core.selected_tools, *sorted(eligible.allowed_tools))))
     return core.model_copy(update={
         "selected_tools": tools, "allow_refusal": eligible.allow_refusal,
     })

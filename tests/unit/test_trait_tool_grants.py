@@ -80,3 +80,26 @@ async def test_active_taboo_grants_refusal_permission_without_tools() -> None:
     )
     assert result.allow_refusal is True
     assert result.selected_tools == ("send_message",)
+
+
+@pytest.mark.asyncio
+async def test_whitelist_mode_replaces_base_tools_only_when_grants_exist() -> None:
+    core = CyberneticCoreState(selected_tools=("send_message",))
+    trait = PersonaTrait(trait_id=1, trait_text="会看图", status="active")
+    result = await apply_live_grants(
+        core, cast(IWorkingStateStore, _Working((trait,))),
+        cast(ITraitEvidenceStore, _Evidence({1: (_evidence(1, "look_at_image"),)})),
+        mode="whitelist",
+    )
+    assert result.selected_tools == ("look_at_image",)
+
+
+@pytest.mark.asyncio
+async def test_whitelist_mode_keeps_base_tools_when_no_grants() -> None:
+    core = CyberneticCoreState(selected_tools=("send_message",))
+    trait = PersonaTrait(trait_id=1, trait_text="只说话", status="active")
+    result = await apply_live_grants(
+        core, cast(IWorkingStateStore, _Working((trait,))),
+        cast(ITraitEvidenceStore, _Evidence({})), mode="whitelist",
+    )
+    assert result.selected_tools == ("send_message",)
