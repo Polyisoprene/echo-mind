@@ -1,5 +1,7 @@
 # 让人格真正自演化：设计
 
+> **2026-11-01 状态**：本文是设计与目标；当前实现、真实数字和边界见 [CURRENT_STATE_2026-11-01.md](CURRENT_STATE_2026-11-01.md) 与 [PERSONA_SELF_EVOLUTION_STATUS_CN.md](PERSONA_SELF_EVOLUTION_STATUS_CN.md)。文中“现状”若与这两个文件冲突，以它们为准。
+
 > 论文依据与形式化模型：见 [PERSONA_SELF_EVOLUTION_MODEL.md](PERSONA_SELF_EVOLUTION_MODEL.md)。本文是工程落地版；模型版给出 Beta 证据更新、状态分布、情境签名和评测设计。
 
 > 目标不是“参数会动”，而是：
