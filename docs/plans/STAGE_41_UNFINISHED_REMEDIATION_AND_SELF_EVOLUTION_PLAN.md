@@ -2880,3 +2880,42 @@ load claims
 - secret 被过滤；
 - `FACTS_V2=on` 不再 fail-fast；
 - 全门禁：**385 passed / 92%**，fusion 70/70。
+
+## 14.69 G2 叙事投影（只读层，2026-11-01）
+
+新增：
+
+```text
+mind/narrative_identity.py
+scripts/trait_narrative.py
+```
+
+规则：
+
+- 只取 `status='active'`；
+- 每条 trait 只取最近 1 条真实 evidence；
+- 输出第一人称叙事投影；
+- **不进入 prompt**；
+- 没有 evidence 的 trait 不生成叙事。
+
+真实输出：
+
+```json
+{
+  "trait_ids": [66, 45],
+  "lines": [
+    "情绪上来或被哄开心时会直接发语音亲口说给对方听（有次：...）",
+    "看到群友发图或视频会凑上去仔细看细节（有次：...）"
+  ]
+}
+```
+
+边界：
+
+- 这是叙事投影，不是 live prompt；
+- 接入 prompt 之前仍需评估/隐私过滤；
+- 没有编造 trait 或 quote。
+
+**验证**
+
+- 全门禁：**386 passed / 92%**，fusion 70/70。
