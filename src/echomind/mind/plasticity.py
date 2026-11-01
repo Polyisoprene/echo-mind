@@ -139,8 +139,6 @@ class NeuroplasticityEngine:
         memory_ids: tuple[int, ...] = (),
     ) -> tuple[PlasticParamSpec, ...]:
         deltas = compute_param_deltas(outcome)
-        if not deltas:
-            return ()
         now_ms = now_ms or int(time.time() * 1000)
         current = await self._store.get_plastic_params()
         updated: list[PlasticParamSpec] = []

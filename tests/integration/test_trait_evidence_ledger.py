@@ -161,3 +161,21 @@ async def test_included_memory_ids_create_causal_links(tmp_path: Path) -> None:
     second = outcome.model_copy(update={"session_id": "turn-causal-2"})
     await engine._learn_traits(second, memory_ids=(7,))  # noqa: SLF001
     assert len(await links.list_links(trait.trait_id)) == 1
+
+
+async def test_trait_learning_runs_without_param_deltas(tmp_path: Path) -> None:
+    db = SqliteDatabase(tmp_path / "no_deltas.db")
+    await db.initialize()
+    store = SqliteWorkingStateStore(db)
+    evidence = SqliteTraitEvidenceStore(db)
+    engine = NeuroplasticityEngine(store, evidence_store=evidence)
+    outcome = TurnOutcome(
+        session_id="neutral-turn", chat_key="g", triggers=(),
+        sent_texts=("记一下这个小习惯",), tools_used=("feiyu_say",),
+        social_reward=0.0,
+    )
+    await engine.adapt_from_outcome(outcome)
+    traits = await store.sync_persona_traits()
+    target = next(item for item in traits if "发语音" in item.trait_text)
+    rows = await evidence.list_trait_evidence(target.trait_id)
+    assert len(rows) == 1 and rows[0].turn_id == "neutral-turn"

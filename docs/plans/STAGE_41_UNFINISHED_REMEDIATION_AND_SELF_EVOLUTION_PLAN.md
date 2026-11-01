@@ -1805,3 +1805,36 @@ GET /api/mind/traits/{trait_id}/evidence
 - Web 测试断言新 endpoint；
 - `create_web_app` 保持 ≤40 行；
 - 全门禁：**371 passed / 92%**，fusion 70/70。
+
+### 14.41 真实流量暴露的 trait 学习根因（2026-11-01）
+
+真实 8 小时后：
+
+```text
+shadow_since_activation=10
+nonempty_shadow=10
+causal_links=0
+status=no_causal_links
+```
+
+shadow 正常记录 `[45,66]`，但 evidence/link 一直不写。
+
+根因：
+
+- `adapt_from_outcome` 在 `compute_param_deltas(outcome)` 为空时直接 `return ()`；
+- 中性回合、只发消息/语音的回合参数增量为空，于是 `_learn_traits` 完全不执行；
+- 所以 trait 不会被真实回合强化，也不会有 memory_ids/link。
+
+修复：
+
+- 删除早退；
+- 参数增量循环照常执行（可能为空）；
+- `_learn_traits` 每回合都执行。
+
+新增测试：
+
+- 中性 outcome（无 triggers、social_reward=0）也会写 trait evidence。
+
+**验证**
+
+- 全门禁：**372 passed / 92%**，fusion 70/70。
