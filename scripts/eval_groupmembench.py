@@ -47,10 +47,18 @@ def _load(domain: str) -> tuple[list[dict[str, Any]], dict[str, list[dict[str, A
     return messages, channels
 
 
-def _fact(message: dict[str, Any], index: int) -> SemanticFact:
+def _fact(message: dict[str, Any], index: int, *, metadata: bool = False) -> SemanticFact:
+    text = str(message.get("content", ""))
+    if metadata:
+        text = " ".join([
+            text,
+            str(message.get("author", "")), str(message.get("role", "")),
+            str(message.get("_channel", "")), str(message.get("phase_name", "")),
+            str(message.get("topic", "")),
+        ])
     return SemanticFact(
         fact_id=index, chat_key=str(message.get("_channel", "")),
-        subject="", fact_text=str(message.get("content", "")),
+        subject="", fact_text=text,
         event_time_ms=_ts(str(message.get("timestamp", ""))),
     )
 
@@ -156,12 +164,16 @@ async def main() -> int:
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
     parser.add_argument("--batch", type=int, default=4)
+    parser.add_argument("--index-metadata", action="store_true")
     parser.add_argument("--topk", type=int, default=10)
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "groupmembench.json")
     parser.add_argument("--raw", type=Path, default=ROOT / "reports" / "groupmembench.jsonl")
     args = parser.parse_args()
     messages, _ = _load(args.domain)
-    facts = tuple(_fact(message, index) for index, message in enumerate(messages))
+    facts = tuple(
+        _fact(message, index, metadata=args.index_metadata)
+        for index, message in enumerate(messages)
+    )
     qdir = BENCH / "questions" / args.domain
     agent = (BENCH / "prompts" / "hipporag_agent_system.txt").read_text(encoding="utf-8")
     judge = (BENCH / "prompts" / "hipporag_judge_system.txt").read_text(encoding="utf-8")

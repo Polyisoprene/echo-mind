@@ -97,3 +97,38 @@ Technology 0.399
 - term_ambiguity 在 Technology 只有 0.070，是最稳定的系统性短板；
 - abstention 1.000，说明拒答不是问题；
 - 下一步应做 term/entity normalization 或 dense retrieval，而不是继续加 top-k。
+
+## 7. metadata-aware BM25（2026-11-01）
+
+把消息的 `author/role/_channel/phase_name/topic` 加入检索文本，passage 仍保留原格式：
+
+| 域 | n | content-only BM25 | metadata-aware |
+|---|---:|---:|---:|
+| Finance | 214 | 0.407 | **0.486** |
+| Technology | 213 | 0.399 | **0.526** |
+
+Finance 分题型：
+
+| 类型 | n | content BM25 | metadata |
+|---|---:|---:|---:|
+| multi_hop | 48 | 0.479 | **0.583** |
+| knowledge_update | 32 | 0.406 | **0.469** |
+| temporal | 45 | 0.222 | **0.333** |
+| user_implicit | 15 | 0.400 | **0.667** |
+| term_ambiguity | 45 | 0.178 | **0.267** |
+| abstention | 29 | 0.931 | 0.828 |
+
+Technology 分题型：
+
+```text
+multi_hop 0.659, knowledge 0.472, temporal 0.324,
+user_implicit 0.571, term 0.326, abstention 0.929
+```
+
+结论：
+
+- metadata 索引在 Finance +7.9pp、Technology +12.7pp；
+- term_ambiguity 从 0.07–0.18 提升到 0.27–0.33，但仍低于 dense 0.40；
+- Finance abstention 有下降，不能忽略；
+- 这是**外部适配条件**：GroupMemBench 提供 role/channel/phase/topic metadata，官方 content-only BM25 不使用这些；因此不能与官方排名直接比较；
+- 不接 live；live 记忆没有这些字段，不能假装等价。
