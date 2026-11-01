@@ -1,0 +1,277 @@
+{
+  "benchmark": "LongMemEval-S",
+  "n": 30,
+  "topk": 5,
+  "summary": {
+    "knowledge-update": {
+      "n": 5,
+      "accuracy": 0.0
+    },
+    "multi-session": {
+      "n": 4,
+      "accuracy": 0.0
+    },
+    "single-session-assistant": {
+      "n": 4,
+      "accuracy": 0.0
+    },
+    "single-session-preference": {
+      "n": 4,
+      "accuracy": 0.25
+    },
+    "single-session-user": {
+      "n": 9,
+      "accuracy": 0.556
+    },
+    "temporal-reasoning": {
+      "n": 4,
+      "accuracy": 0.0
+    },
+    "abstention": {
+      "n": 5,
+      "accuracy": 1.0
+    }
+  },
+  "rows": [
+    {
+      "id": "0862e8bf_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "answer": "I don't know.",
+      "gold": "You did not mention this information. You mentioned your cat Luna but not your hamster.",
+      "correct": true
+    },
+    {
+      "id": "15745da0_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "answer": "I don't know.",
+      "gold": "You did not mention this information. You mentioned collecting vintage cameras but not vintage films.",
+      "correct": true
+    },
+    {
+      "id": "bc8a6e93_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "answer": "I don't know. The memories mention a lemon blueberry cake made for your niece's birthday party, not an uncle's birthday party.",
+      "gold": "You did not mention this information. You mentioned baking for your niece's birthday party but not your uncle's",
+      "correct": true
+    },
+    {
+      "id": "19b5f2b3_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "answer": "I don't know.",
+      "gold": "You did not mention this information. You mentioned staying in Japan, but not in Korea.",
+      "correct": true
+    },
+    {
+      "id": "29f2956b_abs",
+      "type": "single-session-user",
+      "abstention": true,
+      "answer": "Based on the provided memories, I don't have any information about how much time you dedicate to practicing violin every day. The memories mention guitar practice (30 minutes daily) and reading (55 pages a day), but nothing about violin.",
+      "gold": "You did not mention this information. You mentioned practing guitar everyday, but not violin.",
+      "correct": true
+    },
+    {
+      "id": "6a1eabeb",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "Your personal best time in the charity 5K run was 27:12.",
+      "gold": "25 minutes and 50 seconds (or 25:50)",
+      "correct": false
+    },
+    {
+      "id": "0a995998",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "I don't know. The memories mention picking up a navy blue blazer from dry cleaning, but there is no information about how many items of clothing you need to pick up or return from a store.",
+      "gold": 3,
+      "correct": false
+    },
+    {
+      "id": "7161e7e2",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "Admon was assigned the 8 am – 4 pm shift on Sunday (Week 1).",
+      "gold": "Admon was assigned to the 8 am - 4 pm (Day Shift) on Sundays.",
+      "correct": false
+    },
+    {
+      "id": "8a2466db",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "Based on the memories provided, I can share that Adobe Premiere Pro's official documentation and tutorials, YouTube channels like Premiere Bro, Video Copilot, and Adobe Creative Cloud, online courses on platforms like Udemy, LinkedIn Learning, and Skillshare, and Premiere Pro communities and forums such as Reddit's r/premierepro and Adobe's Premiere Pro forum were recommended as resources for learning more about video editing.",
+      "gold": "The user would prefer responses that suggest resources specifically tailored to Adobe Premiere Pro, especially those that delve into its advanced settings. They might not prefer general video editing resources or resources related to other video editing software.",
+      "correct": true
+    },
+    {
+      "id": "e47becba",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "I don't know. The memories provided don't mention your degree or graduation.",
+      "gold": "Business Administration",
+      "correct": false
+    },
+    {
+      "id": "gpt4_59149c77",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": "7 days. 8 days (including the last day) is also acceptable.",
+      "correct": false
+    },
+    {
+      "id": "6aeb4375",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": "four",
+      "correct": false
+    },
+    {
+      "id": "6d550036",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "I don't know. The memories mention that you led the data analysis team for a Marketing Research class project, and that you're planning a Nigeria rural water project and working on a customer data clustering project, but they don't provide a total count of projects you have led or are currently leading.",
+      "gold": 2,
+      "correct": false
+    },
+    {
+      "id": "c4f10528",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "I don't know. The provided memories don't mention any restaurant in Cihampelas Walk or a Nasi Goreng recommendation in Bandung.",
+      "gold": "Miss Bee Providore",
+      "correct": false
+    },
+    {
+      "id": "06878be2",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "I don't know. The memories don't include information about your current photography setup or related accessories.",
+      "gold": "The user would prefer suggestions of Sony-compatible accessories or high-quality photography gear that can enhance their photography experience. They may not prefer suggestions of other brands' equipment or low-quality gear.",
+      "correct": false
+    },
+    {
+      "id": "118b2229",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "I don't know. The memories only mention that you listen to audiobooks during your daily commute, but they don't say how long that commute is.",
+      "gold": "45 minutes each way",
+      "correct": false
+    },
+    {
+      "id": "gpt4_f49edff3",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "Based on the memories provided, I don't know the order of those three events. The memories mention helping a friend prepare a nursery and shopping at Buy Buy Baby, but there is no information about helping a cousin pick out baby shower items or ordering a customized phone case.",
+      "gold": "First, I helped my friend prepare the nursery, then I helped my cousin pick out stuff for her baby shower, and lastly, I ordered a customized phone case for my friend's birthday.",
+      "correct": false
+    },
+    {
+      "id": "830ce83f",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "I don't know. The memories mention Rachel Smith at a book reading event, but they don't say where Rachel moved to after a recent relocation.",
+      "gold": "the suburbs",
+      "correct": false
+    },
+    {
+      "id": "gpt4_59c863d7",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "Based on the memories, I know you got a 1/72 scale B-29 bomber kit and a 1/24 scale '69 Camaro at a model show last weekend. That's two kits mentioned, but the memories don't say how many model kits you've worked on or bought overall, so I don't know the total.",
+      "gold": "I have worked on or bought five model kits. The scales of the models are: Revell F-15 Eagle (scale not mentioned), Tamiya 1/48 scale Spitfire Mk.V, 1/16 scale German Tiger I tank, 1/72 scale B-29 bomber, and 1/24 scale '69 Camaro.",
+      "correct": false
+    },
+    {
+      "id": "89527b6b",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "I don't know. I don't have any information in the provided memories about a children's book on dinosaurs or the color of a Plesiosaur's scaly body.",
+      "gold": "The Plesiosaur had a blue scaly body.",
+      "correct": false
+    },
+    {
+      "id": "75832dbd",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "I don't know. The memories don't contain information about recent publications or conferences; they cover book recommendations, ukuleles, meal prep, and unrelated topics.",
+      "gold": "The user would prefer suggestions related to recent research papers, articles, or conferences that focus on artificial intelligence in healthcare, particularly those that involve deep learning for medical image analysis. They would not be interested in general AI topics or those unrelated to healthcare.",
+      "correct": false
+    },
+    {
+      "id": "51a45a95",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "Based on the memories provided, I don't know where you redeemed a $5 coupon on coffee creamer.",
+      "gold": "Target",
+      "correct": false
+    },
+    {
+      "id": "71017276",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": 4,
+      "correct": false
+    },
+    {
+      "id": "852ce960",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "$350,000.",
+      "gold": "$400,000",
+      "correct": false
+    },
+    {
+      "id": "b5ef892d",
+      "type": "multi-session",
+      "abstention": false,
+      "answer": "I don't know. The memories provided don't include any information about camping trips you took in the United States this year.",
+      "gold": "8 days.",
+      "correct": false
+    },
+    {
+      "id": "e9327a54",
+      "type": "single-session-assistant",
+      "abstention": false,
+      "answer": "The Sugar Factory — it's at Icon Park and known for giant milkshakes and other sweet treats.",
+      "gold": "The Sugar Factory at Icon Park.",
+      "correct": false
+    },
+    {
+      "id": "0edc2aef",
+      "type": "single-session-preference",
+      "abstention": false,
+      "answer": "I don't know. The memories provided don't contain any information about hotels or Miami.",
+      "gold": "The user would prefer suggestions of hotels in Miami that offer great views, possibly of the ocean or the city skyline, and have unique features such as a rooftop pool or a hot tub on the balcony. They may not prefer suggestions of basic or budget hotels without these features.",
+      "correct": false
+    },
+    {
+      "id": "58bf7951",
+      "type": "single-session-user",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": "The Glass Menagerie",
+      "correct": false
+    },
+    {
+      "id": "b46e15ed",
+      "type": "temporal-reasoning",
+      "abstention": false,
+      "answer": "I don't know.",
+      "gold": 2,
+      "correct": false
+    },
+    {
+      "id": "945e3d21",
+      "type": "knowledge-update",
+      "abstention": false,
+      "answer": "I don't know. The memories don't include any information about how often you attend yoga classes. Memory [1] only mentions that you've been doing yoga twice a week to relax and focus, not specifically for anxiety.",
+      "gold": "Three times a week.",
+      "correct": false
+    }
+  ]
+}
