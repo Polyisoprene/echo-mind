@@ -2082,3 +2082,27 @@ python scripts/manual_trait_support.py \
 
 - 手动 support 升级 context + note + ranker 得分测试；
 - 全门禁：**375 passed / 92%**，fusion 70/70。
+
+### 14.50 手动 support 向导（2026-11-01）
+
+用户不需要记 ID，新增交互式：
+
+```text
+scripts/manual_trait_support_wizard.py
+```
+
+流程：
+
+1. 列出 active trait，选编号；
+2. 列出该 trait 最近 evidence，选编号；
+3. 列出最近 semantic memory，选编号；
+4. 写一句理由；
+5. 输入 `y` 才写，其他取消。
+
+默认不写；只写一条 `supports` link，`note=理由`。  
+不自动扩展、不批量、不改 trait 状态。
+
+**验证**
+
+- 向导 dry 交互已跑通；
+- 全门禁沿用：**375 passed / 92%**，fusion 70/70。
