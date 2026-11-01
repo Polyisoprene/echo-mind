@@ -172,6 +172,16 @@ async def _judge(llm: FailoverLlmGateway, question: dict[str, Any], response: st
     return "yes" in text.lower()
 
 
+def _select_questions(data: list[dict[str, Any]], args: argparse.Namespace) -> list[dict[str, Any]]:
+    if args.full_order:
+        all_selected = _select(data, len(data))
+        return all_selected[args.offset:args.offset + args.limit]
+    if args.offset == 0 and args.limit < len(data):
+        return _select(data, args.limit)
+    all_selected = _select(data, len(data))
+    return all_selected[args.offset:args.offset + args.limit]
+
+
 async def _process_question(
     question: dict[str, Any], args: argparse.Namespace,
     embedding: OpenAiEmbeddingGateway, llm: FailoverLlmGateway,
@@ -252,14 +262,7 @@ async def main() -> int:
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval_qa.json")
     args = parser.parse_args()
     data = json.loads(args.data.read_text(encoding="utf-8"))
-    if args.full_order:
-        all_selected = _select(data, len(data))
-        selected = all_selected[args.offset:args.offset + args.limit]
-    elif args.offset == 0 and args.limit < len(data):
-        selected = _select(data, args.limit)
-    else:
-        all_selected = _select(data, len(data))
-        selected = all_selected[args.offset:args.offset + args.limit]
+    selected = _select_questions(data, args)
     cfg = load_config_from_json(ROOT / "data" / "config.json")
     embedding = OpenAiEmbeddingGateway(cfg.embedding)
     trace_db = SqliteDatabase(ROOT / "reports" / "longmemeval_qa_trace.db")
