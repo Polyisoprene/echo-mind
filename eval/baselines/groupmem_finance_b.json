@@ -1,0 +1,18 @@
+{
+  "abstention": {
+    "n": 29,
+    "accuracy": 0.931
+  },
+  "term_ambiguity": {
+    "n": 45,
+    "accuracy": 0.178
+  },
+  "user_implicit": {
+    "n": 15,
+    "accuracy": 0.4
+  },
+  "overall": {
+    "n": 89,
+    "accuracy": 0.461
+  }
+}
