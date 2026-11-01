@@ -90,3 +90,27 @@ live 没有等价字段；如果按 `subject+predicate` 最新一条硬选，会
 > live 目前没有可靠的更新检测语义；“同 subject/predicate 多条 asserted”是数据缺陷，不是可直接利用的信号。
 
 在写入侧 supersede 模型通过验证前，change-only 只能作为 GroupMemBench 适配，不能迁移到 live。
+
+## 6. Shadow supersede 结果（2026-11-01）
+
+只读扫描生产 claims：
+
+```text
+asserted groups = 195
+supersede candidates = 7
+```
+
+候选例：
+
+- 冰色-瑟瑟馍馍：新值仍含“（此前曾是：…）”；
+- 最近B站冲浪：新视频与 5–8 条旧视频同 subject/value；
+- 不要象挑战：新格斗建议与 5 条旧建议同 subject/value。
+
+观察：
+
+- 事实文本本身已携带“此前曾是”历史；
+- shadow 只规划，不写库；
+- 若直接 supersede，会把“旧值”从当前 claims 读路径移除，但文本历史仍在；
+- 7/195 个组，比例小；
+- 下一步应只对 `value` 且 audience 相同的组做小流量，不动 mentioned；
+- 不接 live。

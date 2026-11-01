@@ -27,3 +27,12 @@ def test_judge_prompt_contains_response() -> None:
     prompt = module._judge_prompt(question, "Business Administration")
     assert "Model Response: Business Administration" in prompt
     assert "Model Response: {}" not in prompt
+
+
+def test_cot_prompt_uses_official_step_by_step() -> None:
+    module = _module()
+    plain = module._answer_prompt("q", "d", ["history"], False)
+    cot = module._answer_prompt("q", "d", ["history"], True)
+    assert "step by step" not in plain.lower()
+    assert "step by step" in cot.lower()
+    assert "Answer (step by step):" in cot
