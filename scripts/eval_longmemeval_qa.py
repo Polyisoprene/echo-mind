@@ -247,7 +247,7 @@ async def main() -> int:
     rows: list[dict[str, Any]] = []
     if args.resume and args.out.is_file():
         rows = list(json.loads(args.out.read_text(encoding="utf-8")).get("rows", []))
-    done = {str(row["id"]) for row in rows}
+    done = {str(row["id"]) for row in rows if not row.get("error")}
     try:
         for question in selected:
             if str(question["question_id"]) in done:
