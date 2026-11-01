@@ -2919,3 +2919,39 @@ scripts/trait_narrative.py
 **验证**
 
 - 全门禁：**386 passed / 92%**，fusion 70/70。
+
+## 14.70 G1 自动晋升器（2026-11-01）
+
+新增：
+
+```text
+adapters/storage/trait_auto_promotion.py
+scripts/auto_promote_trait_candidates.py
+```
+
+规则：
+
+- 只处理 `status='candidate'`；
+- 复用 `review_candidate`：
+  - 至少 2 个独立支持 context；
+  - 至少 1 条非 tool 的行为/话语 quote；
+- 默认 dry-run；
+- `--apply` 才：
+  - candidate → promoted；
+  - persona trait 文本替换为 candidate text；
+  - status → active；
+  - `promoted_by='auto-structural'` 审计。
+
+当前生产：
+
+```text
+pending candidates = 0
+```
+
+所以没有自动写入。  
+没有新增数值阈值；复用的是已有结构评审。
+
+**验证**
+
+- 两个 context 的 candidate 可晋升，且 trait 文本/状态更新；
+- 全门禁：**387 passed / 92%**，fusion 70/70。
