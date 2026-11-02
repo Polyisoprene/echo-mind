@@ -1060,3 +1060,27 @@ status=open, created_at_ms, updated_at_ms
 ```
 
 门禁：431 passed / 93%。
+
+
+## 30. BDI 栈收口（2026-11-02）
+
+claim：短期挂念栈（BDI 意图，≤3 槽）。
+
+现有证据：
+
+- `commitment.py` 从明确承诺句产生 intention；
+- `intention_stack.py` 去重/上限 3/TTL 过滤；
+- `IntentionItem` 有 summary/source/target/created/expires；
+- `frame_renderer` 把未完成承诺写入 prompt；
+- `intention_events` 持久化并 closed；
+- 真实私聊→群发送成功。
+
+因此把 `CAP-INTENTION-STACK` 校准为 implemented。
+
+仍未做：
+
+- TTL 数值校准；
+- 模糊“群里”自动解析目标；
+- 发送 message_id 回填 event。
+
+这些是增强项，不否定“栈已实现”。
