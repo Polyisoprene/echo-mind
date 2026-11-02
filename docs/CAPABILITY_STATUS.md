@@ -4,8 +4,8 @@
 
 | 状态 | 数量 |
 |---|---|
-| ✅ implemented | 7 |
-| ⚠️ partial | 17 |
+| ✅ implemented | 8 |
+| ⚠️ partial | 16 |
 | ❌ absent | 0 |
 | ⛔ contradicted | 3 |
 
@@ -30,7 +30,7 @@
 | CAP-ZERO-LEXICON | 全链路零硬编码词表（Stage 26） | ⛔ contradicted | mind/ 下仍有 40+ 处中文词表与正则（角色冒充词、停用词、机器人关键词） |
 | CAP-OPERATOR-NO-PRIVILEGE | operator 只有纠错权限，无情感特权 | ⛔ contradicted | update_sender_bond 对 is_owner 直接置 trust=1.0；且 _check_reactance 对 w_care>=0.85 免除逆反 |
 | CAP-MEMORY-EVIDENCE | 事实带来源与时效，冲突可复核 | ⚠️ partial | claims provenance/隐私/valid_to 已有；slot_key 功能已实现但默认 off；精调后 dry-run 3/222，生产仅回填 1 条 gender；supersede 默认 off，FACTS_V2 默认 off |
-| CAP-AUTH-WRITE | 控制台写操作强制 token 并留审计 | ⚠️ partial | auth_key 为空时全放行；/api/session/token 把 token 发给 loopback（隧道下等同公开） |
+| CAP-AUTH-WRITE | 控制台写操作强制 token 并留审计 | ✅ implemented | tests/unit/test_web_write_auth.py::test_writes_require_the_token_even_on_loopback |
 | CAP-PERSONA-EFFECTIVE | 7 维人格在生成输出上可被盲评识别 | ⚠️ partial | 历史人工总体 3.24/5；当前 24h 风格约 28 字、长句率 14%；无新人工盲评，真人感未达标 |
 | CAP-ACTIVE-ONLY-PROMPT | prompt 只渲染 active trait | ✅ implemented | tests/unit/test_personality_invariants.py::test_only_active_traits_reach_the_prompt |
 | CAP-TRAIT-EVIDENCE | 每条 active trait 有可审计 quote/context 证据 | ✅ implemented | tests/integration/test_trait_evidence_ledger.py::test_evidence_roundtrip_and_turn_dedupe |

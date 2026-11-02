@@ -314,10 +314,10 @@
       "code": [
         "src/echomind/web/app.py"
       ],
-      "status": "partial",
-      "gap": "auth_key 为空时全放行；/api/session/token 把 token 发给 loopback（隧道下等同公开）",
+      "status": "implemented",
+      "gap": "",
       "acceptance_test": "tests/unit/test_web_write_auth.py::test_writes_require_the_token_even_on_loopback",
-      "evidence_report": "",
+      "evidence_report": "tests/unit/test_web_write_auth.py, tests/unit/test_token_loopback.py",
       "target_release": "E2"
     },
     {

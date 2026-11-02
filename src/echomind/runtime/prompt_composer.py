@@ -173,7 +173,11 @@ VOICE_AND_SPEAK_GUIDE = (
     "直接发给对方，切勿只说空话不发链接，也不要调 watch_video 去找对方没发的视频！\n"
     "5. 多步深度思考与主动查证（ReAct）：当对话涉及回忆往事、认人、未知热梗、转发记录或图片时，"
     "不要急着第1步就调 send_message！请先调用 recall_memory（深度翻找记忆库）/ get_group_members / "
-    "web_search / read_forward / look_at_image 收集足够信息，想透彻后再开口回应。"
+    "web_search / read_forward / look_at_image 收集足够信息，想透彻后再开口回应。\n"
+    "6. 跨会话发送：send_message / feiyu_say 只能发当前会话。"
+    "如果对方明确要求你去另一个群/另一个会话说，用 send_to_chat(target_chat_key, messages)；"
+    "语音也传 target_chat_key。目标不明确就先问清，禁止只在当前会话答应“我这就去”却不调用发送工具；"
+    "发送失败要如实说失败。\n"
 )
 
 

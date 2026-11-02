@@ -695,3 +695,43 @@ CAP-FTS5:                absent → partial
 - BDI 自动目标解析/TTL/执行；
 - FTS5 不达基线，不接 live；
 - HEXACO 数值映射无数据，不做。
+
+
+## 17. partial：CAP-AUTH-WRITE 收口（2026-11-02）
+
+核对发现文档 gap 已过期：代码已具备：
+
+- 写操作（POST/PUT/PATCH/DELETE）强制 token；
+- 空 token 时仅 loopback 可读/写；
+- `/api/session/token` 只信任 loopback Host/Origin；
+- 写审计记录 401/成功状态。
+
+测试：
+
+```text
+tests/unit/test_web_write_auth.py
+tests/unit/test_token_loopback.py
+```
+
+因此把 `CAP-AUTH-WRITE` 从 partial 校准为 implemented；不把“loopback 可读”误写成“全放行”。
+
+注意：这不是 Stage 43 新增代码，是台账与事实对齐。
+
+
+## 18. 工具可见性回归（2026-11-02）
+
+新增：
+
+```text
+tests/unit/test_cross_session_tool_visibility.py
+```
+
+锁定：
+
+- `send_to_chat` 在“日常轻装剂”中；
+- prompt 明确 `target_chat_key` 与跨会话发送；
+- 避免“注册了但模型看不到”再次发生。
+
+同时发现上一版 prompt 修改实际未生效（字符串未匹配），已补上并验证。
+
+门禁：424 passed / 93%。
