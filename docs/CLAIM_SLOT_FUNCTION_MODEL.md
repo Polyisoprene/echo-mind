@@ -12,11 +12,6 @@ person.qq              QQ 号（唯一）
 person.gender          性别
 person.birthday        生日
 person.age             年龄
-person.owner           主人/归属
-person.city            常住城市
-person.job             职业
-person.species         物种
-person.relationship    恋爱/关系状态
 ```
 
 多值（永不自动覆盖）：
@@ -255,3 +250,40 @@ person.group_id  不存在
 ```text
 test_group_id_is_not_a_slot
 ```
+
+
+## 15. 最终单值边界（2026-11-02）
+
+用户确认后删除：
+
+```text
+person.owner
+person.city
+person.job
+person.species
+person.relationship
+```
+
+原因：
+
+- owner 是角色/归属设定，不是群友身份；
+- city/job/relationship 可变且敏感；
+- species 不是所有群友都有；
+- 只保留稳定、唯一、可安全覆盖的：
+
+```text
+person.qq
+person.gender
+person.birthday
+person.age
+```
+
+最新 dry-run：
+
+```text
+scanned = 222
+matched = 2
+person.gender = 2
+```
+
+生产仍未 apply，slot_key 全空，superseded=0。

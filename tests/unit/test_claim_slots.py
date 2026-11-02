@@ -34,12 +34,12 @@ def test_meta_subjects_are_never_person_slots() -> None:
     assert infer_slot("本群真实群主", "群主的外号是馍馍") == ""
 
 
-def test_gender_is_not_owner() -> None:
+def test_non_identity_traits_are_not_slots() -> None:
     assert infer_slot("L", "主人是男的") == ""
-
-
-def test_computer_city_is_not_a_city() -> None:
-    assert infer_slot("菲菲", "住在主人电脑里的鲸鱼娘") == ""
+    assert not is_single("person.owner")
+    assert not is_single("person.job")
+    assert not is_single("person.relationship")
+    assert not is_single("person.city")
 
 
 def test_group_id_is_not_a_slot() -> None:
