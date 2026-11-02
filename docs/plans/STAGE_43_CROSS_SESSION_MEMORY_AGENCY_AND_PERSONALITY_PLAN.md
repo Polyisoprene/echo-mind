@@ -945,3 +945,33 @@ BDI 承诺 → prompt 可见 → 模型选择 send_to_chat → 目标群真实�
 ```
 
 这条链路已经真实跑通，不再是 fake OneBot 或口头答应。
+
+
+## 25. 语音跨会话端到端（2026-11-02）
+
+新增：
+
+```text
+test_agent_calls_feiyu_say_with_target_group
+```
+
+脚本化 LLM 在私聊调用：
+
+```text
+feiyu_say(text="去群里说", target_chat_key="group:10002002")
+```
+
+fake OneBot 记录到：
+
+```text
+send_group_msg group_id=10002002
+```
+
+验证：
+
+- `feiyu_say` 的 target 不只是参数存在；
+- agent runner 会把它传到目标群；
+- 不会误发当前私聊；
+- 未使用真实 QQ 语音/群。
+
+门禁：429 passed / 93%。

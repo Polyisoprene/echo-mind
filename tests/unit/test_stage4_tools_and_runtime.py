@@ -444,3 +444,40 @@ async def test_agent_calls_send_to_chat_with_explicit_target(tmp_path: Path) -> 
         api == "send_group_msg" and str(data.get("group_id")) == "10002002"
         for api, data in caller.sent
     )
+
+
+async def test_agent_calls_feiyu_say_with_target_group(tmp_path: Path) -> None:
+    db = SqliteDatabase(tmp_path / "cross-voice.db")
+    await db.initialize()
+    mem_repo = SqliteMemoryRepository(db)
+    work_repo = SqliteWorkingStateStore(db)
+    await work_repo.ensure_default_params()
+    caller = FakeOneBotCaller()
+    bridge = OneBotV11Bridge(caller, db)
+    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, operator_ids=("10001001",))
+    reg = ExtensionRegistry()
+    reg.register_tool(FeiyuSayTool(FakeVoiceBackend(), bridge))
+    llm = ScriptedLlmGateway([
+        {"choices": [{"message": {"role": "assistant", "content": "", "tool_calls": [{
+            "id": "v1", "function": {
+                "name": "feiyu_say",
+                "arguments": '{"text":"去群里说","target_chat_key":"group:10002002"}',
+            },
+        }]}}]},
+        {"choices": [{"message": {"role": "assistant", "content": "语音发群里了"}}]},
+    ])
+    runner = AgentSessionRunner(
+        facade, llm, reg, bridge,
+        PromptComposer(role_text="回音", bot_name="回音"),
+    )
+    trigger = Percept(
+        chat_key="private:10001001", scene="private", message_id="2",
+        timestamp_ms=1793160000000, sender_id="10001001", sender_name="L",
+        text="去群里发语音", is_called_by_name=True,
+    )
+    outcome = await runner.run_turn("private:10001001", (), (trigger,))
+    assert "feiyu_say" in outcome.tools_used
+    assert any(
+        api == "send_group_msg" and str(data.get("group_id")) == "10002002"
+        for api, data in caller.sent
+    )
