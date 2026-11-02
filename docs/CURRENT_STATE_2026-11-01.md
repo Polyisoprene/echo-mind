@@ -1,4 +1,4 @@
-# EchoMind 当前真实状态（2026-11-01）
+# EchoMind 当前真实状态（2026-11-01，更新于 2026-11-02）
 
 > 本文件是当前状态的**单一入口**。历史规划、旧阶段文档中的数字如果与本文件冲突，以本文件为准。
 >
@@ -6,11 +6,51 @@
 
 ---
 
+## 0. 2026-11-02 运行态更新
+
+### 本地 embedding
+
+- 远端 8010 已停；本地 8010 已启动：`screen embedding-local`；
+- 机器：GTX 1050 Ti 4.23GB，CUDA；torch 2.5.1+cu124，transformers 4.46.3；
+- 模型 bge-m3，1024 维，FP16；权重在 `~/Documents/echo-mind-storage/embedding-model`，原路径软链接；
+- 实测 RSS 约 1.29GB，显存约 1.24GB；
+- EchoMind 两份 config 已改为 `http://127.0.0.1:8010/v1`；
+- 已用 `/api/mind/probe` 真实触发：embedding 日志出现 POST 200，rendered block 含事实与海马体记忆；
+- 本地服务是 screen，不是 systemd，重启后需手动拉起。
+
+### 远端语音
+
+- 9880 `feiyu-voice`、TTS daemon `feiyu-tts-daemon` 正常；
+- TTS 真实合成成功；热合成约 11 秒（2.08 秒音频，实际合成 6.8 秒）；
+- RVC/SVS 能力 available，但尚未真实跑唱歌/换声；
+- 远端只保留语音，embedding 已迁走。
+
+### slot / 更新检测
+
+- 单值只保留 `person.qq`、`person.gender`、`person.birthday`、`person.age`；
+- 昵称多值；群内 ID 不建槽；
+- 生产只回填 1 条 gender；`person.qq` 无历史命中；
+- `CLAIM_SLOT_INFER=off`、`CLAIM_SLOT_SUPERSEDE=off`；claims superseded=0；
+- 全量自动 supersede 仍未启用。
+
+### 跨会话记忆
+
+- 文档已明确目标：来源感 + 告知史 + 受众披露，不是按群硬隔离
+  （`MEMORY_SOURCE_AND_DISCLOSURE.md`）；
+- 代码仍为 `chat_key IN (?, 'global')`；私聊事实在群聊不可见，只有 35 条 global 事实跨会话；
+- 因此“私聊答应去群里说”在群会话中没有记忆依据；
+- 跨会话文本/语音发送工具也不存在，`send_message`/`feiyu_say` 都只绑当前 chat_key。
+
+### 存储
+
+- `/tmp` 是 5.6GB tmpfs，pip 大 wheel 会打满；大缓存/模型已迁 `~/Documents/echo-mind-storage` 并软链接；
+- 根盘可用约 52GB。
+
 ## 1. 当前生产基线
 
 | 项 | 当前值 |
 |---|---|
-| 测试门禁 | **393 passed / 93%** |
+| 测试门禁 | **406 passed / 93%** |
 | Persona/Memory Eval | **70/70** |
 | 参数账本 | **59 compliant** |
 | 服务 | 3310 / 3312 正常 |
@@ -20,7 +60,7 @@
 | shadow 行 | **68** 条历史；active 后 **56** 条非空 |
 | trait memory links | **58** 条：6 条 support、其余 context |
 | interaction outcomes | **1654**（1333 mention / 321 temporal） |
-| semantic facts | **221** |
+| semantic facts | **233** |
 | episodic memories | **209** |
 | prompt | **active-only** |
 

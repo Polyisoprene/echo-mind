@@ -300,7 +300,7 @@
         "src/echomind/adapters/storage/claim_repo.py"
       ],
       "status": "partial",
-      "gap": "claims provenance/隐私/valid_to 已有；slot_key 功能已实现但默认 off，dry-run 20/222 含误判，未回填/未 supersede；FACTS_V2 默认 off",
+      "gap": "claims provenance/隐私/valid_to 已有；slot_key 功能已实现但默认 off；精调后 dry-run 3/222，生产仅回填 1 条 gender；supersede 默认 off，FACTS_V2 默认 off",
       "acceptance_test": "tests/integration/test_claim_read_path.py::test_facts_v2_reads_claims_with_privacy",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "E3"
@@ -415,6 +415,23 @@
       "acceptance_test": "tests/unit/test_response_attribution.py::test_mention_and_temporal_attribution",
       "evidence_report": "eval/baselines/response-attribution-2026-11-01.json",
       "target_release": "Stage42-P0"
+    },
+    {
+      "id": "CAP-CROSS-SESSION-MEMORY",
+      "claim": "跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离",
+      "docs": [
+        "docs/MEMORY_SOURCE_AND_DISCLOSURE.md",
+        "docs/MEMORY_PLACE_RESEARCH.md"
+      ],
+      "code": [
+        "src/echomind/adapters/storage/memory_repo.py",
+        "src/echomind/tools/messaging_and_group.py"
+      ],
+      "status": "absent",
+      "gap": "文档要求来源感/告知史/受众披露；代码仍 chat_key IN (?, global)，私聊事实群聊不可见；send_message/feiyu_say 无 target_chat_key，不能跨会话发送",
+      "acceptance_test": "",
+      "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
+      "target_release": "S43"
     }
   ]
 }

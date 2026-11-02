@@ -1,71 +1,133 @@
-# 本地 Embedding 部署（192.168.3.2）
+# 本地 Embedding 部署（GTX 1050 Ti）
 
-## 机器
+> 2026-11-02：embedding 已从远端 `192.168.3.2` 迁到本机，远端 8010 关闭。
+> 目标是释放远端显存给语音服务，不是把远端模型简单换端口。
 
-- 主机：`192.168.3.2`，用户 `polyisoprene`；
-- GPU：AMD Radeon RX 6800（gfx1030），ROCm，17.16GB 显存；
-- 复用语音服务的 Python 3.11 venv（torch 2.11+rocm7.2、transformers 4.51），**不新增依赖**；
-- 服务不占 systemd（语音服务的 systemd 因 render 组被禁用），用 screen。
+## 1. 机器与资源
 
-## 模型
-
-- `BAAI/bge-m3`，1024 维，多语言；
-- 目录：`/home/polyisoprene/embedding-service/bge-m3`；
-- 旧模型目录保留，可回滚：`bge-small-zh-v1.5`；
-- 下载源：hf-mirror 的 `BAAI/bge-m3`。
-
-## 服务
-
-```bash
-# 启动/重启
-screen -dmS embedding bash /home/polyisoprene/embedding-service/run.sh
-# 健康
-curl http://192.168.3.2:8010/health
+```text
+主机：本机
+GPU：NVIDIA GeForce GTX 1050 Ti Mobile
+VRAM：4.23GB
+驱动：NVIDIA 580 内核模块
 ```
 
-- `run.sh` 循环启动 `server.py --model bge-m3 --host 0.0.0.0 --port 8010 --device cuda --dtype float16 --max-length 1024`；
-- 日志：`~/embedding-service/embedding.log`；
-- OpenAI 兼容：`POST http://192.168.3.2:8010/v1/embeddings`。
+注意：`nvidia-smi` 当前未安装，但 torch CUDA 正常；不影响推理。
 
-## 资源实测
+## 2. 依赖
+
+独立 venv，不污染 EchoMind：
+
+```text
+/home/polyisoprene/embedding-service/venv
+Python 3.12.15
+torch 2.5.1+cu124
+transformers 4.46.3
+tokenizers 0.20.3
+```
+
+## 3. 模型
+
+```text
+bge-m3，1024 维
+```
+
+物理路径：
+
+```text
+~/Documents/echo-mind-storage/embedding-model
+```
+
+原路径：
+
+```text
+~/embedding-service/bge-m3
+```
+
+是软链接，指向 Documents 机械盘，避免占用根盘。
+
+## 4. 启动
+
+```bash
+screen -dmS embedding-local bash -c \
+  'cd /home/polyisoprene/embedding-service && \
+   while true; do \
+     venv/bin/python server.py \
+       --model /home/polyisoprene/embedding-service/bge-m3 \
+       --host 127.0.0.1 --port 8010 \
+       --device cuda --dtype float16 --max-length 1024 \
+       >> embedding.log 2>&1; \
+     sleep 3; \
+   done'
+```
+
+健康检查：
+
+```bash
+curl http://127.0.0.1:8010/health
+```
+
+期望：
+
+```json
+{"status":"ok","model":"/home/polyisoprene/embedding-service/bge-m3","device":"cuda"}
+```
+
+## 5. 资源实测
 
 | 项 | 数值 |
 |---|---|
-| bge-small 服务时显存 | 约 10.4GB |
-| bge-m3（FP16）服务时显存 | 约 11.7GB（+1.3GB） |
-| 空闲显存 | 约 5.4GB |
-| 批量 32×1024 token | **OOM** |
-| 外部评测安全 batch | 4 |
+| 进程 RSS | 约 1.29GB |
+| 1050Ti 显存 | 约 1.24GB / 4.23GB |
+| 1024 维 | 已验证 |
+| 模型加载 | 约 42 秒 |
 
-bge-m3 比 bge-small 多约 1.3GB 显存；单请求批量不要拉到 32。
+## 6. EchoMind 配置
 
-## EchoMind 配置
-
-两份 `data*/config.json` 的 `api` 段：
+`data/config.json` 与 `data-xiaomo/config.json`：
 
 ```json
 "embeddingModel": "BAAI/bge-m3",
-"embeddingBaseUrl": "http://192.168.3.2:8010/v1",
+"embeddingBaseUrl": "http://127.0.0.1:8010/v1",
 "embeddingApiKey": "local",
 "embeddingDimensions": 1024
 ```
 
-回填：
+## 7. 真实链路验证
+
+使用不发送 QQ 的 cognitive probe：
 
 ```bash
-.venv/bin/python scripts/backfill_memory_vectors.py --apply
-.venv/bin/python scripts/backfill_memory_vectors.py --db data-xiaomo/echomind.db --apply
+curl -s -X POST http://127.0.0.1:3310/api/mind/probe \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"chat_key":"group:813506156","text":"你还记得我喜欢吃什么吗？","sender_id":"3487266420","sender_name":"主人"}'
 ```
 
-## 效果
+验证结果：
 
-- 同义查询 recall@5：关键词 5/10 → bge-small **9/10**；
-- LongMemEval-S 100 题检索：bge-small 44.0% → **bge-m3 51.0%**；
-- 跨语言对照：`猫粮快没了` vs `the cat food is running low` cosine **0.899**，vs 无关句 0.548；
-- frame 在覆盖足够时走语义 rerank，失败自动回退关键词。
+```text
+probe ok = true
+embedding.log: POST /v1/embeddings 200
+rendered_mind_block: 包含权威事实与海马体召回
+```
 
-## 注意
+## 8. 远端状态
 
-- 服务重启后需确认 `screen embedding` 存在；
-- 模型/向量切换时 `memory_vectors.model` 会隔离，避免混用；
-- LongMemEval 仍是英文检索-only，不是端到端 QA；中文外部集/GroupMemBench 还没接。
+```text
+远端 8010：已关闭
+远端 9880：feiyu-voice
+远端 screen：feiyu-voice、feiyu-tts-daemon
+```
+
+远端不再承担 embedding，显存留给语音。
+
+## 9. 注意
+
+- `embedding-local` 是 screen，不是 systemd；重启后手动拉起；
+- 本地 4GB 显存不要同时加载其他大模型；
+- 切勿把 `/tmp` 当 pip 临时目录：本机 `/tmp` 是 5.6GB tmpfs，装 CUDA wheel 会打满；使用：
+  ```bash
+  TMPDIR=~/Documents/echo-mind-storage/tmp
+  ```
+- 若回滚远端，把两份 config 的 URL 改回 `http://192.168.3.2:8010/v1` 并启动远端 screen。
