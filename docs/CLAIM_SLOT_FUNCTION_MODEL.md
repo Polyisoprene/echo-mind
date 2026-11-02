@@ -8,7 +8,7 @@
 只有“人物特征”类槽位是单值：
 
 ```text
-person.nickname        群昵称/外号
+person.qq              QQ 号（唯一）
 person.gender          性别
 person.birthday        生日
 person.age             年龄
@@ -22,6 +22,7 @@ person.relationship    恋爱/关系状态
 多值（永不自动覆盖）：
 
 ```text
+person.nickname        群昵称/外号（可多个）
 mentioned
 preference.*
 habit.*
@@ -117,7 +118,8 @@ CLAIM_SLOT_SUPERSEDE=off  不自动覆盖
 
 测试覆盖：
 
-- nickname 单值；
+- nickname 多值、不建单值槽；
+- QQ 单值；
 - preference/experience/mentioned 不建槽；
 - 一个 value 命中多个槽 → 空；
 - 同 audience 的 nickname 新旧可 supersede；
@@ -214,3 +216,19 @@ superseded = 0
 - 两条 gender 文本含“此前曾是”，槽仍成立，但可能需要只取当前值；
 - 阿斋的“群友昵称”是否算 nickname 可人工确认；
 - 生产回填仍需小流量与 70/500 回归。
+
+## 13. 用户纠正后的模型（2026-11-02）
+
+- 昵称不是单值：同一群友可以有多个昵称/外号，改为多值；
+- QQ 号是唯一身份，加入单值槽 `person.qq`；
+- 自动推断只识别显式 `QQ号是/QQ号为/QQ号：`，不从任意含 QQ 的文本猜；
+- dry-run：
+
+```text
+scanned = 222
+matched = 3
+person.owner 1
+person.gender 2
+```
+
+当前生产仍未 apply。QQ 槽没有历史命中，等待显式赋值/精调规则。

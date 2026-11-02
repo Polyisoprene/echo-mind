@@ -138,12 +138,12 @@ async def test_single_value_slot_supersedes_old_claim(
     store = SqliteClaimStore(SqliteDatabase(db_path))
     await store.ensure_schema()
     old = await store.assert_claim(
-        "group:1", "L", "value", "L的群昵称是「小L」",
-        source_type="system", source_id="s1",
+        "group:1", "L", "value", "QQ号是 123456789",
+        source_type="system", source_id="s1", slot_key="person.qq",
     )
     new = await store.assert_claim(
-        "group:1", "L", "value", "L的群昵称是「大L」",
-        source_type="system", source_id="s2",
+        "group:1", "L", "value", "QQ号是 987654321",
+        source_type="system", source_id="s2", slot_key="person.qq",
     )
     con = sqlite3.connect(str(db_path))
     rows = dict(con.execute("select id,status from claims where subject='L'").fetchall())

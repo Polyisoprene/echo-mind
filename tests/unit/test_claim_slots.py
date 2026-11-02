@@ -5,9 +5,14 @@ from __future__ import annotations
 from echomind.mind.claim_slots import infer_slot, is_single
 
 
-def test_nickname_is_single() -> None:
-    slot = infer_slot("L", "L的群昵称是「小L」")
-    assert slot == "person.nickname"
+def test_nickname_is_multi_valued() -> None:
+    assert infer_slot("L", "L的群昵称是「小L」") == ""
+    assert not is_single("person.nickname")
+
+
+def test_qq_is_single() -> None:
+    slot = infer_slot("L", "QQ号是 123456789")
+    assert slot == "person.qq"
     assert is_single(slot)
 
 

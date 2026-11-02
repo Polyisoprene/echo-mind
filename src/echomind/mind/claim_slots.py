@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 SINGLE_SLOTS = frozenset({
-    "person.nickname", "person.gender", "person.birthday", "person.age",
+    "person.qq", "person.gender", "person.birthday", "person.age",
     "person.owner", "person.city", "person.job", "person.species",
     "person.relationship",
 })
@@ -12,7 +12,7 @@ _META_SUBJECTS = ("自组织图式", "本群", "群规", "群公告", "回音", 
 _GENDER_WORDS = ("男的", "女的", "男性", "女性")
 
 _PATTERNS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("person.nickname", ("群昵称", "昵称是", "昵称是「", "nickname")),
+    ("person.qq", ("qq号是", "qq号为", "qq号：")),
     ("person.gender", ("是男性", "是女性", "性别是", "gender")),
     ("person.birthday", ("生日是", "出生于", "birthday")),
     ("person.age", ("年龄是", "今年")),
