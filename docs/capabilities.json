@@ -428,7 +428,7 @@
         "src/echomind/tools/messaging_and_group.py"
       ],
       "status": "partial",
-      "gap": "已实现 source/audience 策略、只读 shadow（37 global 候选、私聊来源0）与 opt-in get_cross_session_facts；live 读路径未接，承诺事件/披露模型未实现；send_to_chat 已可用",
+      "gap": "读路径仍 chat_key IN (?, global)，live 未接；但跨会话 send_to_chat 已真实发送到目标群（message_id 1143989337）；承诺事件/披露记忆未实现",
       "acceptance_test": "",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "S43"

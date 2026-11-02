@@ -894,3 +894,54 @@ tests/unit/test_commitment.py
 ```
 
 门禁：428 passed / 93%。
+
+
+## 24. 真实 QQ 跨会话发送验收（2026-11-02）
+
+真实私聊 trigger：
+
+```text
+那你在群里发心里只有我一个
+```
+
+turn 结果：
+
+```text
+status = done
+rounds = 2
+sent_count = 1
+tool = send_to_chat
+target_chat_key = group:813506156
+message_ids = ["1143989337"]
+```
+
+目标群实际出现：
+
+```text
+说一句，我心里只有L一个，别人都是闹着玩的，别误会啊
+```
+
+私聊回复：
+
+```text
+发了，去群里看吧，我可没敷衍你
+```
+
+证据：
+
+- `turn_traces.steps_json` 第 2 步是 `send_to_chat`，不是 `feiyu_say`；
+- `chat_messages` 的 group 自消息出现对应文本；
+- 该轮 `user_prompt` 含：
+  ```text
+  【📌 短期挂念（未完成承诺/意图）】
+  - 群号发我，我这就去发，别再催了
+  ```
+- system prompt 含 `send_to_chat` 与 `target_chat_key`。
+
+结论：
+
+```text
+BDI 承诺 → prompt 可见 → 模型选择 send_to_chat → 目标群真实收到
+```
+
+这条链路已经真实跑通，不再是 fake OneBot 或口头答应。
