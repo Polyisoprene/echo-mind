@@ -39,7 +39,7 @@
   （`MEMORY_SOURCE_AND_DISCLOSURE.md`）；
 - 代码仍为 `chat_key IN (?, 'global')`；私聊事实在群聊不可见，只有 35 条 global 事实跨会话；
 - 因此“私聊答应去群里说”在群会话中没有记忆依据；
-- 跨会话文本/语音发送工具也不存在，`send_message`/`feiyu_say` 都只绑当前 chat_key；
+- 跨会话文本/语音发送工具已新增 `send_to_chat` 与 `feiyu_say(target_chat_key)`；记忆读路径仍不跨会话；
 - Stage 43 已建模，P0 纯策略/BDI/HEXACO 覆盖已实现，见 `docs/plans/STAGE_43_CROSS_SESSION_MEMORY_AGENCY_AND_PERSONALITY_PLAN.md`。
 
 ### 存储
@@ -51,7 +51,7 @@
 
 | 项 | 当前值 |
 |---|---|
-| 测试门禁 | **414 passed / 93%** |
+| 测试门禁 | **416 passed / 93%** |
 | Persona/Memory Eval | **70/70** |
 | 参数账本 | **59 compliant** |
 | 服务 | 3310 / 3312 正常 |

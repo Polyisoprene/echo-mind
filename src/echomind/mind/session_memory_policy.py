@@ -25,5 +25,7 @@ def can_recall_across_sessions(request: RecallRequest) -> bool:
         return False
     if request.sensitivity == "private":
         return False
+    if request.source_chat.startswith("private:") and request.current_chat not in request.audience:
+        return False
     restricted = bool(request.audience and request.current_chat not in request.audience)
     return not restricted

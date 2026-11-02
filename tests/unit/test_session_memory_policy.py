@@ -20,3 +20,10 @@ def test_public_and_group_cross_session_only_without_audience_restriction() -> N
 def test_private_and_secret_never_cross_session() -> None:
     assert not can_recall_across_sessions(RecallRequest("private:a", "group:b", "private"))
     assert not can_recall_across_sessions(RecallRequest("group:a", "group:b", "secret"))
+
+
+def test_private_source_does_not_cross_by_default() -> None:
+    assert not can_recall_across_sessions(RecallRequest("private:a", "group:b", "group"))
+    assert can_recall_across_sessions(
+        RecallRequest("private:a", "group:b", "group", ("group:b",))
+    )

@@ -50,6 +50,7 @@ from echomind.tools.messaging_and_group import (
     SendMessageTool,
     SendPokeTool,
     SendStickerTool,
+    SendToChatTool,
 )
 from echomind.tools.qzone_and_profile import QzoneAndProfileTool
 from echomind.tools.voice_tools import FeiyuCoverTool, FeiyuSayTool, ReadVoiceTool
@@ -96,7 +97,8 @@ def _register_skill_tools(
     bili = BiliClient(cookie_provider=_bili_values)
     search_be = CompositeSearchBackend((CnMemeWikiClient(), BiliSearchBackend(bili)))
     for tool in (
-        SendMessageTool(bridge), SendStickerTool(bridge), SendPokeTool(bridge),
+        SendMessageTool(bridge), SendToChatTool(bridge),
+        SendStickerTool(bridge), SendPokeTool(bridge),
         GetGroupMembersTool(bridge), RememberMemberTool(m, m), RecallMemoryTool(m),
         QzoneAndProfileTool(caller),
         LookAtImageTool(media, vision), WatchVideoTool(media, vision),

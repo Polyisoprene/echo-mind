@@ -14,6 +14,7 @@ from echomind.adapters.storage.database import SqliteDatabase
 from echomind.core.config import GatewayEndpointConfig
 from echomind.domain.models import MediaAttachment
 from echomind.tools.media_vision import LookAtImageTool, WatchVideoTool
+from echomind.tools.messaging_and_group import SendToChatTool
 from echomind.tools.voice_tools import FeiyuSayTool, ReadVoiceTool
 
 
@@ -59,6 +60,7 @@ class FakeSender:
 
     def __init__(self) -> None:
         self.voices: list[tuple[str, str]] = []
+        self.texts: list[tuple[str, tuple[str, ...]]] = []
 
     async def send_text(
         self,
@@ -67,7 +69,8 @@ class FakeSender:
         reply_to_mid: str | None = None,
         at_user_id: str | None = None,
     ) -> tuple[str, ...]:
-        return ()
+        self.texts.append((chat_key, messages))
+        return ("mid_text",)
 
     async def send_sticker(
         self, chat_key: str, sticker_id: str, reply_to_mid: str | None = None
@@ -101,12 +104,28 @@ async def test_acX1_look_at_image_and_watch_video() -> None:
     assert "抽帧失败" in await no_frames.execute("group:1", {})
 
 
+async def test_send_to_chat_targets_explicit_conversation() -> None:
+    sender = FakeSender()
+    tool = SendToChatTool(sender)
+    result = await tool.execute(
+        "private:1", {"target_chat_key": "group:2", "messages": ["去群里说"]}
+    )
+    assert '"target_chat_key": "group:2"' in result
+    assert sender.texts == [("group:2", ("去群里说",))]
+    missing = await tool.execute("private:1", {"messages": ["x"]})
+    assert "缺少 target_chat_key" in missing
+
+
 async def test_acX2_voice_speak_and_transcribe() -> None:
     sender = FakeSender()
     say = FeiyuSayTool(FakeVoiceBackend(), sender)
     assert say.category == "语音表达"
     assert await say.execute("private:1", {"text": "早安"}) != ""
     assert sender.voices == [("private:1", "早安")]
+    assert await say.execute(
+        "private:1", {"text": "去群里说", "target_chat_key": "group:2"}
+    ) != ""
+    assert sender.voices[-1] == ("group:2", "去群里说")
     assert "为空" in await say.execute("private:1", {"text": "  "})
 
     voice_item = MediaAttachment(kind="voice", message_id="m1")

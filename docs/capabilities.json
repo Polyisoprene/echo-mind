@@ -428,7 +428,7 @@
         "src/echomind/tools/messaging_and_group.py"
       ],
       "status": "absent",
-      "gap": "文档要求来源感/告知史/受众披露；代码仍 chat_key IN (?, global)，私聊事实群聊不可见；send_message/feiyu_say 无 target_chat_key，不能跨会话发送",
+      "gap": "文档要求来源感/告知史/受众披露；读路径仍 chat_key IN (?, global)，私聊原始事实群聊不可见；已有 send_to_chat/feiyu_say target 能力，但跨会话事件/披露记忆未实现",
       "acceptance_test": "",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "S43"

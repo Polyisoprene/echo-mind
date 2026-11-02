@@ -510,3 +510,41 @@ constants=61 compliant=61
 - FTS5；
 - partial 四项；
 - HEXACO 数值映射（无数据，不做）。
+
+
+## 12. P1/P3 进展（2026-11-02）
+
+### 跨会话记忆 shadow
+
+新增：
+
+```text
+scripts/shadow_cross_session_memory.py
+```
+
+生产只读扫描：
+
+```text
+group:813506156 候选 = 37（global public/group）
+私聊来源候选 = 0（默认不跨会话）
+```
+
+结论：
+
+- 原始私聊事实不会因为 sensitivity=group 就泄漏到群；
+- 私聊承诺要跨会话，必须走“显式事件/披露”而不是直接引用私聊原文；
+- 尚未改 `get_semantic_facts`，live 检索仍按 `chat_key IN (?, 'global')`。
+
+### 跨会话发送
+
+已实现并注册：
+
+```text
+send_to_chat(target_chat_key, messages[])
+feiyu_say(..., target_chat_key)
+```
+
+- 不删现有当前会话工具；
+- 目标为空/发送失败会明确报错；
+- 不设硬白名单；发送后返回 target 与 message_id；
+- 单测验证私聊调用目标群；未向真实群发测试消息。

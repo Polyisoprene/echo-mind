@@ -37,4 +37,4 @@
 | CAP-TRAIT-MEMORY | active trait 的 support 能影响记忆检索排序 | ⚠️ partial | 手动 support 6 条已生效；自动 support 稀有，门控仅 BM25>0 |
 | CAP-ACTION-ELIGIBILITY | active trait 可追加工具授权并授予拒绝许可 | ⚠️ partial | 默认 additive；whitelist 模式已实现但未启用；refusal 只许可不强制 |
 | CAP-RESPONSE-ATTRIBUTION | 记录她的消息之后的回应归因（mention/temporal） | ⚠️ partial | shadow only：不接 trait/ranker/prompt；tier A quote 元数据当前不可用 |
-| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ❌ absent | 文档要求来源感/告知史/受众披露；代码仍 chat_key IN (?, global)，私聊事实群聊不可见；send_message/feiyu_say 无 target_chat_key，不能跨会话发送 |
+| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ❌ absent | 文档要求来源感/告知史/受众披露；读路径仍 chat_key IN (?, global)，私聊原始事实群聊不可见；已有 send_to_chat/feiyu_say target 能力，但跨会话事件/披露记忆未实现 |

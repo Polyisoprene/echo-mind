@@ -81,6 +81,10 @@ class FeiyuSayTool:
                     "type": "string",
                     "description": "语气风格：cute（活泼可爱）/ gentle（温柔轻声）",
                 },
+                "target_chat_key": {
+                    "type": "string",
+                    "description": "可选：发到另一个明确存在的会话；不填则发当前会话",
+                },
             },
             "required": ["text"],
         }
@@ -90,14 +94,16 @@ class FeiyuSayTool:
         if not text:
             return "语音文本为空"
         mood = str(args.get("mood", "cute")).strip() or "cute"
+        target = str(args.get("target_chat_key", "")).strip() or chat_key
         audio_b64 = await self._voice.synthesize_tts(text, mood)
         if not audio_b64:
             return "语音合成失败，没有拿到音频。"
-        mid = await self._sender.send_voice(chat_key, audio_b64, text)
+        mid = await self._sender.send_voice(target, audio_b64, text)
         return json.dumps(
             {
                 "ok": bool(mid),
                 "message_id": mid or "",
+                "target_chat_key": target,
                 "text": text,
                 "note": "语音已直接发出，切勿再用 send_message 重复把同一句话发成文字。",
             },

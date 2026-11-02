@@ -75,6 +75,58 @@ class SendMessageTool:
         return json.dumps({"ok": True, "sent_count": len(mids), "message_ids": list(mids)})
 
 
+class SendToChatTool:
+    """Send text to an explicitly named conversation, not only the current one."""
+
+    category = "社交互动"
+
+    def __init__(self, sender: IMessageSender) -> None:
+        self._sender = sender
+
+    @property
+    def name(self) -> str:
+        return "send_to_chat"
+
+    @property
+    def description(self) -> str:
+        return (
+            "把文字发到明确指定的另一个会话（群聊或私聊）。"
+            "target_chat_key 必须来自当前对话中明确出现的群/私聊，不要凭空猜。"
+            "发送后核对返回的 target_chat_key 与 message_ids；失败就如实说失败。"
+        )
+
+    def parameters_schema(self) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "target_chat_key": {
+                    "type": "string",
+                    "description": "目标会话，例如 group:813506156 或 private:3064615013",
+                },
+                "messages": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["target_chat_key", "messages"],
+        }
+
+    async def execute(self, chat_key: str, args: dict[str, Any]) -> str:
+        target = str(args.get("target_chat_key", "")).strip()
+        if not target:
+            return "未发送：缺少 target_chat_key"
+        raw_msgs = args.get("messages", [])
+        if isinstance(raw_msgs, str):
+            raw_msgs = [raw_msgs]
+        raw_tuple = tuple(str(m).strip() for m in raw_msgs if str(m).strip())
+        if not raw_tuple:
+            return "未发送：消息内容为空"
+        mids = await self._sender.send_text(target, _merge_clauses(raw_tuple))
+        if not mids:
+            return f"发送失败：目标 {target} 没有返回 message_id"
+        return json.dumps({
+            "ok": True, "target_chat_key": target,
+            "sent_count": len(mids), "message_ids": list(mids),
+        }, ensure_ascii=False)
+
+
 STICKER_COOLDOWN_MS = 30_000
 
 
