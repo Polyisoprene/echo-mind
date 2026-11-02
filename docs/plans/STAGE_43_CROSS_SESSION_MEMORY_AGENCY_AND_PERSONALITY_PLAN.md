@@ -1,6 +1,9 @@
 # Stage 43：跨会话记忆、跨会话发送、FTS5、BDI 意图栈、partial 收口与 HEXACO 映射
 
-> 状态：**P0 建模 + 纯领域基础已完成；P1-P5 待实现**（2026-11-02）。
+> 状态：**P0–P4 已完成到可验证边界；P5 部分完成；P6 数值映射未做**（2026-11-02）。
+>
+> 已完成：跨会话 read/shadow/opt-in、跨会话文字/语音发送、BDI 意图栈、FTS5 shadow 与 500 对照、Auth/Attribution/Trait-memory/Action-eligibility 收口。
+> 未完成：跨会话默认开启（产品决策）、自动目标选择、剩余 12 项 partial、HEXACO 数值映射（无同批数据）、FTS5 接 live（低于基线）。
 > 约束：不编造数据；任何数值必须有公开论文、公开文档或本机工程测量支撑。
 > 目标不是“加一个开关”，而是让回音在**来源、受众、意图、检索和表达**上成为连续的行动者。
 
@@ -327,9 +330,9 @@ memory_fts (content, chat_key, source, tokenize='trigram')
 | ID | 现状 | 本阶段目标 |
 |---|---|---|
 | CAP-MEMORY-EVIDENCE | slot 默认 off，生产仅 1 条 gender | source/audience 字段补齐；slot 数据小流量 |
-| CAP-AUTH-WRITE | auth_key 空全放行 | 写操作审计与 token 全覆盖；跨会话发送审计 |
-| CAP-ACTION-ELIGIBILITY | additive / refusal 只许可 | 跨会话目标能力纳入 eligibility，不硬禁止 |
-| CAP-RESPONSE-ATTRIBUTION | shadow only | 发送后结果归因，接入 intention fulfilled |
+| CAP-AUTH-WRITE | 已实现 | 写操作 token + loopback + 审计 |
+| CAP-ACTION-ELIGIBILITY | 已实现 | additive 默认，whitelist 可选，refusal 为许可 |
+| CAP-RESPONSE-ATTRIBUTION | 已记录 | 1,654 outcomes；未接下游是增强 |
 
 其余 partial 保持现状，避免范围爆炸。
 
