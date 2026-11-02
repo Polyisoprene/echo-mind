@@ -232,3 +232,26 @@ person.gender 2
 ```
 
 当前生产仍未 apply。QQ 槽没有历史命中，等待显式赋值/精调规则。
+
+## 14. 群内 ID / 昵称边界（2026-11-02）
+
+用户确认：
+
+- **不建 `person.group_id` 槽**；
+- 群内 ID 和昵称属于同一展示位置；
+- QQ 才是唯一身份标识；
+- 昵称可以多个，不能单值覆盖。
+
+因此：
+
+```text
+person.qq        单值身份
+person.nickname  多值展示
+person.group_id  不存在
+```
+
+回归测试：
+
+```text
+test_group_id_is_not_a_slot
+```

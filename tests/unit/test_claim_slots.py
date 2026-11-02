@@ -40,3 +40,8 @@ def test_gender_is_not_owner() -> None:
 
 def test_computer_city_is_not_a_city() -> None:
     assert infer_slot("菲菲", "住在主人电脑里的鲸鱼娘") == ""
+
+
+def test_group_id_is_not_a_slot() -> None:
+    assert not is_single("person.group_id")
+    assert infer_slot("L", "群内ID是 12345") == ""
