@@ -1011,3 +1011,32 @@ claim 是“active trait 可追加工具授权并授予拒绝许可”，代码�
 - 测试 `tests/unit/test_trait_tool_grants.py`。
 
 “refusal 只许可不强制”不是缺陷，是自由意志设计；whitelist 未默认启用也不否定 claim。故校准为 implemented。
+
+
+## 28. 承诺事件持久化（2026-11-02）
+
+新增：
+
+```text
+intention_events 表
+working_intentions.sync_intention_events()
+save_snapshot() 同步写入
+tests/integration/test_intention_events.py
+```
+
+字段：
+
+```text
+source_chat_key, target_chat_key, summary,
+status=open, created_at_ms, updated_at_ms
+唯一键(source_chat_key, summary, target_chat_key)
+```
+
+行为：
+
+- 每次 working state 保存时，当前 intentions 写入事件表；
+- 重复保存不重复插入；
+- 仍不自动发送；只持久化“未完成承诺”；
+- 旧数据表不存在时，服务启动 schema 会创建。
+
+门禁：431 passed / 93%。

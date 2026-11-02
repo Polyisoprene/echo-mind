@@ -6,6 +6,7 @@ import json
 import time
 
 from echomind.adapters.storage.database import SqliteDatabase
+from echomind.adapters.storage.working_intentions import sync_intention_events
 from echomind.domain.errors import WorkingStateConflict
 from echomind.domain.models import WorkingSnapshot
 
@@ -60,6 +61,7 @@ async def save_snapshot(db: SqliteDatabase, snapshot: WorkingSnapshot) -> None:
             await _update(conn, row, snapshot)
         else:
             await conn.execute(UPSERT_SQL, row)
+        await sync_intention_events(conn, snapshot)
         await conn.commit()
 
 

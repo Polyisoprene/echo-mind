@@ -53,6 +53,17 @@ CREATE TABLE IF NOT EXISTS working_state (
     updated_at INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS intention_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_chat_key TEXT NOT NULL,
+    target_chat_key TEXT NOT NULL DEFAULT '',
+    summary TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at_ms INTEGER NOT NULL,
+    updated_at_ms INTEGER NOT NULL,
+    UNIQUE(source_chat_key, summary, target_chat_key)
+);
+
 CREATE TABLE IF NOT EXISTS episodic_memories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_key TEXT NOT NULL,
