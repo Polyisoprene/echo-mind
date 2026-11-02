@@ -11,7 +11,10 @@ from echomind.domain.models import SemanticFact
 
 
 @pytest.mark.asyncio
-async def test_person_facts_follow_the_person_not_the_room(tmp_path: Path) -> None:
+async def test_person_facts_follow_the_person_not_the_room(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CROSS_SESSION_MEMORY", "off")
     container = await EchoMindContainer.create(db_path=tmp_path / "layers.db")
     repo = container.memory_repo
     await repo.upsert_semantic_fact(

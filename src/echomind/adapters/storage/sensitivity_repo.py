@@ -50,6 +50,13 @@ class SqliteSensitivityReviewer:
                 f"UPDATE {table} SET sensitivity = ? WHERE id = ?",  # noqa: S608
                 (to_sensitivity, memory_id),
             )
+            if memory_kind == "semantic":
+                await conn.execute(
+                    "UPDATE claims SET sensitivity=? WHERE chat_key=("
+                    "SELECT chat_key FROM semantic_facts WHERE id=?) AND subject=("
+                    "SELECT subject FROM semantic_facts WHERE id=?)",
+                    (to_sensitivity, memory_id, memory_id),
+                )
             await conn.execute(
                 "INSERT INTO sensitivity_reviews "
                 "(memory_kind, memory_id, from_sensitivity, to_sensitivity, reviewer, "

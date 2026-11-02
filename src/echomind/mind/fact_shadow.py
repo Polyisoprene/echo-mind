@@ -28,6 +28,10 @@ class ClaimView:
     source_quote: str = ""
     source_turn_id: str = ""
     slot_key: str = ""
+    claim_id: int = 0
+    event_time_ms: int = 0
+    confidence: float = 0.0
+    revision_count: int = 1
 
 
 def _key(subject: str, value: str) -> str:

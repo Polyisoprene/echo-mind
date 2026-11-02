@@ -1321,3 +1321,57 @@ text=说一句：我心里只有L一个，别人都是闹着玩的
 - 这次没有 `intention_events` 新行，因为用户是直接命令，不是“我这就去”的承诺；
 - 发送凭据在 `turn_traces` 与 `chat_messages` 中完整；
 - 若需要事件，需要先把命令表达成承诺，或增加“命令型跨会话发送”事件生产者；当前未做。
+
+
+## 41. 记忆读路径默认切换（2026-11-02）
+
+按用户策略执行，默认值改为：
+
+```text
+FACTS_V2=on
+FACTS_V2_WRITE=on
+CLAIM_SLOT_INFER=on
+CLAIM_SLOT_SUPERSEDE=on
+CROSS_SESSION_MEMORY=on
+```
+
+FACTS_V2 修复：
+
+- claim projection 补 `fact_id`，避免 dense/ranker 全 0；
+- person_ids 过滤不再误删 venue 事实；
+- 当前会话 private 可见性；
+- `event_time_ms`、`valid_to_ms`、`confidence`、`revision_count` 从 legacy fact 双写；
+- `source_venue_id` 保留。
+
+结果：
+
+```text
+70/70
+mrr 0.988
+privacy_leaks 0
+```
+
+slot/supersede：
+
+- `person.gender` 等单值槽默认推断；
+- 新值覆盖旧断言，旧 claim 标 superseded；
+- 生产 claims 324，slot 1（现有数据只命中 gender；新写入会推断）。
+
+向量：
+
+```text
+semantic facts 266
+semantic vectors 266
+orphan vector 1 -> 删除
+```
+
+episodic 决策：**暂不默认向量化**。现有 episodic 检索是 Ebbinghaus/recency，没有 episodic 专用基准；不做无对照的召回变更。
+
+跨会话：
+
+- 默认 on；
+- public/group 可跨，private/secret 仍排除；
+- 70 场景基准显式 `CROSS_SESSION_MEMORY=off`，避免把不同 venue 当同一会话；
+- 跨会话专用测试覆盖默认 on/显式 off。
+
+门禁：440 passed / 93%。

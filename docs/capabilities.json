@@ -300,7 +300,7 @@
         "src/echomind/adapters/storage/claim_repo.py"
       ],
       "status": "partial",
-      "gap": "claims provenance/隐私/valid_to 已有；slot_key 功能已实现但默认 off；精调后 dry-run 3/222，生产仅回填 1 条 gender；supersede 默认 off，FACTS_V2 默认 off",
+      "gap": "FACTS_V2 默认读 claims；slot/supersede 默认开启；生产 slot 仍只有 1 条 gender，slot 数据稀疏；episodic 未向量化",
       "acceptance_test": "tests/integration/test_claim_read_path.py::test_facts_v2_reads_claims_with_privacy",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "E3"
@@ -428,7 +428,7 @@
         "src/echomind/tools/messaging_and_group.py"
       ],
       "status": "partial",
-      "gap": "已实现 source/audience、opt-in get_cross_session_facts、recall_memory(include_cross_session) 与 CROSS_SESSION_MEMORY 开关；默认 off；承诺事件/披露模型仍简化",
+      "gap": "默认 on；public/group 可跨，private/secret 排除；70 基准显式 off；完整披露模型仍未实现",
       "acceptance_test": "",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "S43"

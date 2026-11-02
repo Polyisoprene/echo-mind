@@ -32,7 +32,10 @@ def _params() -> dict[str, PlasticParamSpec]:
 
 
 @pytest.mark.asyncio
-async def test_memory_acceptance_baseline(tmp_path: Path) -> None:
+async def test_memory_acceptance_baseline(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CROSS_SESSION_MEMORY", "off")
     container = await EchoMindContainer.create(db_path=tmp_path / "eval.db")
     repo = container.memory_repo
     await repo.upsert_semantic_fact(SemanticFact(

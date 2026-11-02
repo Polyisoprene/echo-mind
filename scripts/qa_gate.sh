@@ -48,7 +48,7 @@ uv run coverage report --fail-under=90
 echo "================================================================"
 echo "🛡️  [Gate 2D] Persona/Memory Eval Baseline"
 echo "================================================================"
-uv run python scripts/eval_suite.py --check eval/baselines/2026-10.json
+CROSS_SESSION_MEMORY=off uv run python scripts/eval_suite.py --check eval/baselines/2026-10.json
 
 echo "================================================================"
 echo "✅ ALL INDUSTRIAL QA & ANTI-NESTING GATES PASSED (via uv run)!"

@@ -37,12 +37,14 @@ async def mirror_fact(
     source: str, is_locked: bool, now_ms: int,
     scope: str = "venue", source_person_id: str = "", owner_id: str = "",
     sensitivity: str = "group", audience: tuple[str, ...] = (),
-    source_quote: str = "", source_turn_id: str = "",
+    source_quote: str = "", source_turn_id: str = "", event_time_ms: int = 0,
+    valid_to_ms: int | None = None, confidence: float = 0.0,
+    revision_count: int = 1,
 ) -> None:
     """Dual-write a legacy semantic fact into the claim store (FACTS_V2_WRITE=on)."""
     import os
 
-    if os.getenv("FACTS_V2_WRITE", "off").lower() != "on":
+    if os.getenv("FACTS_V2_WRITE", "on").lower() != "on":
         return
     kind = "operator" if (is_locked or source in ("owner", "operator")) else source
     store = SqliteClaimStore(db)
@@ -51,7 +53,9 @@ async def mirror_fact(
         source_id=source or kind, observed_at_ms=now_ms,
         scope=scope, source_person_id=source_person_id, owner_id=owner_id,
         sensitivity=sensitivity, audience=audience, source_quote=source_quote,
-        source_turn_id=source_turn_id,
+        source_turn_id=source_turn_id, event_time_ms=event_time_ms,
+        valid_to_ms=valid_to_ms, confidence=confidence,
+        revision_count=revision_count,
     )
 
 
@@ -71,7 +75,7 @@ class SqliteClaimStore:
         valid_from_ms: int, valid_to_ms: int | None, now: int, source_id: str,
         scope: str, source_person_id: str, owner_id: str, sensitivity: str,
         audience: tuple[str, ...], source_quote: str, source_turn_id: str,
-        slot_key: str,
+        slot_key: str, event_time_ms: int, confidence: float, revision_count: int,
     ) -> int:
         cursor = await conn.execute(
             "SELECT id FROM claims WHERE chat_key=? AND subject=? AND predicate=? "
@@ -85,11 +89,12 @@ class SqliteClaimStore:
             "INSERT INTO claims (chat_key, subject, predicate, value, valid_from_ms, "
             "valid_to_ms, recorded_at_ms, status, created_by, scope, "
             "source_person_id, owner_id, sensitivity, audience_json, source_quote, "
-            "source_turn_id, slot_key) "
-            "VALUES (?,?,?,?,?,?,?,'asserted',?,?,?,?,?,?,?,?,?)",
+            "source_turn_id, slot_key, event_time_ms, confidence, revision_count) "
+            "VALUES (?,?,?,?,?,?,?,'asserted',?,?,?,?,?,?,?,?,?,?,?,?)",
             (chat_key, subject, predicate, value, valid_from_ms, valid_to_ms, now,
              source_id, scope, source_person_id, owner_id, sensitivity,
-             json.dumps(list(audience)), source_quote, source_turn_id, slot_key),
+             json.dumps(list(audience)), source_quote, source_turn_id, slot_key,
+             event_time_ms, confidence, revision_count),
         )
         return int(cursor.lastrowid or 0)
 
@@ -101,9 +106,11 @@ class SqliteClaimStore:
         scope: str = "venue", source_person_id: str = "", owner_id: str = "",
         sensitivity: str = "group", audience: tuple[str, ...] = (),
         source_quote: str = "", source_turn_id: str = "", slot_key: str = "",
+        event_time_ms: int = 0, confidence: float = 0.0,
+        revision_count: int = 1,
     ) -> int:
         now = int(time.time() * 1000) if observed_at_ms is None else observed_at_ms
-        if not slot_key and os.getenv("CLAIM_SLOT_INFER", "off").lower() == "on":
+        if not slot_key and os.getenv("CLAIM_SLOT_INFER", "on").lower() == "on":
             slot_key = infer_slot(subject, value)
         async with self._db.connect() as conn:
             claim_id = await self._claim_id(
@@ -113,14 +120,15 @@ class SqliteClaimStore:
                 source_person_id=source_person_id, owner_id=owner_id,
                 sensitivity=sensitivity, audience=audience,
                 source_quote=source_quote, source_turn_id=source_turn_id,
-                slot_key=slot_key,
+                slot_key=slot_key, event_time_ms=event_time_ms,
+                confidence=confidence, revision_count=revision_count,
             )
             await self._attach(
                 conn, claim_id, source_type, source_id, now,
                 weight_scale=weight_scale, tag=tag,
             )
             await self._review_conflicts(conn, chat_key, subject, predicate, claim_id)
-            if (os.getenv("CLAIM_SLOT_SUPERSEDE", "off").lower() == "on"
+            if (os.getenv("CLAIM_SLOT_SUPERSEDE", "on").lower() == "on"
                     and is_single(slot_key)):
                 await self._supersede_slot(
                     conn, chat_key=chat_key, subject=subject, slot_key=slot_key,

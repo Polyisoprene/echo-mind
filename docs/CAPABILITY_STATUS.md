@@ -29,7 +29,7 @@
 | CAP-HEXACO | 7 维人格对应 HEXACO 六轴 | ⛔ contradicted | 7 维为 warmth/tsundere/playfulness/possessiveness/confidence/guile/defiance，与 HEXACO 无映射矩阵，缺 C/O 轴 |
 | CAP-ZERO-LEXICON | 全链路零硬编码词表（Stage 26） | ⛔ contradicted | mind/ 下仍有 40+ 处中文词表与正则（角色冒充词、停用词、机器人关键词） |
 | CAP-OPERATOR-NO-PRIVILEGE | operator 只有纠错权限，无情感特权 | ⛔ contradicted | update_sender_bond 对 is_owner 直接置 trust=1.0；且 _check_reactance 对 w_care>=0.85 免除逆反 |
-| CAP-MEMORY-EVIDENCE | 事实带来源与时效，冲突可复核 | ⚠️ partial | claims provenance/隐私/valid_to 已有；slot_key 功能已实现但默认 off；精调后 dry-run 3/222，生产仅回填 1 条 gender；supersede 默认 off，FACTS_V2 默认 off |
+| CAP-MEMORY-EVIDENCE | 事实带来源与时效，冲突可复核 | ⚠️ partial | FACTS_V2 默认读 claims；slot/supersede 默认开启；生产 slot 仍只有 1 条 gender，slot 数据稀疏；episodic 未向量化 |
 | CAP-AUTH-WRITE | 控制台写操作强制 token 并留审计 | ✅ implemented | tests/unit/test_web_write_auth.py::test_writes_require_the_token_even_on_loopback |
 | CAP-PERSONA-EFFECTIVE | 7 维人格在生成输出上可被盲评识别 | ⚠️ partial | 历史人工总体 3.24/5；当前 24h 风格约 28 字、长句率 14%；无新人工盲评，真人感未达标 |
 | CAP-ACTIVE-ONLY-PROMPT | prompt 只渲染 active trait | ✅ implemented | tests/unit/test_personality_invariants.py::test_only_active_traits_reach_the_prompt |
@@ -37,4 +37,4 @@
 | CAP-TRAIT-MEMORY | active trait 的 support 能影响记忆检索排序 | ✅ implemented | tests/integration/test_live_trait_retrieval.py::test_trait_link_breaks_live_retriever_tie |
 | CAP-ACTION-ELIGIBILITY | active trait 可追加工具授权并授予拒绝许可 | ✅ implemented | tests/unit/test_trait_tool_grants.py::test_tool_grant_is_added_not_substituted |
 | CAP-RESPONSE-ATTRIBUTION | 记录她的消息之后的回应归因（mention/temporal） | ✅ implemented | tests/unit/test_response_attribution.py::test_mention_and_temporal_attribution |
-| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ⚠️ partial | 已实现 source/audience、opt-in get_cross_session_facts、recall_memory(include_cross_session) 与 CROSS_SESSION_MEMORY 开关；默认 off；承诺事件/披露模型仍简化 |
+| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ⚠️ partial | 默认 on；public/group 可跨，private/secret 排除；70 基准显式 off；完整披露模型仍未实现 |

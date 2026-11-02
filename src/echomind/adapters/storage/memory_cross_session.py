@@ -47,7 +47,7 @@ async def merge_cross_session(
     """Opt-in live merge; default env is off so normal callers are unchanged."""
     import os
 
-    if os.getenv("CROSS_SESSION_MEMORY", "off").lower() != "on":
+    if os.getenv("CROSS_SESSION_MEMORY", "on").lower() != "on":
         return facts
     extra = await load_cross_session_facts(db, chat_key, min_confidence, now_ms)
     seen = {fact.chat_key + ":" + fact.subject for fact in facts}

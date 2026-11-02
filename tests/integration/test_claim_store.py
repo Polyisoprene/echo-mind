@@ -100,7 +100,7 @@ async def test_dual_write_mirrors_fact(tmp_path: Path, monkeypatch: pytest.Monke
     assert await SqliteClaimStore(db).claim_belief(claim_id) > 0.5
 
 
-async def test_dual_write_off_by_default(tmp_path: Path) -> None:
+async def test_dual_write_on_by_default(tmp_path: Path) -> None:
     from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
     from echomind.domain.models import SemanticFact
 
@@ -110,7 +110,23 @@ async def test_dual_write_off_by_default(tmp_path: Path) -> None:
     await repo.upsert_semantic_fact(
         SemanticFact(chat_key="group:1", subject="s", fact_text="v", confidence=0.9)
     )
-    assert await _claim_count(tmp_path / "nw.db") == 0
+    assert await _claim_count(tmp_path / "nw.db") == 1
+
+
+async def test_dual_write_can_be_disabled(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from echomind.adapters.storage.memory_repo import SqliteMemoryRepository
+    from echomind.domain.models import SemanticFact
+
+    monkeypatch.setenv("FACTS_V2_WRITE", "off")
+    db = SqliteDatabase(tmp_path / "nw2.db")
+    await db.initialize()
+    repo = SqliteMemoryRepository(db)
+    await repo.upsert_semantic_fact(
+        SemanticFact(chat_key="group:1", subject="s", fact_text="v", confidence=0.9)
+    )
+    assert await _claim_count(tmp_path / "nw2.db") == 0
 
 
 async def _claim_count(path: Path) -> int:
@@ -150,3 +166,27 @@ async def test_single_value_slot_supersedes_old_claim(
     assert rows[old] == "superseded"
     assert rows[new] == "asserted"
     assert con.execute("select superseded_by from claims where id=?", (old,)).fetchone()[0] == new
+
+
+async def test_slot_infer_and_supersede_on_by_default(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from echomind.adapters.storage.claim_repo import SqliteClaimStore
+
+    monkeypatch.delenv("CLAIM_SLOT_INFER", raising=False)
+    monkeypatch.delenv("CLAIM_SLOT_SUPERSEDE", raising=False)
+    db = SqliteDatabase(tmp_path / "slots.db")
+    await db.initialize()
+    store = SqliteClaimStore(db)
+    await store.ensure_schema()
+    old = await store.assert_claim(
+        "group:1", "L", "value", "性别是男", source_type="system",
+    )
+    new = await store.assert_claim(
+        "group:1", "L", "value", "性别是女", source_type="system",
+    )
+    con = sqlite3.connect(str(tmp_path / "slots.db"))
+    assert con.execute("select slot_key from claims where id=?", (new,)).fetchone()[0] \
+        == "person.gender"
+    assert con.execute("select status from claims where id=?", (old,)).fetchone()[0] \
+        == "superseded"
