@@ -1040,3 +1040,23 @@ status=open, created_at_ms, updated_at_ms
 - 旧数据表不存在时，服务启动 schema 会创建。
 
 门禁：431 passed / 93%。
+
+
+## 29. 承诺事件状态闭环（2026-11-02）
+
+`sync_intention_events()` 现在：
+
+- 当前快照中的 intention → `open`；
+- 快照中已不存在的 open 事件 → `closed`；
+- 保留 source/target/summary 审计；
+- 不删除历史；
+- 不自动发送。
+
+测试覆盖：
+
+```text
+保存承诺 → open
+保存无承诺快照 → closed
+```
+
+门禁：431 passed / 93%。

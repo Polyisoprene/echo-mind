@@ -30,3 +30,6 @@ async def test_save_snapshot_persists_open_intention(tmp_path: Path) -> None:
         "SELECT source_chat_key,target_chat_key,summary,status FROM intention_events"
     ).fetchall()
     assert rows == [("private:1", "group:1", "去群里说", "open")]
+    await save_snapshot(SqliteDatabase(db_path), WorkingSnapshot(scope_key="global"))
+    status = con.execute("SELECT status FROM intention_events").fetchone()[0]
+    assert status == "closed"
