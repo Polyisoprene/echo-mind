@@ -22,7 +22,9 @@ BILI_OR_MEDIA_RE = re.compile(
 )
 
 REAGENT_TOOLS: dict[str, tuple[str, ...]] = {
-    "日常轻装剂": ("send_message", "send_sticker", "feiyu_say", "recall_memory"),
+    "日常轻装剂": (
+        "send_message", "send_to_chat", "send_sticker", "feiyu_say", "recall_memory",
+    ),
     "多模态鉴赏剂": (
         "look_at_image",
         "watch_video",

@@ -640,11 +640,29 @@ content + chat_key UNINDEXED
 |---|---:|---:|
 | 现有 BM25/hybrid baseline | **0.954** | **0.892** |
 | FTS5 trigram | 0.942 | 0.876 |
+| FTS5 + BM25 RRF(k=60) | 0.944 | 0.878 |
 
 结论：
 
 - FTS5 中文 3-gram OR 可查；
 - 全量 500 低于现有基线约 1.2pp recall / 1.6pp MRR；
+- 等权 RRF 只回到 0.944/0.878，仍低于 0.954/0.892；
 - 不接 live；
 - 保留独立索引与测试，作为后续“FTS5 + 现有 BM25 RRF”候选，不直接替换；
 - 结果文件：`eval/baselines/longmemeval-500-fts5-2026-11-02.json`。
+
+
+### P3 工具可见性修复（2026-11-02）
+
+发现 `send_to_chat` 虽注册，但不在 reagent 选择集，模型看不到。已加入：
+
+```text
+日常轻装剂: send_message, send_to_chat, send_sticker, feiyu_say, recall_memory
+```
+
+并在 prompt 中明确：
+
+- send_message/feiyu_say 只发当前会话；
+- 去别的群/私聊必须用 send_to_chat(target_chat_key) 或 feiyu_say(target_chat_key)；
+- 目标不明确先问，不许只在当前会话答应“我这就去”；
+- 失败要如实说。

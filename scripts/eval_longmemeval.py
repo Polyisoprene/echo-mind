@@ -17,6 +17,7 @@ from echomind.adapters.llm.embedding_client import OpenAiEmbeddingGateway
 from echomind.core.config import load_config_from_json
 from echomind.domain.models import SemanticFact
 from echomind.mind.ranker_fusion import bm25_scores, unified_rank
+from echomind.mind.retrieval_fusion import RRF_K, rrf_fuse
 from echomind.mind.semantic_retrieval import cosine
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -141,6 +142,13 @@ async def _ranked(
         )
     if retriever == "fts5":
         return _fts5_ranked(facts, str(question["question"]))
+    if retriever == "fts5_hybrid":
+        scores = bm25_scores(facts, str(question["question"]))
+        lexical = tuple(sorted(facts, key=lambda f: (-scores[f.fact_id], f.fact_id)))
+        fts = tuple(f.fact_id for f in _fts5_ranked(facts, str(question["question"])))
+        fused = rrf_fuse((tuple(f.fact_id for f in lexical), fts), RRF_K)
+        by_id = {f.fact_id: f for f in facts}
+        return tuple(by_id[i] for i in fused if i in by_id)
     assert gateway is not None
     vectors = await _embed_all(gateway, [fact.fact_text for fact in facts], batch)
     query_vec = (await gateway.embed((str(question["question"]),)))[0]
@@ -158,7 +166,7 @@ async def main() -> int:
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument("--batch", type=int, default=32)
     parser.add_argument("--granularity", choices=("session", "turn"), default="session")
-    parser.add_argument("--retriever", choices=("hybrid", "bm25", "fts5"), default="hybrid")
+    parser.add_argument("--retriever", choices=("hybrid", "bm25", "fts5", "fts5_hybrid"), default="hybrid")
     parser.add_argument("--disable", default="")
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval.json")
     args = parser.parse_args()
