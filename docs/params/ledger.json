@@ -1139,6 +1139,19 @@
         "script": "scripts/attribute_interactions.py",
         "note": "first directed reply within 30 min; p95=22.9 min, window 30 min"
       }
+    },
+    {
+      "id": "mind/intention_stack.py::MAX_INTENTIONS",
+      "module": "mind/intention_stack.py",
+      "symbol": "MAX_INTENTIONS",
+      "line": 8,
+      "value": "3",
+      "class": "convention",
+      "status": "active",
+      "claim": "BDI 短期意图栈上限",
+      "evidence": {
+        "rationale": "Cowan (2001) 工作记忆容量约 4±1；取 3 作为保守上限，避免无界累积，不代表心理测量拟合"
+      }
     }
   ]
 }
