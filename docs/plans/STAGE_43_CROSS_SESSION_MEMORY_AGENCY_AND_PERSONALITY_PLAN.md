@@ -589,7 +589,8 @@ satiate_snapshot() 接入
 - 普通闲聊不产生；
 - 意图上限仍为 3；
 - `expires_at_ms=0`：TTL 尚未校准，不拍数字；
-- 不自动解析目标群；target 留给发送工具/显式事件。
+- 不自动解析目标群；但如果文本显式出现 `group:<id>` / `private:<id>`，保留为 `target_chat_key`；
+- 目标不明时保持空，不猜。
 
 验证：
 
@@ -666,3 +667,13 @@ content + chat_key UNINDEXED
 - 去别的群/私聊必须用 send_to_chat(target_chat_key) 或 feiyu_say(target_chat_key)；
 - 目标不明确先问，不许只在当前会话答应“我这就去”；
 - 失败要如实说。
+
+
+### P2 目标字段（2026-11-02）
+
+`IntentionItem` 增加可选 `target_chat_key`：
+
+- 显式 chat key 保留；
+- “去群里说”这类没有具体目标的承诺保持空；
+- global working state 让 summary 跨会话可见；
+- 不自动发消息，仍由模型/发送工具决定。

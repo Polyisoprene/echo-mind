@@ -71,12 +71,11 @@ class DriveState(FrozenValueObject):
 
 
 class IntentionItem(FrozenValueObject):
-    """Short-term working memory intention / unfinished thought."""
-
     summary: str
     created_at_ms: int
     expires_at_ms: int
     target_user_id: str = ""
+    target_chat_key: str = ""
 
 
 class WorkingSnapshot(FrozenValueObject):
