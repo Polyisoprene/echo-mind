@@ -26,3 +26,4 @@ async def test_trigram_search_and_chat_filter(tmp_path: Path) -> None:
     assert await index.search("草莓蛋糕") == (1, 2)
     assert await index.search("草莓蛋糕", chat_key="group:1") == (1,)
     assert await index.search("不存在") == ()
+    assert await index.search("喜欢吃草莓") == (1, 2)

@@ -761,3 +761,22 @@ tests/unit/test_intention_rendering.py
 - 有目标时显示 target_chat_key。
 
 门禁：425 passed / 93%。
+
+
+### P4 FTS5 回填与延迟（2026-11-02）
+
+生产索引：
+
+```text
+indexed = 249 semantic facts
+build = 3.5s
+query = 2–4ms
+```
+
+修复：
+
+- 之前 FTS `MATCH` 用整句 phrase，导致“群主是谁”0 命中；
+- 改为 CJK 3-gram / 英文词项 OR；
+- 2 字查询（如“直播”“B站”）仍无法命中，这是 trigram 的硬限制，不掩盖。
+
+仍不接 live；FTS5 500 对照低于基线。

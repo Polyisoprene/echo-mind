@@ -2,8 +2,25 @@
 
 from __future__ import annotations
 
+import re
+
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import SemanticFact
+
+
+def _chunk_terms(chunk: str) -> list[str]:
+    if chunk.isascii():
+        return [chunk] if len(chunk) >= 3 else []
+    return [chunk[i:i + 3] for i in range(0, max(1, len(chunk) - 2))]
+
+
+def _query_terms(query: str) -> str:
+    terms = [
+        term
+        for chunk in re.findall(r"[A-Za-z0-9_]+|[\u4e00-\u9fff]+", query)
+        for term in _chunk_terms(chunk)
+    ]
+    return " OR ".join(f'"{term.replace(chr(34), chr(34) * 2)}"' for term in dict.fromkeys(terms))
 
 
 class FtsMemoryIndex:
@@ -36,7 +53,9 @@ class FtsMemoryIndex:
         text = query.strip()
         if not text:
             return ()
-        match = '"' + text.replace('"', '""') + '"'
+        match = _query_terms(text)
+        if not match:
+            return ()
         async with self._db.connect() as conn:
             if chat_key:
                 cursor = await conn.execute(
