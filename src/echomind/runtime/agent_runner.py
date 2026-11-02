@@ -17,6 +17,7 @@ from echomind.domain.ports import (
 from echomind.extensions.registry import ExtensionRegistry
 from echomind.mind.ban_control import purge_message_batch
 from echomind.mind.naming import bot_naming
+from echomind.runtime.outbound import prepare_cross_chat, prepare_voice
 from echomind.runtime.prompt_composer import PromptComposer, StickerCandidate
 from echomind.runtime.reply_rescue import rescue_payload_json, rescue_unsent_reply
 from echomind.runtime.working_scratchpad import WorkingScratchpad
@@ -118,26 +119,15 @@ class AgentSessionRunner:
         )
         await self._traces.save_turn(rec)
 
-    def _prepare_voice_args(
-        self, chat_key: str, name: str, args: dict[str, Any], sent_texts: list[str]
-    ) -> tuple[dict[str, Any] | None, str]:
-        if name == "feiyu_say":
-            if sent_texts:
-                return None, "本轮已发送过文字或语音回复，请勿重复再用语音念一遍，直接结束即可。"
-            kept = purge_message_batch(str(args.get("text", "")), self._bans.get(chat_key, ()))
-            if not kept:
-                return None, "已拦截：语音内容命中管理员禁用词，未发送"
-            sent_texts.append(kept[0])
-            return {**args, "text": kept[0]}, ""
-        if name == "feiyu_cover":
-            sent_texts.append(f"[翻唱:{args.get('song', '')}]")
-        return args, ""
-
     def _prepare_outbound_args(
         self, chat_key: str, name: str, args: dict[str, Any], sent_texts: list[str]
     ) -> tuple[dict[str, Any] | None, str]:
+        if name == "send_to_chat":
+            return prepare_cross_chat(
+                chat_key, args, sent_texts, self._bans.get(chat_key, ()))
         if name != "send_message":
-            return self._prepare_voice_args(chat_key, name, args, sent_texts)
+            return prepare_voice(
+                chat_key, name, args, sent_texts, self._bans.get(chat_key, ()))
         if sent_texts:
             return None, "本轮已发送过文字消息，请勿重复连发，直接结束即可。"
         kept = purge_message_batch(args.get("messages", []), self._bans.get(chat_key, ()))

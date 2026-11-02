@@ -780,3 +780,33 @@ query = 2–4ms
 - 2 字查询（如“直播”“B站”）仍无法命中，这是 trigram 的硬限制，不掩盖。
 
 仍不接 live；FTS5 500 对照低于基线。
+
+
+## 20. 跨会话发送的出站保护（2026-11-02）
+
+发现 `send_to_chat` 原先绕过 `_prepare_outbound_args` 的清洗/计数：
+
+- 可能命中管理员禁用词仍发出；
+- 同一轮可能重复跨会话发送；
+- `sent_count` 不统计。
+
+修复：
+
+```text
+runtime/outbound.py: prepare_cross_chat()
+agent_runner 统一调用
+```
+
+现在跨会话发送同样经过：
+
+- 禁用词过滤；
+- 同一轮重复发送拦截；
+- sent_texts 计数。
+
+测试：
+
+```text
+tests/unit/test_cross_chat_outbound_guard.py
+```
+
+门禁：426 passed / 93%。
