@@ -37,4 +37,4 @@
 | CAP-TRAIT-MEMORY | active trait 的 support 能影响记忆检索排序 | ⚠️ partial | 手动 support 6 条已生效；自动 support 稀有，门控仅 BM25>0 |
 | CAP-ACTION-ELIGIBILITY | active trait 可追加工具授权并授予拒绝许可 | ⚠️ partial | 默认 additive；whitelist 模式已实现但未启用；refusal 只许可不强制 |
 | CAP-RESPONSE-ATTRIBUTION | 记录她的消息之后的回应归因（mention/temporal） | ⚠️ partial | shadow only：不接 trait/ranker/prompt；tier A quote 元数据当前不可用 |
-| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ⚠️ partial | 读路径仍 chat_key IN (?, global)，live 未接；但跨会话 send_to_chat 已真实发送到目标群（message_id 1143989337）；承诺事件/披露记忆未实现 |
+| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ⚠️ partial | 已实现 source/audience 策略、opt-in get_cross_session_facts 与 recall_memory(include_cross_session)；send_to_chat 已真实发到群；live 读路径仍未默认开启，承诺事件/披露模型未实现 |

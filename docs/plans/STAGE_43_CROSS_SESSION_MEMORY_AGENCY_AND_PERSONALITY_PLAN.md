@@ -975,3 +975,27 @@ send_group_msg group_id=10002002
 - 未使用真实 QQ 语音/群。
 
 门禁：429 passed / 93%。
+
+
+## 26. 跨会话主动回忆（2026-11-02）
+
+`recall_memory` 新增可选参数：
+
+```text
+include_cross_session: bool = false
+```
+
+行为：
+
+- 默认 false，完全保持原行为；
+- true 时调用 `get_cross_session_facts()`；
+- 仍受 source/audience 策略：private 来源/secret 不跨；
+- 模型可主动选择跨会话回忆，不是后台偷看。
+
+测试：
+
+```text
+tests/unit/test_recall_cross_session.py
+```
+
+门禁：430 passed / 93%。

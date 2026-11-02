@@ -106,14 +106,27 @@ class RecallMemoryTool:
                     "type": "string",
                     "description": "要翻找的人名、外号、QQ号或往事关键词（多个词用空格分隔）",
                 },
+                "include_cross_session": {
+                    "type": "boolean",
+                    "description": "是否同时翻找其他会话的 public/group 记忆（默认 false）",
+                },
             },
             "required": ["query"],
         }
 
+    async def _facts(
+        self, chat_key: str, args: dict[str, Any],
+    ) -> tuple[SemanticFact, ...]:
+        facts = await self._reader.get_semantic_facts(chat_key)
+        if not args.get("include_cross_session"):
+            return facts
+        loader = getattr(self._reader, "get_cross_session_facts", None)
+        return (*facts, *await loader(chat_key)) if callable(loader) else facts
+
     async def execute(self, chat_key: str, args: dict[str, Any]) -> str:
         raw_q = str(args.get("query", "")).strip()
         kws = [w.lower() for w in raw_q.split() if w.strip()]
-        facts = await self._reader.get_semantic_facts(chat_key)
+        facts = await self._facts(chat_key, args)
         cards = await self._reader.get_episodic_cards(chat_key)
         f_hits = [
             f"- [事实] {f.subject}：{f.fact_text}"
