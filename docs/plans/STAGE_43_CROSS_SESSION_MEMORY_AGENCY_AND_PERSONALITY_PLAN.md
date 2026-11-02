@@ -810,3 +810,34 @@ tests/unit/test_cross_chat_outbound_guard.py
 ```
 
 门禁：426 passed / 93%。
+
+
+## 21. 端到端工具调用回归（2026-11-02）
+
+新增：
+
+```text
+tests/unit/test_stage4_tools_and_runtime.py::
+  test_agent_calls_send_to_chat_with_explicit_target
+```
+
+使用脚本化 LLM，在私聊触发：
+
+```text
+send_to_chat(target_chat_key="group:10002002", messages=["去群里说"])
+```
+
+fake OneBot 记录到：
+
+```text
+send_group_msg group_id=10002002
+```
+
+这验证了：
+
+- 工具在 registry 可执行；
+- agent runner 会处理目标；
+- 出站保护不拦截合法跨会话发送；
+- 不依赖真实 QQ。
+
+仍未做真实 QQ 群发送（避免测试打扰）。

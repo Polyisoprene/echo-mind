@@ -38,6 +38,7 @@ from echomind.tools.messaging_and_group import (
     SendMessageTool,
     SendPokeTool,
     SendStickerTool,
+    SendToChatTool,
 )
 from echomind.tools.voice_tools import FeiyuSayTool
 
@@ -45,8 +46,10 @@ from echomind.tools.voice_tools import FeiyuSayTool
 class FakeOneBotCaller:
     def __init__(self) -> None:
         self._seq = 9000
+        self.sent: list[tuple[str, dict[str, Any]]] = []
 
     async def call_api(self, api: str, **data: Any) -> Any:
+        self.sent.append((api, data))
         if api == "get_group_member_list":
             return [
                 {"user_id": 10004004, "card": "馍馍", "nickname": "kira", "role": "owner"},
@@ -404,3 +407,40 @@ async def test_ac4_5_cnmeme_wiki_client_etag_cache_and_composite_search() -> Non
     merged_out = await web_tool.execute("group:10002002", {"query": "飞飞鼠是什么梗"})
     assert "【梗Wiki · 飞飞鼠】" in merged_out
     assert "萌娘百科词条：飞飞鼠" in merged_out
+
+
+async def test_agent_calls_send_to_chat_with_explicit_target(tmp_path: Path) -> None:
+    db = SqliteDatabase(tmp_path / "cross-send.db")
+    await db.initialize()
+    mem_repo = SqliteMemoryRepository(db)
+    work_repo = SqliteWorkingStateStore(db)
+    await work_repo.ensure_default_params()
+    caller = FakeOneBotCaller()
+    bridge = OneBotV11Bridge(caller, db)
+    facade = CognitiveCoreFacade(mem_repo, mem_repo, work_repo, operator_ids=("10001001",))
+    reg = ExtensionRegistry()
+    reg.register_tool(SendToChatTool(bridge))
+    llm = ScriptedLlmGateway([
+        {"choices": [{"message": {"role": "assistant", "content": "", "tool_calls": [{
+            "id": "c1", "function": {
+                "name": "send_to_chat",
+                "arguments": '{"target_chat_key":"group:10002002","messages":["去群里说"]}',
+            },
+        }]}}]},
+        {"choices": [{"message": {"role": "assistant", "content": "已经发到群里了"}}]},
+    ])
+    runner = AgentSessionRunner(
+        facade, llm, reg, bridge,
+        PromptComposer(role_text="回音", bot_name="回音"),
+    )
+    trigger = Percept(
+        chat_key="private:10001001", scene="private", message_id="1",
+        timestamp_ms=1793160000000, sender_id="10001001", sender_name="L",
+        text="去群里说", is_called_by_name=True,
+    )
+    outcome = await runner.run_turn("private:10001001", (), (trigger,))
+    assert "send_to_chat" in outcome.tools_used
+    assert any(
+        api == "send_group_msg" and str(data.get("group_id")) == "10002002"
+        for api, data in caller.sent
+    )
