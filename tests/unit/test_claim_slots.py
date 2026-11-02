@@ -45,3 +45,8 @@ def test_non_identity_traits_are_not_slots() -> None:
 def test_group_id_is_not_a_slot() -> None:
     assert not is_single("person.group_id")
     assert infer_slot("L", "群内ID是 12345") == ""
+
+
+def test_history_only_mention_is_not_current_slot() -> None:
+    value = "L提到：L因霸凌退群（此前曾是：L是男性）"
+    assert infer_slot("L", value) == ""

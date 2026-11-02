@@ -28,7 +28,7 @@ def infer_slot(subject: str, value: str) -> str:
     """Return one single-value slot only when exactly one pattern matches."""
     if not _person_subject(subject) or not value.strip():
         return ""
-    text = value.lower()
+    text = value.split("此前曾是", 1)[0].lower()
     hits = _slot_matches(text)
     if len(hits) != 1:
         return ""

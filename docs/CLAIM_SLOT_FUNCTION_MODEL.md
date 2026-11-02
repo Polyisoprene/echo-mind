@@ -287,3 +287,32 @@ person.gender = 2
 ```
 
 生产仍未 apply，slot_key 全空，superseded=0。
+
+## 16. 生产小流量回填结果（2026-11-02）
+
+回填 2 条 gender 后复核发现：
+
+```text
+id=751  当前事实“L 是男性”       → 保留 person.gender
+id=760  当前事实“因霸凌退群”，男性只在“此前曾是” → 清空 slot
+```
+
+修正：
+
+- 推断只看 `此前曾是` 之前的当前文本；
+- 不再用历史文本命中当前槽；
+- 生产最终：
+
+```text
+person.gender = 1
+superseded = 0
+retracted = 0
+```
+
+新增回归：
+
+```text
+test_history_only_mention_is_not_current_slot
+```
+
+生产只做了这 1 条 slot_key 回填；没有触发覆盖，没有改 claim 状态。
