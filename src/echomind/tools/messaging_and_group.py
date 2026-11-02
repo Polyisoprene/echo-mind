@@ -126,7 +126,7 @@ class SendToChatTool:
         if not mids:
             return f"发送失败：目标 {target} 没有返回 message_id"
         if self._events is not None:
-            await self._events.mark_delivered(target, raw_tuple, mids)
+            await self._events.mark_delivered(chat_key, target, raw_tuple, mids)
         return json.dumps({
             "ok": True, "target_chat_key": target,
             "sent_count": len(mids), "message_ids": list(mids),

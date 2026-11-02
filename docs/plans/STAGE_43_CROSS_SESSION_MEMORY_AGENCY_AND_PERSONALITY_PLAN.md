@@ -1156,3 +1156,25 @@ test_delivery_binds_ambiguous_target
 ```
 
 门禁：434 passed / 93%。
+
+
+## 34. 来源约束与模糊承诺绑定（2026-11-02）
+
+`mark_delivered` 现在：
+
+- 必须匹配 `source_chat_key`；
+- 目标精确或为空；
+- 先按 summary 根匹配；
+- 若文本完全不同但来源/目标匹配，绑定最近一条 open 模糊承诺；
+- 回填真实 target + message_id + fulfilled。
+
+这修复了：
+
+```text
+event summary: 群号发我，我这就去发
+实际群消息文本: 说一句，我心里只有L一个...
+```
+
+两者词面不同，但来源/目标一致，仍可闭环。
+
+门禁：434 passed / 93%。

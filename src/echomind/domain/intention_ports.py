@@ -7,6 +7,6 @@ from typing import Protocol
 
 class IIntentionDelivery(Protocol):
     async def mark_delivered(
-        self, target_chat_key: str, sent_texts: tuple[str, ...],
-        message_ids: tuple[str, ...],
+        self, source_chat_key: str, target_chat_key: str,
+        sent_texts: tuple[str, ...], message_ids: tuple[str, ...],
     ) -> int: ...

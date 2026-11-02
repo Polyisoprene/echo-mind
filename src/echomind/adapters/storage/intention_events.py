@@ -31,7 +31,8 @@ class IntentionEventStore:
         self._db = db
 
     async def mark_delivered(
-        self, target_chat_key: str, sent_texts: tuple[str, ...], message_ids: tuple[str, ...],
+        self, source_chat_key: str, target_chat_key: str,
+        sent_texts: tuple[str, ...], message_ids: tuple[str, ...],
     ) -> int:
         """Bind successful sends to matching open events; returns rows updated."""
         joined = " ".join(sent_texts)
@@ -39,10 +40,19 @@ class IntentionEventStore:
         async with self._db.connect() as conn:
             cursor = await conn.execute(
                 "SELECT id, summary FROM intention_events "
-                "WHERE (target_chat_key=? OR target_chat_key='') AND status='open'",
-                (target_chat_key,),
+                "WHERE source_chat_key=? AND (target_chat_key=? OR target_chat_key='') "
+                "AND status='open' ORDER BY updated_at_ms DESC",
+                (source_chat_key, target_chat_key),
             )
-            rows = await cursor.fetchall()
+            rows = list(await cursor.fetchall())
             updated = await _bind_rows(conn, rows, joined, message_ids, target_chat_key)
+            if not updated and rows:
+                await conn.execute(
+                    "UPDATE intention_events SET status='fulfilled', "
+                    "message_id=?, target_chat_key=?, updated_at_ms=strftime('%s','now')*1000 "
+                    "WHERE id=? AND status='open'",
+                    (message_ids[0] if message_ids else "", target_chat_key, int(rows[0][0])),
+                )
+                updated = 1
             await conn.commit()
         return updated

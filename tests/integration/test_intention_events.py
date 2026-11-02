@@ -50,7 +50,7 @@ async def test_delivery_binds_message_id_and_fulfills(tmp_path: Path) -> None:
         ),),
     ))
     updated = await IntentionEventStore(db).mark_delivered(
-        "group:1", ("我这就去群里说一句",), ("mid_1",),
+        "private:1", "group:1", ("我这就去群里说一句",), ("mid_1",),
     )
     assert updated == 1
     con = sqlite3.connect(str(db_path))
@@ -74,7 +74,7 @@ async def test_delivery_binds_ambiguous_target(tmp_path: Path) -> None:
         ),),
     ))
     assert await IntentionEventStore(db).mark_delivered(
-        "group:9", ("我这就去群里说",), ("mid_9",),
+        "private:1", "group:9", ("实际发送文本不同",), ("mid_9",),
     ) == 1
     con = sqlite3.connect(str(db_path))
     assert con.execute(
