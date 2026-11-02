@@ -1254,3 +1254,21 @@ tests/integration/test_cross_session_live_flag.py
 ```
 
 门禁：437 passed / 93%。
+
+
+## 39. 群目标过滤（2026-11-02）
+
+`list_groups` 新增可选 `query`：
+
+- 按群名/群号片段过滤；
+- 无匹配返回空数组，明确“不知道”；
+- 不自动发送；
+- 不猜群名。
+
+测试：
+
+```text
+tests/unit/test_list_groups_tool.py
+```
+
+门禁：438 passed / 93%。
