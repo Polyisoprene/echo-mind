@@ -1,4 +1,4 @@
-# 🧠 EchoMind (`echomind`)
+# EchoMind (`echomind`)
 
 <p align="center">
   <img src="Ecomind.png" alt="EchoMind 看板娘" width="360">
