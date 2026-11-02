@@ -677,3 +677,21 @@ content + chat_key UNINDEXED
 - “去群里说”这类没有具体目标的承诺保持空；
 - global working state 让 summary 跨会话可见；
 - 不自动发消息，仍由模型/发送工具决定。
+
+
+## 16. 状态校准（2026-11-02）
+
+能力台账不再把已实现基础标成 `absent`：
+
+```text
+CAP-CROSS-SESSION-MEMORY: absent → partial
+CAP-INTENTION-STACK:     absent → partial
+CAP-FTS5:                absent → partial
+```
+
+仍未完成：
+
+- 跨会话 live 读路径与承诺事件；
+- BDI 自动目标解析/TTL/执行；
+- FTS5 不达基线，不接 live；
+- HEXACO 数值映射无数据，不做。

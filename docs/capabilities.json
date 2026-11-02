@@ -188,8 +188,8 @@
       "code": [
         "src/echomind/domain/models.py"
       ],
-      "status": "absent",
-      "gap": "IntentionItem 在全库从未被构造；filter_unfulfilled_intentions 永远作用于空元组",
+      "status": "partial",
+      "gap": "已从明确承诺句生成 bounded intention（上限3，TTL未校准），写入 global working state；未自动解析模糊目标/未自动执行发送；测试 tests/unit/test_commitment.py",
       "acceptance_test": null,
       "evidence_report": "",
       "target_release": "E2"
@@ -427,8 +427,8 @@
         "src/echomind/adapters/storage/memory_repo.py",
         "src/echomind/tools/messaging_and_group.py"
       ],
-      "status": "absent",
-      "gap": "文档要求来源感/告知史/受众披露；读路径仍 chat_key IN (?, global)，私聊原始事实群聊不可见；已有 send_to_chat/feiyu_say target 能力，但跨会话事件/披露记忆未实现",
+      "status": "partial",
+      "gap": "已实现 source/audience 策略、只读 shadow（37 global 候选、私聊来源0）与 opt-in get_cross_session_facts；live 读路径未接，承诺事件/披露模型未实现；send_to_chat 已可用",
       "acceptance_test": "",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "S43"
