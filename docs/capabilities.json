@@ -189,7 +189,7 @@
         "src/echomind/domain/models.py"
       ],
       "status": "partial",
-      "gap": "已从明确承诺句生成 bounded intention（上限3，TTL未校准），写入 global working state；未自动解析模糊目标/未自动执行发送；测试 tests/unit/test_commitment.py",
+      "gap": "明确承诺句生成 bounded intention（≤3），进入 global working state 且已渲染到 prompt；TTL 未校准，模糊目标不自动解析，不自动执行发送",
       "acceptance_test": null,
       "evidence_report": "",
       "target_release": "E2"

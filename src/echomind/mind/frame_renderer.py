@@ -141,6 +141,46 @@ def _header_lines(scene: str, snap: WorkingSnapshot) -> list[str]:
     ]
 
 
+def _bond_lines(bonds: dict[str, SocialBondProfile] | None) -> list[str]:
+    if not bonds:
+        return []
+    return [
+        "【👥 在场群友身份档案（QQ号唯一对应一人，严禁认错）】",
+        *(_format_bond_line(b) for b in list(bonds.values())[:16]),
+    ]
+
+
+def _fact_lines(facts: tuple[SemanticFact, ...]) -> list[str]:
+    if not facts:
+        return []
+    return [
+        "【📌 权威事实与人物对应底表】",
+        *(
+            (
+                f"- [待核实印象 {round(f.confidence * 100)}%] {f.subject}：{f.fact_text}"
+                if (f.confidence < 0.65 and not f.is_locked)
+                else f"- [{round(f.confidence * 100)}%] {f.subject}：{f.fact_text}"
+            )
+            for f in facts[:28]
+        ),
+    ]
+
+
+def _recalled_lines(recalled: tuple[RecalledMemoryItem, ...]) -> list[str]:
+    if not recalled:
+        return []
+    return ["【海马体召回的往事记忆（按艾宾浩斯遗忘曲线）】",
+            *(format_recalled_item(item) for item in recalled)]
+
+
+def _intention_lines(snap: WorkingSnapshot) -> list[str]:
+    lines = ["【📌 短期挂念（未完成承诺/意图）】"]
+    for item in snap.intentions[:3]:
+        target = f" → {item.target_chat_key}" if item.target_chat_key else ""
+        lines.append(f"- {item.summary}{target}")
+    return lines
+
+
 def render_mind_block(
     scene: str,
     snap: WorkingSnapshot,
@@ -155,24 +195,13 @@ def render_mind_block(
     bonds: dict[str, SocialBondProfile] | None = None,
 ) -> str:
     lines = _header_lines(scene, snap)
-    if bonds:
-        lines.append("【👥 在场群友身份档案（QQ号唯一对应一人，严禁认错）】")
-        lines.extend(_format_bond_line(b) for b in list(bonds.values())[:16])
-    if facts:
-        lines.append("【📌 权威事实与人物对应底表】")
-        lines.extend(
-            (
-                f"- [待核实印象 {round(f.confidence * 100)}%] {f.subject}：{f.fact_text}"
-                if (f.confidence < 0.65 and not f.is_locked)
-                else f"- [{round(f.confidence * 100)}%] {f.subject}：{f.fact_text}"
-            )
-            for f in facts[:28]
-        )
+    lines.extend(_bond_lines(bonds))
+    lines.extend(_fact_lines(facts))
+    if snap.intentions:
+        lines.extend(_intention_lines(snap))
     if bans:
         lines.append(ban_discipline_line(bans))
     lines.extend((*warnings, *shadow_directives, *rule_lines))
-    if recalled:
-        lines.append("【海马体召回的往事记忆（按艾宾浩斯遗忘曲线）】")
-        lines.extend(format_recalled_item(item) for item in recalled)
+    lines.extend(_recalled_lines(recalled))
     lines.extend(cur_prompts)
     return "\n".join(lines)

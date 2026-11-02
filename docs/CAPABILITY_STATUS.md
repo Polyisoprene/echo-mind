@@ -22,7 +22,7 @@
 | CAP-CLOSED-LOOP | 人格由可观测反馈闭环驱动 | ⚠️ partial | 真实回合→evidence→support→ranker 已闭环；自动 support 仍稀有，主要靠手动确认；reward 仍含探针自评 |
 | CAP-SELF-NARRATIVE | 存在跨会话的自我叙事，并参与冲突判定 | ⚠️ partial | 已有 evidence-bound 只读叙事投影；A/B 无稳定风格收益，未接 prompt，也未参与冲突判定 |
 | CAP-FTS5 | SQLite FTS5 全文检索 | ⚠️ partial | 已实现 FTS5+trigram 索引与测试；LongMemEval 500：FTS5 0.942/0.876，FTS5+BM25 RRF 0.944/0.878，均低于现有 0.954/0.892；未接 live |
-| CAP-INTENTION-STACK | 短期挂念栈（BDI 意图，≤3 槽） | ⚠️ partial | 已从明确承诺句生成 bounded intention（上限3，TTL未校准），写入 global working state；未自动解析模糊目标/未自动执行发送；测试 tests/unit/test_commitment.py |
+| CAP-INTENTION-STACK | 短期挂念栈（BDI 意图，≤3 槽） | ⚠️ partial | 明确承诺句生成 bounded intention（≤3），进入 global working state 且已渲染到 prompt；TTL 未校准，模糊目标不自动解析，不自动执行发送 |
 | CAP-FIVE-SLOTS | 微内核五大扩展槽全部可用 | ⚠️ partial | sensor/tool 已用；facet/proposer/panel 三个槽位零注册实现 |
 | CAP-SEVEN-GATES | 7 道自动化质量门禁 | ⚠️ partial | 脚本实际 5 步；hypothesis 未独立成门禁；迁移对账与故障注入缺失（E0 新增了参数/能力两道） |
 | CAP-SEMANTIC-EVAL | 对人格一致性/记忆准确率/情绪合理性有语义评测 | ⚠️ partial | 内部 70/70；LongMemEval 500 retrieval 95.4%/MRR .892；QA 417/500（CoT 431，top10 430）；GroupMemBench 四域 metadata 48.6/52.6/48.3/57.8，KU change-only 0.688/0.833/0.765/0.727；CharacterEval 缺 CharacterRM |

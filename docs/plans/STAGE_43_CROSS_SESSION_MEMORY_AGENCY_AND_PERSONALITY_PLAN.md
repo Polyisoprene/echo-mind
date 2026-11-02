@@ -735,3 +735,29 @@ tests/unit/test_cross_session_tool_visibility.py
 同时发现上一版 prompt 修改实际未生效（字符串未匹配），已补上并验证。
 
 门禁：424 passed / 93%。
+
+
+## 19. BDI 意图进入 prompt（2026-11-02）
+
+发现：意图虽然写入 working state，但 `frame_renderer` 没有渲染，模型看不到。
+
+新增：
+
+```text
+frame_renderer._intention_lines()
+tests/unit/test_intention_rendering.py
+```
+
+现在 prompt 会包含：
+
+```text
+【📌 短期挂念（未完成承诺/意图）】
+- 我这就去群里说 → group:...
+```
+
+- 最多 3 条；
+- 没有目标就只显示 summary；
+- 不自动执行发送；
+- 有目标时显示 target_chat_key。
+
+门禁：425 passed / 93%。
