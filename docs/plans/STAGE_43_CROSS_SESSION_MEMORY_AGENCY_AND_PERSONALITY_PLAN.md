@@ -1195,3 +1195,11 @@ event summary: 群号发我，我这就去发
 同时清理了 TTL 上线前的陈旧意图（已实际执行过），通过正常 working repository 清空，事件 id=1 变为 closed，不手改数据库。
 
 门禁：436 passed / 93%。
+
+
+## 36. 两个 partial 按 claim 收口（2026-11-02）
+
+- `CAP-RESPONSE-ATTRIBUTION`：claim 只要求“记录回应归因”，已有 1654 outcomes 与测试；shadow-only 是下游使用范围，不是未实现。
+- `CAP-TRAIT-MEMORY`：claim 只要求“support 能影响检索排序”，已有 6 条 support 与 `test_trait_link_breaks_live_retriever_tie`；自动 support 稀有属于增强。
+
+两者校准为 implemented；未接下游/自动 support 保留在 gap 说明，不伪装成已自动化。

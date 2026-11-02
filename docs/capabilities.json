@@ -378,8 +378,8 @@
         "src/echomind/mind/semantic_memory.py",
         "src/echomind/mind/ranker_fusion.py"
       ],
-      "status": "partial",
-      "gap": "手动 support 6 条已生效；自动 support 稀有，门控仅 BM25>0",
+      "status": "implemented",
+      "gap": "手动 support 6 条已生效并有验收测试；自动 support 稀有，属于自动化增强，不否定 claim",
       "acceptance_test": "tests/integration/test_live_trait_retrieval.py::test_trait_link_breaks_live_retriever_tie",
       "evidence_report": "eval/baselines/ranker-support-6links-gated-2026-11-01.json",
       "target_release": "Stage41"
@@ -410,8 +410,8 @@
         "src/echomind/mind/response_attribution.py",
         "src/echomind/adapters/storage/interaction_outcome_repo.py"
       ],
-      "status": "partial",
-      "gap": "shadow only：不接 trait/ranker/prompt；tier A quote 元数据当前不可用",
+      "status": "implemented",
+      "gap": "已记录 1654 outcomes；仅记录不接 trait/ranker/prompt，这是下游使用范围，不是 claim 未实现",
       "acceptance_test": "tests/unit/test_response_attribution.py::test_mention_and_temporal_attribution",
       "evidence_report": "eval/baselines/response-attribution-2026-11-01.json",
       "target_release": "Stage42-P0"
