@@ -179,3 +179,38 @@ CLAIM_SLOT_SUPERSEDE=on
 - 多值/事件/偏好不覆盖；
 - 生产未启用推断/supersede；
 - 不接 CharacterEval。
+
+## 12. 第一轮精调结果（2026-11-02）
+
+收紧 subject/pattern 后：
+
+```text
+scanned = 222
+matched = 8
+person.nickname 5
+person.owner    1
+person.gender   2
+```
+
+与上一轮 20 条相比，已去掉：
+
+- 自组织图式误判；
+- 本群真实群主误判；
+- 回音主人；
+- 电脑里城市；
+- 性别当 owner。
+
+临时库 `--apply` 验证：
+
+```text
+slot_key 写入 8 条
+superseded = 0
+```
+
+说明回填只写槽，不触发覆盖。生产仍未 apply。
+
+剩余可讨论项：
+
+- 两条 gender 文本含“此前曾是”，槽仍成立，但可能需要只取当前值；
+- 阿斋的“群友昵称”是否算 nickname 可人工确认；
+- 生产回填仍需小流量与 70/500 回归。
