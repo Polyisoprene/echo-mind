@@ -1152,6 +1152,19 @@
       "evidence": {
         "rationale": "Cowan (2001) 工作记忆容量约 4±1；取 3 作为保守上限，避免无界累积，不代表心理测量拟合"
       }
+    },
+    {
+      "id": "mind/commitment.py::IMMEDIATE_TTL_MS",
+      "module": "mind/commitment.py",
+      "symbol": "IMMEDIATE_TTL_MS",
+      "line": 15,
+      "value": "300000",
+      "class": "convention",
+      "status": "active",
+      "claim": "即时承诺意图的短期 TTL",
+      "evidence": {
+        "rationale": "复用 EchoMind 已存在的 5 分钟时间断层 GAP_BREAK_MS；即时承诺（这就/马上/待会）超过 5 分钟仍未闭环即视为过期，明天类不套用该值"
+      }
     }
   ]
 }

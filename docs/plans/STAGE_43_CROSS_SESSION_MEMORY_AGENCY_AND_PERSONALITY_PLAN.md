@@ -1178,3 +1178,20 @@ event summary: 群号发我，我这就去发
 两者词面不同，但来源/目标一致，仍可闭环。
 
 门禁：434 passed / 93%。
+
+
+## 35. 即时承诺 TTL（2026-11-02）
+
+真实运行发现承诺 `群号发我，我这就去发` 永久 open。现在：
+
+- `IMMEDIATE_TTL_MS = 300_000`，复用项目已有 5 分钟时间断层约定；
+- “这就/马上/待会/稍后/去群里/去说” → now + 5min；
+- “明天” → 不套用 5min，expires=0；
+- 过期由 `filter_unfulfilled_intentions` 清除；
+- working state 保存时事件同步 `closed`。
+
+参数账本：62 compliant。
+
+同时清理了 TTL 上线前的陈旧意图（已实际执行过），通过正常 working repository 清空，事件 id=1 变为 closed，不手改数据库。
+
+门禁：436 passed / 93%。

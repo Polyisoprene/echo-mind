@@ -12,6 +12,7 @@ _COMMITMENT_MARKERS = (
 )
 _NEGATIONS = ("不去", "不说", "不想去", "不会去")
 _CHAT_KEY_RE = re.compile(r"(?:group|private):[0-9A-Za-z_-]+")
+IMMEDIATE_TTL_MS = 300_000
 
 
 def extract_commitments(
@@ -25,8 +26,10 @@ def extract_commitments(
             continue
         if any(marker in text for marker in _COMMITMENT_MARKERS):
             match = _CHAT_KEY_RE.search(text)
+            immediate = "明天" not in text
             found.append(IntentionItem(
-                summary=text[:120], created_at_ms=now_ms, expires_at_ms=0,
+                summary=text[:120], created_at_ms=now_ms,
+                expires_at_ms=now_ms + IMMEDIATE_TTL_MS if immediate else 0,
                 target_chat_key=match.group(0) if match else "",
                 source_chat_key=source_chat_key,
             ))

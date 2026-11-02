@@ -33,3 +33,13 @@ def test_satiate_snapshot_keeps_new_commitment() -> None:
     assert len(updated.intentions) == 1
     assert updated.intentions[0].target_chat_key == "group:123"
     assert updated.intentions[0].source_chat_key == "private:1"
+
+
+def test_immediate_commitment_has_short_ttl() -> None:
+    item = extract_commitments(("我这就去群里说",), 100)[0]
+    assert item.expires_at_ms == 100 + 300_000
+
+
+def test_tomorrow_commitment_has_no_immediate_ttl() -> None:
+    item = extract_commitments(("我明天去群里说",), 100)[0]
+    assert item.expires_at_ms == 0
