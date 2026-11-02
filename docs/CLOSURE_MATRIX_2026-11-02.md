@@ -1,7 +1,7 @@
 # EchoMind 闭环矩阵（2026-11-02）
 
 > 目的：把“已完成、已验证、被外部资源阻塞”的项集中列出，作为当前收口依据。
-> 当前门禁：417 passed / 93%，fusion 70/70。
+> 当前门禁：419 passed / 93%，fusion 70/70。
 
 ## 1. 已完成并有工程数字
 
@@ -43,6 +43,7 @@
 | 项 | 现状 | 说明 |
 |---|---|---|
 | 跨会话记忆 | `get_cross_session_facts()` 已实现但未接 live；原始私聊事实仍不跨 | 承诺事件/披露模型未实现 |
+| BDI 生产者 | 明确承诺句生成 intention；TTL 未校准；目标不自动解析 | 已有 `mind/commitment.py` 与测试 |
 | 跨会话发送 | `send_to_chat` + `feiyu_say(target_chat_key)` 已实现；未向真实群发测试 | 能力已加，仍需真实链路验收 |
 | RVC/SVS 真实唱歌 | 服务 capability 可用，但未跑真实样本 | 需验证显存/内存与 OOM |
 

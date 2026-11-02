@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from echomind.domain.models import WorkingSnapshot
+from echomind.mind.commitment import extract_commitments
+from echomind.mind.intention_stack import push_intention
 from echomind.mind.salience_hydraulics import apply_speaking_satiation
 from echomind.mind.shadow_appraisal import filter_unfulfilled_intentions
 
@@ -18,6 +20,8 @@ def satiate_snapshot(
     tools_used: tuple[str, ...], now_ms: int,
 ) -> WorkingSnapshot:
     remaining = filter_unfulfilled_intentions(snapshot.intentions, sent_texts, now_ms)
+    for item in extract_commitments(sent_texts, now_ms):
+        remaining = push_intention(remaining, item)
     return apply_speaking_satiation(
         snapshot.model_copy(update={"intentions": remaining}), sent_texts, tools_used,
     )

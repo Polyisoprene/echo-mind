@@ -569,3 +569,36 @@ tests/integration/test_cross_session_memory.py
 - 未改变 `get_semantic_facts` / agent runner。
 
 这一步仍不是“跨会话承诺”：原始私聊事实不会直接进群；承诺需要下一步的显式事件/披露模型。
+
+
+## 14. P2 BDI 生产者（2026-11-02）
+
+新增：
+
+```text
+mind/commitment.py
+tests/unit/test_commitment.py
+satiate_snapshot() 接入
+```
+
+规则：
+
+- 只从她**实际发出的文本**中提取明确承诺；
+- 命中：我这就去/我马上去/我待会儿/我稍后/我去群里/我明天等；
+- 否定句（我不去/不会去）不产生；
+- 普通闲聊不产生；
+- 意图上限仍为 3；
+- `expires_at_ms=0`：TTL 尚未校准，不拍数字；
+- 不自动解析目标群；target 留给发送工具/显式事件。
+
+验证：
+
+```text
+419 passed / 93%
+fusion 70/70
+```
+
+注意：
+
+- 这是 live 的 working-state 变更；
+- 还没有做“承诺 → 跨会话事件 → 目标群发送”的完整闭环。
