@@ -602,3 +602,33 @@ fusion 70/70
 
 - 这是 live 的 working-state 变更；
 - 还没有做“承诺 → 跨会话事件 → 目标群发送”的完整闭环。
+
+
+## 15. P4 FTS5 基础（2026-11-02）
+
+新增：
+
+```text
+src/echomind/adapters/storage/memory_fts.py
+tests/integration/test_memory_fts.py
+```
+
+实现：
+
+```text
+SQLite FTS5 + trigram tokenizer
+rowid = semantic_facts.id
+content + chat_key UNINDEXED
+```
+
+- 中文 3 字以上可查；
+- `chat_key` 过滤可包含 global；
+- 仅独立索引，未接 `get_semantic_facts`；
+- 未替换现有 BM25/2-gram；
+- 未做 500 检索对照，因此不宣称提升。
+
+验收下一步：
+
+- 回填 233 条 facts；
+- 与现有 BM25 在 LongMemEval 500 上对照；
+- recall@5 不低于 0.954 才允许 shadow 之外的读取。

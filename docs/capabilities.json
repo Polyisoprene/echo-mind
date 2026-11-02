@@ -172,8 +172,8 @@
       "code": [
         "src/echomind/adapters/storage/database.py"
       ],
-      "status": "absent",
-      "gap": "全库无 FTS5；召回是 Python 侧中文 2-gram 重叠",
+      "status": "partial",
+      "gap": "已实现 SQLite FTS5+trigram 独立索引与集成测试；尚未回填/未接 live BM25，未做 500 对照",
       "acceptance_test": null,
       "evidence_report": "",
       "target_release": "C1"
