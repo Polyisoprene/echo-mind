@@ -175,6 +175,16 @@ class OneBotV11Bridge:
             sent_ids.append(mid)
         return tuple(sent_ids)
 
+    async def list_groups(self) -> tuple[dict[str, object], ...]:
+        groups = await self._caller.call_api("get_group_list")
+        if not isinstance(groups, list):
+            return ()
+        return tuple(
+            {"group_id": str(item.get("group_id", "")),
+             "group_name": str(item.get("group_name", ""))}
+            for item in groups if isinstance(item, dict)
+        )
+
     async def _lookup_sticker_row(self, sticker_id: str) -> tuple[str, str]:
         sql = "SELECT local_file, url, local_note, desc_text FROM stickers WHERE id = ?"
         async with self._db.connect() as conn:

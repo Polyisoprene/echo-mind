@@ -44,6 +44,7 @@ from echomind.tools.explore_and_voice import (
     CompositeSearchBackend,
     HolyWebSearchTool,
 )
+from echomind.tools.group_directory import ListGroupsTool
 from echomind.tools.media_vision import LookAtImageTool, WatchVideoTool
 from echomind.tools.member_memory import RecallMemoryTool, RememberMemberTool
 from echomind.tools.messaging_and_group import (
@@ -100,7 +101,7 @@ def _register_skill_tools(
     events = IntentionEventStore(container.db)
     for tool in (
         SendMessageTool(bridge), SendToChatTool(bridge, events),
-        SendStickerTool(bridge), SendPokeTool(bridge),
+        ListGroupsTool(bridge), SendStickerTool(bridge), SendPokeTool(bridge),
         GetGroupMembersTool(bridge), RememberMemberTool(m, m), RecallMemoryTool(m),
         QzoneAndProfileTool(caller),
         LookAtImageTool(media, vision), WatchVideoTool(media, vision),

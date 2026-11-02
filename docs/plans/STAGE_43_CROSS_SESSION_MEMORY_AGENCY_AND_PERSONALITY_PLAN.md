@@ -1111,3 +1111,28 @@ tests/integration/test_intention_events.py
 ```
 
 门禁：432 passed / 93%。
+
+
+## 32. 群目录工具（2026-11-02）
+
+真实测试暴露：她不知道群列表，只能猜群名。
+
+新增：
+
+```text
+IGroupDirectory port
+OneBotV11Bridge.list_groups()
+tools/group_directory.py::ListGroupsTool
+```
+
+行为：
+
+- 调用 OneBot `get_group_list`；
+- 返回群号+群名；
+- 加入“日常轻装剂”；
+- prompt 要求目标不确定先 `list_groups`，不要猜；
+- 不硬编码群号，不做白名单。
+
+测试：`tests/unit/test_list_groups_tool.py`。
+
+门禁：433 passed / 93%。
