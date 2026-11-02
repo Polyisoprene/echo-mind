@@ -428,7 +428,7 @@
         "src/echomind/tools/messaging_and_group.py"
       ],
       "status": "partial",
-      "gap": "已实现 source/audience 策略、opt-in get_cross_session_facts 与 recall_memory(include_cross_session)；send_to_chat 已真实发到群；live 读路径仍未默认开启，承诺事件/披露模型未实现",
+      "gap": "已实现 source/audience、opt-in get_cross_session_facts、recall_memory(include_cross_session) 与 CROSS_SESSION_MEMORY 开关；默认 off；承诺事件/披露模型仍简化",
       "acceptance_test": "",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "S43"

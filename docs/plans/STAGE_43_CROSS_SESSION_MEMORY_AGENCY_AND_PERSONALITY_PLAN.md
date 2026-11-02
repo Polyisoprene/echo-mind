@@ -1230,3 +1230,27 @@ POST /get_group_list
 - 这解决“她不知道群名只能猜”的数据源问题。
 
 注意：真实 test 只读；跨群发送仍按 `send_to_chat` + 目标确认执行。
+
+
+## 38. 跨会话 live 开关（2026-11-02）
+
+新增：
+
+```text
+CROSS_SESSION_MEMORY=off|on   # 默认 off
+merge_cross_session()
+```
+
+- off：完全保持原 `chat_key IN (?, 'global')`；
+- on：合并 `get_cross_session_facts()` 的 public/group 事实；
+- 私聊来源/secret 仍排除；
+- 去重按 `chat_key+subject`；
+- 只提供开关，不默认开启。
+
+测试：
+
+```text
+tests/integration/test_cross_session_live_flag.py
+```
+
+门禁：437 passed / 93%。

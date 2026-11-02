@@ -37,4 +37,4 @@
 | CAP-TRAIT-MEMORY | active trait 的 support 能影响记忆检索排序 | ✅ implemented | tests/integration/test_live_trait_retrieval.py::test_trait_link_breaks_live_retriever_tie |
 | CAP-ACTION-ELIGIBILITY | active trait 可追加工具授权并授予拒绝许可 | ✅ implemented | tests/unit/test_trait_tool_grants.py::test_tool_grant_is_added_not_substituted |
 | CAP-RESPONSE-ATTRIBUTION | 记录她的消息之后的回应归因（mention/temporal） | ✅ implemented | tests/unit/test_response_attribution.py::test_mention_and_temporal_attribution |
-| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ⚠️ partial | 已实现 source/audience 策略、opt-in get_cross_session_facts 与 recall_memory(include_cross_session)；send_to_chat 已真实发到群；live 读路径仍未默认开启，承诺事件/披露模型未实现 |
+| CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ⚠️ partial | 已实现 source/audience、opt-in get_cross_session_facts、recall_memory(include_cross_session) 与 CROSS_SESSION_MEMORY 开关；默认 off；承诺事件/披露模型仍简化 |

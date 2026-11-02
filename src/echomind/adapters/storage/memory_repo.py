@@ -8,13 +8,13 @@ from typing import Any, Literal, cast
 
 import aiosqlite
 
+from echomind.adapters.storage import memory_cross_session as _cross
 from echomind.adapters.storage.claim_repo import mirror_fact
 from echomind.adapters.storage.claim_views import (
     facts_v2_enabled,
     load_claim_facts_filtered as _claim_facts,
 )
 from echomind.adapters.storage.database import SqliteDatabase
-from echomind.adapters.storage.memory_cross_session import FACT_COLUMNS, load_cross_session_facts
 from echomind.adapters.storage.memory_rows import row_to_episodic, row_to_fact, row_to_rule
 from echomind.adapters.storage.memory_sql import UPSERT_FACT_SQL
 from echomind.domain.models import (
@@ -100,13 +100,11 @@ class SqliteMemoryRepository:
             params.extend(person_ids)
             params.extend(person_ids)
         where = " OR ".join(clauses)
-        params.append(min_confidence)
-        params.append(chat_key)
-        params.extend((current, current))
+        params.extend((min_confidence, chat_key, current, current))
         privacy = ("(sensitivity IN ('public','group') OR (sensitivity='private' "
                    "AND ? IN (chat_key, 'private:'||owner_id)))")
         sql = (
-            f"SELECT {FACT_COLUMNS} FROM semantic_facts WHERE ({where}) AND confidence >= ? "  # noqa: S608
+            f"SELECT {_cross.FACT_COLUMNS} FROM semantic_facts WHERE ({where}) AND confidence >= ? "  # noqa: S608
             f"AND {privacy} AND (event_time_ms = 0 OR event_time_ms <= ?) "
             "AND (valid_to_ms IS NULL OR valid_to_ms > ?) "
             "ORDER BY is_locked DESC, confidence DESC, id DESC"
@@ -114,11 +112,14 @@ class SqliteMemoryRepository:
         async with self._db.connect() as conn:
             cursor = await conn.execute(sql, tuple(params))
             rows = await cursor.fetchall()
-            return tuple(row_to_fact(r) for r in rows)
+            return await _cross.merge_cross_session(
+                self._db, chat_key, tuple(row_to_fact(r) for r in rows),
+                min_confidence, current,
+            )
 
     async def get_cross_session_facts(self, chat_key: str, min_confidence: float = 0.0,
                                       now_ms: int | None = None) -> tuple[SemanticFact, ...]:
-        return await load_cross_session_facts(self._db, chat_key, min_confidence, now_ms)
+        return await _cross.load_cross_session_facts(self._db, chat_key, min_confidence, now_ms)
 
     async def get_procedural_rules(self, chat_key: str) -> tuple[ProceduralRule, ...]:
         sql = (

@@ -38,3 +38,23 @@ async def load_cross_session_facts(
             sensitivity=fact.sensitivity, audience=fact.audience,
         ))
     )
+
+
+async def merge_cross_session(
+    db: SqliteDatabase, chat_key: str, facts: tuple[SemanticFact, ...],
+    min_confidence: float = 0.0, now_ms: int | None = None,
+) -> tuple[SemanticFact, ...]:
+    """Opt-in live merge; default env is off so normal callers are unchanged."""
+    import os
+
+    if os.getenv("CROSS_SESSION_MEMORY", "off").lower() != "on":
+        return facts
+    extra = await load_cross_session_facts(db, chat_key, min_confidence, now_ms)
+    seen = {fact.chat_key + ":" + fact.subject for fact in facts}
+    merged = list(facts)
+    for fact in extra:
+        key = fact.chat_key + ":" + fact.subject
+        if key not in seen:
+            seen.add(key)
+            merged.append(fact)
+    return tuple(merged)
