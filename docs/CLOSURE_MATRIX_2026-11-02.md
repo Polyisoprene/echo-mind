@@ -20,7 +20,7 @@
 | G1 candidate auto-promotion | dry-run 默认，生产 pending=0 | 测试/脚本 |
 | G2 narrative projection | 只读，A/B 否决 prompt | baseline |
 | 融合条件化 | confidence/lock 常数、recency/order cue | 500 结果 |
-| FTS5 shadow | FTS5+trigram 索引与测试；未回填/未接 live | `memory_fts.py` |
+| FTS5 shadow | 500 recall 0.942/MRR .876，低于现有 .954/.892；未接 live | `memory_fts.py`、baseline |
 | 本地 embedding | bge-m3 / 1050Ti / 1024 维；RSS 1.29GB，VRAM 1.24GB | `LOCAL_EMBEDDING_DEPLOYMENT.md`、probe 验证 |
 | Stage 43 P0 | 跨会话访问策略、BDI 栈、HEXACO 覆盖审计（纯函数，不接 live） | `STAGE_43...PLAN.md`、3 组单测 |
 | slot 功能 | 单值 QQ/性别/生日/年龄；昵称多值；group_id 不建槽 | `CLAIM_SLOT_FUNCTION_MODEL.md` |

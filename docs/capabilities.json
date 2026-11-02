@@ -173,7 +173,7 @@
         "src/echomind/adapters/storage/database.py"
       ],
       "status": "partial",
-      "gap": "已实现 SQLite FTS5+trigram 独立索引与集成测试；尚未回填/未接 live BM25，未做 500 对照",
+      "gap": "已实现 SQLite FTS5+trigram 独立索引与测试；LongMemEval 500 recall@5 0.942 / MRR 0.876，低于现有 0.954/0.892，未接 live",
       "acceptance_test": null,
       "evidence_report": "",
       "target_release": "C1"

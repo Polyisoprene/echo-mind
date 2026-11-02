@@ -7,6 +7,7 @@ import argparse
 import asyncio
 import json
 import re
+import sqlite3
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -89,9 +90,45 @@ def _facts(
     return tuple(facts), targets
 
 
+def _fts5_terms(query: str) -> str:
+    """Build an OR query from CJK trigrams and English words of length >= 3."""
+    terms: list[str] = []
+    for chunk in re.findall(r"[A-Za-z0-9_]+|[\u4e00-\u9fff]+", query):
+        if chunk.isascii():
+            if len(chunk) >= 3:
+                terms.append(chunk)
+        else:
+            terms.extend(chunk[i:i + 3] for i in range(0, max(1, len(chunk) - 2)))
+    unique = list(dict.fromkeys(terms))
+    return " OR ".join(f'"{term.replace(chr(34), chr(34) * 2)}"' for term in unique)
+
+
+def _fts5_ranked(facts: tuple[SemanticFact, ...], query: str) -> tuple[SemanticFact, ...]:
+    """Ephemeral FTS5 trigram index for a fair lexical comparison."""
+    conn = sqlite3.connect(":memory:")
+    try:
+        conn.execute("CREATE VIRTUAL TABLE fts USING fts5(content, tokenize='trigram')")
+        conn.executemany(
+            "INSERT INTO fts(rowid, content) VALUES (?,?)",
+            [(fact.fact_id, fact.fact_text) for fact in facts],
+        )
+        match = _fts5_terms(query)
+        if not match:
+            return ()
+        rows = conn.execute(
+            "SELECT rowid FROM fts WHERE fts MATCH ? ORDER BY rank", (match,)
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return ()
+    finally:
+        conn.close()
+    by_id = {fact.fact_id: fact for fact in facts}
+    return tuple(by_id[int(row[0])] for row in rows if int(row[0]) in by_id)
+
+
 async def _ranked(
     question: dict[str, Any], facts: tuple[SemanticFact, ...],
-    gateway: OpenAiEmbeddingGateway, retriever: str, batch: int, *,
+    gateway: OpenAiEmbeddingGateway | None, retriever: str, batch: int, *,
     disabled: frozenset[str],
 ) -> tuple[SemanticFact, ...]:
     if retriever == "bm25":
@@ -102,6 +139,9 @@ async def _ranked(
             facts, str(question["question"]), {}, {},
             _ms(str(question["question_date"])), constraints=False, disabled=disabled,
         )
+    if retriever == "fts5":
+        return _fts5_ranked(facts, str(question["question"]))
+    assert gateway is not None
     vectors = await _embed_all(gateway, [fact.fact_text for fact in facts], batch)
     query_vec = (await gateway.embed((str(question["question"]),)))[0]
     dense = {fact.fact_id: cosine(query_vec, vec)
@@ -118,7 +158,7 @@ async def main() -> int:
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument("--batch", type=int, default=32)
     parser.add_argument("--granularity", choices=("session", "turn"), default="session")
-    parser.add_argument("--retriever", choices=("hybrid", "bm25"), default="hybrid")
+    parser.add_argument("--retriever", choices=("hybrid", "bm25", "fts5"), default="hybrid")
     parser.add_argument("--disable", default="")
     parser.add_argument("--out", type=Path, default=ROOT / "reports" / "longmemeval.json")
     args = parser.parse_args()
@@ -126,7 +166,9 @@ async def main() -> int:
     data = json.loads(args.data.read_text(encoding="utf-8"))
     selected = _stratified(data, args.limit)
     cfg = load_config_from_json(ROOT / "data" / "config.json")
-    gateway = OpenAiEmbeddingGateway(cfg.embedding)
+    gateway = (
+        OpenAiEmbeddingGateway(cfg.embedding) if args.retriever == "hybrid" else None
+    )
     results = []
     try:
         for question in selected:
@@ -153,7 +195,8 @@ async def main() -> int:
             print(f"{question['question_id']} {question['question_type']} "
                   f"session={session_hit} mrr={results[-1]['mrr']:.3f}")
     finally:
-        await gateway.aclose()
+        if gateway is not None:
+            await gateway.aclose()
 
     summary = {}
     for kind in sorted({item["type"] for item in results}):

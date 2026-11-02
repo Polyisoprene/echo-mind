@@ -21,7 +21,7 @@
 | CAP-TRAIT-GROWTH | 人格会从互动中长出新的习惯/喜好/雷点 | ⚠️ partial | 已具备 evidence 账本、Beta+独立 context 生命周期、active-only；derive_emergent_trait 仍是固定文案，自动 support/candidate 流仍稀疏 |
 | CAP-CLOSED-LOOP | 人格由可观测反馈闭环驱动 | ⚠️ partial | 真实回合→evidence→support→ranker 已闭环；自动 support 仍稀有，主要靠手动确认；reward 仍含探针自评 |
 | CAP-SELF-NARRATIVE | 存在跨会话的自我叙事，并参与冲突判定 | ⚠️ partial | 已有 evidence-bound 只读叙事投影；A/B 无稳定风格收益，未接 prompt，也未参与冲突判定 |
-| CAP-FTS5 | SQLite FTS5 全文检索 | ⚠️ partial | 已实现 SQLite FTS5+trigram 独立索引与集成测试；尚未回填/未接 live BM25，未做 500 对照 |
+| CAP-FTS5 | SQLite FTS5 全文检索 | ⚠️ partial | 已实现 SQLite FTS5+trigram 独立索引与测试；LongMemEval 500 recall@5 0.942 / MRR 0.876，低于现有 0.954/0.892，未接 live |
 | CAP-INTENTION-STACK | 短期挂念栈（BDI 意图，≤3 槽） | ❌ absent | IntentionItem 在全库从未被构造；filter_unfulfilled_intentions 永远作用于空元组 |
 | CAP-FIVE-SLOTS | 微内核五大扩展槽全部可用 | ⚠️ partial | sensor/tool 已用；facet/proposer/panel 三个槽位零注册实现 |
 | CAP-SEVEN-GATES | 7 道自动化质量门禁 | ⚠️ partial | 脚本实际 5 步；hypothesis 未独立成门禁；迁移对账与故障注入缺失（E0 新增了参数/能力两道） |

@@ -632,3 +632,19 @@ content + chat_key UNINDEXED
 - 回填 233 条 facts；
 - 与现有 BM25 在 LongMemEval 500 上对照；
 - recall@5 不低于 0.954 才允许 shadow 之外的读取。
+
+
+### P4 FTS5 500 对照（2026-11-02）
+
+| retriever | recall@5 | MRR |
+|---|---:|---:|
+| 现有 BM25/hybrid baseline | **0.954** | **0.892** |
+| FTS5 trigram | 0.942 | 0.876 |
+
+结论：
+
+- FTS5 中文 3-gram OR 可查；
+- 全量 500 低于现有基线约 1.2pp recall / 1.6pp MRR；
+- 不接 live；
+- 保留独立索引与测试，作为后续“FTS5 + 现有 BM25 RRF”候选，不直接替换；
+- 结果文件：`eval/baselines/longmemeval-500-fts5-2026-11-02.json`。
