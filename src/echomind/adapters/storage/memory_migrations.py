@@ -217,3 +217,9 @@ SELECT 'episodic', id, owner_id, 'knows', 1.0,
        CAST(strftime('%s','now') AS INTEGER) * 1000
 FROM episodic_memories WHERE owner_id <> '' AND owner_id <> source_person_id;
 """
+
+
+async def ensure_intention_events(conn: aiosqlite.Connection) -> None:
+    await _ensure_column(
+        conn, "intention_events", "message_id", "TEXT NOT NULL DEFAULT ''"
+    )

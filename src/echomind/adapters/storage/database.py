@@ -7,7 +7,7 @@ from types import TracebackType
 
 import aiosqlite
 
-from echomind.adapters.storage.memory_migrations import ensure_columns
+from echomind.adapters.storage.memory_migrations import ensure_columns, ensure_intention_events
 from echomind.adapters.storage.migrations import ensure_migrations
 
 SCHEMA_DDL = """
@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS intention_events (
     status TEXT NOT NULL DEFAULT 'open',
     created_at_ms INTEGER NOT NULL,
     updated_at_ms INTEGER NOT NULL,
+    message_id TEXT NOT NULL DEFAULT '',
     UNIQUE(source_chat_key, summary, target_chat_key)
 );
 
@@ -287,6 +288,7 @@ class SqliteDatabase:
         async with aiosqlite.connect(self._db_path) as conn:
             await conn.executescript(SCHEMA_DDL)
             await ensure_columns(conn)
+            await ensure_intention_events(conn)
             await ensure_migrations(conn)
             await conn.commit()
             cursor = await conn.execute("PRAGMA journal_mode;")

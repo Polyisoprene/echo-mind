@@ -1084,3 +1084,30 @@ claim：短期挂念栈（BDI 意图，≤3 槽）。
 - 发送 message_id 回填 event。
 
 这些是增强项，不否定“栈已实现”。
+
+
+## 31. 发送 message_id 回填（2026-11-02）
+
+新增：
+
+```text
+intention_events.message_id
+IntentionEventStore.mark_delivered()
+SendToChatTool(events=...)
+IIntentionDelivery port
+```
+
+行为：
+
+- `send_to_chat` 成功后，按 target + summary 根匹配 open event；
+- 匹配成功 → status=fulfilled + message_id；
+- 失败/未发送不改状态；
+- 生成器与工具通过 domain port 解耦，不违反 DIP。
+
+测试：
+
+```text
+tests/integration/test_intention_events.py
+```
+
+门禁：432 passed / 93%。

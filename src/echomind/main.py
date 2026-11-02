@@ -20,6 +20,7 @@ from echomind.adapters.onebot.enrichers import PerceptEnrichmentPipeline
 from echomind.adapters.onebot.forward_expander import ReadForwardTool
 from echomind.adapters.onebot.live_client import OneBotHttpApiCaller, OneBotLiveRuntime
 from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
+from echomind.adapters.storage.intention_events import IntentionEventStore
 from echomind.adapters.storage.memory_vector_repo import SqliteMemoryVectorStore
 from echomind.adapters.storage.relation_repo import SqliteRelationStore
 from echomind.adapters.storage.trait_memory_repo import SqliteTraitMemoryLinkStore
@@ -96,8 +97,9 @@ def _register_skill_tools(
 
     bili = BiliClient(cookie_provider=_bili_values)
     search_be = CompositeSearchBackend((CnMemeWikiClient(), BiliSearchBackend(bili)))
+    events = IntentionEventStore(container.db)
     for tool in (
-        SendMessageTool(bridge), SendToChatTool(bridge),
+        SendMessageTool(bridge), SendToChatTool(bridge, events),
         SendStickerTool(bridge), SendPokeTool(bridge),
         GetGroupMembersTool(bridge), RememberMemberTool(m, m), RecallMemoryTool(m),
         QzoneAndProfileTool(caller),

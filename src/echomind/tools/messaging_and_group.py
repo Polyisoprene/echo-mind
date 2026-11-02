@@ -6,6 +6,7 @@ import json
 import time
 from typing import Any
 
+from echomind.domain.intention_ports import IIntentionDelivery
 from echomind.domain.models import SocialBondProfile
 from echomind.domain.ports import IGroupRosterReader, IMessageSender
 
@@ -80,8 +81,11 @@ class SendToChatTool:
 
     category = "社交互动"
 
-    def __init__(self, sender: IMessageSender) -> None:
+    def __init__(
+        self, sender: IMessageSender, events: IIntentionDelivery | None = None,
+    ) -> None:
         self._sender = sender
+        self._events = events
 
     @property
     def name(self) -> str:
@@ -121,6 +125,8 @@ class SendToChatTool:
         mids = await self._sender.send_text(target, _merge_clauses(raw_tuple))
         if not mids:
             return f"发送失败：目标 {target} 没有返回 message_id"
+        if self._events is not None:
+            await self._events.mark_delivered(target, raw_tuple, mids)
         return json.dumps({
             "ok": True, "target_chat_key": target,
             "sent_count": len(mids), "message_ids": list(mids),
