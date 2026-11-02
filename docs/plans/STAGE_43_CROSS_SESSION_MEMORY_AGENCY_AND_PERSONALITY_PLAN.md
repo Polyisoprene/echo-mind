@@ -1203,3 +1203,30 @@ event summary: 群号发我，我这就去发
 - `CAP-TRAIT-MEMORY`：claim 只要求“support 能影响检索排序”，已有 6 条 support 与 `test_trait_link_breaks_live_retriever_tie`；自动 support 稀有属于增强。
 
 两者校准为 implemented；未接下游/自动 support 保留在 gap 说明，不伪装成已自动化。
+
+
+## 37. 真实 get_group_list 验收（2026-11-02）
+
+用本地 NapCat token 只读调用：
+
+```text
+POST /get_group_list
+```
+
+返回 4 个群，包含：
+
+```text
+813506156 来个82年的馍馍
+887316159 馍馍的蒸笼
+701322264 测试2
+532527354 相亲相爱一塘螈...
+```
+
+结论：
+
+- `list_groups` 的底层 API 真实可用；
+- 返回群号+群名；
+- 未发送任何群消息；
+- 这解决“她不知道群名只能猜”的数据源问题。
+
+注意：真实 test 只读；跨群发送仍按 `send_to_chat` + 目标确认执行。
