@@ -57,3 +57,26 @@ async def test_delivery_binds_message_id_and_fulfills(tmp_path: Path) -> None:
     assert con.execute(
         "SELECT status,message_id FROM intention_events"
     ).fetchone() == ("fulfilled", "mid_1")
+
+
+@pytest.mark.asyncio
+async def test_delivery_binds_ambiguous_target(tmp_path: Path) -> None:
+    from echomind.adapters.storage.intention_events import IntentionEventStore
+
+    db_path = tmp_path / "ambiguous.db"
+    db = SqliteDatabase(db_path)
+    await db.initialize()
+    await save_snapshot(db, WorkingSnapshot(
+        scope_key="global",
+        intentions=(IntentionItem(
+            summary="我这就去群里说", created_at_ms=1, expires_at_ms=0,
+            source_chat_key="private:1",
+        ),),
+    ))
+    assert await IntentionEventStore(db).mark_delivered(
+        "group:9", ("我这就去群里说",), ("mid_9",),
+    ) == 1
+    con = sqlite3.connect(str(db_path))
+    assert con.execute(
+        "SELECT status,target_chat_key,message_id FROM intention_events"
+    ).fetchone() == ("fulfilled", "group:9", "mid_9")

@@ -9,6 +9,7 @@ from echomind.adapters.storage.database import SqliteDatabase
 
 async def _bind_rows(
     conn: Any, rows: Any, joined: str, message_ids: tuple[str, ...],
+    target_chat_key: str,
 ) -> int:
     updated = 0
     for event_id, summary in rows:
@@ -17,9 +18,9 @@ async def _bind_rows(
             continue
         await conn.execute(
             "UPDATE intention_events SET status='fulfilled', "
-            "message_id=?, updated_at_ms=strftime('%s','now')*1000 "
+            "message_id=?, target_chat_key=?, updated_at_ms=strftime('%s','now')*1000 "
             "WHERE id=? AND status='open'",
-            (message_ids[0] if message_ids else "", int(event_id)),
+            (message_ids[0] if message_ids else "", target_chat_key, int(event_id)),
         )
         updated += 1
     return updated
@@ -38,10 +39,10 @@ class IntentionEventStore:
         async with self._db.connect() as conn:
             cursor = await conn.execute(
                 "SELECT id, summary FROM intention_events "
-                "WHERE target_chat_key=? AND status='open'",
+                "WHERE (target_chat_key=? OR target_chat_key='') AND status='open'",
                 (target_chat_key,),
             )
             rows = await cursor.fetchall()
-            updated = await _bind_rows(conn, rows, joined, message_ids)
+            updated = await _bind_rows(conn, rows, joined, message_ids, target_chat_key)
             await conn.commit()
         return updated

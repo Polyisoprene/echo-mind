@@ -1,6 +1,6 @@
 # 🧠 EchoMind (`echomind`)
 
-> **当前状态（2026-11-02）**：真实 active trait **2 条**（看图、发语音），真实 evidence **16 条**，support link **6 条**，shadow **56 条非空**；active-only prompt；门禁 **433 passed / 93%**，fusion **70/70**；本地 embedding 已接 127.0.0.1:8010，远端只留语音。  
+> **当前状态（2026-11-02）**：真实 active trait **2 条**（看图、发语音），真实 evidence **16 条**，support link **6 条**，shadow **56 条非空**；active-only prompt；门禁 **434 passed / 93%**，fusion **70/70**；本地 embedding 已接 127.0.0.1:8010，远端只留语音。  
 > 详细现状与边界见 [docs/CURRENT_STATE_2026-11-01.md](docs/CURRENT_STATE_2026-11-01.md)；完整实现记录见 [Stage 41 计划](docs/plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md)。
 
 > **具备控制论「自组织核心（Order Parameter Core）」、「两级选矿智力放大器（Selection Amplifier）」、真实人性阴影面、时间感知与神经可塑性自学习的下一代认知型 QQ 智能体（Python 3.12+ / 六边形清洁架构）**

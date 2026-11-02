@@ -1136,3 +1136,23 @@ tools/group_directory.py::ListGroupsTool
 测试：`tests/unit/test_list_groups_tool.py`。
 
 门禁：433 passed / 93%。
+
+
+## 33. 模糊目标承诺绑定（2026-11-02）
+
+真实场景里她说“群号发我，我这就去发”，事件 target 为空。
+
+修复：
+
+- `mark_delivered` 同时匹配 `target_chat_key=?` 和 `target_chat_key=''`；
+- 成功发送后把真实目标回填到 event；
+- status=fulfilled + message_id；
+- 这样模糊承诺也能在真实发送后闭环。
+
+测试：
+
+```text
+test_delivery_binds_ambiguous_target
+```
+
+门禁：434 passed / 93%。
