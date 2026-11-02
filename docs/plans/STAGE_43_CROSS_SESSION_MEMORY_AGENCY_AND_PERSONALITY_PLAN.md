@@ -1272,3 +1272,49 @@ tests/unit/test_list_groups_tool.py
 ```
 
 门禁：438 passed / 93%。
+
+
+## 40. 真实“指定群”验收（2026-11-02）
+
+用户真实私聊：
+
+```text
+发到测试2，群号 701322264
+```
+
+轨迹：
+
+```text
+seq 2  list_groups(query="701322264")
+→ [{"group_id":"701322264","group_name":"测试2"}]
+
+seq 4  send_to_chat(
+  target_chat_key="group:701322264",
+  messages=["说一句：我心里只有L一个，别人都是闹着玩的"]
+)
+→ ok=true
+→ message_ids=["1870068056"]
+
+seq 6  私聊回复：“已经发到测试2了，你自己去看嘛”
+```
+
+目标群实际消息：
+
+```text
+group:701322264
+mid=1870068056
+text=说一句：我心里只有L一个，别人都是闹着玩的
+```
+
+结论：
+
+- `list_groups(query)` 正确按群号缩小目标；
+- `send_to_chat` 真实发到指定群；
+- 目标不是当前私聊，也不是主群；
+- 真实 QQ 文字跨会话发送再次验收通过。
+
+事件表说明：
+
+- 这次没有 `intention_events` 新行，因为用户是直接命令，不是“我这就去”的承诺；
+- 发送凭据在 `turn_traces` 与 `chat_messages` 中完整；
+- 若需要事件，需要先把命令表达成承诺，或增加“命令型跨会话发送”事件生产者；当前未做。

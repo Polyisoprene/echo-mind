@@ -45,7 +45,7 @@
 |---|---|---|
 | 跨会话记忆 | `get_cross_session_facts()` 已实现但未接 live；原始私聊事实仍不跨 | 承诺事件/披露模型未实现 |
 | BDI 生产者 | 明确承诺句生成 intention；TTL 未校准；目标不自动解析 | 已有 `mind/commitment.py` 与测试 |
-| 跨会话发送 | 真实私聊→群已验收：send_to_chat → group:813506156，message_id 1143989337 | `turn_traces` + `chat_messages` |
+| 跨会话发送 | 真实私聊→群已验收：主群 group:813506156（mid 1143989337）与指定测试群 group:701322264（mid 1870068056） | `turn_traces` + `chat_messages` |
 | RVC/SVS 真实唱歌 | 服务 capability 可用，但未跑真实样本 | 需验证显存/内存与 OOM |
 
 ## 3. 当前结论
