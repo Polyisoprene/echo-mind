@@ -37,3 +37,8 @@ def coverage() -> tuple[AxisCoverage, ...]:
 
 def missing_axes() -> tuple[str, ...]:
     return tuple(item.axis for item in coverage() if not item.covered_by)
+
+
+def dimension_mapping() -> tuple[tuple[str, tuple[str, ...]], ...]:
+    """Categorical 7D -> HEXACO hypotheses; no numeric weights."""
+    return tuple((dim, axes) for dim, axes in _COVERAGE.items())

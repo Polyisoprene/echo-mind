@@ -841,3 +841,34 @@ send_group_msg group_id=10002002
 - 不依赖真实 QQ。
 
 仍未做真实 QQ 群发送（避免测试打扰）。
+
+
+## 22. HEXACO 分类映射（2026-11-02）
+
+新增：
+
+```text
+mind/hexaco_coverage.py::dimension_mapping()
+tests/unit/test_hexaco_coverage.py
+```
+
+返回 7D → HEXACO 轴的**分类假设**：
+
+```text
+warmth -> Agreeableness, Extraversion
+tsundere -> Emotionality, Agreeableness
+playfulness -> Extraversion, Openness
+possessiveness -> Emotionality
+confidence -> Extraversion
+guile -> Honesty-Humility
+defiance -> Agreeableness, Honesty-Humility
+```
+
+明确：
+
+- 这是构念对齐，不是相关系数/权重；
+- Conscientiousness 仍缺失；
+- 没有同批 7D/HEXACO 数据，不宣称 psychometric validity；
+- `CAP-HEXACO` 仍保持 contradicted，不因分类 API 改写为 implemented。
+
+门禁：428 passed / 93%。
