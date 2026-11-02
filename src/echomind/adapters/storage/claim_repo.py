@@ -6,12 +6,15 @@ supported by weighted evidence, with a validity interval and a recorded-at times
 
 from __future__ import annotations
 
+import json
 import math
+import os
 import time
 from typing import Any
 
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.adapters.storage.migrations import ensure_claim_tables
+from echomind.mind.claim_slots import infer_slot, is_single
 
 # Evidence base weights: calibrated so a single ordinary fact lands around 0.55,
 # a repeated/peer fact around 0.5-0.7 and an operator/locked fact above 0.85.
@@ -63,6 +66,33 @@ class SqliteClaimStore:
             await ensure_claim_tables(conn)
             await conn.commit()
 
+    async def _claim_id(
+        self, conn: Any, *, chat_key: str, subject: str, predicate: str, value: str,
+        valid_from_ms: int, valid_to_ms: int | None, now: int, source_id: str,
+        scope: str, source_person_id: str, owner_id: str, sensitivity: str,
+        audience: tuple[str, ...], source_quote: str, source_turn_id: str,
+        slot_key: str,
+    ) -> int:
+        cursor = await conn.execute(
+            "SELECT id FROM claims WHERE chat_key=? AND subject=? AND predicate=? "
+            "AND value=? AND status='asserted' LIMIT 1",
+            (chat_key, subject, predicate, value),
+        )
+        row = await cursor.fetchone()
+        if row:
+            return int(row[0])
+        cursor = await conn.execute(
+            "INSERT INTO claims (chat_key, subject, predicate, value, valid_from_ms, "
+            "valid_to_ms, recorded_at_ms, status, created_by, scope, "
+            "source_person_id, owner_id, sensitivity, audience_json, source_quote, "
+            "source_turn_id, slot_key) "
+            "VALUES (?,?,?,?,?,?,?,'asserted',?,?,?,?,?,?,?,?,?)",
+            (chat_key, subject, predicate, value, valid_from_ms, valid_to_ms, now,
+             source_id, scope, source_person_id, owner_id, sensitivity,
+             json.dumps(list(audience)), source_quote, source_turn_id, slot_key),
+        )
+        return int(cursor.lastrowid or 0)
+
     async def assert_claim(
         self, chat_key: str, subject: str, predicate: str, value: str, *,
         source_type: str = "system", source_id: str = "",
@@ -70,39 +100,50 @@ class SqliteClaimStore:
         valid_to_ms: int | None = None, weight_scale: float = 1.0, tag: str = "",
         scope: str = "venue", source_person_id: str = "", owner_id: str = "",
         sensitivity: str = "group", audience: tuple[str, ...] = (),
-        source_quote: str = "", source_turn_id: str = "",
+        source_quote: str = "", source_turn_id: str = "", slot_key: str = "",
     ) -> int:
-        """Insert (or reuse) a claim and attach this piece of evidence to it."""
         now = int(time.time() * 1000) if observed_at_ms is None else observed_at_ms
+        if not slot_key and os.getenv("CLAIM_SLOT_INFER", "off").lower() == "on":
+            slot_key = infer_slot(subject, value)
         async with self._db.connect() as conn:
-            cursor = await conn.execute(
-                "SELECT id FROM claims WHERE chat_key=? AND subject=? AND predicate=? "
-                "AND value=? AND status='asserted' LIMIT 1",
-                (chat_key, subject, predicate, value),
+            claim_id = await self._claim_id(
+                conn, chat_key=chat_key, subject=subject, predicate=predicate,
+                value=value, valid_from_ms=valid_from_ms, valid_to_ms=valid_to_ms,
+                now=now, source_id=source_id or source_type, scope=scope,
+                source_person_id=source_person_id, owner_id=owner_id,
+                sensitivity=sensitivity, audience=audience,
+                source_quote=source_quote, source_turn_id=source_turn_id,
+                slot_key=slot_key,
             )
-            row = await cursor.fetchone()
-            if row:
-                claim_id = int(row[0])
-            else:
-                cursor = await conn.execute(
-                    "INSERT INTO claims (chat_key, subject, predicate, value, valid_from_ms, "
-                    "valid_to_ms, recorded_at_ms, status, created_by, scope, "
-                    "source_person_id, owner_id, sensitivity, audience_json, source_quote, "
-                    "source_turn_id) "
-                    "VALUES (?,?,?,?,?,?,?,'asserted',?,?,?,?,?,?,?,?)",
-                    (chat_key, subject, predicate, value, valid_from_ms, valid_to_ms, now,
-                     source_id or source_type, scope, source_person_id, owner_id,
-                     sensitivity, __import__("json").dumps(list(audience)),
-                     source_quote, source_turn_id),
-                )
-                claim_id = int(cursor.lastrowid or 0)
             await self._attach(
                 conn, claim_id, source_type, source_id, now,
                 weight_scale=weight_scale, tag=tag,
             )
             await self._review_conflicts(conn, chat_key, subject, predicate, claim_id)
+            if (os.getenv("CLAIM_SLOT_SUPERSEDE", "off").lower() == "on"
+                    and is_single(slot_key)):
+                await self._supersede_slot(
+                    conn, chat_key=chat_key, subject=subject, slot_key=slot_key,
+                    claim_id=claim_id, now=now, scope=scope, owner_id=owner_id,
+                    sensitivity=sensitivity, audience=audience, predicate=predicate,
+                )
             await conn.commit()
         return claim_id
+
+    async def _supersede_slot(
+        self, conn: Any, *, chat_key: str, subject: str, slot_key: str,
+        claim_id: int, now: int, scope: str, owner_id: str, sensitivity: str,
+        audience: tuple[str, ...], predicate: str,
+    ) -> None:
+        if predicate != "value":
+            return
+        await conn.execute(
+            "UPDATE claims SET status='superseded', valid_to_ms=?, superseded_by=? "
+            "WHERE chat_key=? AND subject=? AND slot_key=? AND status='asserted' "
+            "AND id<>? AND scope=? AND owner_id=? AND sensitivity=? AND audience_json=?",
+            (now, claim_id, chat_key, subject, slot_key, claim_id,
+             scope, owner_id, sensitivity, json.dumps(list(audience))),
+        )
 
     async def _attach(
         self, conn: Any, claim_id: int, source_type: str, source_id: str, now: int, *,

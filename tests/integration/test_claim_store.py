@@ -125,3 +125,28 @@ async def _first_claim_id(path: Path) -> int:
 
     con = sqlite3.connect(str(path))
     return int(con.execute("select id from claims order by id limit 1").fetchone()[0])
+
+
+async def test_single_value_slot_supersedes_old_claim(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from echomind.adapters.storage.claim_repo import SqliteClaimStore
+
+    monkeypatch.setenv("CLAIM_SLOT_SUPERSEDE", "on")
+    monkeypatch.setenv("CLAIM_SLOT_INFER", "on")
+    db_path = tmp_path / "slot.db"
+    store = SqliteClaimStore(SqliteDatabase(db_path))
+    await store.ensure_schema()
+    old = await store.assert_claim(
+        "group:1", "L", "value", "L的群昵称是「小L」",
+        source_type="system", source_id="s1",
+    )
+    new = await store.assert_claim(
+        "group:1", "L", "value", "L的群昵称是「大L」",
+        source_type="system", source_id="s2",
+    )
+    con = sqlite3.connect(str(db_path))
+    rows = dict(con.execute("select id,status from claims where subject='L'").fetchall())
+    assert rows[old] == "superseded"
+    assert rows[new] == "asserted"
+    assert con.execute("select superseded_by from claims where id=?", (old,)).fetchone()[0] == new
