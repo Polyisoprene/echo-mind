@@ -1,5 +1,10 @@
 # 🧠 EchoMind (`echomind`)
 
+<p align="center">
+  <img src="Ecomind.png" alt="EchoMind 看板娘" width="360">
+</p>
+<p align="center"><sub>EchoMind 看板娘</sub></p>
+
 > **当前状态（2026-11-02）**：真实 active trait **2 条**（看图、发语音），真实 evidence **16 条**，support link **6 条**，shadow **56 条非空**；active-only prompt；门禁 **438 passed / 93%**，fusion **70/70**；本地 embedding 已接 127.0.0.1:8010，远端只留语音。  
 > 详细现状与边界见 [docs/CURRENT_STATE_2026-11-01.md](docs/CURRENT_STATE_2026-11-01.md)；完整实现记录见 [Stage 41 计划](docs/plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md)。
 
