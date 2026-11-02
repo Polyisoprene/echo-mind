@@ -17,10 +17,10 @@ def with_irritation_delta(snapshot: WorkingSnapshot, delta: float) -> WorkingSna
 
 def satiate_snapshot(
     snapshot: WorkingSnapshot, sent_texts: tuple[str, ...],
-    tools_used: tuple[str, ...], now_ms: int,
+    tools_used: tuple[str, ...], now_ms: int, source_chat_key: str = "",
 ) -> WorkingSnapshot:
     remaining = filter_unfulfilled_intentions(snapshot.intentions, sent_texts, now_ms)
-    for item in extract_commitments(sent_texts, now_ms):
+    for item in extract_commitments(sent_texts, now_ms, source_chat_key):
         remaining = push_intention(remaining, item)
     return apply_speaking_satiation(
         snapshot.model_copy(update={"intentions": remaining}), sent_texts, tools_used,

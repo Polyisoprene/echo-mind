@@ -28,7 +28,8 @@ def test_satiate_snapshot_keeps_new_commitment() -> None:
 
     updated = satiate_snapshot(
         WorkingSnapshot(scope_key="global"),
-        ("我这就去 group:123 说",), (), 100,
+        ("我这就去 group:123 说",), (), 100, "private:1",
     )
     assert len(updated.intentions) == 1
     assert updated.intentions[0].target_chat_key == "group:123"
+    assert updated.intentions[0].source_chat_key == "private:1"

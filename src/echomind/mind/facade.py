@@ -268,7 +268,8 @@ class CognitiveCoreFacade(FacadeAccessors):
             self._gate.mark_bot_spoke(o.chat_key, o.sent_texts, now_ms, o.triggers)
             await mutate_working_state(
                 self._working, "global",
-                lambda s: satiate_snapshot(s, o.sent_texts, o.tools_used, now_ms))
+                lambda s: satiate_snapshot(
+                    s, o.sent_texts, o.tools_used, now_ms, o.chat_key))
         if self._traces is not None and o.steps:
             await self._traces.save_turn(build_turn_record(o, now_ms))
         o, chord = apply_chord_reward(o, self._chord_cache)

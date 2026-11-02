@@ -15,7 +15,7 @@ _CHAT_KEY_RE = re.compile(r"(?:group|private):[0-9A-Za-z_-]+")
 
 
 def extract_commitments(
-    sent_texts: tuple[str, ...], now_ms: int,
+    sent_texts: tuple[str, ...], now_ms: int, source_chat_key: str = "",
 ) -> tuple[IntentionItem, ...]:
     """Keep only explicit commitment sentences; TTL is left unset until policy is calibrated."""
     found: list[IntentionItem] = []
@@ -28,5 +28,6 @@ def extract_commitments(
             found.append(IntentionItem(
                 summary=text[:120], created_at_ms=now_ms, expires_at_ms=0,
                 target_chat_key=match.group(0) if match else "",
+                source_chat_key=source_chat_key,
             ))
     return tuple(found)

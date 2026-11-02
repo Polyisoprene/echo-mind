@@ -872,3 +872,25 @@ defiance -> Agreeableness, Honesty-Humility
 - `CAP-HEXACO` 仍保持 contradicted，不因分类 API 改写为 implemented。
 
 门禁：428 passed / 93%。
+
+
+## 23. BDI 来源会话（2026-11-02）
+
+`IntentionItem` 新增：
+
+```text
+source_chat_key: str = ""
+```
+
+- 由 `satiate_snapshot(..., source_chat_key=o.chat_key)` 写入；
+- 私聊承诺会记录来源私聊；
+- 目标仍由 `target_chat_key` 表示；
+- 不自动发送，来源用于跨会话审计与后续事件。
+
+测试：
+
+```text
+tests/unit/test_commitment.py
+```
+
+门禁：428 passed / 93%。

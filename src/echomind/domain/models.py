@@ -76,6 +76,7 @@ class IntentionItem(FrozenValueObject):
     expires_at_ms: int
     target_user_id: str = ""
     target_chat_key: str = ""
+    source_chat_key: str = ""
 
 
 class WorkingSnapshot(FrozenValueObject):
