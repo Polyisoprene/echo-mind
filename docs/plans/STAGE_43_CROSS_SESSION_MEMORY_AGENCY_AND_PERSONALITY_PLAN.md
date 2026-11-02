@@ -999,3 +999,15 @@ tests/unit/test_recall_cross_session.py
 ```
 
 门禁：430 passed / 93%。
+
+
+## 27. partial：CAP-ACTION-ELIGIBILITY 收口（2026-11-02）
+
+claim 是“active trait 可追加工具授权并授予拒绝许可”，代码已支持：
+
+- additive 默认追加；
+- whitelist 可选；
+- taboo 授予 refusal 许可；
+- 测试 `tests/unit/test_trait_tool_grants.py`。
+
+“refusal 只许可不强制”不是缺陷，是自由意志设计；whitelist 未默认启用也不否定 claim。故校准为 implemented。

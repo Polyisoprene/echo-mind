@@ -393,8 +393,8 @@
       "code": [
         "src/echomind/mind/trait_tool_grants.py"
       ],
-      "status": "partial",
-      "gap": "默认 additive；whitelist 模式已实现但未启用；refusal 只许可不强制",
+      "status": "implemented",
+      "gap": "additive 为默认；whitelist 模式为可选；refusal 是许可不是强制（自由意志设计）",
       "acceptance_test": "tests/unit/test_trait_tool_grants.py::test_tool_grant_is_added_not_substituted",
       "evidence_report": "docs/CURRENT_STATE_2026-11-01.md",
       "target_release": "Stage41"

@@ -4,8 +4,8 @@
 
 | 状态 | 数量 |
 |---|---|
-| ✅ implemented | 8 |
-| ⚠️ partial | 16 |
+| ✅ implemented | 9 |
+| ⚠️ partial | 15 |
 | ❌ absent | 0 |
 | ⛔ contradicted | 3 |
 
@@ -35,6 +35,6 @@
 | CAP-ACTIVE-ONLY-PROMPT | prompt 只渲染 active trait | ✅ implemented | tests/unit/test_personality_invariants.py::test_only_active_traits_reach_the_prompt |
 | CAP-TRAIT-EVIDENCE | 每条 active trait 有可审计 quote/context 证据 | ✅ implemented | tests/integration/test_trait_evidence_ledger.py::test_evidence_roundtrip_and_turn_dedupe |
 | CAP-TRAIT-MEMORY | active trait 的 support 能影响记忆检索排序 | ⚠️ partial | 手动 support 6 条已生效；自动 support 稀有，门控仅 BM25>0 |
-| CAP-ACTION-ELIGIBILITY | active trait 可追加工具授权并授予拒绝许可 | ⚠️ partial | 默认 additive；whitelist 模式已实现但未启用；refusal 只许可不强制 |
+| CAP-ACTION-ELIGIBILITY | active trait 可追加工具授权并授予拒绝许可 | ✅ implemented | tests/unit/test_trait_tool_grants.py::test_tool_grant_is_added_not_substituted |
 | CAP-RESPONSE-ATTRIBUTION | 记录她的消息之后的回应归因（mention/temporal） | ⚠️ partial | shadow only：不接 trait/ranker/prompt；tier A quote 元数据当前不可用 |
 | CAP-CROSS-SESSION-MEMORY | 跨会话记忆可按来源/受众披露，而不是按 chat_key 硬隔离 | ⚠️ partial | 已实现 source/audience 策略、opt-in get_cross_session_facts 与 recall_memory(include_cross_session)；send_to_chat 已真实发到群；live 读路径仍未默认开启，承诺事件/披露模型未实现 |
