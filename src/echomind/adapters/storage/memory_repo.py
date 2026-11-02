@@ -14,6 +14,7 @@ from echomind.adapters.storage.claim_views import (
     load_claim_facts_filtered as _claim_facts,
 )
 from echomind.adapters.storage.database import SqliteDatabase
+from echomind.adapters.storage.memory_cross_session import FACT_COLUMNS, load_cross_session_facts
 from echomind.adapters.storage.memory_rows import row_to_episodic, row_to_fact, row_to_rule
 from echomind.adapters.storage.memory_sql import UPSERT_FACT_SQL
 from echomind.domain.models import (
@@ -26,11 +27,6 @@ from echomind.mind.sensitivity import upgrade_episode, upgrade_fact
 
 RoleType = Literal["owner", "admin", "member"]
 
-FACT_COLUMNS = (
-    "id, chat_key, subject, fact_text, confidence, is_locked, source, revision_count, "
-    "scope, source_person_id, source_venue_id, owner_id, sensitivity, audience_json, "
-    "source_quote, source_turn_id, event_time_ms, valid_to_ms"
-)
 def _row_to_bond(row: aiosqlite.Row) -> SocialBondProfile:
     raw_role = str(row[3])
     role: RoleType = (
@@ -119,6 +115,10 @@ class SqliteMemoryRepository:
             cursor = await conn.execute(sql, tuple(params))
             rows = await cursor.fetchall()
             return tuple(row_to_fact(r) for r in rows)
+
+    async def get_cross_session_facts(self, chat_key: str, min_confidence: float = 0.0,
+                                      now_ms: int | None = None) -> tuple[SemanticFact, ...]:
+        return await load_cross_session_facts(self._db, chat_key, min_confidence, now_ms)
 
     async def get_procedural_rules(self, chat_key: str) -> tuple[ProceduralRule, ...]:
         sql = (

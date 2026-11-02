@@ -548,3 +548,24 @@ feiyu_say(..., target_chat_key)
 - 目标为空/发送失败会明确报错；
 - 不设硬白名单；发送后返回 target 与 message_id；
 - 单测验证私聊调用目标群；未向真实群发测试消息。
+
+
+## 13. P1 第二半（2026-11-02）
+
+新增：
+
+```text
+SqliteMemoryRepository.get_cross_session_facts()
+tests/integration/test_cross_session_memory.py
+```
+
+行为：
+
+- 默认不调用；不是 live 读路径；
+- 只读 `public/group`；
+- 群来源的 group 事实可跨群；
+- 私聊来源默认不跨；
+- secret 永不跨；
+- 未改变 `get_semantic_facts` / agent runner。
+
+这一步仍不是“跨会话承诺”：原始私聊事实不会直接进群；承诺需要下一步的显式事件/披露模型。
