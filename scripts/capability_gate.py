@@ -1,6 +1,6 @@
 """Gate: every claimed capability must carry a status and (when implemented) a test.
 
-Also regenerates `docs/CAPABILITY_STATUS.md` so completion claims are a product of
+Also regenerates `docs/status/CAPABILITY_STATUS.md` so completion claims are a product of
 this script rather than something a human edits by hand.
 """
 
@@ -14,7 +14,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CAPS = ROOT / "docs" / "capabilities.json"
-STATUS_MD = ROOT / "docs" / "CAPABILITY_STATUS.md"
+STATUS_MD = ROOT / "docs" / "status" / "CAPABILITY_STATUS.md"
 VALID_STATUS = ("implemented", "partial", "absent", "contradicted")
 BADGE = {
     "implemented": "✅",
@@ -125,7 +125,7 @@ def main() -> int:
     if args.check:
         current = STATUS_MD.read_text(encoding="utf-8") if STATUS_MD.is_file() else ""
         if current != rendered:
-            problems.append("docs/CAPABILITY_STATUS.md is stale; run without --check")
+            problems.append("docs/status/CAPABILITY_STATUS.md is stale; run without --check")
     else:
         STATUS_MD.write_text(rendered, encoding="utf-8")
     print(f"capabilities={len(entries)} -> {STATUS_MD.relative_to(ROOT)}")

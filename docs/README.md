@@ -1,90 +1,92 @@
 # EchoMind 文档索引（Docs Index）
 
-> 最后更新：2026-11-01（Stage 41 收口后）
-> 本文件是文档入口。**当前真实状态以 [`CURRENT_STATE_2026-11-01.md`](CURRENT_STATE_2026-11-01.md) 为唯一权威**；历史阶段规划是记录，不再修改。
+> 最后更新：2026-11-05 · 文档已按用途重组为 8 个目录，共 96 份文档
+>
+> **阅读本文前请先明确一点**：项目里"设计了什么"与"实际做到了什么"是两件不同的事。
+> 前者在 `models/`、`architecture/`，后者**只在 [`status/`](status/README.md)**。不要把设计文档当成已实现能力。
 
 ---
 
-## 一、先读这几份
+## 一、按角色选路径
 
-| 文档 | 作用 |
+| 我是谁 | 读这些 |
 |---|---|
-| [`CURRENT_STATE_2026-11-01.md`](CURRENT_STATE_2026-11-01.md) | **当前真实状态**：active trait、support、评测、能力边界 |
-| [`CLOSURE_MATRIX_2026-11-02.md`](CLOSURE_MATRIX_2026-11-02.md) | 闭环矩阵：已完成、已验证、被外部资源阻塞的项 |
-| [`plans/STAGE_43_CROSS_SESSION_MEMORY_AGENCY_AND_PERSONALITY_PLAN.md`](plans/STAGE_43_CROSS_SESSION_MEMORY_AGENCY_AND_PERSONALITY_PLAN.md) | Stage 43：跨会话记忆/发送、FTS5、BDI、partial、HEXACO 审计 |
-| [`plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md`](plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md) | Stage 41 全景：证据账本、生命周期、trait→记忆、support、ranker、闭环矩阵 |
-| [`plans/STAGE_42_CAPABILITY_COMPLETION_PLAN.md`](plans/STAGE_42_CAPABILITY_COMPLETION_PLAN.md) | Stage 42：可做未做能力的全局建模、外部依据、P0–P4 与验收 |
-| [`RESPONSE_ATTRIBUTION_MODEL.md`](RESPONSE_ATTRIBUTION_MODEL.md) | P0 回应归因：tier B/C、30min 工程窗口、shadow 结果 |
-| [`LONGMEMEVAL_QA_MODEL.md`](LONGMEMEVAL_QA_MODEL.md) | P1 LongMemEval QA/abstention：官方 judge prompt、远端运行、30 题样本 |
-| [`STANCE_CALIBRATION_DATA_AUDIT.md`](STANCE_CALIBRATION_DATA_AUDIT.md) | 现有 90 组标签不能用于 stance 校准的数据审计 |
-| [`PERSONA_STATUS_CN.md`](PERSONA_STATUS_CN.md) | 人格模型现在到哪一步（人话版） |
-| [`PERSONA_SELF_EVOLUTION_STATUS_CN.md`](PERSONA_SELF_EVOLUTION_STATUS_CN.md) | 自演化现在到哪一步 |
-| [`MASTER_BACKLOG.md`](MASTER_BACKLOG.md) | 单一事实源：硬编码、待办、变更日志 |
-| [`ARCHITECTURE_CONTRACTS.md`](ARCHITECTURE_CONTRACTS.md) | 分层边界、SOLID 硬约束、7 道门禁、人格模型契约 |
-| [`params/ledger.json`](params/ledger.json) + [`params/README.md`](params/README.md) | 参数溯源台账：59 条常数与证据 |
-| [`capabilities.json`](capabilities.json) + [`CAPABILITY_STATUS.md`](CAPABILITY_STATUS.md) | 能力台账：实现/部分/缺失/矛盾 |
+| **刚接手这个项目** | [`HANDOFF.md`](HANDOFF.md) → [`status/CURRENT_STATE.md`](status/CURRENT_STATE.md) → [`architecture/ARCHITECTURE_CONTRACTS.md`](architecture/ARCHITECTURE_CONTRACTS.md) |
+| **要改业务代码** | [`architecture/ARCHITECTURE_CONTRACTS.md`](architecture/ARCHITECTURE_CONTRACTS.md) → 对应 `models/` 机制文档 → `tests/architecture/` |
+| **要跑评测** | [`evaluation/README.md`](evaluation/README.md) → [`evaluation/EVALUATION_STANDARD.md`](evaluation/EVALUATION_STANDARD.md) |
+| **要部署运维** | [`HANDOFF.md`](HANDOFF.md) 的运维章节 → [`operations/README.md`](operations/README.md) |
+| **要查历史决策** | [`decisions/README.md`](decisions/README.md) → [`archive/plans/`](archive/plans/) |
 
 ---
 
-## 二、当前能力与设计
-
-| 文档 | 内容 |
-|---|---|
-| [`PERSONA_SELF_EVOLUTION_MODEL.md`](PERSONA_SELF_EVOLUTION_MODEL.md) | 自演化理论模型：Beta 证据、CAPS、CLS、叙事身份 |
-| [`PERSONA_SELF_EVOLUTION_DESIGN_CN.md`](PERSONA_SELF_EVOLUTION_DESIGN_CN.md) | 工程落地设计；顶部有当前实现状态说明 |
-| [`PERSONA_MODEL_PORTRAIT.md`](PERSONA_MODEL_PORTRAIT.md) | 人格模型画像 |
-| [`PERSONA_DISCLOSURE_MODEL.md`](PERSONA_DISCLOSURE_MODEL.md) | 隐私/披露模型与 audience 硬门 |
-| [`PERSONA_STYLE_MONITORING.md`](PERSONA_STYLE_MONITORING.md) | 确定性风格监控：长度、长句、解释词、括号动作 |
-| [`COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md`](COGNITIVE_CORE_AND_SELF_LEARNING_SPEC.md) | 认知核心、7 维人格、记忆与门控算法 |
-| [`MEMORY_SOURCE_AND_DISCLOSURE.md`](MEMORY_SOURCE_AND_DISCLOSURE.md) | 记忆来源、claim/evidence、双时态 |
-| [`DATA_MIGRATION_GUIDE.md`](DATA_MIGRATION_GUIDE.md) | 数据导入、表结构、迁移 |
-| [`EVALUATION_STANDARD.md`](EVALUATION_STANDARD.md) | 评测协议与判据 |
-
----
-
-## 三、Stage 41 相关专项
-
-| 文档 | 内容 |
-|---|---|
-| [`plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md`](plans/STAGE_41_UNFINISHED_REMEDIATION_AND_SELF_EVOLUTION_PLAN.md) | 14.1–14.71：证据、生命周期、signature、backfill、support、ranker、词法门控、active-only、action eligibility、B4/B5/B6、G1/G2 |
-| [`PERSONA_SELF_EVOLUTION_STATUS_CN.md`](PERSONA_SELF_EVOLUTION_STATUS_CN.md) | 当前自演化状态与未完成边界 |
-| [`PERSONA_STATUS_CN.md`](PERSONA_STATUS_CN.md) | 当前人格状态与真人感水平 |
-
-关键工程入口：
-
-- 手动 support 向导：`scripts/manual_trait_support_wizard.py`
-- 手动 support CLI：`scripts/manual_trait_support.py`
-- 自动晋升器：`scripts/auto_promote_trait_candidates.py`（默认 dry-run）
-- 叙事投影：`scripts/trait_narrative.py`（只读，不接 prompt）
-- 健康/证据/风格 API：`/api/mind/trait-health`、`/api/mind/traits/{id}/evidence`、`/api/mind/style-health`
-
----
-
-## 四、历史阶段规划（Stage 0–40）
-
-这些是过程记录，描述当时的决策与验收，**不作为现行契约**。
-
-- 历史规划目录：`docs/plans/`
-- 项目宪章与阶段总表：[`PROJECT_CHARTER_AND_PROGRESS.md`](PROJECT_CHARTER_AND_PROGRESS.md)（当前状态看第一节）
-- Stage 28 A/B 双线交付纪律是历史工作流；当前仓库以 `main` 的实际代码与门禁结果为准。
-
----
-
-## 五、交付纪律（当前）
+## 二、目录总览
 
 ```text
-1. 代码修改后必须跑 ./scripts/qa_gate.sh；
-2. 测试不得写生产 data/config.json（tests/conftest.py 守卫）；
-3. 生产服务重启前确认 3310/3312 状态；
-4. 任何数值参数必须有 ledger 依据，fit_pending 不得伪装成 fit；
-5. CURRENT_STATE 与 CAPABILITY_STATUS 必须随功能变化更新。
+docs/
+├── HANDOFF.md          交接文档（环境/运维/代码地图/技术债）
+├── architecture/       架构契约与工程流程          3 份
+├── models/             认知核心与机制设计         12 份
+├── evaluation/         评测标准与基准结果         22 份
+├── research/           外部调研                    1 份
+├── operations/         部署与运维                  1 份
+├── status/             状态路标（活文档）          9 份
+├── decisions/          技术决策记录                7 份
+├── archive/            历史归档                   37 份
+│   ├── plans/            STAGE 0–43 阶段计划      35 份
+│   └── reviews/          代码评审报告              2 份
+├── params/             参数溯源台账
+└── capabilities.json   能力台账源数据
 ```
 
-## 六、阅读顺序
+---
 
-```text
-新人上手：CURRENT_STATE → MASTER_BACKLOG → ARCHITECTURE_CONTRACTS → Stage 41
-改人格：  PERSONA_STATUS_CN → Stage 41 14.x → 不变量测试
-改记忆：  MEMORY_SOURCE_AND_DISCLOSURE → Stage 41 B4/B5/B6 → 隐私/validity 测试
-改评测：  EVALUATION_STANDARD → capabilities.json → LEDGER
-```
+## 三、核心文档（最常被引用）
+
+| 文档 | 作用 | 更新方式 |
+|---|---|---|
+| [`status/CURRENT_STATE.md`](status/CURRENT_STATE.md) | ⭐ 当前真实状态的**唯一权威** | 人工维护 |
+| [`status/CAPABILITY_STATUS.md`](status/CAPABILITY_STATUS.md) | 能力台账（实现/部分/缺失/矛盾） | **自动生成**，改 [`capabilities.json`](capabilities.json) |
+| [`architecture/ARCHITECTURE_CONTRACTS.md`](architecture/ARCHITECTURE_CONTRACTS.md) | 最高工程契约，由 AST 门禁强制 | 人工维护 |
+| [`models/COGNITIVE_CORE_SPEC.md`](models/COGNITIVE_CORE_SPEC.md) | 12 层认知核心总规范 | 人工维护 |
+| [`status/MASTER_BACKLOG.md`](status/MASTER_BACKLOG.md) | 总账：硬编码、待办、变更日志 | 人工维护 |
+| [`params/README.md`](params/README.md) | 参数溯源台账（62 条常数） | 由 `param_gate.py` 校验 |
+
+---
+
+## 四、状态类文档怎么分工
+
+`status/` 下文档较多，容易混淆。分工如下：
+
+| 文档 | 回答的问题 |
+|---|---|
+| `CURRENT_STATE.md` | **现在系统是什么样**（数字、边界、已知问题） |
+| `CAPABILITY_STATUS.md` | **每项能力达到什么程度**（机器生成，最客观） |
+| `CLOSURE_MATRIX.md` | **哪些闭环了，哪些被外部资源卡住** |
+| `MASTER_BACKLOG.md` | **还欠什么**（硬编码清单、技术债、变更日志） |
+| `PROJECT_CHARTER.md` | **项目目标与全局进度** |
+| `PERSONA_STATUS.md` / `PERSONA_SELF_EVOLUTION_STATUS.md` | **人格相关做到哪一步**（人话版） |
+| `PARAMETER_SCORECARD.md` | **参数可信度**（哪些有依据、哪些是拍的） |
+| `MEMORY_REFACTOR_STATUS.md` | **记忆模块重构进度**（部分已过时，以 CURRENT_STATE 为准） |
+
+---
+
+## 五、文档维护规范
+
+1. **新增文档必须放进对应子目录**，`docs/` 根目录只允许 `README.md` 与 `HANDOFF.md`（由 `tests/architecture/test_docs_integrity.py` 强制）。
+2. **移动或重命名文档后必须修正引用**，否则门禁会失败——这是有意的设计，防止链接静默腐化。
+3. **归档而非删除**：过时的计划移入 `archive/` 并加「📦 已归档」横幅，保留可追溯性。
+4. **状态类内容只写进 `status/`**，设计文档里不要写"当前已完成 XX"，避免两处数字打架。
+5. **能力声明必须进台账**：新增能力请编辑 [`capabilities.json`](capabilities.json)，写明状态、缺口与验收测试，再跑 `python scripts/capability_gate.py` 重新生成。
+
+---
+
+## 六、本次重组说明（2026-11-05）
+
+原 `docs/` 根目录平铺 56 份文档、`plans/` 平铺 35 份，命名混用 `_MODEL` / `_SPEC` / `_CN` / `D15_` / 日期后缀等多种风格，难以按用途查找。本次重组做了四件事：
+
+1. **按用途分目录**：architecture / models / evaluation / research / operations / status / decisions / archive。
+2. **统一命名**：去掉冗余后缀（如 `*_MODEL.md` → 主题名），`_CN` 后缀移除（全项目本就以中文为主），日期从文件名移入正文。
+3. **归档历史**：35 份 STAGE 计划 + 2 份评审报告移入 `archive/`，每份加「已归档」横幅。
+4. **加门禁防复发**：新增 `tests/architecture/test_docs_integrity.py`，强制链接有效、目录规范、归档有标注。
+
+<div align="right"><a href="../README.md">← 返回项目主页</a></div>

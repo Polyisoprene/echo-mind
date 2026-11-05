@@ -7,7 +7,7 @@
 - File used: `longmemeval_s_cleaned.json` (~265MB), **not committed**.
 - Adapter: `scripts/eval_longmemeval.py`
 - Baselines: `eval/baselines/longmemeval-session-100-2026-11-01.json` (bge-small), `eval/baselines/longmemeval-m3-session-100-2026-11-01.json` (bge-m3)
-- Report: `docs/EXTERNAL_BENCHMARK_LONGMEMEVAL.md`
+- Report: `docs/evaluation/LONGMEMEVAL_OVERVIEW.md`
 - bge-m3 result: session recall@5 **0.510**, MRR **0.315** (100 questions, session granularity)
 
 Download:

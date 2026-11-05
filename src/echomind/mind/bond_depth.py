@@ -8,7 +8,7 @@ with betrayal suppression and Beta-reputation trust with forgetting.
 Provenance policy (PARAM-01): every module-level constant carries a `param:` tag.
 - `src:<doi>`        — value or form taken from a published source;
 - `convention:<id>`  — standard convention (e.g. RCI unit weighting, uniform Beta prior);
-- `fit:<report-id>`  — empirically fitted on labelled data (report in docs/plans/).
+- `fit:<report-id>`  — empirically fitted on labelled data (report in docs/archive/plans/).
 Values tagged `fit:pending*` are PROVISIONAL hand-set defaults and must be replaced by
 the Stage 29 fitting report before any behaviour is changed.
 """

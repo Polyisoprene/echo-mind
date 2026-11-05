@@ -1,0 +1,34 @@
+# 评测与基准（Evaluation）
+
+回答"它到底有多好"。评测标准 + 外部基准接入 + 各项审计结果。
+
+> 评测的**当前基线数字**汇总见 [`../status/CURRENT_STATE.md`](../status/CURRENT_STATE.md)。
+
+## 标准与基线
+
+| 文档 | 说明 |
+|---|---|
+| [`EVALUATION_STANDARD.md`](EVALUATION_STANDARD.md) | 人格与记忆评测标准（总纲） |
+| [`MEMORY_BASELINE_D19.md`](MEMORY_BASELINE_D19.md) | 记忆模块验收基线（D19） |
+
+## 外部基准
+
+| 基准 | 文档 |
+|---|---|
+| **LongMemEval-S** | [`LONGMEMEVAL_OVERVIEW.md`](LONGMEMEVAL_OVERVIEW.md)、[`LONGMEMEVAL_RETRIEVAL.md`](LONGMEMEVAL_RETRIEVAL.md)、[`LONGMEMEVAL_QA.md`](LONGMEMEVAL_QA.md)、[`LONGMEMEVAL_COT.md`](LONGMEMEVAL_COT.md)、[`LONGMEMEVAL_TOPK.md`](LONGMEMEVAL_TOPK.md)、[`LONGMEMEVAL_FUSION_AUDIT.md`](LONGMEMEVAL_FUSION_AUDIT.md) |
+| **GroupMemBench** | [`GROUPMEMBENCH_OVERVIEW.md`](GROUPMEMBENCH_OVERVIEW.md)、[`GROUPMEMBENCH_ASKER.md`](GROUPMEMBENCH_ASKER.md)、[`GROUPMEMBENCH_CHANGE.md`](GROUPMEMBENCH_CHANGE.md)、[`GROUPMEMBENCH_DECISION.md`](GROUPMEMBENCH_DECISION.md)、[`GROUPMEMBENCH_DENSE.md`](GROUPMEMBENCH_DENSE.md)、[`GROUPMEMBENCH_KNOWLEDGE.md`](GROUPMEMBENCH_KNOWLEDGE.md) |
+| **CharacterEval** | [`CHARACTEREVAL.md`](CHARACTEREVAL.md) |
+
+## 人格评测与审计
+
+| 文档 | 说明 |
+|---|---|
+| [`PERSONA_JUDGE_MATRIX.md`](PERSONA_JUDGE_MATRIX.md) | 多模型 Judge 矩阵 |
+| [`PERSONA_HUMAN_CALIBRATION.md`](PERSONA_HUMAN_CALIBRATION.md) | 人工校准结果 |
+| [`PERSONA_PAIRWISE_V2.md`](PERSONA_PAIRWISE_V2.md) | 成对比较 v2 结果 |
+| [`PERSONA_SENSITIVITY.md`](PERSONA_SENSITIVITY.md) | 敏感性审计 |
+| [`PERSONA_STYLE_AUDIT.md`](PERSONA_STYLE_AUDIT.md) | 真人感风格审计 |
+| [`PERSONA_STYLE_MONITORING.md`](PERSONA_STYLE_MONITORING.md) | 风格监控 |
+| [`STANCE_DATA_AUDIT.md`](STANCE_DATA_AUDIT.md) | Stance 校准数据可用性审计 |
+
+<div align="right"><a href="../README.md">← 返回文档索引</a></div>
