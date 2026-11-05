@@ -7,13 +7,13 @@ import json
 import time
 from typing import Any
 
-import httpx
 import websockets
 
 from echomind.adapters.llm.anchor import PrefixAnchorEngine
 from echomind.adapters.onebot.enrichers import PerceptEnrichmentPipeline
 from echomind.adapters.onebot.event_parser import parse_onebot_event
 from echomind.adapters.onebot.forward_expander import expand_incoming_forward
+from echomind.adapters.onebot.http_caller import OneBotHttpApiCaller
 from echomind.adapters.storage.contact_observer import observe_percept
 from echomind.adapters.storage.database import SqliteDatabase
 from echomind.domain.models import Percept
@@ -26,24 +26,6 @@ from echomind.runtime.prompt_composer import StickerCandidate
 from echomind.runtime.scheduler import CognitiveHeartbeatScheduler
 
 STALE_TRIGGER_MS = 45_000
-
-
-class OneBotHttpApiCaller:
-    """Production IOneBotApiCaller sending POST requests to NapCat OneBot HTTP API."""
-
-    def __init__(self, http_url: str, access_token: str = "") -> None:
-        self._base = http_url.rstrip("/")
-        self._token = access_token
-
-    async def call_api(self, api: str, **data: Any) -> Any:
-        headers = {"Content-Type": "application/json"}
-        if self._token:
-            headers["Authorization"] = f"Bearer {self._token}"
-        async with httpx.AsyncClient(timeout=30.0, trust_env=False) as client:
-            resp = await client.post(f"{self._base}/{api}", headers=headers, json=data)
-            resp.raise_for_status()
-            body: dict[str, Any] = resp.json()
-            return body.get("data", body)
 
 
 async def _poll_ptt_text(caller: OneBotHttpApiCaller, mid: int | str) -> str:
@@ -165,6 +147,23 @@ class OneBotLiveRuntime:
         self._pending_batches: dict[str, list[Percept]] = {}
         self._wake_scheduled: set[str] = set()
         self._anchor = PrefixAnchorEngine(max_extra_read=10, window_size=48)
+
+    def apply_identity(
+        self, *, bot_name: str = "", groups: tuple[str, ...] = (),
+        private: tuple[str, ...] | None = None, self_id: str = "",
+        operators: tuple[str, ...] = (),
+    ) -> None:
+        """Adopt a new identity/allow-list without restarting the WS loop."""
+        if groups:
+            self._groups = frozenset(groups)
+        if private is not None:
+            self._priv_users = frozenset(private)
+        if self_id:
+            self._self_id = self_id
+        if operators:
+            self._operator_ids = tuple(operators)
+        if bot_name:
+            self._bot_names = tuple(dict.fromkeys([bot_name, *self._bot_names]))
 
     async def _save_incoming(self, percept: Percept) -> None:
         await observe_percept(self._db, percept, self._operator_ids)

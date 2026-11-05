@@ -45,12 +45,14 @@ def test_hot_apply_updates_runtime_operators() -> None:
     from echomind.adapters.onebot.identity_hot_apply import apply_identity
 
     class _Runtime:
-        _operator_ids: tuple[str, ...] = ()
-        _groups: frozenset[str] = frozenset()
-        _priv_users: frozenset[str] = frozenset()
-        _self_id: str = ""
-        _bot_names: tuple[str, ...] = ()
+        """Records the identity payload it receives instead of exposing private state."""
+
+        def __init__(self) -> None:
+            self.received: dict[str, tuple[str, ...]] = {}
+
+        def apply_identity(self, **fields: tuple[str, ...]) -> None:
+            self.received = fields
 
     runtime = _Runtime()
     apply_identity(runtime, operators=("9",))
-    assert runtime._operator_ids == ("9",)
+    assert runtime.received["operators"] == ("9",)

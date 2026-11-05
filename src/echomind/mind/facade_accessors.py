@@ -11,6 +11,7 @@ from echomind.mind.subconscious_probe import SubconsciousChordProbe, Subconsciou
 
 class FacadeAccessors:
     _last_active_ms: int
+    _operator_ids: tuple[str, ...]
     _sub_probe: SubconsciousChordProbe | None
     _chord_cache: dict[str, SubconsciousChordResult]
     _gate_log: list[dict[str, Any]]
@@ -29,6 +30,10 @@ class FacadeAccessors:
 
     def set_semantic_retriever(self, retriever: SemanticMemoryRetriever) -> None:
         self._semantic = retriever
+
+    def set_operator_ids(self, operator_ids: tuple[str, ...]) -> None:
+        """Adopt a new operator roster from the console without rebuilding the facade."""
+        self._operator_ids = tuple(operator_ids)
 
     def cache_chord(self, message_id: str, chord: SubconsciousChordResult) -> None:
         remember_chord(self._chord_cache, message_id, chord)

@@ -41,14 +41,17 @@ def test_read_reports_current_identity(tmp_path: Path) -> None:
 
 def test_hot_apply_updates_runtime_filters() -> None:
     class _Runtime:
-        _groups: frozenset[str] = frozenset()
-        _priv_users: frozenset[str] = frozenset()
-        _self_id: str = ""
-        _bot_names: tuple[str, ...] = ()
+        """Records the identity payload it receives instead of exposing private state."""
+
+        def __init__(self) -> None:
+            self.received: dict[str, object] = {}
+
+        def apply_identity(self, **fields: object) -> None:
+            self.received = fields
 
     runtime = _Runtime()
     apply_identity(runtime, bot_name="星野", groups=("1",), private=("2",), self_id="3")
-    assert runtime._groups == frozenset({"1"})
-    assert runtime._priv_users == frozenset({"2"})
-    assert runtime._self_id == "3"
-    assert "星野" in runtime._bot_names
+    assert runtime.received["groups"] == ("1",)
+    assert runtime.received["private"] == ("2",)
+    assert runtime.received["self_id"] == "3"
+    assert runtime.received["bot_name"] == "星野"

@@ -173,7 +173,7 @@ class MindInspectorService:
         proposal = await self._c.cognitive_facade.run_autonomous_tick(now_ms)
         if proposal is None:
             return {"ok": True, "triggered": False, "proposal": None}
-        sched = getattr(self._c, "scheduler", None)
+        sched = self._c.scheduler
         if sched is not None:
             if proposal.drive_kind not in ("curiosity_explore", "bili_surf"):
                 proposal = ProactiveProposal(

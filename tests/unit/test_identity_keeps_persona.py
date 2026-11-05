@@ -11,9 +11,12 @@ from echomind.web.identity_service import IdentityConfigService
 
 
 class _Container:
+    """Minimal stand-in; mirrors the real container surface the service touches."""
+
     def __init__(self) -> None:
         self.prompt_composer = PromptComposer("原始人设正文", bot_name="回音")
         self.onebot_runtime = None
+        self.cognitive_facade = None
 
 
 def test_identity_save_keeps_existing_role_text(tmp_path: Path) -> None:

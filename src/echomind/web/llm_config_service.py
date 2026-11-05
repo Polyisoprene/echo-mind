@@ -244,8 +244,8 @@ class LlmConfigService:
             await gateway.reload_endpoints(
                 loaded.primary_llm, loaded.fallback_llm, extra_fallbacks=loaded.fallback_chain
             )
-        vision = getattr(self._c, "vision_describer", None)
-        if vision is not None and hasattr(vision, "reload_endpoint"):
+        vision = self._c.vision_describer
+        if vision is not None:
             vision.reload_endpoint(loaded.primary_llm)
         result = self.read()
         result["applied"] = gateway is not None

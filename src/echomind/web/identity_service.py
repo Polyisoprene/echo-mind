@@ -5,12 +5,15 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from echomind.adapters.onebot.identity_hot_apply import apply_identity
 from echomind.mind.memory_budget import set_consolidation_budget, set_consolidation_thinking
 from echomind.mind.naming import BotNaming, bot_naming, set_bot_naming
 from echomind.mind.probe_runtime import set_probe_model
+
+if TYPE_CHECKING:
+    from echomind.core.bootstrap import EchoMindContainer
 
 
 @dataclass(frozen=True)
@@ -67,7 +70,7 @@ def _write_section(raw: dict[str, Any], key: str, value: Any) -> None:
 class IdentityConfigService:
     """Read/write the identity block of `data/config.json` and apply it live."""
 
-    def __init__(self, path: Path, container: Any = None) -> None:
+    def __init__(self, path: Path, container: EchoMindContainer | None = None) -> None:
         self._path = path
         self._c = container
 
@@ -177,15 +180,15 @@ class IdentityConfigService:
         operators: list[str],
     ) -> None:
         """Push the new filters into the live runtime and prompt composer, when present."""
-        composer = getattr(self._c, "prompt_composer", None) if self._c is not None else None
+        composer = self._c.prompt_composer if self._c is not None else None
         if composer is not None and bot_name:
             composer.update_role_card(bot_name, composer.role_card()[1])
-        runtime = getattr(self._c, "onebot_runtime", None) if self._c is not None else None
+        runtime = self._c.onebot_runtime if self._c is not None else None
         if runtime is not None:
             apply_identity(
                 runtime, bot_name=bot_name, groups=tuple(groups),
                 private=tuple(private), self_id=self_qq, operators=tuple(operators),
             )
-        facade = getattr(self._c, "cognitive_facade", None) if self._c is not None else None
+        facade = self._c.cognitive_facade if self._c is not None else None
         if facade is not None and operators:
-            facade._operator_ids = tuple(operators)
+            facade.set_operator_ids(tuple(operators))

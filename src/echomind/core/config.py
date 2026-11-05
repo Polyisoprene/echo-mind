@@ -8,17 +8,8 @@ from typing import Any
 
 from pydantic import ConfigDict, Field
 
+from echomind.domain.gateway import GatewayEndpointConfig as GatewayEndpointConfig
 from echomind.domain.models import FrozenValueObject
-
-
-class GatewayEndpointConfig(FrozenValueObject):
-    """LLM gateway endpoint configuration."""
-
-    name: str
-    base_url: str
-    api_key: str = ""
-    model: str
-    timeout_ms: int = 120000
 
 
 class EmbeddingConfig(FrozenValueObject):

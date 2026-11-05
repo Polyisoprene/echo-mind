@@ -18,7 +18,8 @@ from echomind.adapters.media.vision import OpenAiVisionDescriber
 from echomind.adapters.onebot.bot_bridge import OneBotV11Bridge
 from echomind.adapters.onebot.enrichers import PerceptEnrichmentPipeline
 from echomind.adapters.onebot.forward_expander import ReadForwardTool
-from echomind.adapters.onebot.live_client import OneBotHttpApiCaller, OneBotLiveRuntime
+from echomind.adapters.onebot.http_caller import OneBotHttpApiCaller
+from echomind.adapters.onebot.live_client import OneBotLiveRuntime
 from echomind.adapters.onebot.media_gateway import OneBotMediaGateway
 from echomind.adapters.storage.intention_events import IntentionEventStore
 from echomind.adapters.storage.memory_vector_repo import SqliteMemoryVectorStore

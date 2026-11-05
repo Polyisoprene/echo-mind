@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from echomind.adapters.llm.client import FailoverLlmGateway
 from echomind.adapters.media.feiyu import FeiyuVoiceBackend
@@ -26,6 +25,11 @@ from echomind.adapters.storage.trait_memory_repo import SqliteTraitMemoryLinkSto
 from echomind.adapters.storage.trait_shadow_repo import SqliteTraitShadowStore
 from echomind.adapters.storage.working_repo import SqliteWorkingStateStore
 from echomind.core.events import AsyncEventBus
+from echomind.domain.live_ports import (
+    IHotReloadableRuntime,
+    IProactiveScheduler,
+    IReloadableVision,
+)
 from echomind.domain.models import TurnOutcome
 from echomind.domain.ports import IOneBotApiCaller
 from echomind.extensions.registry import ExtensionRegistry
@@ -99,17 +103,16 @@ class EchoMindContainer:
         self.default_chat_key = default_chat_key
         self.llm_gateway: FailoverLlmGateway | None = None
         self.voice_backend: FeiyuVoiceBackend | None = None
-        self.vision_describer: Any = None
+        self.vision_describer: IReloadableVision | None = None
         self.prompt_composer: PromptComposer | None = None
         self.onebot_caller: IOneBotApiCaller | None = None
-        self.scheduler: Any = None
+        self.scheduler: IProactiveScheduler | None = None
         self.event_bus = AsyncEventBus()
         self.published_turns: int = 0
         self.skill_config_store: SqliteSkillConfigStore | None = skill_config_store
         self.bond_depth_store: SqliteBondDepthStore | None = None
         self.persona_layers: SqlitePersonaLayerStore | None = None
-        self.person_level: Any = None
-        self.onebot_runtime: Any = None
+        self.onebot_runtime: IHotReloadableRuntime | None = None
 
     @classmethod
     async def create(

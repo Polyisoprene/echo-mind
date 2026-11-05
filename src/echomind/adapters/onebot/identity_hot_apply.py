@@ -2,22 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Any
+from echomind.domain.live_ports import IHotReloadableRuntime
 
 
 def apply_identity(
-    runtime: Any, *, bot_name: str = "", groups: tuple[str, ...] = (),
+    runtime: IHotReloadableRuntime, *, bot_name: str = "", groups: tuple[str, ...] = (),
     private: tuple[str, ...] = (), self_id: str = "",
     operators: tuple[str, ...] = (),
 ) -> None:
-    """Update allowlists, self id and wake names without restarting the WS loop."""
-    if groups:
-        runtime._groups = frozenset(groups)
-    if private is not None:
-        runtime._priv_users = frozenset(private)
-    if self_id:
-        runtime._self_id = self_id
-    if operators:
-        runtime._operator_ids = tuple(operators)
-    if bot_name:
-        runtime._bot_names = tuple(dict.fromkeys([bot_name, *runtime._bot_names]))
+    """Update allow-lists, self id and wake names without restarting the WS loop."""
+    runtime.apply_identity(
+        bot_name=bot_name, groups=groups, private=private,
+        self_id=self_id, operators=operators,
+    )
+
+
+__all__ = ["apply_identity"]
