@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import json
-import re
 from typing import Any
 
+from echomind.domain.json_extract import extract_json_object
 from echomind.domain.models import (
     EpisodicCard,
     FrozenValueObject,
@@ -15,7 +14,6 @@ from echomind.domain.models import (
 from echomind.domain.relation import MemoryRelation
 from echomind.mind.naming import bot_naming
 
-JSON_OBJ_RE = re.compile(r"\{[\s\S]*\}")
 HIPPOCAMPUS_INSTRUCTIONS = (
     f"你是「{bot_naming().display()}」大脑中的海马体记忆巩固与自我反思中枢。",
     "请阅读以下最新一段对话，像人类睡前复盘一样，一次性提炼出：",
@@ -180,14 +178,8 @@ def _parse_single_bond_adj(raw: Any) -> HippocampalBondAdjustment | None:
 
 
 def _extract_json_dict(raw_content: str) -> dict[str, Any] | None:
-    match = JSON_OBJ_RE.search(raw_content)
-    if not match:
-        return None
-    try:
-        data: dict[str, Any] = json.loads(match.group(0))
-        return data
-    except Exception:
-        return None
+    """Delegate to the shared tolerant extractor (see domain/json_extract)."""
+    return extract_json_object(raw_content)
 
 
 def parse_consolidation_json(

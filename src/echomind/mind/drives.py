@@ -14,6 +14,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.domain.numeric import clamp_rounded
 from echomind.mind.bond_depth import care_weight
 from echomind.mind.circadian import resolve_circadian_phase
 from echomind.mind.person_level import PersonProfile
@@ -27,10 +28,6 @@ CST = datetime.timezone(datetime.timedelta(hours=8))
 # gap (1,144 s over 5,850 gaps in data/echomind.db), so soothing fires on a genuine
 # reunion rather than on every ordinary turn.
 REUNION_GAP_MIN = 30.0
-
-
-def _clamp(val: float, lo: float = 0.0, hi: float = 100.0) -> float:
-    return max(lo, min(hi, round(val, 2)))
 
 
 def _pull(current: float, target: float, rate: float = 0.08) -> float:
@@ -162,29 +159,33 @@ def _build_coupled_vectors(aff: AffectiveVector, drv: DriveState, *,
     w_care: float, j_delta: float, v_rpe: float,
     att_delta: float, shy_boost: float, irr_delta: float, cur_d: float,
 ) -> tuple[AffectiveVector, DriveState]:
-    new_j = _clamp(aff.jealousy * 0.88 + j_delta * (1.0 - aff.jealousy / 120.0))
+    new_j = clamp_rounded(aff.jealousy * 0.88 + j_delta * (1.0 - aff.jealousy / 120.0))
     irr_spill = round(0.18 * max(0.0, j_delta), 2)
     soothe_irr = 1.8 * w_care if v_rpe > 2.0 else 0.6
-    new_irr = _clamp(aff.irritation * 0.85 + irr_delta + irr_spill - soothe_irr)
+    new_irr = clamp_rounded(aff.irritation * 0.85 + irr_delta + irr_spill - soothe_irr)
     v_cross = v_rpe - round(0.32 * max(0.0, j_delta) + 0.25 * new_irr, 2)
-    new_val = _clamp(aff.valence + _pull(aff.valence, 62.0, 0.08) + v_cross, -100.0, 100.0)
+    new_val = clamp_rounded(aff.valence + _pull(aff.valence, 62.0, 0.08) + v_cross, -100.0, 100.0)
     shy_cross = shy_boost + round(0.15 * max(0.0, j_delta) - 0.30 * new_irr, 2)
-    new_shy = _clamp(aff.shyness + _pull(aff.shyness, 22.0, 0.10) + shy_cross)
-    new_eng = _clamp(aff.energy + _pull(aff.energy, circadian_energy_target(), 0.14) - 1.5)
-    new_att = _clamp(drv.attachment + _pull(drv.attachment, 52.0, 0.05) + att_delta, 18.0, 95.0)
-    new_j_drv = _clamp(
+    new_shy = clamp_rounded(aff.shyness + _pull(aff.shyness, 22.0, 0.10) + shy_cross)
+    new_eng = clamp_rounded(aff.energy + _pull(aff.energy, circadian_energy_target(), 0.14) - 1.5)
+    new_att = clamp_rounded(
+        drv.attachment + _pull(drv.attachment, 52.0, 0.05) + att_delta, 18.0, 95.0
+    )
+    new_j_drv = clamp_rounded(
         new_j * (0.55 + 0.45 * (new_att / 100.0)) * (1.0 - 0.25 * (new_shy / 100.0))
     )
     soc_cross = round(
         0.06 * (new_val - 50.0) - 0.22 * new_irr - 0.12 * max(0.0, new_shy - 45.0), 2
     )
-    new_soc = _clamp(drv.social_expression + _pull(drv.social_expression, 48.0, 0.10) + soc_cross)
+    new_soc = clamp_rounded(
+        drv.social_expression + _pull(drv.social_expression, 48.0, 0.10) + soc_cross
+    )
     return (
         AffectiveVector(
             valence=new_val, energy=new_eng, jealousy=new_j, shyness=new_shy, irritation=new_irr
         ),
         DriveState(
-            curiosity=_clamp(drv.curiosity + cur_d), attachment=new_att,
+            curiosity=clamp_rounded(drv.curiosity + cur_d), attachment=new_att,
             jealousy_drive=new_j_drv, social_expression=new_soc,
         ),
     )

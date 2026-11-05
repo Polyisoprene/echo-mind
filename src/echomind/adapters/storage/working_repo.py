@@ -18,6 +18,7 @@ from echomind.domain.models import (
     PlasticParamSpec,
     WorkingSnapshot,
 )
+from echomind.domain.numeric import clamp
 from echomind.domain.persona_specs import PERSONA_SPECS
 
 
@@ -68,10 +69,6 @@ DEFAULT_PLASTIC_PARAMS: tuple[PlasticParamSpec, ...] = (
         for spec in PERSONA_SPECS.values()
     ),
 )
-
-def _clamp_val(val: float, lo: float, hi: float) -> float:
-    return max(lo, min(hi, val))
-
 
 def _parse_intentions_json(raw_str: str) -> tuple[IntentionItem, ...]:
     items: list[dict[str, Any]] = json.loads(raw_str)
@@ -176,7 +173,7 @@ class SqliteWorkingStateStore:
         spec = params.get(key)
         if not spec:
             raise KeyError(f"Unknown plastic parameter: {key}")
-        new_val = round(_clamp_val(spec.value + delta, spec.min_bound, spec.max_bound), 3)
+        new_val = round(clamp(spec.value + delta, spec.min_bound, spec.max_bound), 3)
         now_ms = int(time.time() * 1000)
         async with self._db.connect() as conn:
             await conn.execute("UPDATE plastic_params SET value = ? WHERE key = ?", (new_val, key))

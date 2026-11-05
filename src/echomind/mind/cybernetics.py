@@ -15,6 +15,7 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.domain.numeric import clamp
 from echomind.mind.naming import bot_naming
 
 BILI_OR_MEDIA_RE = re.compile(
@@ -69,10 +70,6 @@ def _card_concepts(card: EpisodicCard) -> tuple[str, ...]:
     return tuple(dict.fromkeys(tokens))
 
 
-def _clamp(val: float, lo: float, hi: float) -> float:
-    return round(max(lo, min(hi, val)), 3)
-
-
 def _compute_stance_order(
     snap: WorkingSnapshot,
     triggers: tuple[Percept, ...],
@@ -85,7 +82,7 @@ def _compute_stance_order(
     bond_pull = ((bond.affinity_level / 5.0) * bond.trust_score) if bond else 0.35
     mood_pull = aff.valence / 220.0
     penalty = (aff.irritation / 95.0) + (0.35 if has_conflict else 0.0)
-    return _clamp(bond_pull + mood_pull - penalty, -1.0, 1.0)
+    return clamp(bond_pull + mood_pull - penalty, -1.0, 1.0, digits=3)
 
 
 def _compute_epistemic_order(
@@ -97,7 +94,7 @@ def _compute_epistemic_order(
     cur_base = snap.drives.curiosity / 200.0
     unk_boost = min(0.45, unknown_count * 0.25)
     conf_boost = 0.35 if has_conflict else 0.0
-    return _clamp(cur_base + unk_boost + conf_boost, 0.0, 1.0)
+    return clamp(cur_base + unk_boost + conf_boost, 0.0, 1.0, digits=3)
 
 
 def _compute_modality_order(
@@ -106,7 +103,7 @@ def _compute_modality_order(
     aff = snap.affect
     arousal = (abs(aff.valence) * 0.35 + aff.jealousy * 1.1 + aff.shyness * 0.9) / 110.0
     priv_bonus = 0.18 if scene == "private" else 0.0
-    return _clamp(arousal + priv_bonus, 0.0, 1.0)
+    return clamp(arousal + priv_bonus, 0.0, 1.0, digits=3)
 
 
 def _derive_regime_label(stance: float, epistemic: float, modality: float) -> str:
@@ -167,7 +164,7 @@ def compute_cybernetic_core(
     tools: list[str] = []
     for r_name in reagents:
         tools.extend(REAGENT_TOOLS.get(r_name, ()))
-    temp = _clamp(0.70 - 0.22 * epistemic + 0.12 * modality, 0.35, 0.90)
+    temp = clamp(0.70 - 0.22 * epistemic + 0.12 * modality, 0.35, 0.90, digits=3)
     return CyberneticCoreState(
         stance_order=stance,
         epistemic_order=epistemic,

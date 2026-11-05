@@ -18,6 +18,8 @@ from __future__ import annotations
 import math
 import os
 
+from echomind.domain.numeric import clamp01
+
 # RCI triad is scored as a unit-weighted composite in the source instrument.
 W_FREQ = 1.00  # param: convention:rci-unit-weight
 W_DIV = 1.20  # param: convention:rci-unit-weight
@@ -55,10 +57,6 @@ def _affinity_params() -> tuple[float, float]:
 BETA_PRIOR = 2.0  # param: convention:beta-uniform-prior-pending
 
 
-def _clamp01(value: float) -> float:
-    return max(0.0, min(1.0, value))
-
-
 def _sigmoid(value: float) -> float:
     return 1.0 / (1.0 + math.exp(-value))
 
@@ -68,12 +66,12 @@ def compute_bond_depth(
     reciprocity: float, affect_impact: float, betrayal: int = 0,
 ) -> float:
     """Return earned relationship depth in [0, 100] (no configuration, no favourite)."""
-    freq = _clamp01(math.log1p(max(0, msg_count)) / math.log1p(FREQ_SATURATION))
-    diversity = _clamp01(max(0, distinct_topics) / DIVERSITY_SATURATION)
-    responsivity = _clamp01(responded_ratio)
-    reciprocal = _clamp01(reciprocity)
-    impact = _clamp01(affect_impact / IMPACT_SATURATION)
-    betrayed = _clamp01(1.0 - math.exp(-max(0, betrayal) / BETRAYAL_HALF_LIFE))
+    freq = clamp01(math.log1p(max(0, msg_count)) / math.log1p(FREQ_SATURATION))
+    diversity = clamp01(max(0, distinct_topics) / DIVERSITY_SATURATION)
+    responsivity = clamp01(responded_ratio)
+    reciprocal = clamp01(reciprocity)
+    impact = clamp01(affect_impact / IMPACT_SATURATION)
+    betrayed = clamp01(1.0 - math.exp(-max(0, betrayal) / BETRAYAL_HALF_LIFE))
     weighted = (
         W_FREQ * freq + W_DIV * diversity + W_RESP * responsivity
         + W_RECIP * reciprocal + W_IMPACT * impact - W_BETRAY * betrayed
@@ -84,8 +82,8 @@ def compute_bond_depth(
 def care_weight(affinity: float, trust: float, depth: float) -> float:
     """Continuous care weight w_care(u) in [0, 0.97] with no hardcoded owner privilege."""
     offset, span = _affinity_params()
-    base = _clamp01((affinity - offset) / span) * _clamp01(trust)
-    bonus = 1.0 + DEPTH_BONUS * _clamp01(depth / 100.0)
+    base = clamp01((affinity - offset) / span) * clamp01(trust)
+    bonus = 1.0 + DEPTH_BONUS * clamp01(depth / 100.0)
     return round(min(DEPTH_CEILING, max(0.0, base * bonus)), 3)
 
 

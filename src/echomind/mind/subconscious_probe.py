@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-import json
-import re
 from typing import Any
 
+from echomind.domain.json_extract import extract_json_object
 from echomind.domain.models import (
     AttentionDecision,
     FrozenValueObject,
@@ -14,12 +13,12 @@ from echomind.domain.models import (
     SocialBondProfile,
     WorkingSnapshot,
 )
+from echomind.domain.numeric import clamp_int
 from echomind.domain.ports import ILlmGateway
 from echomind.mind.naming import bot_naming
 from echomind.mind.persona_render import persona_summary
 from echomind.mind.probe_runtime import run_probe
 
-JSON_EXTRACT_RE = re.compile(r"\{[\s\S]*\}")
 VALID_ROLES = ("direct_to_me", "about_me", "peer_dyadic", "ambient_daily", "noise")
 VALID_SHADOWS = (
     "none",
@@ -94,13 +93,6 @@ class SubconsciousChordResult(FrozenValueObject):
     thought: str = ""
 
 
-def _clamp_int(val: Any, lo: int, hi: int, default: int = 0) -> int:
-    try:
-        return max(lo, min(hi, int(val)))
-    except Exception:
-        return default
-
-
 def _parse_reagents(raw_list: Any) -> tuple[str, ...]:
     if not isinstance(raw_list, list):
         return ("日常轻装剂",)
@@ -110,12 +102,8 @@ def _parse_reagents(raw_list: Any) -> tuple[str, ...]:
 
 def parse_chord_json(raw_text: str) -> SubconsciousChordResult | None:
     """Parse raw LLM output into a validated SubconsciousChordResult."""
-    match = JSON_EXTRACT_RE.search(raw_text)
-    if not match:
-        return None
-    try:
-        data: dict[str, Any] = json.loads(match.group(0))
-    except Exception:
+    data = extract_json_object(raw_text)
+    if data is None:
         return None
     raw_ch = data.get("chord")
     ch: dict[str, Any] = raw_ch if isinstance(raw_ch, dict) else {}
@@ -123,13 +111,13 @@ def parse_chord_json(raw_text: str) -> SubconsciousChordResult | None:
     sh_trig = str(data.get("shadow_trigger", "none")).strip()
     return SubconsciousChordResult(
         role=role if role in VALID_ROLES else "ambient_daily",
-        topic_pull=_clamp_int(data.get("topic_pull", 1), 0, 3, 1),
-        joy=_clamp_int(ch.get("joy", 0), 0, 3, 0),
-        hurt=_clamp_int(ch.get("hurt", 0), 0, 3, 0),
-        jealousy=_clamp_int(ch.get("jealousy", 0), -3, 3, 0),
-        shyness=_clamp_int(ch.get("shyness", 0), 0, 3, 0),
-        annoyance=_clamp_int(ch.get("annoyance", 0), 0, 3, 0),
-        curiosity=_clamp_int(ch.get("curiosity", 0), 0, 3, 0),
+        topic_pull=clamp_int(data.get("topic_pull", 1), 0, 3, 1),
+        joy=clamp_int(ch.get("joy", 0), 0, 3, 0),
+        hurt=clamp_int(ch.get("hurt", 0), 0, 3, 0),
+        jealousy=clamp_int(ch.get("jealousy", 0), -3, 3, 0),
+        shyness=clamp_int(ch.get("shyness", 0), 0, 3, 0),
+        annoyance=clamp_int(ch.get("annoyance", 0), 0, 3, 0),
+        curiosity=clamp_int(ch.get("curiosity", 0), 0, 3, 0),
         shadow_trigger=sh_trig if sh_trig in VALID_SHADOWS else "none",
         spoof_attempt=bool(data.get("spoof_attempt", False)),
         explicit_fact=str(data.get("explicit_fact", "")).strip()[:80],
