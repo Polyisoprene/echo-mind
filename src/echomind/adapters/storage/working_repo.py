@@ -199,15 +199,6 @@ class SqliteWorkingStateStore:
             row = await cursor.fetchone()
         return float(row[0]) if row else 0.0
 
-    async def persona_last_update_ms(self, key: str) -> int:
-        """Timestamp of the most recent change to one persona dimension (0 if never)."""
-        async with self._db.connect() as conn:
-            cursor = await conn.execute(
-                "SELECT COALESCE(MAX(ts), 0) FROM plastic_logs WHERE param_key = ?", (key,)
-            )
-            row = await cursor.fetchone()
-        return int(row[0]) if row else 0
-
     async def sync_persona_traits(
         self, new_trait: PersonaTrait | None = None, strength_delta: int = 0,
         *, chat_key: str = "", source: str = "",

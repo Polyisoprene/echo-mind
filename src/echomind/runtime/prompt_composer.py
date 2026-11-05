@@ -26,19 +26,6 @@ def must_reply_hint(must_reply: bool) -> str:
     )
 
 
-SCENE_TAGS = (
-    "开心",
-    "卖萌",
-    "无语",
-    "委屈",
-    "嫌弃",
-    "惊讶",
-    "害羞",
-    "生气",
-    "发呆",
-)
-
-
 class StickerCandidate(FrozenValueObject):
     """Immutable sticker candidate for prompt pool rotation."""
 

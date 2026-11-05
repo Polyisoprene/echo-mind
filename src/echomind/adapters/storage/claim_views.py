@@ -103,11 +103,6 @@ def claims_as_facts(views: list[ClaimView]) -> tuple[SemanticFact, ...]:
     return tuple(facts)
 
 
-async def load_claim_facts(db: SqliteDatabase, chat_key: str) -> tuple[SemanticFact, ...]:
-    """Read claims for one chat (plus global) as SemanticFact rows."""
-    return claims_as_facts(await load_claim_views(db, chat_key))
-
-
 def _private_visible(fact: SemanticFact, chat_key: str) -> bool:
     if fact.sensitivity != "private":
         return fact.sensitivity in ("public", "group")

@@ -1,4 +1,11 @@
-"""Narrow port for generated trait candidates."""
+"""Narrow port for generated trait candidates.
+
+Status: designed, not yet wired into production. `SqliteTraitCandidateStore`
+implements this shape and is exercised only by tests today; no runtime call
+site writes or promotes candidates. This matches `CAP-TRAIT-GROWTH = partial`
+in docs/capabilities.json ("自动 support/candidate 流仍稀疏"). Keep the port:
+it records the intended seam for finishing that capability.
+"""
 
 from __future__ import annotations
 

@@ -7,9 +7,8 @@ import time
 import aiosqlite
 
 from echomind.adapters.storage.database import SqliteDatabase
-from echomind.domain.bond_stats import BondDepthStats
 from echomind.domain.models import SocialBondProfile
-from echomind.mind.person_level import PersonProfile, build_profiles
+from echomind.mind.person_level import PersonProfile
 
 
 def _seen(rows: list[SocialBondProfile]) -> tuple[int, int]:
@@ -95,14 +94,6 @@ class SqlitePersonStore:
     async def load(self) -> dict[str, PersonProfile]:
         profiles, _ = await self.load_with_ts()
         return profiles
-
-    async def sync_from(
-        self, bonds: tuple[SocialBondProfile, ...], stats: tuple[BondDepthStats, ...]
-    ) -> int:
-        """Build profiles from the given rows and persist them; returns the count."""
-        profiles = build_profiles(bonds, stats)
-        await self.save(profiles, bonds)
-        return len(profiles)
 
 
 __all__ = ["SqlitePersonStore"]

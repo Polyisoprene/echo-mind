@@ -27,10 +27,6 @@ CREATE TABLE IF NOT EXISTS bond_depth_stats (
 );
 """
 
-_COLUMNS = (
-    "chat_key, user_id, msgs, her_msgs, replies_to_them, responded_to_her, "
-    "sessions, impact_sum, impact_n, betrayals, updated_ms"
-)
 _UPSERT_SQL = """
 INSERT INTO bond_depth_stats (
     chat_key, user_id, msgs, her_msgs, replies_to_them, responded_to_her,

@@ -28,8 +28,6 @@ class IdentityDraft:
     memory_budget: int
     memory_thinking: int | None
 
-_IDENTITY_KEYS = ("botName", "keywords", "selfQq", "groups", "private", "defaultGroup")
-
 
 def _as_list(value: Any) -> list[str]:
     if isinstance(value, str):
